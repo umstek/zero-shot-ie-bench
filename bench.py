@@ -327,6 +327,8 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=5,
                         help="runs per case for determinism (default 5)")
     args = parser.parse_args()
+    if args.repeats < 1:
+        parser.error("--repeats must be at least 1")
 
     cls_tasks = {
         "sentiment": ([t for t, _ in SENTIMENT], [g for _, g in SENTIMENT],
