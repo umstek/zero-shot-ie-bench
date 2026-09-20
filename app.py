@@ -13,6 +13,7 @@ import json
 import os
 
 import pandas as pd
+import statistics
 
 SYSTEMS = {
     "GLiNER 2.5": "fastino/gliner2.5-base-v1",
@@ -85,6 +86,24 @@ def build_classification_tab():
         gr.DataFrame(pd.DataFrame(rows),
                      label=f"{task.capitalize()} accuracy (%) by tier")
 
+    for task in ("sentiment", "topic"):
+        long_rows = [{"System": system, "Tier": tier,
+                      "Accuracy %": round(entry[task][tier]["accuracy"] * 100, 1)}
+                     for system, entry in systems.items()
+                     for tier in ("easy", "medium", "hard")]
+        gr.BarPlot(pd.DataFrame(long_rows), x="System", y="Accuracy %",
+                   color="Tier", title=f"{task.capitalize()} accuracy by "
+                   "difficulty tier (%)", y_lim=(0, 105), height=300)
+    speed_rows = [{"System": system,
+                   "s per text": round(sum(
+                       entry[t][tier]["mean_latency_s"]
+                       for t in entry for tier in entry[t])
+                       / sum(len(entry[t]) for t in entry), 3)}
+                  for system, entry in systems.items()]
+    gr.BarPlot(pd.DataFrame(speed_rows), x="System", y="s per text",
+               color="System", title="Mean latency per text, averaged over "
+               "tiers (CPU; Jev/Laya = batch latency / n)", height=300)
+
     gr.Markdown("#### Determinism\nEvery system above was measured 5x on "
                 "the flat suite in `bench.py`: **100% output-stable** "
                 "(identical predictions and NER span sets on every repeat; "
@@ -108,6 +127,13 @@ def build_classification_tab():
                     for sys_, accs in ml["by_language"].items()}}
                 for lang in langs]
         gr.DataFrame(pd.DataFrame(rows), label="Accuracy by language")
+        long_rows = [{"Language": lang, "System": sys_,
+                      "Accuracy %": round(accs[lang] * 100, 1)}
+                     for sys_, accs in ml["by_language"].items()
+                     for lang in langs]
+        gr.BarPlot(pd.DataFrame(long_rows), x="Language", y="Accuracy %",
+                   color="System", title="Multilingual accuracy by language (%)",
+                   y_lim=(0, 105), height=300)
         rows = [{"System": sys_,
                  **{tier: f"{v * 100:.1f}%" for tier, v in tiers.items()}}
                 for sys_, tiers in ml["by_tier"].items()]
@@ -140,6 +166,13 @@ def build_extraction_tab():
                             for tier in ("easy", "medium", "hard")}})
         gr.DataFrame(pd.DataFrame(rows),
                      label="Strict span+label F1 by tier (6 texts per tier)")
+        long_rows = [{"System": system, "Tier": tier,
+                      "Strict F1": round(tiers[tier]["f1"], 2)}
+                     for system, tiers in graded["systems"].items()
+                     for tier in ("easy", "medium", "hard")]
+        gr.BarPlot(pd.DataFrame(long_rows), x="System", y="Strict F1",
+                   color="Tier", title="NER strict F1 by difficulty tier",
+                   y_lim=(0, 1.05), height=300)
 
     try:
         with open(BENCH_FILE, encoding="utf-8") as fh:
@@ -159,7 +192,7 @@ def build_extraction_tab():
         gr.Markdown("#### Notes\n" + "\n".join(
             f"- {note}" for note in flat["meta"]["notes"][:4]))
 
-# -------------------------------------------------------------- compare tab
+# --------------------------------------------------------------- laya tab
 def build_laya_tab():
     import gradio as gr
 
@@ -231,35 +264,34 @@ def build_compare_tab():
     import gradio as gr
 
     gr.Markdown("""
-## Feature comparison
+## Feature comparison — all seven families
 
-| Capability | GLiNER 2.5 (local) | GLiFormer (local) | Laya (local) | Jev (cloud) |
-|---|---|---|---|---|
-| Zero-shot NER, custom labels | ✅ | ✅ | ❌ no span output | ❌ no span output |
-| Text classification | ✅ | ✅ | ✅ choice questions | ✅ choice questions |
-| Relations | ✅ independent + JointIE graph | ✅ joint head | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ flat + nested Pydantic | ❌ | ❌ |
-| Scoring rubrics (ordinal score) | ❌ | ❌ | ✅ score 0..N | ✅ score 0..N |
-| Yes/no judgments | ❌ | ❌ | ✅ noul | ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ | ❌ |
-| Multilingual | ✅ multi checkpoint | ❌ English evals | ✅ Router, 100+ langs | model-dependent |
-| Runs offline / data stays local | ✅ | ✅ | ✅ Apache 2.0 weights | ❌ cloud API |
-| Cost | free | free | free | paid per token |
-| Batch shape | per-text calls | per-text calls (batch_size arg) | all questions in one forward pass | hundreds of questions per request |
-| Calibration | plain softmax | plain softmax | RLCD-trained, ships over-confident before temperature fitting | calibrated-ish, ECE 0.246 (3rd-party) |
-| Measured speed (this machine, CPU) | 0.1–0.3 s/text | 0.3–0.9 s/text | ~0.4 s per batched task call | ~0.8 s per batched request |
+GLiNER 2.5 = small/base/multi checkpoints · GLiClass = edge/modern-base/
+base/large — per-size scores live in the benchmark tabs.
 
-Four different animals: GLiNER 2.5 / GLiFormer are **local extraction
-encoders** (spans, records, relations). Laya and Jev are **decision
-engines** answering typed questions — Laya is the local/open counterpart of
-cloud Jev (its own card benchmarks against Jev: faster, free, better ECE
-after temperature fitting, but weaker on >20-option choices and nuanced
-zero-shot judgment).
+| | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev |
+|---|---|---|---|---|---|---|---|
+| **Ability group** | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (100% on 6 langs here) | ❌ English | multilang-mini variant | ✅ Router, 100+ langs | not established | = base LLM's languages | ✅ 100% incl. Sinhala here |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Cost | free | free | free | free | free | free | $0.042/1M input |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
+| Notable | boundary architecture | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) |
+
+Two benchmark groups follow from this table: everything classifies
+(**Classification benchmark** tab); only the two extractor families produce
+spans (**Extraction benchmark** tab).
 """)
 
-
-# -------------------------------------------------------------- local tabs
 def build_gliner_tab(model):
     import gradio as gr
 
