@@ -51,15 +51,16 @@ Classification accuracy (mean latency ± std per text):
 | Laya (local) | 95.8% | 83.3% | 0.164±0.009 (batched ÷ n) |
 | Jev (cloud) | 100% | 100% | 0.052±0.002 (batched ÷ n) |
 
-NER, strict span+label match (decision engines have no span output):
+NER, strict document+span+label match over 30 gold entities (decision
+engines have no span output; refreshed after correcting document identity):
 
 | System | Precision | Recall | F1 | s/text |
 |---|---|---|---|---|
-| GLiNER2.5-small | 0.77 | 0.96 | 0.86 | 0.058±0.011 |
-| GLiNER2.5-base | 0.93 | 1.00 | 0.97 | 0.117±0.007 |
-| GLiNER2.5-multi | 0.97 | 1.00 | 0.98 | 0.131±0.010 |
-| GLiFormer-base | 1.00 | 1.00 | **1.00** | 0.134±0.011 |
-| GLiFormer-large | 0.97 | 1.00 | 0.98 | 0.428±0.050 |
+| GLiNER2.5-small | 0.78 | 0.97 | 0.87 | 0.051±0.015 |
+| GLiNER2.5-base | 0.94 | 1.00 | 0.97 | 0.111±0.007 |
+| GLiNER2.5-multi | 0.97 | 1.00 | 0.98 | 0.127±0.037 |
+| GLiFormer-base | 1.00 | 1.00 | **1.00** | 0.129±0.023 |
+| GLiFormer-large | 0.97 | 1.00 | 0.98 | 0.447±0.066 |
 
 ### Determinism (5 runs per case)
 
@@ -75,7 +76,7 @@ Output stability — share of cases whose prediction was identical across all
 
 **Every system was fully deterministic** — identical predictions on every
 repeat, including the cloud API. The only measured variance is latency
-(σ ≈ 0.002–0.05 s; largest for GLiFormer-large). Zero-shot outputs are
+(σ ≈ 0.002–0.07 s; largest for GLiFormer-large). Zero-shot outputs are
 therefore reproducible run-to-run on identical inputs; what varies between
 machines is speed, not answers.
 
