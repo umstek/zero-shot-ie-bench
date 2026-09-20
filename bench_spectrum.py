@@ -182,15 +182,17 @@ def main() -> None:
             cls_preds.extend(preds)
             cls_lat.extend([dt / len(texts)] * len(texts))
     elif name == "von":
-        import von
+        from von_client import load_von_decider
+
+        decide = load_von_decider()
 
         for q in CLS_QUESTIONS:
             labels = (SENTIMENT_LABELS if q["task"] == "sentiment"
                       else TOPIC_LABELS)
             t1 = time.perf_counter()
-            res = von.decide(state=q["text"], choices=dict(labels),
-                             instructions=f"What is the overall {q['task']} "
-                                           "of this text?")
+            res = decide(state=q["text"], choices=dict(labels),
+                         instructions=f"What is the overall {q['task']} "
+                                      "of this text?")
             cls_lat.append(time.perf_counter() - t1)
             cls_preds.append(res.choice)
     else:  # so1
@@ -214,11 +216,16 @@ def main() -> None:
         "cls_correct": correct,
         "cls_accuracy": round(sum(correct) / len(correct), 4),
         "cls_mean_latency_s": round(statistics.mean(cls_lat), 3),
+        "timing": "Model download and loading excluded; first forward pass included.",
     }
     if ner_ok is not None:
         entry["ner_exact"] = ner_ok
         entry["ner_exact_rate"] = round(sum(ner_ok) / len(ner_ok), 4)
         entry["ner_mean_latency_s"] = round(statistics.mean(ner_lat), 3)
+    if name == "von":
+        from von_client import provenance
+
+        entry["provenance"] = provenance()
 
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:

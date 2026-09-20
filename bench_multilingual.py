@@ -195,10 +195,12 @@ def make_decider(name: str):
     """Per-text sentiment decider for von / so1."""
     labels = list(SENTIMENT_LABELS)
     if name == "von":
-        import von
+        from von_client import load_von_decider
+
+        decide = load_von_decider()
 
         def one(text: str):
-            return von.decide(
+            return decide(
                 state=text, choices=dict(SENTIMENT_LABELS),
                 instructions="What is the overall sentiment of this "
                              "text?").choice
@@ -219,11 +221,16 @@ def run_laya_router(texts, lang_of):
 
     from jev_client import choice
 
-    router = Router()
+    router = Router(device="cpu")
     question = choice(
         "What is the overall sentiment of the text in the state: positive, "
         "negative, or neutral?",
         {label: None for label in SENTIMENT_LABELS})
+    # Keep every checkpoint used by this pool resident. The Router's default
+    # single-model cache otherwise reloads weights whenever scripts alternate.
+    models = list(dict.fromkeys(
+        router.route({"text": text}, {"q": question})["model"] for text in texts))
+    router.preload(names=models)
     preds, lat = [], []
     routed: dict[str, dict[str, int]] = {}
     for text, lang in zip(texts, lang_of):
@@ -319,6 +326,12 @@ def main() -> None:
     out["by_language"][name] = by_lang
     out["by_tier"][name] = by_tier
     out["latency"][name] = round(lat, 3)
+    out.setdefault("timing", {})[name] = (
+        "Model download and loading excluded; first forward pass included.")
+    if name == "von":
+        from von_client import provenance
+
+        out.setdefault("provenance", {})[name] = provenance()
     if laya_routes:
         out["laya_routing"] = laya_routes
     tmp = RESULTS_FILE + ".tmp"

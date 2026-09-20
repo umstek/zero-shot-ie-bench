@@ -17,12 +17,13 @@ import sys
 def main() -> None:
     payload = json.loads(sys.stdin.read())
     try:
-        import von
+        from von_client import load_von_decider
 
+        decide = load_von_decider()
         results = []
         for text in payload["texts"]:
-            res = von.decide(state=text, choices=payload["choices"],
-                             instructions=payload["instructions"])
+            res = decide(state=text, choices=payload["choices"],
+                         instructions=payload["instructions"])
             results.append({
                 "choice": res.choice,
                 "probabilities": res.probabilities,

@@ -452,7 +452,7 @@ base/large — per-size scores live in the benchmark tabs.
 | Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
 | Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | chance-level, unstable (33-48% across runs) | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | Cost | free | free | free | free | free | free | $0.042/1M input |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
@@ -718,10 +718,13 @@ def build_von_tab():
     with gr.Tab("von"):
         gr.Markdown("### von-1.0 — local decision engine on the System One "
                     "protocol\n"
-                    "396M ModernBERT, Apache 2.0. It needs transformers 5, "
+                    "396M ModernBERT with its trained option-marker head, "
+                    "Apache 2.0. It needs transformers 5, "
                     "so the app runs it in a separate venv (`.venv-von`): "
                     "each click spawns `von_demo.py`, which loads the model "
-                    "once and answers every line in that single process.")
+                    "once and answers every line in that single process. "
+                    "Install `requirements-von.txt` in that environment; "
+                    "first use downloads the complete trained checkpoint.")
         von_text = gr.Textbox(
             label="Texts (one per line)",
             value="The food was cold and the waiter was rude.\n"
