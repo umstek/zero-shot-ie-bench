@@ -203,15 +203,20 @@ Python 3.10+ (tested on 3.13, Windows, CPU-only).
 
 ```bash
 uv venv .venv
-uv pip install --python .venv -r requirements.txt
+uv pip install --python .venv -r requirements.txt --overrides overrides.txt
 # so1 is not on PyPI (needed by the so1 tab + benchmarks):
 uv pip install --python .venv "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev"
 # von needs transformers 5.x, so it lives in its own venv:
 uv venv .venv-von && uv pip install --python .venv-von von-sdk
-# or: python -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt
 ```
 
-Notes: `protobuf` and `sentencepiece` are pinned explicitly because
+Use uv for this install: `overrides.txt` deliberately overrides GLiClass
+0.1.20's transformers ≥5 metadata with the validated 4.57.6 version required
+by GLiNER2. This is an explicit compatibility exception for that pinned
+GLiClass release; plain pip dependency resolution cannot install this mix.
+Altair is included explicitly for the benchmark charts.
+
+Notes: `protobuf` and `sentencepiece` are included explicitly because
 `gliner2[local]` does not pull them in and the DeBERTa tokenizer needs them.
 Model checkpoints (~0.3–2.3 GB each) download from Hugging Face on first
 run. For Jev only: set `TYPESAFE_API_KEY` in the environment or a `.env`

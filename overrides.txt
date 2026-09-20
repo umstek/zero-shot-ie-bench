@@ -1,0 +1,3 @@
+# GLiClass 0.1.20 declares transformers>=5 but its v3 checkpoints work on
+# 4.57.6, which GLiNER2 requires. Keep this override tied to that exact release.
+transformers==4.57.6
