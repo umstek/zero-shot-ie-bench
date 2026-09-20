@@ -13,7 +13,22 @@
       "All 13 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
-      "Laya Router recorded 2026-09-20 15:30, 249s, CPU"
+      "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
+      "GLiNER2.5-small recorded 2026-09-20 16:11, 19s, CPU",
+      "GLiNER2.5-base recorded 2026-09-20 16:11, 26s, CPU",
+      "GLiNER2.5-multi recorded 2026-09-20 16:12, 35s, CPU",
+      "GLiFormer-base recorded 2026-09-20 16:13, 32s, CPU",
+      "GLiFormer-large recorded 2026-09-20 16:14, 65s, CPU",
+      "gliclass-edge recorded 2026-09-20 16:14, 18s, CPU",
+      "gliclass-modern-base recorded 2026-09-20 16:14, 17s, CPU",
+      "gliclass-base recorded 2026-09-20 16:15, 21s, CPU",
+      "gliclass-large recorded 2026-09-20 16:15, 38s, CPU",
+      "Laya Router recorded 2026-09-20 16:20, 289s, CPU",
+      "so1 (Qwen2.5-0.5B) recorded 2026-09-20 16:21, 26s, CPU",
+      "Jev recorded 2026-09-20 16:21, 1s, CPU",
+      "von recorded 2026-09-20 16:23, 47s, CPU",
+      "von recorded 2026-09-20 16:25, 40s, CPU",
+      "von decisions are not stable across runs: three identical-input runs on 2026-09-20 scored 33/35/48%; the stored row is one run that collapsed to a single label (chance level)."
     ]
   },
   "by_language": {
@@ -150,15 +165,15 @@
       "Welsh": 0.3333
     },
     "von": {
-      "Spanish": 0.6667,
-      "French": 1.0,
-      "Chinese": 0.6667,
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
       "Vietnamese": 0.3333,
       "Turkish": 0.3333,
-      "Ukrainian": 0.5,
+      "Ukrainian": 0.3333,
       "Sinhala": 0.3333,
       "Icelandic": 0.3333,
-      "Welsh": 0.1667
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -223,25 +238,25 @@
       "rare": 0.3333
     },
     "von": {
-      "popular": 0.7778,
-      "medium": 0.3889,
-      "rare": 0.2778
+      "popular": 0.3333,
+      "medium": 0.3333,
+      "rare": 0.3333
     }
   },
   "latency": {
-    "GLiNER2.5-multi": 0.153,
-    "Laya Router": 4.583,
-    "Jev": 0.02,
-    "GLiFormer-large": 0.46,
-    "GLiNER2.5-small": 0.047,
-    "GLiNER2.5-base": 0.131,
-    "GLiFormer-base": 0.153,
-    "gliclass-edge": 0.02,
-    "gliclass-modern-base": 0.076,
-    "gliclass-base": 0.133,
-    "gliclass-large": 0.43,
-    "so1 (Qwen2.5-0.5B)": 0.286,
-    "von": 0.725
+    "GLiNER2.5-multi": 0.237,
+    "Laya Router": 5.313,
+    "Jev": 0.021,
+    "GLiFormer-large": 0.717,
+    "GLiNER2.5-small": 0.078,
+    "GLiNER2.5-base": 0.172,
+    "GLiFormer-base": 0.242,
+    "gliclass-edge": 0.041,
+    "gliclass-modern-base": 0.113,
+    "gliclass-base": 0.183,
+    "gliclass-large": 0.501,
+    "so1 (Qwen2.5-0.5B)": 0.281,
+    "von": 0.698
   },
   "laya_routing": {
     "Spanish": {
