@@ -1,0 +1,293 @@
+{
+  "meta": {
+    "date": "2026-09-20 11:24",
+    "device": "CPU",
+    "texts_per_language": 6,
+    "labels": [
+      "positive",
+      "negative",
+      "neutral"
+    ],
+    "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
+    "notes": [
+      "All 13 systems answer the same 54 texts.",
+      "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
+      "Jev ran all 54 texts as one batched request.",
+      "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
+      "GLiNER2.5-small recorded 2026-09-20 16:11, 19s, CPU",
+      "GLiNER2.5-base recorded 2026-09-20 16:11, 26s, CPU",
+      "GLiNER2.5-multi recorded 2026-09-20 16:12, 35s, CPU",
+      "GLiFormer-base recorded 2026-09-20 16:13, 32s, CPU",
+      "GLiFormer-large recorded 2026-09-20 16:14, 65s, CPU",
+      "gliclass-edge recorded 2026-09-20 16:14, 18s, CPU",
+      "gliclass-modern-base recorded 2026-09-20 16:14, 17s, CPU",
+      "gliclass-base recorded 2026-09-20 16:15, 21s, CPU",
+      "gliclass-large recorded 2026-09-20 16:15, 38s, CPU",
+      "Laya Router recorded 2026-09-20 16:20, 289s, CPU",
+      "so1 (Qwen2.5-0.5B) recorded 2026-09-20 16:21, 26s, CPU",
+      "Jev recorded 2026-09-20 16:21, 1s, CPU",
+      "von recorded 2026-09-20 16:23, 47s, CPU",
+      "von recorded 2026-09-20 16:25, 40s, CPU",
+      "von decisions are not stable across runs: repeat runs on 2026-09-20 scored 33/35/48% (the 48% run predates the French fixture fix); the stored row is one run that collapsed to a single label (chance level)."
+    ]
+  },
+  "by_language": {
+    "GLiNER2.5-multi": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 1.0,
+      "Welsh": 0.6667
+    },
+    "Laya Router": {
+      "Spanish": 0.8333,
+      "French": 0.8333,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.5
+    },
+    "Jev": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "GLiFormer-large": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.5,
+      "Turkish": 0.5,
+      "Ukrainian": 0.8333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER2.5-small": {
+      "Spanish": 0.6667,
+      "French": 0.5,
+      "Chinese": 0.5,
+      "Vietnamese": 0.0,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.1667
+    },
+    "GLiNER2.5-base": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.1667,
+      "Welsh": 0.3333
+    },
+    "GLiFormer-base": {
+      "Spanish": 0.8333,
+      "French": 0.8333,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "gliclass-edge": {
+      "Spanish": 0.5,
+      "French": 0.6667,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.1667,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.1667,
+      "Icelandic": 0.1667,
+      "Welsh": 0.3333
+    },
+    "gliclass-modern-base": {
+      "Spanish": 0.5,
+      "French": 0.6667,
+      "Chinese": 0.1667,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.5,
+      "Icelandic": 0.1667,
+      "Welsh": 0.5
+    },
+    "gliclass-base": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.5,
+      "Icelandic": 0.5,
+      "Welsh": 0.1667
+    },
+    "gliclass-large": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 0.3333
+    },
+    "so1 (Qwen2.5-0.5B)": {
+      "Spanish": 0.5,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.5,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "von": {
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    }
+  },
+  "by_tier": {
+    "GLiNER2.5-multi": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.6667
+    },
+    "Laya Router": {
+      "popular": 0.8889,
+      "medium": 0.9444,
+      "rare": 0.4444
+    },
+    "Jev": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "GLiFormer-large": {
+      "popular": 0.9444,
+      "medium": 0.6111,
+      "rare": 0.3333
+    },
+    "GLiNER2.5-small": {
+      "popular": 0.5556,
+      "medium": 0.2222,
+      "rare": 0.2778
+    },
+    "GLiNER2.5-base": {
+      "popular": 0.8889,
+      "medium": 0.5,
+      "rare": 0.2778
+    },
+    "GLiFormer-base": {
+      "popular": 0.8333,
+      "medium": 0.4444,
+      "rare": 0.3333
+    },
+    "gliclass-edge": {
+      "popular": 0.5,
+      "medium": 0.2222,
+      "rare": 0.2222
+    },
+    "gliclass-modern-base": {
+      "popular": 0.4445,
+      "medium": 0.3333,
+      "rare": 0.3889
+    },
+    "gliclass-base": {
+      "popular": 0.9444,
+      "medium": 0.6667,
+      "rare": 0.3889
+    },
+    "gliclass-large": {
+      "popular": 1.0,
+      "medium": 0.8889,
+      "rare": 0.5556
+    },
+    "so1 (Qwen2.5-0.5B)": {
+      "popular": 0.3889,
+      "medium": 0.3889,
+      "rare": 0.3333
+    },
+    "von": {
+      "popular": 0.3333,
+      "medium": 0.3333,
+      "rare": 0.3333
+    }
+  },
+  "latency": {
+    "GLiNER2.5-multi": 0.237,
+    "Laya Router": 5.313,
+    "Jev": 0.021,
+    "GLiFormer-large": 0.717,
+    "GLiNER2.5-small": 0.078,
+    "GLiNER2.5-base": 0.172,
+    "GLiFormer-base": 0.242,
+    "gliclass-edge": 0.041,
+    "gliclass-modern-base": 0.113,
+    "gliclass-base": 0.183,
+    "gliclass-large": 0.501,
+    "so1 (Qwen2.5-0.5B)": 0.281,
+    "von": 0.698
+  },
+  "laya_routing": {
+    "Spanish": {
+      "multilingual": 4,
+      "english": 2
+    },
+    "French": {
+      "multilingual": 5,
+      "english": 1
+    },
+    "Chinese": {
+      "multilingual": 6
+    },
+    "Vietnamese": {
+      "multilingual": 6
+    },
+    "Turkish": {
+      "multilingual": 6
+    },
+    "Ukrainian": {
+      "multilingual": 6
+    },
+    "Sinhala": {
+      "multilingual": 6
+    },
+    "Icelandic": {
+      "multilingual": 5,
+      "english": 1
+    },
+    "Welsh": {
+      "english": 6
+    }
+  }
+}

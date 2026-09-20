@@ -28,13 +28,15 @@ Fairness notes
   - Laya needs string instructions (dict instructions collapse it onto one
     label - verified before benchmarking).
 
-Output: bench_results.json (consumed by app.py's Benchmark tab).
+Output: bench_results.json (flat-suite numbers, incl. determinism,
+cited by app.py's Classification benchmark tab).
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -326,6 +328,8 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=5,
                         help="runs per case for determinism (default 5)")
     args = parser.parse_args()
+    if args.repeats < 1:
+        parser.error("--repeats must be at least 1")
 
     cls_tasks = {
         "sentiment": ([t for t, _ in SENTIMENT], [g for _, g in SENTIMENT],
@@ -408,8 +412,10 @@ def main() -> None:
         out["ner"][name] = {"precision": p, "recall": r, "f1": f1,
                             **res["ner"]}
 
-    with open("bench_results.json", "w", encoding="utf-8") as fh:
+    tmp = "bench_results.json.tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
+    os.replace(tmp, "bench_results.json")
 
     print(f"\n=== Classification accuracy | stability over {args.repeats} "
           "runs ===")
