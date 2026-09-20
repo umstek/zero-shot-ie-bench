@@ -1,0 +1,260 @@
+{
+  "meta": {
+    "date": "2026-09-20 12:52",
+    "device": "CPU",
+    "notes": [
+      "Same graded data as bench_graded.py; classification only (no span output).",
+      "von runs in .venv-von (needs transformers 5.x); everything else in the main venv."
+    ]
+  },
+  "systems": {
+    "meta": {
+      "date": "2026-09-20 12:51",
+      "device": "CPU",
+      "notes": [
+        "Same graded data as bench_graded.py; classification only (no span output).",
+        "von runs in .venv-von (needs transformers 5.x); everything else in the main venv."
+      ]
+    },
+    "systems": {
+      "meta": {
+        "date": "2026-09-20 12:51",
+        "device": "CPU",
+        "notes": [
+          "Same graded data as bench_graded.py; classification only (no span output).",
+          "von runs in .venv-von (needs transformers 5.x); everything else in the main venv."
+        ]
+      },
+      "systems": {
+        "meta": {
+          "date": "2026-09-20 12:48",
+          "device": "CPU",
+          "notes": [
+            "Same graded data as bench_graded.py; classification only (no span output).",
+            "von runs in .venv-von (needs transformers 5.x); everything else in the main venv."
+          ]
+        },
+        "systems": {
+          "meta": {
+            "date": "2026-09-20 12:46",
+            "device": "CPU",
+            "notes": [
+              "Same graded data as bench_graded.py; classification only (no span output).",
+              "von runs in .venv-von (needs transformers 5.x); everything else in the main venv."
+            ]
+          },
+          "systems": {
+            "meta": {
+              "date": "2026-09-20 12:44",
+              "device": "CPU",
+              "notes": [
+                "Same graded data as bench_graded.py; classification only (no span output).",
+                "von runs in .venv-von (needs transformers 5.x); everything else in the main venv."
+              ]
+            },
+            "systems": {
+              "gliclass-edge": {
+                "recorded": "2026-09-20 12:44",
+                "classification": {
+                  "sentiment": {
+                    "easy": {
+                      "accuracy": 0.875,
+                      "mean_latency_s": 0.018
+                    },
+                    "medium": {
+                      "accuracy": 0.75,
+                      "mean_latency_s": 0.015
+                    },
+                    "hard": {
+                      "accuracy": 0.375,
+                      "mean_latency_s": 0.016
+                    }
+                  },
+                  "topic": {
+                    "easy": {
+                      "accuracy": 1.0,
+                      "mean_latency_s": 0.016
+                    },
+                    "medium": {
+                      "accuracy": 0.5,
+                      "mean_latency_s": 0.018
+                    },
+                    "hard": {
+                      "accuracy": 0.5,
+                      "mean_latency_s": 0.015
+                    }
+                  }
+                }
+              }
+            },
+            "gliclass-modern-base": {
+              "recorded": "2026-09-20 12:46",
+              "classification": {
+                "sentiment": {
+                  "easy": {
+                    "accuracy": 0.75,
+                    "mean_latency_s": 0.069
+                  },
+                  "medium": {
+                    "accuracy": 0.75,
+                    "mean_latency_s": 0.052
+                  },
+                  "hard": {
+                    "accuracy": 0.5,
+                    "mean_latency_s": 0.05
+                  }
+                },
+                "topic": {
+                  "easy": {
+                    "accuracy": 1.0,
+                    "mean_latency_s": 0.057
+                  },
+                  "medium": {
+                    "accuracy": 0.625,
+                    "mean_latency_s": 0.052
+                  },
+                  "hard": {
+                    "accuracy": 0.375,
+                    "mean_latency_s": 0.049
+                  }
+                }
+              }
+            }
+          },
+          "gliclass-base": {
+            "recorded": "2026-09-20 12:48",
+            "classification": {
+              "sentiment": {
+                "easy": {
+                  "accuracy": 1.0,
+                  "mean_latency_s": 0.152
+                },
+                "medium": {
+                  "accuracy": 0.875,
+                  "mean_latency_s": 0.121
+                },
+                "hard": {
+                  "accuracy": 0.75,
+                  "mean_latency_s": 0.123
+                }
+              },
+              "topic": {
+                "easy": {
+                  "accuracy": 1.0,
+                  "mean_latency_s": 0.133
+                },
+                "medium": {
+                  "accuracy": 0.625,
+                  "mean_latency_s": 0.122
+                },
+                "hard": {
+                  "accuracy": 0.625,
+                  "mean_latency_s": 0.151
+                }
+              }
+            }
+          }
+        },
+        "gliclass-large": {
+          "recorded": "2026-09-20 12:51",
+          "classification": {
+            "sentiment": {
+              "easy": {
+                "accuracy": 1.0,
+                "mean_latency_s": 0.341
+              },
+              "medium": {
+                "accuracy": 0.875,
+                "mean_latency_s": 0.325
+              },
+              "hard": {
+                "accuracy": 0.875,
+                "mean_latency_s": 0.345
+              }
+            },
+            "topic": {
+              "easy": {
+                "accuracy": 1.0,
+                "mean_latency_s": 0.366
+              },
+              "medium": {
+                "accuracy": 0.625,
+                "mean_latency_s": 0.4
+              },
+              "hard": {
+                "accuracy": 0.5,
+                "mean_latency_s": 0.363
+              }
+            }
+          }
+        }
+      },
+      "so1 (Qwen2.5-0.5B)": {
+        "recorded": "2026-09-20 12:51",
+        "classification": {
+          "sentiment": {
+            "easy": {
+              "accuracy": 0.5,
+              "mean_latency_s": 0.234
+            },
+            "medium": {
+              "accuracy": 0.375,
+              "mean_latency_s": 0.232
+            },
+            "hard": {
+              "accuracy": 0.125,
+              "mean_latency_s": 0.226
+            }
+          },
+          "topic": {
+            "easy": {
+              "accuracy": 0.75,
+              "mean_latency_s": 0.227
+            },
+            "medium": {
+              "accuracy": 0.625,
+              "mean_latency_s": 0.242
+            },
+            "hard": {
+              "accuracy": 0.25,
+              "mean_latency_s": 0.24
+            }
+          }
+        }
+      }
+    },
+    "von": {
+      "recorded": "2026-09-20 12:51",
+      "classification": {
+        "sentiment": {
+          "easy": {
+            "accuracy": 0.625,
+            "mean_latency_s": 1.773
+          },
+          "medium": {
+            "accuracy": 0.375,
+            "mean_latency_s": 0.401
+          },
+          "hard": {
+            "accuracy": 0.125,
+            "mean_latency_s": 0.436
+          }
+        },
+        "topic": {
+          "easy": {
+            "accuracy": 0.625,
+            "mean_latency_s": 0.687
+          },
+          "medium": {
+            "accuracy": 0.625,
+            "mean_latency_s": 0.531
+          },
+          "hard": {
+            "accuracy": 0.375,
+            "mean_latency_s": 0.536
+          }
+        }
+      }
+    }
+  }
+}

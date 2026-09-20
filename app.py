@@ -198,6 +198,33 @@ def build_v2_tab():
                            "rare: si/is/cy)")
 
 
+    newcomers_path = os.path.join(os.path.dirname(BENCH_FILE),
+                                  "bench_newcomers_results.json")
+    try:
+        with open(newcomers_path, encoding="utf-8") as fh:
+            newcomers = json.load(fh)
+    except OSError:
+        newcomers = None
+    if newcomers:
+        gr.Markdown("## Newcomers — GLiClass v3.0 · von-1.0 · "
+                    "open-alternative-jev (so1)\n"
+                    "Classification only (no span output). von runs in a "
+                    "separate venv (needs transformers 5); so1 uses "
+                    "Qwen2.5-0.5B as its base LLM on CPU.")
+        for task in ("sentiment", "topic"):
+            rows = []
+            for system, entry in newcomers["systems"].items():
+                rows.append({
+                    "System": system,
+                    **{tier: f"{entry['classification'][task][tier]['accuracy'] * 100:.1f}%"
+                       for tier in ("easy", "medium", "hard")},
+                    "s/text": min(
+                        entry["classification"][task][t]["mean_latency_s"]
+                        for t in ("easy", "medium", "hard"))})
+            gr.DataFrame(pd.DataFrame(rows),
+                         label=f"{task.capitalize()} accuracy (%) by tier")
+
+
 # -------------------------------------------------------------- compare tab
 def build_laya_tab():
     import gradio as gr

@@ -228,3 +228,28 @@ Complete version coverage per family (all sizes that exist are benchmarked):
 MIT — see [LICENSE](LICENSE). Model licenses belong to their authors
 (Apache 2.0 for the three open families); Jev access is subject to TypeSafe
 AI's terms.
+
+## Newcomers: GLiClass v3.0 · von-1.0 · open-alternative-jev (so1)
+
+`bench_newcomers.py` — classification only, same graded tiers. Sentiment
+accuracy E/M/H (vs incumbents: GLiNER2.5-base 100/88/75, GLiFormer-large
+100/100/38, Laya 100/63/63, Jev 100/88/100):
+
+| System | Sentiment E/M/H | Topic E/M/H | s/text |
+|---|---|---|---|
+| gliclass-edge (33M) | 88 / 75 / 38% | 100 / 50 / 50% | 0.02 |
+| gliclass-modern-base (151M) | 75 / 75 / 50% | 100 / 63 / 38% | 0.05 |
+| gliclass-base (187M) | 100 / 88 / 75% | 100 / 63 / 63% | 0.13 |
+| **gliclass-large (439M)** | 100 / 88 / **88%** | 100 / 63 / 50% | 0.34 |
+| von-1.0 (395M) | 63 / 38 / 13% | 63 / 63 / 38% | 0.4–1.8 |
+| so1 + Qwen2.5-0.5B | 50 / 38 / 13% | 75 / 63 / 25% | 0.23 |
+
+Takeaways: **gliclass-large is the best local sarcasm reader found**
+(88% hard tier — second only to cloud Jev's 100%), and gliclass-edge is the
+speed king (16 ms/text). von-1.0's 93.5% card benchmark is on its own
+adversarial decision suite; on general sentiment/topic it underperforms —
+its strength is its trained domain, not open-ended classification. The so1
+technique works mechanically on any ChatML LLM, but a 0.5B base model is
+not enough brain for it. Note: gliclass PyPI metadata asks for
+transformers ≥5 but runs fine on the pinned 4.57.6; von genuinely needs
+transformers 5, hence the separate `.venv-von`.
