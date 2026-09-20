@@ -223,7 +223,9 @@ def main() -> None:
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:
             data = json.load(fh)
-    except (OSError, json.JSONDecodeError):
+        if not isinstance(data, dict):
+            raise ValueError
+    except (OSError, ValueError):
         data = {}
     data.setdefault("meta", {
         "pools": {"classification": 48, "ner": 18},

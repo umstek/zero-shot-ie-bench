@@ -296,7 +296,11 @@ def main() -> None:
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:
             out = json.load(fh)
-    except (OSError, json.JSONDecodeError):
+        if not isinstance(out, dict) or not all(
+                isinstance(out.get(k), dict)
+                for k in ("by_language", "by_tier", "latency")):
+            raise ValueError
+    except (OSError, ValueError):
         out = {"meta": {}, "by_language": {}, "by_tier": {}, "latency": {}}
     out.setdefault("meta", {}).setdefault("notes", []).append(
         f"{name} recorded {time.strftime('%Y-%m-%d %H:%M')}, "

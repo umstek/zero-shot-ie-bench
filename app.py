@@ -171,7 +171,10 @@ def build_classification_tab():
     try:
         with open(path, encoding="utf-8") as fh:
             bench = json.load(fh)
-    except (OSError, json.JSONDecodeError):
+        if not isinstance(bench, dict) or not isinstance(
+                bench.get("systems"), dict):
+            raise ValueError
+    except (OSError, ValueError):
         gr.Markdown("### Run `bench_spectrum.py --system <name>` first.")
         return
     systems = bench["systems"]
@@ -239,7 +242,10 @@ def build_extraction_tab():
     try:
         with open(path, encoding="utf-8") as fh:
             bench = json.load(fh)
-    except (OSError, json.JSONDecodeError):
+        if not isinstance(bench, dict) or not isinstance(
+                bench.get("systems"), dict):
+            raise ValueError
+    except (OSError, ValueError):
         gr.Markdown("### Run `bench_spectrum.py --system <name>` first.")
         return
     extractors = {s: v for s, v in bench["systems"].items()
@@ -298,7 +304,10 @@ def build_multilingual_tab():
     try:
         with open(path, encoding="utf-8") as fh:
             ml = json.load(fh)
-    except (OSError, json.JSONDecodeError):
+        if not isinstance(ml, dict) or not isinstance(
+                ml.get("by_language"), dict):
+            raise ValueError
+    except (OSError, ValueError):
         gr.Markdown("### Run `bench_multilingual.py --system <name>` first.")
         return
     by_language = ml["by_language"]
