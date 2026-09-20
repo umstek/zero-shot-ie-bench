@@ -8,11 +8,13 @@ cross-lingual setup):
   medium  : Vietnamese, Turkish, Ukrainian
   rare    : Sinhala, Icelandic, Welsh  (Sinhala required by the owner)
 
-Systems
-  - GLiNER2.5-multi  (fastino, mDeBERTa, multilingual checkpoint) - per text
-  - GLiFormer-large  (knowledgator, English-only) - CONTROL: expected to fail
-  - Laya Router      (convaiinnovations, mmBERT multilingual) - per text
-  - Jev              (cloud, jev-latest) - one batched request for all texts
+Every system in the comparison answers the same 54 texts. Run one system
+per invocation (results merge into the shared file):
+
+    python bench_multilingual.py --system GLiNER2.5-base
+    .venv-von/Scripts/python bench_multilingual.py --system von
+
+Jev is a paid API: it runs all 54 texts as one batched request.
 
 Ground-truth verification: sentences were blind-translated back to English
 by one independent cold-context model instance (separate agent, no labels
@@ -20,11 +22,13 @@ in its instructions); it caught 8 errors (2 sentiment-flipping) which were
 fixed and re-verified. The full sentence table is in the PR description
 for human (native-speaker) review, Sinhala especially.
 
-Output: bench_multilingual_results.json (app.py "Benchmarks v2" tab).
+Output: bench_multilingual_results.json (rendered by the web UI's
+Multilingual benchmark tab).
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import statistics
 import sys
@@ -55,7 +59,7 @@ LANGUAGES: dict[str, list[tuple[str, str]]] = {
         ("Este libro fue publicado en 2019 y tiene 300 páginas.", "neutral"),
     ],
     "French": [
-        ("La nourriture de ce restaurant est délicieuse et le personnel est très aimable.", "positive"),
+        ("La nourriture de ce restaurant est délicieux et le personnel est très aimable.", "positive"),
         ("Je suis très content de mon nouveau téléphone ; la batterie tient toute la journée.", "positive"),
         ("Le bus était bondé et lent, et je suis arrivé très en retard.", "negative"),
         ("Ce film était long et ennuyeux ; je regrette de l'avoir vu.", "negative"),
@@ -128,36 +132,88 @@ TIERS = {
     "Sinhala": "rare", "Icelandic": "rare", "Welsh": "rare",
 }
 
+RESULTS_FILE = "bench_multilingual_results.json"
 
-def run_gliner_multi(texts, gold):
-    from gliner2 import AutoExtractor
-
-    model = AutoExtractor.from_pretrained("fastino/gliner2.5-multi-v1",
-                                          map_location="cpu")
-    preds, lat = [], []
-    for text in texts:
-        t0 = time.perf_counter()
-        preds.append(model.classify_text(
-            text, {"task": list(SENTIMENT_LABELS)})["task"])
-        lat.append(time.perf_counter() - t0)
-    return preds, statistics.mean(lat)
-
-
-def run_gliformer_control(texts, gold):
-    from gliformer import GLiFormer
-
-    model = GLiFormer.from_pretrained("knowledgator/gliformer-large-v1",
-                                      load_tokenizer=True).to("cpu").eval()
-    preds, lat = [], []
-    for text in texts:
-        t0 = time.perf_counter()
-        out = model.classify(text, list(SENTIMENT_LABELS), threshold=0.5)
-        lat.append(time.perf_counter() - t0)
-        preds.append(out[0]["class_name"] if out else None)
-    return preds, statistics.mean(lat)
+GLINER = {
+    "GLiNER2.5-small": "fastino/gliner2.5-small-v1",
+    "GLiNER2.5-base": "fastino/gliner2.5-base-v1",
+    "GLiNER2.5-multi": "fastino/gliner2.5-multi-v1",
+}
+GLIFORMER = {
+    "GLiFormer-base": "knowledgator/gliformer-base-v1",
+    "GLiFormer-large": "knowledgator/gliformer-large-v1",
+}
+GLICLASS = {
+    "gliclass-edge": "knowledgator/gliclass-edge-v3.0",
+    "gliclass-modern-base": "knowledgator/gliclass-modern-base-v3.0",
+    "gliclass-base": "knowledgator/gliclass-base-v3.0",
+    "gliclass-large": "knowledgator/gliclass-large-v3.0",
+}
+ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
+               + ["Laya Router", "von", "so1 (Qwen2.5-0.5B)", "Jev"])
 
 
-def run_laya_router(texts, gold):
+def make_classifier(name: str):
+    """Per-text sentiment classifier for encoder/classifier systems."""
+    labels = list(SENTIMENT_LABELS)
+
+    if name in GLINER:
+        from gliner2 import AutoExtractor
+
+        model = AutoExtractor.from_pretrained(GLINER[name],
+                                              map_location="cpu")
+
+        def one(text: str):
+            return model.classify_text(text, {"task": labels})["task"]
+    elif name in GLIFORMER:
+        from gliformer import GLiFormer
+
+        model = GLiFormer.from_pretrained(GLIFORMER[name],
+                                          load_tokenizer=True).to("cpu").eval()
+
+        def one(text: str):
+            out = model.classify(text, labels, threshold=0.5)
+            return out[0]["class_name"] if out else None
+    else:  # gliclass
+        from transformers import AutoTokenizer
+
+        from gliclass import GLiClassModel, ZeroShotClassificationPipeline
+
+        model = GLiClassModel.from_pretrained(GLICLASS[name])
+        pipe = ZeroShotClassificationPipeline(
+            model, AutoTokenizer.from_pretrained(GLICLASS[name]),
+            classification_type="multi-label", device="cpu")
+
+        def one(text: str):
+            out = pipe(text, labels, threshold=0.0)[0]
+            return max(out, key=lambda row: row["score"])["label"] if out else None
+    return one
+
+
+def make_decider(name: str):
+    """Per-text sentiment decider for von / so1."""
+    labels = list(SENTIMENT_LABELS)
+    if name == "von":
+        import von
+
+        def one(text: str):
+            return von.decide(
+                state=text, choices=dict(SENTIMENT_LABELS),
+                instructions="What is the overall sentiment of this "
+                             "text?").choice
+    else:
+        from so1 import Choice, Decider
+
+        decider = Decider.from_pretrained("Qwen/Qwen2.5-0.5B", backend="hf")
+
+        def one(text: str):
+            return decider.decide(state=text,
+                                  questions=[Choice("sentiment", labels)],
+                                  mode="separate")[0].choice
+    return one
+
+
+def run_laya_router(texts, lang_of):
     from laya import Router
 
     from jev_client import choice
@@ -174,10 +230,13 @@ def run_laya_router(texts, gold):
         lat.append(time.perf_counter() - t0)
         preds.append(out["answers"]["q"].get("choice"))
         routes.append(out.get("routing", {}).get("model"))
-    return preds, statistics.mean(lat), routes
+    by_lang_routes = {
+        lang: sorted({r for l, r in zip(lang_of, routes) if l == lang})
+        for lang in LANGUAGES}
+    return preds, statistics.mean(lat), by_lang_routes
 
 
-def run_jev(texts, gold):
+def run_jev(texts):
     from jev_client import JevClient, choice
 
     client = JevClient()
@@ -198,6 +257,9 @@ def run_jev(texts, gold):
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--system", required=True, choices=ALL_SYSTEMS)
+    name = parser.parse_args().system
 
     texts, gold, lang_of = [], [], []
     for lang, items in LANGUAGES.items():
@@ -206,75 +268,65 @@ def main() -> None:
             gold.append(label)
             lang_of.append(lang)
 
-    results = {}
-    print("GLiNER2.5-multi ...")
-    preds, lat = run_gliner_multi(texts, gold)
-    results["GLiNER2.5-multi"] = (preds, lat)
+    laya_routes = None
+    print(f"{name}: 54 texts (9 languages x 6) ...")
+    t0 = time.perf_counter()
+    if name in GLINER or name in GLIFORMER or name in GLICLASS:
+        one = make_classifier(name)
+        preds, lat = [], []
+        for text in texts:
+            t1 = time.perf_counter()
+            preds.append(one(text))
+            lat.append(time.perf_counter() - t1)
+        lat = statistics.mean(lat)
+    elif name in ("von", "so1 (Qwen2.5-0.5B)"):
+        one = make_decider(name)
+        preds, lat = [], []
+        for text in texts:
+            t1 = time.perf_counter()
+            preds.append(one(text))
+            lat.append(time.perf_counter() - t1)
+        lat = statistics.mean(lat)
+    elif name == "Laya Router":
+        preds, lat, laya_routes = run_laya_router(texts, lang_of)
+    else:  # Jev
+        preds, lat = run_jev(texts)
 
-    print("GLiFormer-large (English-only control) ...")
-    preds, lat = run_gliformer_control(texts, gold)
-    results["GLiFormer-large (control)"] = (preds, lat)
+    try:
+        with open(RESULTS_FILE, encoding="utf-8") as fh:
+            out = json.load(fh)
+    except OSError:
+        out = {"meta": {}, "by_language": {}, "by_tier": {}, "latency": {}}
+    out.setdefault("meta", {}).setdefault("notes", []).append(
+        f"{name} recorded {time.strftime('%Y-%m-%d %H:%M')}, "
+        f"{time.perf_counter() - t0:.0f}s, CPU")
 
-    print("Laya Router ...")
-    preds, lat, routes = run_laya_router(texts, gold)
-    results["Laya Router"] = (preds, lat)
+    by_lang = {}
+    for lang in LANGUAGES:
+        idx = [i for i, l in enumerate(lang_of) if l == lang]
+        by_lang[lang] = round(sum(1 for i in idx if preds[i] == gold[i])
+                              / len(idx), 4)
+    by_tier = {}
+    for tier in ("popular", "medium", "rare"):
+        langs = [l for l, t in TIERS.items() if t == tier]
+        by_tier[tier] = round(statistics.mean([by_lang[l] for l in langs]), 4)
 
-    print("Jev (1 batched request) ...")
-    preds, lat = run_jev(texts, gold)
-    results["Jev"] = (preds, lat)
-
-    out = {"meta": {"date": time.strftime("%Y-%m-%d %H:%M"),
-                    "device": "CPU",
-                    "texts_per_language": 6,
-                    "labels": list(SENTIMENT_LABELS),
-                    "verification": "blind back-translation by two "
-                    "independent model instances; table in PR for human "
-                    "review (Sinhala flagged for native-speaker owner)",
-                    "notes": [
-                        "GLiFormer-large is an English-only CONTROL - it is "
-                        "expected to fail on non-English text; included to "
-                        "show what monolingual collapse looks like.",
-                        "Laya Router picks its checkpoint per input by "
-                        "script detection (english vs multilingual).",
-                        "Jev ran all 54 texts as one batched request.",
-                    ]},
-          "by_language": {}, "by_tier": {}, "latency": {}}
-
-    for system, (preds, lat) in results.items():
-        out["latency"][system] = round(lat, 3)
-        by_lang = {}
-        for lang in LANGUAGES:
-            idx = [i for i, l in enumerate(lang_of) if l == lang]
-            correct = sum(1 for i in idx if preds[i] == gold[i])
-            by_lang[lang] = round(correct / len(idx), 4)
-        out["by_language"][system] = by_lang
-        by_tier = {}
-        for tier in ("popular", "medium", "rare"):
-            langs = [l for l, t in TIERS.items() if t == tier]
-            scores = [by_lang[l] for l in langs if l in by_lang]
-            by_tier[tier] = round(statistics.mean(scores), 4) if scores else None
-        out["by_tier"][system] = by_tier
-
-    if "Laya Router" in results:
-        out["laya_routing"] = {
-            lang: sorted({r for l, r in zip(lang_of, routes) if l == lang})
-            for lang in LANGUAGES}
-
-    with open("bench_multilingual_results.json", "w", encoding="utf-8") as fh:
+    out["by_language"][name] = by_lang
+    out["by_tier"][name] = by_tier
+    out["latency"][name] = round(lat, 3)
+    if laya_routes:
+        out["laya_routing"] = laya_routes
+    with open(RESULTS_FILE, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
 
-    print("\n=== Accuracy by language tier ===")
-    for system in results:
-        t = out["by_tier"][system]
-        print(f"  {system:<28} popular={t['popular']*100:5.1f}%  "
-              f"medium={t['medium']*100:5.1f}%  rare={t['rare']*100:5.1f}%")
-    print("\n=== Per-language ===")
+    overall = statistics.mean(by_lang.values())
+    print(f"  overall {overall * 100:.1f}%  "
+          f"(popular {by_tier['popular'] * 100:.0f}% / medium "
+          f"{by_tier['medium'] * 100:.0f}% / rare "
+          f"{by_tier['rare'] * 100:.0f}%)  "
+          f"{lat:.3f} s/text -> {RESULTS_FILE}")
     for lang in LANGUAGES:
-        row = "  ".join(f"{s.split(' (')[0]}:"
-                        f"{out['by_language'][s][lang]*100:4.0f}%"
-                        for s in results)
-        print(f"  {lang:<12} {row}")
-    print("\nWrote bench_multilingual_results.json")
+        print(f"    {lang:<12} {by_lang[lang] * 100:5.1f}%")
 
 
 if __name__ == "__main__":
