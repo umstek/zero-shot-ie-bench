@@ -11,7 +11,7 @@ with a web UI.
 | [GLiFormer](https://github.com/Knowledgator/GLiFormer) (`knowledgator/gliformer-*`) | local extractor encoder (layout-aware DeBERTa) | ~190M / 575.6M | Apache 2.0, free |
 | [GLiClass](https://github.com/knowledgator/gliclass) (`knowledgator/gliclass-*-v3.0`) | local zero-shot classifier (all labels, one pass) | 33M / 151M / 187M / 439M | Apache 2.0, free |
 | [Laya](https://huggingface.co/convaiinnovations/laya) (`laya`) | local typed-decision engine (choice/score/noul) | 421M (322M multilingual) | Apache 2.0, free |
-| [von-1.0](https://huggingface.co/wfzyx/von-1.0) (`von-sdk`) | local typed-decision engine (System One protocol) | 395M | Apache 2.0, free |
+| [von-1.0](https://huggingface.co/wfzyx/von-1.0) (`von-sdk`) | local typed-decision engine (System One protocol) | 396M | Apache 2.0, free |
 | [open-alternative-jev](https://github.com/ikermoel/open-alternative-jev) (`so1`) | local decision harness over any ChatML LLM (logprobs) | BYO LLM (tested Qwen2.5-0.5B) | MIT, free |
 | [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | paid API |
 
@@ -36,20 +36,18 @@ Measured on CPU, zero-shot, identical label sets and descriptions,
 out-of-the-box defaults. Full detail and per-item misses in
 [`bench_results.json`](bench_results.json); methodology notes in `bench.py`.
 
-Classification accuracy:
-
 Every case runs 5 times; accuracy below is from the first run, and the
 determinism section shows whether repeats changed anything (spoiler: no).
 
 Classification accuracy (mean latency ± std per text):
 
-| System | Sentiment (24) | Topic (12) | s/text |
+| System | Sentiment (24) | Topic (12) | s/text (sentiment+topic mean) |
 |---|---|---|---|
-| GLiNER2.5-small | 83.3% | 100% | 0.046±0.010 |
-| GLiNER2.5-base | 100% | 100% | 0.103±0.008 |
-| GLiNER2.5-multi | 100% | 100% | 0.121±0.014 |
+| GLiNER2.5-small | 83.3% | 100% | 0.053±0.019 |
+| GLiNER2.5-base | 100% | 100% | 0.105±0.007 |
+| GLiNER2.5-multi | 100% | 100% | 0.126±0.014 |
 | GLiFormer-base | 100% | 75.0% | 0.118±0.013 |
-| GLiFormer-large | 100% | 83.3% | 0.400±0.035 |
+| GLiFormer-large | 100% | 83.3% | 0.399±0.035 |
 | Laya (local) | 95.8% | 83.3% | 0.164±0.009 (batched ÷ n) |
 | Jev (cloud) | 100% | 100% | 0.052±0.002 (batched ÷ n) |
 
@@ -104,12 +102,11 @@ Honest caveats:
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
-varying difficulty) and the five extractors also answer 18 NER questions.
-No difficulty tiers and no separate per-tier scores: after all systems
-have run, each question's difficulty is **measured** as the fraction of
-answering systems that got it wrong (continuous 0–1). The web UI plots
-accuracy along that spectrum; per-question predictions live in
-`bench_spectrum_results.json`.
+varying difficulty); the five extractors also answer 18 NER questions.
+After all systems have run, each question's difficulty is **measured** as
+the fraction of answering systems that got it wrong (continuous 0–1); the
+web UI plots each system's accuracy along that spectrum, and per-question
+predictions live in `bench_spectrum_results.json`.
 
 Classification accuracy on the mixed pool (48 questions), NER scored as
 exact span-set match (18 questions):
@@ -130,43 +127,18 @@ exact span-set match (18 questions):
 | von-1.0 | 62.5% | 0.684 | n/a | |
 | so1 + Qwen2.5-0.5B | 43.8% | 0.237 | n/a | |
 
-Takeaways: the pool is deliberately mixed, so absolute numbers are lower
-than on the easy flat suite above — that is the point. **gliclass-large is
-the best local sarcasm reader found** (the hardest sentiment questions;
-second only to cloud Jev) and gliclass-edge is the speed king at 16
-ms/question. GLiNER2.5-multi is the most robust extractor. von-1.0's
-93.5% card benchmark is on its own adversarial decision suite; on general
-sentiment/topic it underperforms — its strength is its trained domain,
-not open-ended classification. The so1 technique works mechanically on
-any ChatML LLM, but a 0.5B base model is not enough brain for it — the
-harness is the contribution, swap in a bigger LLM. Note: gliclass PyPI
-metadata asks for transformers ≥5 but runs fine on the pinned 4.57.6; von
-genuinely needs transformers 5, hence the separate `.venv-von`.
-
-## Graded benchmark (easy / medium / hard)
-
-`bench_graded.py` — exam-style tiers across subjects: sentiment and topic
-(8 texts per tier each) plus NER (6 texts per tier). Easy = one strong
-signal; medium = mixed signals and cross-domain vocabulary; hard = sarcasm,
-negation flips, lowercase brands, and context-dependent ambiguity (Apple the
-company vs apple the fruit) — gold labels stay unambiguous to a careful
-human. Headline results (accuracy, single run; determinism established in
-the main benchmark):
-
-| System | Sentiment E/M/H | Topic E/M/H | NER F1 E/M/H |
-|---|---|---|---|
-| GLiNER2.5-small | 88 / 63 / 50% | 100 / 63 / 63% | 0.93 / 0.73 / 0.84 |
-| GLiNER2.5-base | 100 / 88 / 75% | 100 / 63 / 75% | 1.00 / 0.90 / 0.87 |
-| GLiNER2.5-multi | 100 / 75 / 63% | 100 / 63 / 75% | 1.00 / 0.90 / 0.94 |
-| GLiFormer-base | 100 / 75 / 38% | 75 / 50 / 63% | 1.00 / 0.85 / 0.91 |
-| GLiFormer-large | 100 / 100 / 38% | 100 / 63 / 75% | 1.00 / 0.87 / 0.91 |
-| Laya (local) | 100 / 63 / 63% | 88 / 75 / 25% | n/a |
-| Jev (cloud) | 100 / 88 / **100%** | 100 / 88 / **88%** | n/a |
-
-Takeaways: easy tier saturates for everyone; the hard tier is where the
-cloud LLM-style model pulls away (Jev reads sarcasm at 100% where both
-GLiFormers drop to 38%); lowercase brands are the hardest NER condition
-(medium tier); GLiNER2.5-multi is the most robust hard-tier NER (0.94).
+Takeaways: the pool is deliberately mixed, so absolute numbers run lower
+than on the flat suite above. **gliclass-large is the best local sarcasm
+reader found** (the hardest sentiment questions; second only to cloud Jev)
+and gliclass-edge is the speed king at 16 ms/question. GLiNER2.5-multi is
+the most robust extractor. von-1.0's 93.5% card benchmark is on its own
+adversarial decision suite; on general sentiment/topic it underperforms —
+its strength is its trained domain, not open-ended classification. The so1
+technique works mechanically on any ChatML LLM, but a 0.5B base model is
+not enough brain for it — the harness is the contribution, swap in a
+bigger LLM. Note: gliclass PyPI metadata asks for transformers ≥5 but runs
+fine on the pinned 4.57.6; von genuinely needs transformers 5, hence the
+separate `.venv-von`.
 
 ## Multilingual benchmark (9 languages, no English)
 
@@ -176,37 +148,51 @@ Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish, Ukrainian ·
 Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified by blind
 back-translation through an independent model instance (it caught 8 errors,
 including a sentiment-flipping Sinhala word) and the full table is in the
-PR for native-speaker review.
+PR for native-speaker review. All 13 systems answer the same 54 texts.
 
-| System | Popular | Medium | Rare |
-|---|---|---|---|
-| GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 66.7% |
-| GLiFormer-large (English-only control) | 94.4% | 61.1% | 33.3% |
-| Laya Router (mmBERT) | 88.9% | 94.4% | 44.4% |
-| Jev (cloud) | **100%** | **100%** | **100%** |
+| System | Popular | Medium | Rare | All |
+|---|---|---|---|---|
+| Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
+| GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
+| gliclass-large | 100% | 89% | 56% | 81% |
+| Laya Router (mmBERT) | 89% | 94% | 44% | 76% |
+| gliclass-base | 94% | 67% | 39% | 67% |
+| GLiFormer-large | 94% | 61% | 33% | 63% |
+| GLiNER2.5-base | 89% | 50% | 28% | 56% |
+| GLiFormer-base | 83% | 44% | 33% | 54% |
+| von-1.0 | 78% | 39% | 28% | 48% |
+| gliclass-modern-base | 44% | 33% | 39% | 39% |
+| so1 + Qwen2.5-0.5B | 39% | 39% | 33% | 37% |
+| GLiNER2.5-small | 56% | 22% | 28% | 35% |
+| gliclass-edge | 50% | 22% | 22% | 31% |
 
-Per-language highlights: GLiNER2.5-multi is perfect through Turkish and
-Ukrainian, then drops on Welsh (67%) and Sinhala (33%) while keeping
-Icelandic (100%). Jev is the only system that handles Sinhala at 100%. The
-English-only control degrades exactly as expected with distance from
-English.
+Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
+drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
+surprisingly well for an English-family release (100% on Chinese, and the
+best local Sinhala score at 67%); Jev is the only system at 100% on
+Sinhala. English-only encoders degrade with distance from English as
+expected. The web UI renders the full system × language matrix as a
+heatmap.
 
 ## Feature comparison
 
-| Capability | GLiNER 2.5 | GLiFormer | Laya | Jev |
-|---|---|---|---|---|
-| Zero-shot NER, custom labels | ✅ | ✅ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ choice | ✅ choice |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat | ✅ nested Pydantic | ❌ | ❌ |
-| Ordinal scoring rubrics | ❌ | ❌ | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ✅ noul | ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt | ❌ English evals | ✅ Router, 100+ langs | model-dependent |
-| Offline / data stays local | ✅ | ✅ | ✅ | ❌ |
-| Cost | free | free | free | paid per token |
-| Batch shape | per text | per text (batch_size) | all questions, one pass | all questions, one request |
+| Capability | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev |
+|---|---|---|---|---|---|---|---|
+| Ability group | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | partial (48%) | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Cost | free | free | free | free | free | free | $0.042/1M input |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
+| Batch shape | per text | per text (batch_size) | per text, all labels | all questions, one pass | per text | one packed prompt | all questions, one request |
 
 ## Setup
 
@@ -215,6 +201,10 @@ Python 3.10+ (tested on 3.13, Windows, CPU-only).
 ```bash
 uv venv .venv
 uv pip install --python .venv -r requirements.txt
+# so1 is not on PyPI (needed by the so1 tab + benchmarks):
+uv pip install --python .venv "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev"
+# von needs transformers 5.x, so it lives in its own venv:
+uv venv .venv-von && uv pip install --python .venv-von von-sdk
 # or: python -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt
 ```
 
@@ -241,23 +231,25 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
                                          # system → bench_spectrum_results.json
                                          # (13 systems; von runs the same
                                          # command under .venv-von/Scripts/python)
-.venv/Scripts/python bench_graded.py     # tiered suite →
-                                         # bench_graded_results.json
-.venv/Scripts/python bench_multilingual.py  # 9 languages, no English →
+.venv/Scripts/python bench_multilingual.py --system <name>
+                                         # 9 languages, all 13 systems →
                                          # bench_multilingual_results.json
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
 
 The web UI has a live tab per family — GLiNER 2.5, GLiFormer, GLiClass
-(all four v3.0 sizes), Laya, von, so1 and Jev — plus **Classification
-benchmark** and **Extraction benchmark** tabs (mixed-pool scores, latency
-and accuracy-along-the-difficulty-spectrum charts from
-`bench_spectrum_results.json`) and a **Compare** tab (feature matrix).
+(all four v3.0 sizes), Laya (local), von, so1 and Jev (cloud) — plus three
+benchmark tabs (**Classification benchmark**, **Extraction benchmark**,
+**Multilingual benchmark**; tables and charts from the
+`bench_*_results.json` files) and a **Compare** tab (feature matrix).
+Benchmark charts are altair-based: sorted bars, a speed-accuracy scatter,
+accuracy-vs-difficulty lines and a system × language heatmap.
 von runs in its own venv (`.venv-von`) through `von_demo.py`.
 
 ## Family maps
 
-Complete version coverage per family (all sizes that exist are benchmarked):
+Version coverage per family (every listed size is benchmarked, except the
+extra Laya checkpoints noted below):
 
 | Checkpoint | Params | Notes |
 |---|---|---|
@@ -280,9 +272,8 @@ Complete version coverage per family (all sizes that exist are benchmarked):
 | `jev_client.py` | dependency-free Python client for the TypeSafe System One API |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
-| `bench_graded.py` | tiered suite; also the question pool `bench_spectrum.py` draws from |
-| `bench_multilingual.py` | 9-language zero-shot suite (Sinhala/Icelandic/Welsh in the rare tier) |
-| `bench_newcomers.py` | legacy: gliclass/von/so1 on the tiered suite (superseded by `bench_spectrum.py`) |
+| `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 13 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `bench_*_results.json` | latest results, rendered by the web UI |
 
 ## License
