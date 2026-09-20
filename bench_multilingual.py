@@ -223,17 +223,17 @@ def run_laya_router(texts, lang_of):
         "What is the overall sentiment of the text in the state: positive, "
         "negative, or neutral?",
         {label: None for label in SENTIMENT_LABELS})
-    preds, lat, routes = [], [], []
-    for text in texts:
+    preds, lat = [], []
+    routed: dict[str, dict[str, int]] = {}
+    for text, lang in zip(texts, lang_of):
         t0 = time.perf_counter()
         out = router.predict({"text": text}, {"q": question})
         lat.append(time.perf_counter() - t0)
         preds.append(out["answers"]["q"].get("choice"))
-        routes.append(out.get("routing", {}).get("model"))
-    by_lang_routes = {
-        lang: sorted({r for l, r in zip(lang_of, routes) if l == lang})
-        for lang in LANGUAGES}
-    return preds, statistics.mean(lat), by_lang_routes
+        model = out.get("routing", {}).get("model") or "unknown"
+        counts = routed.setdefault(lang, {})
+        counts[model] = counts.get(model, 0) + 1
+    return preds, statistics.mean(lat), routed
 
 
 def run_jev(texts):

@@ -340,12 +340,17 @@ def build_multilingual_tab():
     if "laya_routing" in ml:
         routes = ml["laya_routing"]
         gr.Markdown("#### Laya Router checkpoint selection\nLaya's Router "
-                    "detects the script per input; routed checkpoints: "
-                    + " · ".join(f"**{lang}** → "
-                                 "/".join(r or ["?"])
-                                 for lang, r in routes.items()
-                                 if any(k in "".join(r or [])
-                                        for k in ("multi", "english"))))
+                    "detects the script of each input and routes it to an "
+                    "English or multilingual checkpoint before answering — "
+                    "per sentence, so a language can use both.")
+        rows = [[lang,
+                 ", ".join(f"{ckpt} ×{n}" if n > 1 else ckpt
+                           for ckpt, n in sorted(counts.items(),
+                                                 key=lambda kv: -kv[1]))]
+                for lang, counts in routes.items()]
+        gr.DataFrame(rows, headers=["Language", "Routed checkpoints"],
+                     datatype=["str", "str"],
+                     label="Checkpoints used per language (6 texts each)")
 
 
 # --------------------------------------------------------------- laya tab

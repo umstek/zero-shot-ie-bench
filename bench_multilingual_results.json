@@ -12,7 +12,8 @@
     "notes": [
       "All 13 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
-      "Jev ran all 54 texts as one batched request."
+      "Jev ran all 54 texts as one batched request.",
+      "Laya Router recorded 2026-09-20 15:30, 249s, CPU"
     ]
   },
   "by_language": {
@@ -243,35 +244,35 @@
     "von": 0.725
   },
   "laya_routing": {
-    "Spanish": [
-      "english",
-      "multilingual"
-    ],
-    "French": [
-      "english",
-      "multilingual"
-    ],
-    "Chinese": [
-      "multilingual"
-    ],
-    "Vietnamese": [
-      "multilingual"
-    ],
-    "Turkish": [
-      "multilingual"
-    ],
-    "Ukrainian": [
-      "multilingual"
-    ],
-    "Sinhala": [
-      "multilingual"
-    ],
-    "Icelandic": [
-      "english",
-      "multilingual"
-    ],
-    "Welsh": [
-      "english"
-    ]
+    "Spanish": {
+      "multilingual": 4,
+      "english": 2
+    },
+    "French": {
+      "multilingual": 5,
+      "english": 1
+    },
+    "Chinese": {
+      "multilingual": 6
+    },
+    "Vietnamese": {
+      "multilingual": 6
+    },
+    "Turkish": {
+      "multilingual": 6
+    },
+    "Ukrainian": {
+      "multilingual": 6
+    },
+    "Sinhala": {
+      "multilingual": 6
+    },
+    "Icelandic": {
+      "multilingual": 5,
+      "english": 1
+    },
+    "Welsh": {
+      "english": 6
+    }
   }
 }
