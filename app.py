@@ -259,7 +259,7 @@ def build_laya_tab():
                 payload = agent.predict({"task": task_word}, questions)
             except Exception as exc:
                 return {"error": str(exc)}
-            return {f'"{text[:40]}…"': {
+            return {f"{text[:40]}…": {
                 "label": payload["answers"][f"t{i}"].get("choice"),
                 "probabilities": payload["answers"][f"t{i}"].get(
                     "probabilities"),
@@ -483,7 +483,7 @@ def build_jev_tab():
                      for i, text in enumerate(texts)})
             except Exception as exc:
                 return {"error": str(exc)}
-            answers = {f'"{text[:40]}…"': {
+            answers = {f"{text[:40]}…": {
                 "label": payload["answers"][f"t{i}"].get("choice"),
                 "confidence": payload["answers"][f"t{i}"].get("confidence"),
                 "probabilities": payload["answers"][f"t{i}"].get(
@@ -496,8 +496,197 @@ def build_jev_tab():
         jev_button.click(run_jev, [jev_text, jev_labels, jev_task], jev_table)
 
 
+# ------------------------------------------------------------ gliclass tab
+GLICLASS_MODELS = {
+    "edge — 149M, fastest": "knowledgator/gliclass-edge-v3.0",
+    "modern-base — DeBERTa-v3": "knowledgator/gliclass-modern-base-v3.0",
+    "base": "knowledgator/gliclass-base-v3.0",
+    "large — strongest here": "knowledgator/gliclass-large-v3.0",
+}
+_GLICLASS_PIPES: dict[str, object] = {}
+
+
+def get_gliclass_pipe(model_id: str):
+    if model_id not in _GLICLASS_PIPES:
+        from transformers import AutoTokenizer
+
+        from gliclass import GLiClassModel, ZeroShotClassificationPipeline
+
+        model = GLiClassModel.from_pretrained(model_id)
+        _GLICLASS_PIPES[model_id] = ZeroShotClassificationPipeline(
+            model, AutoTokenizer.from_pretrained(model_id),
+            classification_type="multi-label", device="cpu")
+    return _GLICLASS_PIPES[model_id]
+
+
+def build_gliclass_tab():
+    import gradio as gr
+
+    with gr.Tab("GLiClass"):
+        gr.Markdown("### GLiClass v3.0 — purpose-built zero-shot "
+                    "classifier\n"
+                    "Scores every label against the text in a single "
+                    "forward pass (no NLI entailment pairs). First click "
+                    "per checkpoint loads it (~10-30 s).")
+        gc_model = gr.Dropdown(choices=list(GLICLASS_MODELS.items()),
+                               value="knowledgator/gliclass-edge-v3.0",
+                               label="Checkpoint")
+        gc_text = gr.Textbox(
+            label="Text",
+            value="Oh great, my package finally arrived — only two weeks "
+                  "late and crushed.", lines=3)
+        gc_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        gc_button = gr.Button("Classify", variant="primary")
+        gc_out = gr.JSON(label="Scores (all labels, one pass)")
+
+        def run_gliclass(model_id, text, labels_csv):
+            labels = parse_labels(labels_csv)
+            if not text or not labels:
+                return {"error": "provide text and at least one label"}
+            try:
+                pipe = get_gliclass_pipe(model_id)
+                out = pipe(text, labels, threshold=0.0)[0]
+            except Exception as exc:
+                return {"error": str(exc)}
+            ranked = sorted(out, key=lambda item: -item["score"])
+            return {"top": ranked[0]["label"],
+                    "scores": {row["label"]: round(row["score"], 4)
+                               for row in ranked}}
+
+        gc_button.click(run_gliclass, [gc_model, gc_text, gc_labels], gc_out)
+
+
+# ----------------------------------------------------------------- von tab
+VON_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                      ".venv-von", "Scripts", "python.exe")
+
+
+def build_von_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("von"):
+        gr.Markdown("### von-1.0 — local decision engine on the System One "
+                    "protocol\n"
+                    "149M ModernBERT, Apache 2.0. It needs transformers 5, "
+                    "so the app runs it in a separate venv (`.venv-von`): "
+                    "each click spawns `von_demo.py`, which loads the model "
+                    "once and answers every line in that single process.")
+        von_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        von_labels = gr.Textbox(
+            label="Choices (comma-separated; optionally label: description)",
+            value="positive, negative, neutral")
+        von_instr = gr.Textbox(
+            label="Instructions",
+            value="What is the overall sentiment of this text?")
+        von_button = gr.Button("Decide", variant="primary")
+        von_out = gr.JSON(label="Per line: choice, probabilities, "
+                                "confidence")
+
+        def run_von(texts_block, labels_csv, instructions):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            choices: dict[str, str | None] = {}
+            for chunk in parse_labels(labels_csv):
+                label, _, desc = chunk.partition(":")
+                choices[label.strip()] = desc.strip() or None
+            if not texts or not choices:
+                return {"error": "provide text lines and choices"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "von_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper],
+                    input=json.dumps({"texts": texts,
+                                      "instructions": instructions,
+                                      "choices": choices}),
+                    capture_output=True, text=True, timeout=180)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{text[:40]}…": row
+                    for text, row in zip(texts, payload["results"])}
+
+        von_button.click(run_von, [von_text, von_labels, von_instr], von_out)
+
+
+# ----------------------------------------------------------------- so1 tab
+_SO1_DECIDER = None
+
+
+def get_so1_decider():
+    global _SO1_DECIDER
+    if _SO1_DECIDER is None:
+        from so1 import Decider
+
+        _SO1_DECIDER = Decider.from_pretrained("Qwen/Qwen2.5-0.5B",
+                                               backend="hf")
+    return _SO1_DECIDER
+
+
+def build_so1_tab():
+    import gradio as gr
+
+    with gr.Tab("so1"):
+        gr.Markdown("### so1 — open-alternative-jev\n"
+                    "Wraps any ChatML LLM (here Qwen2.5-0.5B on CPU) into "
+                    "a choice engine by reading each label's logprob from "
+                    "one packed prompt. First click loads the LLM (~20 s). "
+                    "Swap in a bigger LLM for better judgments — the "
+                    "harness stays the same.")
+        so_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        so_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        so_task = gr.Textbox(label="Question name (asked of the LLM)",
+                             value="sentiment")
+        so_button = gr.Button("Decide", variant="primary")
+        so_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_so1(texts_block, labels_csv, question):
+            from so1 import Choice
+
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            try:
+                decider = get_so1_decider()
+                rows = []
+                for text in texts:
+                    row = decider.decide(
+                        state=text,
+                        questions=[Choice(question, labels)],
+                        mode="separate")[0]
+                    rows.append({
+                        "choice": row.choice,
+                        "probabilities": {label: round(prob, 4) for label, prob
+                                          in zip(labels,
+                                                 row.probabilities or [])},
+                        "confidence": round(row.confidence, 4),
+                    })
+            except Exception as exc:
+                return {"error": str(exc)}
+            return {f"{text[:40]}…": row
+                    for text, row in zip(texts, rows)}
+
+        so_button.click(run_so1, [so_text, so_labels, so_task], so_out)
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="3-system demo + benchmark")
+    parser = argparse.ArgumentParser(description="7-family demo + benchmark")
     parser.add_argument("--port", type=int, default=7860)
     args = parser.parse_args()
 
@@ -515,13 +704,19 @@ def main() -> None:
                                           load_tokenizer=True).to("cpu").eval()
     print("  GLiFormer ready")
 
-    with gr.Blocks(title="GLiNER 2.5 vs GLiFormer vs Jev") as app:
+    with gr.Blocks(title="Zero-shot IE & classification bench") as app:
         gr.Markdown("# Zero-shot information extraction & classification\n"
-                    "Two local encoders vs one cloud question-answering "
-                    "classifier. Benchmark tab has measured numbers.")
+                    "Every family in the comparison has a live tab: three "
+                    "local extractors/classifiers (GLiNER 2.5, GLiFormer, "
+                    "GLiClass), three local decision engines (Laya, von, "
+                    "so1) and the cloud Jev. Benchmark tabs hold the "
+                    "measured numbers.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
+        build_gliclass_tab()
         build_laya_tab()
+        build_von_tab()
+        build_so1_tab()
         build_jev_tab()
         with gr.Tab("Classification benchmark"):
             build_classification_tab()
