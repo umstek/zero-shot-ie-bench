@@ -134,7 +134,7 @@ def main() -> None:
 
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:
-            results = json.load(fh)
+            results = json.load(fh).get("systems", {})
     except OSError:
         results = {}
 
