@@ -6,7 +6,7 @@
     },
     "difficulty": "per question: fraction of answering systems that answered it wrong (continuous 0-1, computed by the app from stored per-question results)",
     "notes": [
-      "One mixed pool per ability - no difficulty buckets.",
+      "One mixed pool per ability (48 classification, 18 NER).",
       "von runs in .venv-von; so1 uses Qwen2.5-0.5B."
     ]
   },

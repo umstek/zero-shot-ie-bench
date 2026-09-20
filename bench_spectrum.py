@@ -1,10 +1,9 @@
-"""Spectrum benchmark: one mixed pool of questions, difficulty measured.
+"""Spectrum benchmark: one mixed pool of questions per ability.
 
-No easy/medium/hard buckets. All classification questions (sentiment +
-topic from bench_graded's pool) form ONE pool of 48; NER questions form one
-pool of 18. Every system answers every question; a question's difficulty is
-computed afterwards as the fraction of answering systems that got it wrong
-(continuous 0.0-1.0 spectrum).
+All classification questions (sentiment + topic) form one pool of 48; NER
+questions form one pool of 18. Every system answers every question; a
+question's difficulty is computed afterwards as the fraction of systems
+that got it wrong (continuous 0.0-1.0).
 
 Per-question predictions are stored (not just aggregates) so the app can
 plot accuracy along the difficulty spectrum.
@@ -230,7 +229,7 @@ def main() -> None:
         "difficulty": "per question: fraction of answering systems that "
                       "answered it wrong (continuous 0-1, computed by the "
                       "app from stored per-question results)",
-        "notes": ["One mixed pool per ability - no difficulty buckets.",
+        "notes": ["One mixed pool per ability (48 classification, 18 NER).",
                   "von runs in .venv-von; so1 uses Qwen2.5-0.5B."]})
     data["systems"] = {k: v for k, v in data.get("systems", {}).items()
                        if k != name}
