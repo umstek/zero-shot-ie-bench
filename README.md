@@ -92,6 +92,54 @@ Honest caveats:
   the combined multi-task call where large succeeded; base embeddings are
   768-d vs large 1024-d.
 
+## Graded benchmark (easy / medium / hard)
+
+`bench_graded.py` — exam-style tiers across subjects: sentiment and topic
+(8 texts per tier each) plus NER (6 texts per tier). Easy = one strong
+signal; medium = mixed signals and cross-domain vocabulary; hard = sarcasm,
+negation flips, lowercase brands, and context-dependent ambiguity (Apple the
+company vs apple the fruit) — gold labels stay unambiguous to a careful
+human. Headline results (accuracy, single run; determinism established in
+the main benchmark):
+
+| System | Sentiment E/M/H | Topic E/M/H | NER F1 E/M/H |
+|---|---|---|---|
+| GLiNER2.5-small | 88 / 63 / 50% | 100 / 63 / 63% | 0.93 / 0.73 / 0.84 |
+| GLiNER2.5-base | 100 / 88 / 75% | 100 / 63 / 75% | 1.00 / 0.90 / 0.87 |
+| GLiNER2.5-multi | 100 / 75 / 63% | 100 / 63 / 75% | 1.00 / 0.90 / 0.94 |
+| GLiFormer-base | 100 / 75 / 38% | 75 / 50 / 63% | 1.00 / 0.85 / 0.91 |
+| GLiFormer-large | 100 / 100 / 38% | 100 / 63 / 75% | 1.00 / 0.87 / 0.91 |
+| Laya (local) | 100 / 63 / 63% | 88 / 75 / 25% | n/a |
+| Jev (cloud) | 100 / 88 / **100%** | 100 / 88 / **88%** | n/a |
+
+Takeaways: easy tier saturates for everyone; the hard tier is where the
+cloud LLM-style model pulls away (Jev reads sarcasm at 100% where both
+GLiFormers drop to 38%); lowercase brands are the hardest NER condition
+(medium tier); GLiNER2.5-multi is the most robust hard-tier NER (0.94).
+
+## Multilingual benchmark (9 languages, no English)
+
+`bench_multilingual.py` — the same six sentence meanings per language
+(2 positive / 2 negative / 2 neutral sentiment), labels in English.
+Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish, Ukrainian ·
+Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified by blind
+back-translation through an independent model instance (it caught 8 errors,
+including a sentiment-flipping Sinhala word) and the full table is in the
+PR for native-speaker review.
+
+| System | Popular | Medium | Rare |
+|---|---|---|---|
+| GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 66.7% |
+| GLiFormer-large (English-only control) | 94.4% | 61.1% | 33.3% |
+| Laya Router (mmBERT) | 88.9% | 94.4% | 44.4% |
+| Jev (cloud) | **100%** | **100%** | **100%** |
+
+Per-language highlights: GLiNER2.5-multi is perfect through Turkish and
+Ukrainian, then drops on Welsh (67%) and Sinhala (33%) while keeping
+Icelandic (100%). Jev is the only system that handles Sinhala at 100%. The
+English-only control degrades exactly as expected with distance from
+English.
+
 ## Feature comparison
 
 | Capability | GLiNER 2.5 | GLiFormer | Laya | Jev |
@@ -138,6 +186,10 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
 
 .venv/Scripts/python bench.py            # full benchmark, 5 runs per case
                                          # (--repeats N) → bench_results.json
+.venv/Scripts/python bench_graded.py     # easy/medium/hard tiers →
+                                         # bench_graded_results.json
+.venv/Scripts/python bench_multilingual.py  # 9 languages, no English →
+                                         # bench_multilingual_results.json
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
 
@@ -166,6 +218,8 @@ Complete version coverage per family (all sizes that exist are benchmarked):
 | `demo.py` / `demo_gliformer.py` / `demo_laya.py` / `demo_jev.py` | scripted tours, one per system, shared sample texts |
 | `jev_client.py` | dependency-free Python client for the TypeSafe System One API |
 | `bench.py` | benchmark driver (classification × 7 systems, NER × 5, determinism repeats) |
+| `bench_graded.py` | tiered suite (easy/medium/hard) across subjects |
+| `bench_multilingual.py` | 9-language zero-shot suite (Sinhala/Icelandic/Welsh in the rare tier) |
 | `bench_results.json` | latest results, rendered by the web UI |
 | `app.py` | Gradio web UI (live demos + benchmark + compare) |
 

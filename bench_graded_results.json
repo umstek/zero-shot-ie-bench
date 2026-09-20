@@ -1,0 +1,284 @@
+{
+  "meta": {
+    "date": "2026-09-20 11:14",
+    "device": "CPU (no CUDA on this machine)",
+    "tiers": {
+      "easy": "one strong signal",
+      "medium": "mixed signals, cross-domain vocabulary",
+      "hard": "sarcasm, negation flips, lowercase brands, context-dependent ambiguity"
+    },
+    "notes": [
+      "Single run per case; determinism established in bench.py (100% stable over 5 repeats).",
+      "Hard-tier gold labels are unambiguous to a careful human but adversarial for lexicon-style models."
+    ]
+  },
+  "classification": {
+    "sentiment": {
+      "easy": {
+        "GLiNER2.5-small": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.051
+        },
+        "GLiNER2.5-base": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.099
+        },
+        "GLiNER2.5-multi": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.115
+        },
+        "GLiFormer-base": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.148
+        },
+        "GLiFormer-large": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.383
+        },
+        "Laya (local)": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.174
+        },
+        "Jev": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.126
+        }
+      },
+      "medium": {
+        "GLiNER2.5-small": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.048
+        },
+        "GLiNER2.5-base": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.107
+        },
+        "GLiNER2.5-multi": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.125
+        },
+        "GLiFormer-base": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.131
+        },
+        "GLiFormer-large": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.448
+        },
+        "Laya (local)": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.183
+        },
+        "Jev": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.108
+        }
+      },
+      "hard": {
+        "GLiNER2.5-small": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.044
+        },
+        "GLiNER2.5-base": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.12
+        },
+        "GLiNER2.5-multi": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.116
+        },
+        "GLiFormer-base": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.143
+        },
+        "GLiFormer-large": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.564
+        },
+        "Laya (local)": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.189
+        },
+        "Jev": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.1
+        }
+      }
+    },
+    "topic": {
+      "easy": {
+        "GLiNER2.5-small": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.04
+        },
+        "GLiNER2.5-base": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.099
+        },
+        "GLiNER2.5-multi": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.108
+        },
+        "GLiFormer-base": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.126
+        },
+        "GLiFormer-large": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.432
+        },
+        "Laya (local)": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.187
+        },
+        "Jev": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.113
+        }
+      },
+      "medium": {
+        "GLiNER2.5-small": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.046
+        },
+        "GLiNER2.5-base": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.112
+        },
+        "GLiNER2.5-multi": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.138
+        },
+        "GLiFormer-base": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.15
+        },
+        "GLiFormer-large": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.441
+        },
+        "Laya (local)": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.193
+        },
+        "Jev": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.112
+        }
+      },
+      "hard": {
+        "GLiNER2.5-small": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.042
+        },
+        "GLiNER2.5-base": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.113
+        },
+        "GLiNER2.5-multi": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.114
+        },
+        "GLiFormer-base": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.145
+        },
+        "GLiFormer-large": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.534
+        },
+        "Laya (local)": {
+          "accuracy": 0.25,
+          "mean_latency_s": 0.181
+        },
+        "Jev": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.1
+        }
+      }
+    }
+  },
+  "ner": {
+    "easy": {
+      "GLiNER2.5-small": {
+        "precision": 0.8667,
+        "recall": 1.0,
+        "f1": 0.9286
+      },
+      "GLiNER2.5-base": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "GLiNER2.5-multi": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "GLiFormer-base": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "GLiFormer-large": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "medium": {
+      "GLiNER2.5-small": {
+        "precision": 0.6667,
+        "recall": 0.8,
+        "f1": 0.7273
+      },
+      "GLiNER2.5-base": {
+        "precision": 0.8636,
+        "recall": 0.95,
+        "f1": 0.9048
+      },
+      "GLiNER2.5-multi": {
+        "precision": 0.9,
+        "recall": 0.9,
+        "f1": 0.9
+      },
+      "GLiFormer-base": {
+        "precision": 0.85,
+        "recall": 0.85,
+        "f1": 0.85
+      },
+      "GLiFormer-large": {
+        "precision": 0.8947,
+        "recall": 0.85,
+        "f1": 0.8718
+      }
+    },
+    "hard": {
+      "GLiNER2.5-small": {
+        "precision": 0.75,
+        "recall": 0.96,
+        "f1": 0.8421
+      },
+      "GLiNER2.5-base": {
+        "precision": 0.8,
+        "recall": 0.96,
+        "f1": 0.8727
+      },
+      "GLiNER2.5-multi": {
+        "precision": 0.8929,
+        "recall": 1.0,
+        "f1": 0.9434
+      },
+      "GLiFormer-base": {
+        "precision": 0.8571,
+        "recall": 0.96,
+        "f1": 0.9057
+      },
+      "GLiFormer-large": {
+        "precision": 0.8571,
+        "recall": 0.96,
+        "f1": 0.9057
+      }
+    }
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "date": "2026-09-20 11:24",
+    "device": "CPU",
+    "texts_per_language": 6,
+    "labels": [
+      "positive",
+      "negative",
+      "neutral"
+    ],
+    "verification": "blind back-translation by two independent model instances; table in PR for human review (Sinhala flagged for native-speaker owner)",
+    "notes": [
+      "GLiFormer-large is an English-only CONTROL - it is expected to fail on non-English text; included to show what monolingual collapse looks like.",
+      "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
+      "Jev ran all 54 texts as one batched request."
+    ]
+  },
+  "by_language": {
+    "GLiNER2.5-multi": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 1.0,
+      "Welsh": 0.6667
+    },
+    "GLiFormer-large (control)": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.5,
+      "Turkish": 0.5,
+      "Ukrainian": 0.8333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "Laya Router": {
+      "Spanish": 0.8333,
+      "French": 0.8333,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.5
+    },
+    "Jev": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    }
+  },
+  "by_tier": {
+    "GLiNER2.5-multi": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.6667
+    },
+    "GLiFormer-large (control)": {
+      "popular": 0.9444,
+      "medium": 0.6111,
+      "rare": 0.3333
+    },
+    "Laya Router": {
+      "popular": 0.8889,
+      "medium": 0.9444,
+      "rare": 0.4444
+    },
+    "Jev": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    }
+  },
+  "latency": {
+    "GLiNER2.5-multi": 0.153,
+    "GLiFormer-large (control)": 0.46,
+    "Laya Router": 4.583,
+    "Jev": 0.02
+  },
+  "laya_routing": {
+    "Spanish": [
+      "english",
+      "multilingual"
+    ],
+    "French": [
+      "english",
+      "multilingual"
+    ],
+    "Chinese": [
+      "multilingual"
+    ],
+    "Vietnamese": [
+      "multilingual"
+    ],
+    "Turkish": [
+      "multilingual"
+    ],
+    "Ukrainian": [
+      "multilingual"
+    ],
+    "Sinhala": [
+      "multilingual"
+    ],
+    "Icelandic": [
+      "english",
+      "multilingual"
+    ],
+    "Welsh": [
+      "english"
+    ]
+  }
+}

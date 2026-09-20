@@ -125,6 +125,79 @@ def build_benchmark_tab():
         f"- {note}" for note in bench["meta"]["notes"]))
 
 
+# ----------------------------------------------------------- v2 (graded/ml)
+def build_v2_tab():
+    import gradio as gr
+
+    graded_path = os.path.join(os.path.dirname(BENCH_FILE),
+                               "bench_graded_results.json")
+    ml_path = os.path.join(os.path.dirname(BENCH_FILE),
+                           "bench_multilingual_results.json")
+    have_graded, have_ml = True, True
+    try:
+        with open(graded_path, encoding="utf-8") as fh:
+            graded = json.load(fh)
+    except OSError:
+        have_graded = False
+    try:
+        with open(ml_path, encoding="utf-8") as fh:
+            ml = json.load(fh)
+    except OSError:
+        have_ml = False
+    if not (have_graded or have_ml):
+        gr.Markdown("### Run `bench_graded.py` and/or "
+                    "`bench_multilingual.py` first.")
+        return
+
+    if have_graded:
+        gr.Markdown("## Graded benchmark — easy / medium / hard tiers\n"
+                    "Sentiment & topic accuracy and NER F1 per tier. "
+                    "Easy = one strong signal; medium = mixed signals; "
+                    "hard = sarcasm, negation flips, lowercase brands, "
+                    "context-dependent ambiguity.")
+        for task in ("sentiment", "topic"):
+            rows = []
+            for tier in ("easy", "medium", "hard"):
+                for system, m in graded["classification"][task][tier].items():
+                    rows.append({"Tier": tier, "System": system,
+                                 "Accuracy %": round(m["accuracy"] * 100, 1)})
+            gr.DataFrame(pd.DataFrame(rows).pivot(
+                index="System", columns="Tier", values="Accuracy %")
+                .reset_index().rename_axis(None, axis=1),
+                label=f"{task.capitalize()} accuracy (%) by tier")
+        rows = []
+        for tier, systems in graded["ner"].items():
+            for system, m in systems.items():
+                rows.append({"Tier": tier, "System": system,
+                             "Strict F1": round(m["f1"], 2)})
+        gr.DataFrame(pd.DataFrame(rows).pivot(
+            index="System", columns="Tier", values="Strict F1")
+            .reset_index().rename_axis(None, axis=1),
+            label="NER strict F1 by tier (Laya/Jev: no spans)")
+
+    if have_ml:
+        gr.Markdown("## Multilingual benchmark — 9 languages, no English\n"
+                    "Same six sentence meanings per language "
+                    "(2 pos / 2 neg / 2 neutral), English labels. "
+                    "GLiFormer-large is an English-only **control** "
+                    "(expected to fail). Sentences verified by blind "
+                    "back-translation; Sinhala pending native-speaker "
+                    "review in the PR.")
+        langs = list(next(iter(ml["by_language"].values())).keys())
+        rows = [{"Language": lang,
+                 **{sys: f"{accs[lang] * 100:.0f}%"
+                    for sys, accs in ml["by_language"].items()}}
+                for lang in langs]
+        gr.DataFrame(pd.DataFrame(rows), label="Accuracy by language")
+        rows = [{"System": sys,
+                 **{tier: f"{v * 100:.1f}%" for tier, v in tiers.items()}}
+                for sys, tiers in ml["by_tier"].items()]
+        gr.DataFrame(pd.DataFrame(rows),
+                     label="Accuracy by popularity tier "
+                           "(popular: es/fr/zh · medium: vi/tr/uk · "
+                           "rare: si/is/cy)")
+
+
 # -------------------------------------------------------------- compare tab
 def build_laya_tab():
     import gradio as gr
@@ -437,6 +510,8 @@ def main() -> None:
         build_jev_tab()
         with gr.Tab("Benchmark"):
             build_benchmark_tab()
+        with gr.Tab("Benchmarks v2"):
+            build_v2_tab()
         with gr.Tab("Compare"):
             build_compare_tab()
 
