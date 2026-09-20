@@ -171,7 +171,7 @@ def build_classification_tab():
     try:
         with open(path, encoding="utf-8") as fh:
             bench = json.load(fh)
-    except OSError:
+    except (OSError, json.JSONDecodeError):
         gr.Markdown("### Run `bench_spectrum.py --system <name>` first.")
         return
     systems = bench["systems"]
@@ -239,7 +239,7 @@ def build_extraction_tab():
     try:
         with open(path, encoding="utf-8") as fh:
             bench = json.load(fh)
-    except OSError:
+    except (OSError, json.JSONDecodeError):
         gr.Markdown("### Run `bench_spectrum.py --system <name>` first.")
         return
     extractors = {s: v for s, v in bench["systems"].items()
@@ -298,7 +298,7 @@ def build_multilingual_tab():
     try:
         with open(path, encoding="utf-8") as fh:
             ml = json.load(fh)
-    except OSError:
+    except (OSError, json.JSONDecodeError):
         gr.Markdown("### Run `bench_multilingual.py --system <name>` first.")
         return
     by_language = ml["by_language"]
@@ -399,7 +399,7 @@ def build_laya_tab():
                 payload = agent.predict({"task": task_word}, questions)
             except Exception as exc:
                 return {"error": str(exc)}
-            return {f"{text[:40]}…": {
+            return {f"{i + 1}. {text[:40]}…": {
                 "label": payload["answers"][f"t{i}"].get("choice"),
                 "probabilities": payload["answers"][f"t{i}"].get(
                     "probabilities"),
@@ -623,7 +623,7 @@ def build_jev_tab():
                      for i, text in enumerate(texts)})
             except Exception as exc:
                 return {"error": str(exc)}
-            answers = {f"{text[:40]}…": {
+            answers = {f"{i + 1}. {text[:40]}…": {
                 "label": payload["answers"][f"t{i}"].get("choice"),
                 "confidence": payload["answers"][f"t{i}"].get("confidence"),
                 "probabilities": payload["answers"][f"t{i}"].get(
@@ -751,8 +751,9 @@ def build_von_tab():
                 return {"error": str(exc)}
             if "error" in payload:
                 return payload
-            return {f"{text[:40]}…": row
-                    for text, row in zip(texts, payload["results"])}
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
 
         von_button.click(run_von, [von_text, von_labels, von_instr], von_out)
 
@@ -819,8 +820,8 @@ def build_so1_tab():
                     })
             except Exception as exc:
                 return {"error": str(exc)}
-            return {f"{text[:40]}…": row
-                    for text, row in zip(texts, rows)}
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row) in enumerate(zip(texts, rows))}
 
         so_button.click(run_so1, [so_text, so_labels, so_task], so_out)
 
