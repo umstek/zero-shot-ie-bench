@@ -160,10 +160,10 @@ PR for native-speaker review. All 13 systems answer the same 54 texts.
 | GLiFormer-large | 94% | 61% | 33% | 63% |
 | GLiNER2.5-base | 89% | 50% | 28% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
-| von-1.0 | 78% | 39% | 28% | 48% |
 | gliclass-modern-base | 44% | 33% | 39% | 39% |
 | so1 + Qwen2.5-0.5B | 39% | 39% | 33% | 37% |
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
+| von-1.0 | 33% | 33% | 33% | 33% |
 | gliclass-edge | 50% | 22% | 22% | 31% |
 
 Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
@@ -171,7 +171,10 @@ drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
 surprisingly well for an English-family release (100% on Chinese, and the
 best local Sinhala score at 67%); Jev is the only system at 100% on
 Sinhala. English-only encoders degrade with distance from English as
-expected. The web UI renders the full system × language matrix as a
+expected. von-1.0 sits at chance here and is unstable run-to-run: three
+runs on identical inputs scored 33-48%, and some runs collapse to a
+single label (33% = the neutral share); the row above is one such run.
+The web UI renders the full system × language matrix as a
 heatmap.
 
 ## Feature comparison
