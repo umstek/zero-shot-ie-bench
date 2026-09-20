@@ -66,6 +66,8 @@ def build_benchmark_tab():
                     "first, then reload this page.")
         return
 
+    repeats = bench["meta"].get("repeats_per_case", "?")
+
     rows = []
     for task, systems in bench["classification"].items():
         for system, m in systems.items():
@@ -73,12 +75,17 @@ def build_benchmark_tab():
                 "Task": task,
                 "System": system,
                 "Accuracy %": round(m["accuracy"] * 100, 1),
+                "Stability %": round(m.get("stability", 0) * 100, 0),
                 "Mean s/text": m["mean_latency_s"],
+                "σ s": m.get("latency_std_s", 0),
             })
     df = pd.DataFrame(rows)
     acc_wide = df.pivot(index="System", columns="Task", values="Accuracy %")
     acc_wide["Avg %"] = acc_wide.mean(axis=1).round(1)
     acc_wide = acc_wide.reset_index().rename_axis(None, axis=1)
+
+    stab_wide = df.pivot(index="System", columns="Task", values="Stability %")
+    stab_wide = stab_wide.reset_index().rename_axis(None, axis=1)
 
     lat_wide = df.pivot(index="System", columns="Task", values="Mean s/text")
     lat_wide = lat_wide.round(3).reset_index().rename_axis(None, axis=1)
@@ -87,24 +94,31 @@ def build_benchmark_tab():
                  "Precision": round(m["precision"], 2),
                  "Recall": round(m["recall"], 2),
                  "Strict F1": round(m["f1"], 2),
+                 "Span stability %": round(m.get("stability", 0) * 100, 0),
                  "Mean s/text": m["mean_latency_s"]}
                 for name, m in bench["ner"].items()]
     ner_rows.append({"System": "Jev", "Precision": "-",
                      "Recall": "-", "Strict F1": "n/a (no span output)",
-                     "Mean s/text": "-"})
+                     "Span stability %": "-", "Mean s/text": "-"})
+    ner_rows.append({"System": "Laya (local)", "Precision": "-",
+                     "Recall": "-", "Strict F1": "n/a (no span output)",
+                     "Span stability %": "-", "Mean s/text": "-"})
     ner_df = pd.DataFrame(ner_rows)
 
     gr.Markdown("## Benchmark results\n"
                 f"Run {bench['meta']['date']} on {bench['meta']['device']}. "
                 "Zero-shot, identical labels, out-of-the-box defaults. "
-                "Jev classification runs as one batched request per task "
-                "(per-text latency = batch latency / n).")
+                "Jev and Laya classification runs as one batched call per "
+                "task (per-text latency = batch latency / n).")
     gr.DataFrame(acc_wide, label="Classification accuracy (%)")
     gr.BarPlot(
         df, x="System", y="Accuracy %", color="Task",
         title="Classification accuracy by task (%)",
         y_lim=(50, 102), height=260,
     )
+    gr.DataFrame(stab_wide, label=(
+        f"Determinism — identical prediction across all {repeats} runs "
+        "(% of cases)"))
     gr.DataFrame(lat_wide, label="Classification latency (mean s per text)")
     gr.DataFrame(ner_df, label="NER — strict span+label match")
     gr.Markdown("#### Notes\n" + "\n".join(

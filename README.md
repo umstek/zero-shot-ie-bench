@@ -30,31 +30,56 @@ out-of-the-box defaults. Full detail and per-item misses in
 
 Classification accuracy:
 
+Every case runs 5 times; accuracy below is from the first run, and the
+determinism section shows whether repeats changed anything (spoiler: no).
+
+Classification accuracy (mean latency ± std per text):
+
 | System | Sentiment (24) | Topic (12) | s/text |
 |---|---|---|---|
-| GLiNER2.5-small | 83.3% | 100% | 0.05 |
-| GLiNER2.5-base | 100% | 100% | 0.13 |
-| GLiNER2.5-multi | 100% | 100% | 0.13 |
-| GLiFormer-large | 100% | 83.3% | 0.42 |
-| Laya (local) | 95.8% | 83.3% | 0.37–0.42 (batched ÷ n) |
-| Jev (cloud) | 100% | 100% | 0.04–0.07 (batched ÷ n) |
+| GLiNER2.5-small | 83.3% | 100% | 0.046±0.010 |
+| GLiNER2.5-base | 100% | 100% | 0.103±0.008 |
+| GLiNER2.5-multi | 100% | 100% | 0.121±0.014 |
+| GLiFormer-base | 100% | 75.0% | 0.118±0.013 |
+| GLiFormer-large | 100% | 83.3% | 0.400±0.035 |
+| Laya (local) | 95.8% | 83.3% | 0.164±0.009 (batched ÷ n) |
+| Jev (cloud) | 100% | 100% | 0.052±0.002 (batched ÷ n) |
 
 NER, strict span+label match (decision engines have no span output):
 
 | System | Precision | Recall | F1 | s/text |
 |---|---|---|---|---|
-| GLiNER2.5-small | 0.77 | 0.96 | 0.86 | 0.07 |
-| GLiNER2.5-base | 0.93 | 1.00 | 0.97 | 0.17 |
-| GLiNER2.5-multi | 0.97 | 1.00 | 0.98 | 0.15 |
-| GLiFormer-large | 0.97 | 1.00 | 0.98 | 0.45 |
+| GLiNER2.5-small | 0.77 | 0.96 | 0.86 | 0.058±0.011 |
+| GLiNER2.5-base | 0.93 | 1.00 | 0.97 | 0.117±0.007 |
+| GLiNER2.5-multi | 0.97 | 1.00 | 0.98 | 0.131±0.010 |
+| GLiFormer-base | 1.00 | 1.00 | **1.00** | 0.134±0.011 |
+| GLiFormer-large | 0.97 | 1.00 | 0.98 | 0.428±0.050 |
+
+### Determinism (5 runs per case)
+
+Output stability — share of cases whose prediction was identical across all
+5 runs (label for classification, full span set for NER):
+
+| System | Sentiment | Topic | NER span sets |
+|---|---|---|---|
+| GLiNER2.5 small/base/multi | 100% | 100% | 100% |
+| GLiFormer base/large | 100% | 100% | 100% |
+| Laya (local) | 100% | 100% | n/a |
+| Jev (cloud) | 100% | 100% | n/a |
+
+**Every system was fully deterministic** — identical predictions on every
+repeat, including the cloud API. The only measured variance is latency
+(σ ≈ 0.002–0.05 s; largest for GLiFormer-large). Zero-shot outputs are
+therefore reproducible run-to-run on identical inputs; what varies between
+machines is speed, not answers.
 
 Honest caveats:
 
 - The sentiment set is easy (everything ≥83%); misses for the small GLiNER
-  model are neutrals drifting to pos/neg; GLiFormer's topic misses lean
-  "business".
-- Jev ran as one batched request per task (0.8 s for 24 texts); Laya as one
-  batched forward pass per task — per-text latency is batch ÷ n for both.
+  model are neutrals drifting to pos/neg; both GLiFormer topic misses lean
+  "business" (base misses one more than large — but beats large on NER).
+- Jev ran as one batched request per task per repeat; Laya as one batched
+  forward pass per task per repeat — per-text latency is batch ÷ n for both.
 - **Laya prompt-format gotcha found here:** dict-shaped `instructions`
   (which Jev handles fine) collapse Laya onto one label (58.3% sentiment);
   with string instructions it scores 95.8%. Benchmarked with strings.
@@ -62,6 +87,10 @@ Honest caveats:
   near-chance zero-shot on nuanced decision workflows, probabilities ship
   over-confident before temperature fitting, and >20-option `choice`
   questions are weak without raising `head_max_len`.
+- GLiFormer demo quirks: the large checkpoint missed the second purchase in
+  flat-record mode while base caught both; base returned empty results in
+  the combined multi-task call where large succeeded; base embeddings are
+  768-d vs large 1024-d.
 
 ## Feature comparison
 
@@ -103,25 +132,32 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
                                          # classification, relations, JointIE,
                                          # span attributes, records
 .venv/Scripts/python demo_gliformer.py   # GLiFormer tour + embeddings
+                                          # (--model base or large)
 .venv/Scripts/python demo_laya.py        # Laya tour + multilingual Router
 .venv/Scripts/python demo_jev.py         # Jev tour (2 paid API requests)
 
-.venv/Scripts/python bench.py            # full benchmark → bench_results.json
+.venv/Scripts/python bench.py            # full benchmark, 5 runs per case
+                                         # (--repeats N) → bench_results.json
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
 
 The web UI has one live tab per system, a **Benchmark** tab (tables + chart
 from `bench_results.json`) and a **Compare** tab (feature matrix).
 
-## GLiNER 2.5 family map
+## Family maps
+
+Complete version coverage per family (all sizes that exist are benchmarked):
 
 | Checkpoint | Params | Notes |
 |---|---|---|
-| `fastino/gliner2.5-small-v1` | 74M | DeBERTa-v3-xsmall, fast CPU |
-| `fastino/gliner2.5-base-v1` | 194M | default English, benchmarked |
-| `fastino/gliner2.5-multi-v1` | 287M | mDeBERTa, multilingual — largest 2.5; no `large` exists |
-| `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader |
-| `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line |
+| `fastino/gliner2.5-small-v1` | 74M | DeBERTa-v3-xsmall, fast CPU — benchmarked |
+| `fastino/gliner2.5-base-v1` | 194M | default English — benchmarked |
+| `fastino/gliner2.5-multi-v1` | 287M | mDeBERTa, multilingual — benchmarked; largest 2.5, no `large` exists |
+| `knowledgator/gliformer-base-v1` | ~190M | benchmarked; best NER F1 here |
+| `knowledgator/gliformer-large-v1` | 575.6M | benchmarked; family is base+large only, no small |
+| `convaiinnovations/laya` (+multilingual, typed-decisions) | 421M / 322M | English root benchmarked; subfolders exist for the other two |
+| `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader — not run |
+| `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line — not run |
 
 ## Repo layout
 
@@ -129,7 +165,7 @@ from `bench_results.json`) and a **Compare** tab (feature matrix).
 |---|---|
 | `demo.py` / `demo_gliformer.py` / `demo_laya.py` / `demo_jev.py` | scripted tours, one per system, shared sample texts |
 | `jev_client.py` | dependency-free Python client for the TypeSafe System One API |
-| `bench.py` | benchmark driver (classification × 6 systems, NER × 4) |
+| `bench.py` | benchmark driver (classification × 7 systems, NER × 5, determinism repeats) |
 | `bench_results.json` | latest results, rendered by the web UI |
 | `app.py` | Gradio web UI (live demos + benchmark + compare) |
 

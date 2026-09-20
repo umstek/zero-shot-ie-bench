@@ -1,19 +1,22 @@
 {
   "meta": {
-    "date": "2026-09-20 10:07",
+    "date": "2026-09-20 10:33",
     "device": "CPU (no CUDA on this machine)",
+    "repeats_per_case": 5,
     "systems": {
       "GLiNER2.5-small": "fastino/gliner2.5-small-v1",
       "GLiNER2.5-base": "fastino/gliner2.5-base-v1",
       "GLiNER2.5-multi": "fastino/gliner2.5-multi-v1",
+      "GLiFormer-base": "knowledgator/gliformer-base-v1",
       "GLiFormer-large": "knowledgator/gliformer-large-v1"
     },
     "notes": [
       "Zero-shot, out-of-the-box defaults for every system.",
-      "GLiNER2.5-small/base/multi share one architecture and API; multi is the 287M multilingual checkpoint run on English.",
-      "Jev: one batched request per classification task; per-text latency = batch latency / n. Local models: one call per text.",
-      "NER: strict span+label match; Jev and Laya excluded (no span output).",
-      "Laya: base English checkpoint, one batched forward pass per task (same shape as Jev's batching); its card notes base checkpoints are classification-shaped, not general zero-shot decision engines, and probabilities ship over-confident before temperature fitting.",
+      "GLiNER2.5 small/base/multi share one architecture; multi is the 287M multilingual checkpoint run on English.",
+      "Determinism: every case ran 5 times; accuracy is scored on the first repeat; stability = share of cases whose prediction (label, or full NER span set) was identical across all repeats; latency_std is the spread of per-call latencies (per-text for extractors, batch/n for Laya and Jev).",
+      "Laya and Jev: one batched call per task per repeat. Local extractors: one call per text per repeat.",
+      "NER: strict span+label match; Laya and Jev excluded (no span output).",
+      "Laya: base English checkpoint; its card notes base checkpoints are classification-shaped and probabilities ship over-confident before temperature fitting. String instructions required (dict instructions collapse it).",
       "No gliner2.5-large exists; gliner2-large-v1 and gliner-community v2.5 checkpoints use the legacy span loader and were not run."
     ]
   },
@@ -21,7 +24,9 @@
     "sentiment": {
       "GLiNER2.5-small": {
         "accuracy": 0.8333,
-        "mean_latency_s": 0.044,
+        "stability": 1.0,
+        "mean_latency_s": 0.046,
+        "latency_std_s": 0.01,
         "misses": [
           [
             "Water boils at 100 degrees Celsius at sea level.",
@@ -47,22 +52,37 @@
       },
       "GLiNER2.5-base": {
         "accuracy": 1.0,
-        "mean_latency_s": 0.105,
+        "stability": 1.0,
+        "mean_latency_s": 0.103,
+        "latency_std_s": 0.008,
         "misses": []
       },
       "GLiNER2.5-multi": {
         "accuracy": 1.0,
-        "mean_latency_s": 0.102,
+        "stability": 1.0,
+        "mean_latency_s": 0.13,
+        "latency_std_s": 0.018,
+        "misses": []
+      },
+      "GLiFormer-base": {
+        "accuracy": 1.0,
+        "stability": 1.0,
+        "mean_latency_s": 0.115,
+        "latency_std_s": 0.016,
         "misses": []
       },
       "GLiFormer-large": {
         "accuracy": 1.0,
-        "mean_latency_s": 0.333,
+        "stability": 1.0,
+        "mean_latency_s": 0.385,
+        "latency_std_s": 0.037,
         "misses": []
       },
       "Laya (local)": {
         "accuracy": 0.9583,
-        "mean_latency_s": 0.151,
+        "stability": 1.0,
+        "mean_latency_s": 0.147,
+        "latency_std_s": 0.008,
         "misses": [
           [
             "What a beautiful day for a hike.",
@@ -70,34 +90,67 @@
             "neutral"
           ]
         ],
-        "batch_latency_s": 3.63
+        "batch_latency_s": 3.53
       },
       "Jev": {
         "accuracy": 1.0,
-        "mean_latency_s": 0.038,
+        "stability": 1.0,
+        "mean_latency_s": 0.036,
+        "latency_std_s": 0.002,
         "misses": [],
-        "batch_latency_s": 0.92
+        "batch_latency_s": 0.86
       }
     },
     "topic": {
       "GLiNER2.5-small": {
         "accuracy": 1.0,
-        "mean_latency_s": 0.04,
+        "stability": 1.0,
+        "mean_latency_s": 0.061,
+        "latency_std_s": 0.029,
         "misses": []
       },
       "GLiNER2.5-base": {
         "accuracy": 1.0,
+        "stability": 1.0,
         "mean_latency_s": 0.107,
+        "latency_std_s": 0.006,
         "misses": []
       },
       "GLiNER2.5-multi": {
         "accuracy": 1.0,
-        "mean_latency_s": 0.103,
+        "stability": 1.0,
+        "mean_latency_s": 0.121,
+        "latency_std_s": 0.01,
         "misses": []
+      },
+      "GLiFormer-base": {
+        "accuracy": 0.75,
+        "stability": 1.0,
+        "mean_latency_s": 0.121,
+        "latency_std_s": 0.009,
+        "misses": [
+          [
+            "She won the marathon with a personal best of 2:19.",
+            "sports",
+            null
+          ],
+          [
+            "The senate passed the budget bill after a late-night session.",
+            "politics",
+            null
+          ],
+          [
+            "The minister announced new tariffs on imported steel.",
+            "politics",
+            "business"
+          ]
+        ]
       },
       "GLiFormer-large": {
         "accuracy": 0.8333,
-        "mean_latency_s": 0.346,
+        "stability": 1.0,
+        "mean_latency_s": 0.414,
+        "latency_std_s": 0.033,
         "misses": [
           [
             "The startup shipped an app that transcribes meetings locally on device.",
@@ -113,7 +166,9 @@
       },
       "Laya (local)": {
         "accuracy": 0.8333,
-        "mean_latency_s": 0.176,
+        "stability": 1.0,
+        "mean_latency_s": 0.181,
+        "latency_std_s": 0.009,
         "misses": [
           [
             "The senate passed the budget bill after a late-night session.",
@@ -126,13 +181,15 @@
             "business"
           ]
         ],
-        "batch_latency_s": 2.12
+        "batch_latency_s": 2.17
       },
       "Jev": {
         "accuracy": 1.0,
-        "mean_latency_s": 0.071,
+        "stability": 1.0,
+        "mean_latency_s": 0.068,
+        "latency_std_s": 0.002,
         "misses": [],
-        "batch_latency_s": 0.85
+        "batch_latency_s": 0.82
       }
     }
   },
@@ -141,25 +198,41 @@
       "precision": 0.7714,
       "recall": 0.9643,
       "f1": 0.8571,
-      "mean_latency_s": 0.046
+      "mean_latency_s": 0.058,
+      "latency_std_s": 0.011,
+      "stability": 1.0
     },
     "GLiNER2.5-base": {
       "precision": 0.9333,
       "recall": 1.0,
       "f1": 0.9655,
-      "mean_latency_s": 0.11
+      "mean_latency_s": 0.117,
+      "latency_std_s": 0.007,
+      "stability": 1.0
     },
     "GLiNER2.5-multi": {
       "precision": 0.9655,
       "recall": 1.0,
       "f1": 0.9825,
-      "mean_latency_s": 0.113
+      "mean_latency_s": 0.131,
+      "latency_std_s": 0.01,
+      "stability": 1.0
+    },
+    "GLiFormer-base": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "mean_latency_s": 0.134,
+      "latency_std_s": 0.011,
+      "stability": 1.0
     },
     "GLiFormer-large": {
       "precision": 0.9655,
       "recall": 1.0,
       "f1": 0.9825,
-      "mean_latency_s": 0.364
+      "mean_latency_s": 0.428,
+      "latency_std_s": 0.05,
+      "stability": 1.0
     }
   }
 }

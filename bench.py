@@ -1,31 +1,41 @@
-"""Benchmark: GLiNER 2.5 family vs GLiFormer vs Jev on this machine.
+"""Benchmark: GLiNER 2.5 family vs GLiFormer (base+large) vs Laya vs Jev.
+
+Every case runs --repeats times (default 5) to measure determinism:
+how often the predicted output is identical across repeats, plus latency
+mean/std. Accuracy is scored on the first repeat; stability is reported
+separately.
 
 Systems
-  - fastino/gliner2.5-small-v1  (74M, boundary, English)
-  - fastino/gliner2.5-base-v1   (194M, boundary, English)
-  - fastino/gliner2.5-multi-v1  (287M, boundary, multilingual)
+  - fastino/gliner2.5-small-v1      (74M, boundary, English)
+  - fastino/gliner2.5-base-v1       (194M, boundary, English)
+  - fastino/gliner2.5-multi-v1      (287M, boundary, multilingual)
+  - knowledgator/gliformer-base-v1  (~190M, layout-aware)
   - knowledgator/gliformer-large-v1 (575.6M, layout-aware)
-  - Jev (TypeSafe AI cloud, jev-latest) - classification only
+  - Laya  (convaiinnovations/laya, local, English checkpoint)
+  - Jev   (TypeSafe AI cloud, jev-latest) - classification only
 
 Tasks
   - classification, sentiment (24 texts, 8 pos / 8 neg / 8 neutral)
   - classification, topic     (12 texts, 3 per topic)
-  - NER, strict span+label F1 (10 texts) - local models only; Jev has no
-    span output, it is a question-answering classifier, so it is excluded.
+  - NER, strict span+label F1 (10 texts) - local extractors only
 
 Fairness notes
-  - Local models run one call per text (their native API) on CPU.
-  - Jev runs ONE batched request per classification task (its native mode);
-    per-text latency is reported as total/n for comparability.
+  - Local extractors run one call per text per repeat (their native API).
+  - Laya and Jev run one batched call per task per repeat (their native
+    mode); per-text latency = batch latency / n.
   - All systems are zero-shot; identical label sets and label descriptions.
   - Defaults everywhere (thresholds, decoding) - out-of-the-box behaviour.
+  - Laya needs string instructions (dict instructions collapse it onto one
+    label - verified before benchmarking).
 
 Output: bench_results.json (consumed by app.py's Benchmark tab).
 """
 
 from __future__ import annotations
 
+import argparse
 import json
+import statistics
 import sys
 import time
 
@@ -120,69 +130,110 @@ def spans_of(text: str, truth: list[tuple[str, str]]) -> set[tuple[int, int, str
             for span, label in truth}
 
 
-def run_gliner25(model_id: str, cls_tasks, ner_texts):
+def lat_stats(latencies: list[float]) -> dict:
+    return {"mean_latency_s": round(statistics.mean(latencies), 3),
+            "latency_std_s": round(statistics.pstdev(latencies), 3)}
+
+
+def stability_of(runs: list[list]) -> float:
+    """runs: one prediction list per repeat. Share of items whose
+    prediction (by value) was identical across all repeats."""
+    per_item = list(zip(*runs))
+    stable = sum(1 for preds in per_item if len(set(map(repr, preds))) == 1)
+    return round(stable / len(per_item), 4) if per_item else 1.0
+
+
+def cls_summary(per_repeat, texts, gold):
+    correct = sum(1 for pred, truth in zip(per_repeat[0], gold)
+                  if pred == truth)
+    misses = [(text, truth, pred) for text, truth, pred
+              in zip(texts, gold, per_repeat[0]) if pred != truth]
+    return correct, misses, stability_of(per_repeat)
+
+
+def ner_repeat_loop(predict_once, ner_texts, repeats):
+    """predict_once(text) -> frozenset of (start, end, label)."""
+    predicted: set = set()
+    latencies: list[float] = []
+    stable_texts = 0
+    for text, _ in ner_texts:
+        run_sets = []
+        for _ in range(repeats):
+            t0 = time.perf_counter()
+            run_sets.append(predict_once(text))
+            latencies.append(time.perf_counter() - t0)
+        predicted |= set(run_sets[0])
+        if len(set(run_sets)) == 1:
+            stable_texts += 1
+    stats = lat_stats(latencies)
+    stats["stability"] = round(stable_texts / len(ner_texts), 4)
+    return predicted, stats
+
+
+def run_gliner25(model_id: str, cls_tasks, ner_texts, repeats: int):
     """One GLiNER 2.5 boundary checkpoint (small/base/multi share the API)."""
     from gliner2 import AutoExtractor
 
     model = AutoExtractor.from_pretrained(model_id, map_location="cpu")
     results = {}
     for name, (texts, gold, labels) in cls_tasks.items():
-        correct, latencies, misses = 0, [], []
-        for text, truth in zip(texts, gold):
-            t0 = time.perf_counter()
-            pred = model.classify_text(text, {"task": list(labels)})["task"]
-            latencies.append(time.perf_counter() - t0)
-            if pred == truth:
-                correct += 1
-            else:
-                misses.append((text, truth, pred))
+        per_repeat, latencies = [], []
+        for _ in range(repeats):
+            run_preds = []
+            for text in texts:
+                t0 = time.perf_counter()
+                run_preds.append(model.classify_text(
+                    text, {"task": list(labels)})["task"])
+                latencies.append(time.perf_counter() - t0)
+            per_repeat.append(run_preds)
+        correct, misses, stability = cls_summary(per_repeat, texts, gold)
         results[name] = dict(correct=correct, n=len(texts),
-                             mean_latency_s=sum(latencies) / len(latencies),
+                             **lat_stats(latencies), stability=stability,
                              misses=misses)
 
-    predicted, ner_lat = set(), []
-    for text, truth in ner_texts:
-        t1 = time.perf_counter()
-        out = model.extract_entities(text, NER_LABELS,
-                                     include_spans=True, include_confidence=False)
-        ner_lat.append(time.perf_counter() - t1)
-        for label, items in out.get("entities", {}).items():
-            for item in items:
-                predicted.add((item["start"], item["end"], label))
+    def predict_once(text):
+        out = model.extract_entities(text, NER_LABELS, include_spans=True,
+                                     include_confidence=False)
+        return frozenset(
+            (item["start"], item["end"], label)
+            for label, items in out.get("entities", {}).items()
+            for item in items)
+
+    predicted, ner_stats = ner_repeat_loop(predict_once, ner_texts, repeats)
     results["_ner_pred"] = predicted
-    results["ner_mean_latency_s"] = sum(ner_lat) / len(ner_lat)
+    results["ner"] = ner_stats
     return results
 
 
-def run_gliformer(model_id: str, cls_tasks, ner_texts):
+def run_gliformer(model_id: str, cls_tasks, ner_texts, repeats: int):
     from gliformer import GLiFormer
 
     model = GLiFormer.from_pretrained(model_id, load_tokenizer=True)
     model = model.to("cpu").eval()
     results = {}
     for name, (texts, gold, labels) in cls_tasks.items():
-        correct, latencies, misses = 0, [], []
-        for text, truth in zip(texts, gold):
-            t0 = time.perf_counter()
-            preds = model.classify(text, list(labels), threshold=0.5)
-            latencies.append(time.perf_counter() - t0)
-            pred = preds[0]["class_name"] if preds else None
-            if pred == truth:
-                correct += 1
-            else:
-                misses.append((text, truth, pred))
+        per_repeat, latencies = [], []
+        for _ in range(repeats):
+            run_preds = []
+            for text in texts:
+                t0 = time.perf_counter()
+                out = model.classify(text, list(labels), threshold=0.5)
+                latencies.append(time.perf_counter() - t0)
+                run_preds.append(out[0]["class_name"] if out else None)
+            per_repeat.append(run_preds)
+        correct, misses, stability = cls_summary(per_repeat, texts, gold)
         results[name] = dict(correct=correct, n=len(texts),
-                             mean_latency_s=sum(latencies) / len(latencies),
+                             **lat_stats(latencies), stability=stability,
                              misses=misses)
 
-    predicted, ner_lat = set(), []
-    for text, truth in ner_texts:
-        t1 = time.perf_counter()
-        for ent in model.predict_entities(text, NER_LABELS, threshold=0.5):
-            predicted.add((ent["start"], ent["end"], ent["label"]))
-        ner_lat.append(time.perf_counter() - t1)
+    def predict_once(text):
+        return frozenset(
+            (e["start"], e["end"], e["label"])
+            for e in model.predict_entities(text, NER_LABELS, threshold=0.5))
+
+    predicted, ner_stats = ner_repeat_loop(predict_once, ner_texts, repeats)
     results["_ner_pred"] = predicted
-    results["ner_mean_latency_s"] = sum(ner_lat) / len(ner_lat)
+    results["ner"] = ner_stats
     return results
 
 
@@ -192,11 +243,9 @@ LAYA_INSTRUCTIONS = {
 }
 
 
-def run_laya(cls_tasks):
-    """Laya (local, 421M): one forward pass per task with all texts as
-    questions - its native batched mode, symmetric with Jev's batching.
-    String instructions + bare labels: dict-shaped instructions (fine for
-    Jev) collapse Laya onto one label - verified before benchmarking."""
+def run_laya(cls_tasks, repeats: int):
+    """Laya (local, 421M): one batched forward pass per task per repeat -
+    its native batched mode, symmetric with Jev's batching."""
     import laya
 
     from jev_client import choice
@@ -211,45 +260,44 @@ def run_laya(cls_tasks):
                 .format(text=text), bare)
             for i, text in enumerate(texts)
         }
-        t0 = time.perf_counter()
-        out = agent.predict({"task": name}, questions)
-        total = time.perf_counter() - t0
-        picks = [out["answers"][f"t{i}"].get("choice")
-                 for i in range(len(texts))]
-        correct, misses = 0, []
-        for text, truth, pred in zip(texts, gold, picks):
-            if pred == truth:
-                correct += 1
-            else:
-                misses.append((text, truth, pred))
+        per_repeat, batch_lat = [], []
+        for _ in range(repeats):
+            t0 = time.perf_counter()
+            out = agent.predict({"task": name}, questions)
+            batch_lat.append(time.perf_counter() - t0)
+            per_repeat.append([out["answers"][f"t{i}"].get("choice")
+                               for i in range(len(texts))])
+        correct, misses, stability = cls_summary(per_repeat, texts, gold)
         results[name] = dict(
             correct=correct, n=len(texts),
-            mean_latency_s=total / len(texts),
-            batch_latency_s=round(total, 2), batched_requests=1,
-            misses=misses)
+            mean_latency_s=round(statistics.mean(batch_lat) / len(texts), 3),
+            latency_std_s=round(
+                statistics.pstdev([b / len(texts) for b in batch_lat]), 3),
+            batch_latency_s=round(statistics.mean(batch_lat), 2),
+            stability=stability, misses=misses)
     return results
 
 
-def run_jev(cls_tasks):
+def run_jev(cls_tasks, repeats: int):
     from jev_client import JevClient
 
     client = JevClient()
     results = {}
     for name, (texts, gold, labels) in cls_tasks.items():
-        t0 = time.perf_counter()
-        picks = client.classify(list(texts), dict(labels), task=name)
-        total = time.perf_counter() - t0
-        correct, misses = 0, []
-        for text, truth, pred in zip(texts, gold, picks):
-            if pred == truth:
-                correct += 1
-            else:
-                misses.append((text, truth, pred))
+        per_repeat, batch_lat = [], []
+        for _ in range(repeats):
+            t0 = time.perf_counter()
+            per_repeat.append(client.classify(list(texts), dict(labels),
+                                              task=name))
+            batch_lat.append(time.perf_counter() - t0)
+        correct, misses, stability = cls_summary(per_repeat, texts, gold)
         results[name] = dict(
             correct=correct, n=len(texts),
-            mean_latency_s=total / len(texts),  # one batched request / n
-            batch_latency_s=round(total, 2), batched_requests=1,
-            misses=misses)
+            mean_latency_s=round(statistics.mean(batch_lat) / len(texts), 3),
+            latency_std_s=round(
+                statistics.pstdev([b / len(texts) for b in batch_lat]), 3),
+            batch_latency_s=round(statistics.mean(batch_lat), 2),
+            stability=stability, misses=misses)
     return results
 
 
@@ -265,6 +313,7 @@ LOCAL_SYSTEMS = [
     ("GLiNER2.5-small", "fastino/gliner2.5-small-v1"),
     ("GLiNER2.5-base", "fastino/gliner2.5-base-v1"),
     ("GLiNER2.5-multi", "fastino/gliner2.5-multi-v1"),
+    ("GLiFormer-base", "knowledgator/gliformer-base-v1"),
     ("GLiFormer-large", "knowledgator/gliformer-large-v1"),
 ]
 
@@ -272,6 +321,11 @@ LOCAL_SYSTEMS = [
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+    parser = argparse.ArgumentParser(description="cross-system benchmark")
+    parser.add_argument("--repeats", type=int, default=5,
+                        help="runs per case for determinism (default 5)")
+    args = parser.parse_args()
 
     cls_tasks = {
         "sentiment": ([t for t, _ in SENTIMENT], [g for _, g in SENTIMENT],
@@ -281,42 +335,49 @@ def main() -> None:
     ner_texts = [(text, spans_of(text, truth)) for text, truth in NER]
     gold_ner = set().union(*[spans for _, spans in ner_texts])
 
-    local_results = {}
+    all_results = {}
     for name, model_id in LOCAL_SYSTEMS:
-        print(f"Running {name} ({model_id}) ...")
+        print(f"Running {name} ({model_id}), {args.repeats}x per case ...")
         t0 = time.perf_counter()
-        runner = run_gliformer if name == "GLiFormer-large" else run_gliner25
-        local_results[name] = runner(model_id, cls_tasks, ner_texts)
+        runner = run_gliformer if name.startswith("GLiFormer") else run_gliner25
+        all_results[name] = runner(model_id, cls_tasks, ner_texts, args.repeats)
         print(f"  done in {time.perf_counter() - t0:.0f}s")
 
-    print("Running Laya (convaiinnovations/laya, local) ...")
+    print(f"Running Laya, {args.repeats}x per task ...")
     t0 = time.perf_counter()
-    local_results["Laya (local)"] = run_laya(cls_tasks)
+    all_results["Laya (local)"] = run_laya(cls_tasks, args.repeats)
     print(f"  done in {time.perf_counter() - t0:.0f}s")
 
-    print("Asking Jev (2 batched requests) ...")
+    print(f"Asking Jev, {args.repeats}x per task "
+          f"({2 * args.repeats} paid requests) ...")
     t0 = time.perf_counter()
-    local_results["Jev"] = run_jev(cls_tasks)
+    all_results["Jev"] = run_jev(cls_tasks, args.repeats)
     print(f"  done in {time.perf_counter() - t0:.0f}s")
 
     out = {
         "meta": {
             "date": time.strftime("%Y-%m-%d %H:%M"),
             "device": "CPU (no CUDA on this machine)",
+            "repeats_per_case": args.repeats,
             "systems": {name: mid for name, mid in LOCAL_SYSTEMS},
             "notes": [
                 "Zero-shot, out-of-the-box defaults for every system.",
-                "GLiNER2.5-small/base/multi share one architecture and API; "
-                "multi is the 287M multilingual checkpoint run on English.",
-                "Jev: one batched request per classification task; per-text "
-                "latency = batch latency / n. Local models: one call per text.",
-                "NER: strict span+label match; Jev and Laya excluded "
+                "GLiNER2.5 small/base/multi share one architecture; multi "
+                "is the 287M multilingual checkpoint run on English.",
+                f"Determinism: every case ran {args.repeats} times; "
+                "accuracy is scored on the first repeat; stability = share "
+                "of cases whose prediction (label, or full NER span set) "
+                "was identical across all repeats; latency_std is the "
+                "spread of per-call latencies (per-text for extractors, "
+                "batch/n for Laya and Jev).",
+                "Laya and Jev: one batched call per task per repeat. "
+                "Local extractors: one call per text per repeat.",
+                "NER: strict span+label match; Laya and Jev excluded "
                 "(no span output).",
-                "Laya: base English checkpoint, one batched forward pass "
-                "per task (same shape as Jev's batching); its card notes "
-                "base checkpoints are classification-shaped, not general "
-                "zero-shot decision engines, and probabilities ship "
-                "over-confident before temperature fitting.",
+                "Laya: base English checkpoint; its card notes base "
+                "checkpoints are classification-shaped and probabilities "
+                "ship over-confident before temperature fitting. String "
+                "instructions required (dict instructions collapse it).",
                 "No gliner2.5-large exists; gliner2-large-v1 and "
                 "gliner-community v2.5 checkpoints use the legacy span "
                 "loader and were not run.",
@@ -328,37 +389,39 @@ def main() -> None:
 
     for task in cls_tasks:
         out["classification"][task] = {}
-        for name, res in local_results.items():
+        for name, res in all_results.items():
             entry = {
                 "accuracy": round(res[task]["correct"] / res[task]["n"], 4),
-                "mean_latency_s": round(res[task]["mean_latency_s"], 3),
+                "stability": res[task]["stability"],
+                "mean_latency_s": res[task]["mean_latency_s"],
+                "latency_std_s": res[task].get("latency_std_s", 0),
                 "misses": res[task]["misses"],
             }
             if "batch_latency_s" in res[task]:
                 entry["batch_latency_s"] = res[task]["batch_latency_s"]
             out["classification"][task][name] = entry
 
-    for name, res in local_results.items():
+    for name, res in all_results.items():
         if "_ner_pred" not in res:
             continue
-        p, r, f1 = strict_prf(res.pop("_ner_pred"), gold_ner)
+        p, r, f1 = strict_prf(res["_ner_pred"], gold_ner)
         out["ner"][name] = {"precision": p, "recall": r, "f1": f1,
-                            "mean_latency_s": round(
-                                res["ner_mean_latency_s"], 3)}
+                            **res["ner"]}
 
     with open("bench_results.json", "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
 
-    print("\n=== Classification accuracy ===")
+    print(f"\n=== Classification accuracy | stability over {args.repeats} "
+          "runs ===")
     for task in cls_tasks:
         row = out["classification"][task]
         print(f"  {task:<10} " + "  ".join(
-            f"{n}: {row[n]['accuracy'] * 100:.1f}%"
-            for n in local_results))
-    print("\n=== NER strict F1 (Jev: n/a) ===")
+            f"{n}: {row[n]['accuracy'] * 100:.1f}%/"
+            f"{row[n]['stability'] * 100:.0f}%" for n in all_results))
+    print("\n=== NER strict F1 | span-set stability ===")
     for name, m in out["ner"].items():
-        print(f"  {name:<18} P={m['precision']:.2f} R={m['recall']:.2f} "
-              f"F1={m['f1']:.2f}")
+        print(f"  {name:<18} F1={m['f1']:.2f}  stable={m['stability'] * 100:.0f}%"
+              f"  lat={m['mean_latency_s']}±{m['latency_std_s']}s")
     print("\nWrote bench_results.json")
 
 
