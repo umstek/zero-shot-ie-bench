@@ -26,10 +26,10 @@ import statistics
 import sys
 import time
 
-from bench import SENTIMENT_LABELS, TOPIC_LABELS
+from bench import SENTIMENT_LABELS, TOPIC_LABELS, merge_classification
 from bench_graded import SENTIMENT, TOPIC, TIERS
 
-RESULTS_FILE = "bench_newcomers_results.json"
+RESULTS_FILE = None  # results merge into bench_classification_results.json
 
 GLICASS_MODELS = {
     "gliclass-edge": "knowledgator/gliclass-edge-v3.0",
@@ -132,11 +132,6 @@ def main() -> None:
     run = (factory(args.system) if args.system in GLICASS_MODELS
            else factory())
 
-    try:
-        with open(RESULTS_FILE, encoding="utf-8") as fh:
-            results = json.load(fh).get("systems", {})
-    except OSError:
-        results = {}
 
     print(f"{args.system}: sentiment + topic x 3 tiers ...")
     t0 = time.perf_counter()
@@ -152,18 +147,9 @@ def main() -> None:
             print(f"  {task:<10} {tier:<7} {correct}/{n} "
                   f"({correct / n * 100:.1f}%)  {lat:.3f}s/text")
 
-    results[args.system] = entry
-    with open(RESULTS_FILE, "w", encoding="utf-8") as fh:
-        json.dump({"meta": {"date": time.strftime("%Y-%m-%d %H:%M"),
-                            "device": "CPU",
-                            "notes": [
-                                "Same graded data as bench_graded.py; "
-                                "classification only (no span output).",
-                                "von runs in .venv-von (needs transformers "
-                                "5.x); everything else in the main venv.",
-                            ]},
-                   "systems": results}, fh, indent=2, ensure_ascii=False)
-    print(f"done in {time.perf_counter() - t0:.0f}s -> {RESULTS_FILE}")
+    merge_classification(args.system, entry["classification"])
+    print(f"done in {time.perf_counter() - t0:.0f}s -> "
+          "bench_classification_results.json")
 
 
 if __name__ == "__main__":

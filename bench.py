@@ -301,6 +301,56 @@ def run_jev(cls_tasks, repeats: int):
     return results
 
 
+# ------------------------------------------------------- ability result files
+# Benchmarks are organized by ABILITY, not by when a system was added:
+#   bench_classification_results.json - every system that can classify
+#   bench_extraction_results.json     - systems that produce spans (NER)
+
+CLASSIFICATION_FILE = "bench_classification_results.json"
+EXTRACTION_FILE = "bench_extraction_results.json"
+
+_CLASSIFICATION_META = {
+    "suite": "graded sentiment + topic, 8 texts per tier per task",
+    "tiers": {"easy": "one strong signal",
+              "medium": "mixed signals, cross-domain vocabulary",
+              "hard": "sarcasm, negation flips, lowercase brands, "
+                      "context-dependent ambiguity"},
+    "notes": [
+        "All classification-capable systems run this same suite.",
+        "Systems: extractors (GLiNER2.5, GLiFormer), decision engines "
+        "(Laya, Jev, von, so1), purpose-built classifiers (GLiClass).",
+        "von runs in .venv-von (needs transformers 5); so1 uses "
+        "Qwen2.5-0.5B; single run per case (determinism established in "
+        "bench_results.json: 100% stable over 5 repeats).",
+    ],
+}
+
+
+def merge_classification(system: str, entry: dict) -> None:
+    """entry: {"sentiment": {tier: {accuracy, mean_latency_s}}, ...}"""
+    try:
+        with open(CLASSIFICATION_FILE, encoding="utf-8") as fh:
+            data = json.load(fh)
+    except OSError:
+        data = {"meta": _CLASSIFICATION_META, "systems": {}}
+    data["systems"][system] = entry
+    data["meta"]["updated"] = time.strftime("%Y-%m-%d %H:%M")
+    with open(CLASSIFICATION_FILE, "w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2, ensure_ascii=False)
+
+
+def write_extraction(systems: dict) -> None:
+    """systems: {name: {tier: {precision, recall, f1}}}"""
+    with open(EXTRACTION_FILE, "w", encoding="utf-8") as fh:
+        json.dump({"meta": {
+            "suite": "graded NER, strict span+label match, 6 texts per tier",
+            "notes": [
+                "Only span-producing systems (extractors) run this suite.",
+                "Decision engines and classifiers have no span output.",
+            ]},
+            "systems": systems}, fh, indent=2, ensure_ascii=False)
+
+
 def strict_prf(predicted: set, gold: set):
     tp = len(predicted & gold)
     p = tp / len(predicted) if predicted else 0.0

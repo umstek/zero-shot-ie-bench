@@ -1,0 +1,408 @@
+{
+  "meta": {
+    "suite": "graded sentiment + topic, 8 texts per tier per task",
+    "tiers": {
+      "easy": "one strong signal",
+      "medium": "mixed signals, cross-domain vocabulary",
+      "hard": "sarcasm, negation flips, lowercase brands, context-dependent ambiguity"
+    },
+    "notes": [
+      "All classification-capable systems run this same suite.",
+      "Systems: extractors (GLiNER2.5, GLiFormer), decision engines (Laya, Jev, von, so1), purpose-built classifiers (GLiClass).",
+      "von runs in .venv-von (needs transformers 5); so1 uses Qwen2.5-0.5B; single run per case (determinism established in bench_results.json: 100% stable over 5 repeats)."
+    ],
+    "updated": "2026-09-20 13:04"
+  },
+  "systems": {
+    "GLiNER2.5-small": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.051
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.048
+        },
+        "hard": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.044
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.04
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.046
+        },
+        "hard": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.042
+        }
+      }
+    },
+    "GLiNER2.5-base": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.099
+        },
+        "medium": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.107
+        },
+        "hard": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.12
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.099
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.112
+        },
+        "hard": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.113
+        }
+      }
+    },
+    "GLiNER2.5-multi": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.115
+        },
+        "medium": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.125
+        },
+        "hard": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.116
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.108
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.138
+        },
+        "hard": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.114
+        }
+      }
+    },
+    "GLiFormer-base": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.148
+        },
+        "medium": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.131
+        },
+        "hard": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.143
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.126
+        },
+        "medium": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.15
+        },
+        "hard": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.145
+        }
+      }
+    },
+    "GLiFormer-large": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.383
+        },
+        "medium": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.448
+        },
+        "hard": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.564
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.432
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.441
+        },
+        "hard": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.534
+        }
+      }
+    },
+    "Laya (local)": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.174
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.183
+        },
+        "hard": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.189
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.187
+        },
+        "medium": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.193
+        },
+        "hard": {
+          "accuracy": 0.25,
+          "mean_latency_s": 0.181
+        }
+      }
+    },
+    "Jev": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.126
+        },
+        "medium": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.108
+        },
+        "hard": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.1
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.113
+        },
+        "medium": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.112
+        },
+        "hard": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.1
+        }
+      }
+    },
+    "gliclass-edge": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.018
+        },
+        "medium": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.015
+        },
+        "hard": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.016
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.016
+        },
+        "medium": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.018
+        },
+        "hard": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.015
+        }
+      }
+    },
+    "gliclass-modern-base": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.069
+        },
+        "medium": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.052
+        },
+        "hard": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.05
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.057
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.052
+        },
+        "hard": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.049
+        }
+      }
+    },
+    "gliclass-base": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.152
+        },
+        "medium": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.121
+        },
+        "hard": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.123
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.133
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.122
+        },
+        "hard": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.151
+        }
+      }
+    },
+    "gliclass-large": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.341
+        },
+        "medium": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.325
+        },
+        "hard": {
+          "accuracy": 0.875,
+          "mean_latency_s": 0.345
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 1.0,
+          "mean_latency_s": 0.366
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.4
+        },
+        "hard": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.363
+        }
+      }
+    },
+    "so1 (Qwen2.5-0.5B)": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 0.5,
+          "mean_latency_s": 0.234
+        },
+        "medium": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.232
+        },
+        "hard": {
+          "accuracy": 0.125,
+          "mean_latency_s": 0.226
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 0.75,
+          "mean_latency_s": 0.227
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.242
+        },
+        "hard": {
+          "accuracy": 0.25,
+          "mean_latency_s": 0.24
+        }
+      }
+    },
+    "von": {
+      "sentiment": {
+        "easy": {
+          "accuracy": 0.625,
+          "mean_latency_s": 1.773
+        },
+        "medium": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.401
+        },
+        "hard": {
+          "accuracy": 0.125,
+          "mean_latency_s": 0.436
+        }
+      },
+      "topic": {
+        "easy": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.687
+        },
+        "medium": {
+          "accuracy": 0.625,
+          "mean_latency_s": 0.531
+        },
+        "hard": {
+          "accuracy": 0.375,
+          "mean_latency_s": 0.536
+        }
+      }
+    }
+  }
+}

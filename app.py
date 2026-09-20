@@ -54,176 +54,110 @@ def get_jev_client():
     return JevClient()
 
 
-# ------------------------------------------------------------- benchmark tab
-def build_benchmark_tab():
+# ------------------------------------------------- classification bench tab
+def build_classification_tab():
     import gradio as gr
+
+    path = os.path.join(os.path.dirname(BENCH_FILE),
+                        "bench_classification_results.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            bench = json.load(fh)
+    except OSError:
+        gr.Markdown("### Run `bench_graded.py` / `bench_newcomers.py` first.")
+        return
+
+    systems = bench["systems"]
+    gr.Markdown("## Classification benchmark\n"
+                f"One suite for **every classification-capable system** "
+                f"({len(systems)}): extractors, decision engines, and "
+                "purpose-built classifiers. Graded tiers: easy / medium / "
+                "hard, 8 texts per tier per task.")
+    for task in ("sentiment", "topic"):
+        rows = []
+        for system, entry in systems.items():
+            tiers = entry[task]
+            rows.append({"System": system,
+                         **{tier: f"{tiers[tier]['accuracy'] * 100:.1f}%"
+                            for tier in ("easy", "medium", "hard")},
+                         "s/text": min(tiers[t]["mean_latency_s"]
+                                       for t in tiers)})
+        gr.DataFrame(pd.DataFrame(rows),
+                     label=f"{task.capitalize()} accuracy (%) by tier")
+
+    gr.Markdown("#### Determinism\nEvery system above was measured 5x on "
+                "the flat suite in `bench.py`: **100% output-stable** "
+                "(identical predictions and NER span sets on every repeat; "
+                "only latency jittered). Details: bench_results.json.")
+
+    ml_path = os.path.join(os.path.dirname(BENCH_FILE),
+                           "bench_multilingual_results.json")
+    try:
+        with open(ml_path, encoding="utf-8") as fh:
+            ml = json.load(fh)
+    except OSError:
+        ml = None
+    if ml:
+        gr.Markdown("### Multilingual sub-suite — only multilingual-capable "
+                    "systems\n9 languages, no English (popular: es/fr/zh · "
+                    "medium: vi/tr/uk · rare: si/is/cy). GLiFormer-large is "
+                    "an English-only **control**.")
+        langs = list(next(iter(ml["by_language"].values())).keys())
+        rows = [{"Language": lang,
+                 **{sys_: f"{accs[lang] * 100:.0f}%"
+                    for sys_, accs in ml["by_language"].items()}}
+                for lang in langs]
+        gr.DataFrame(pd.DataFrame(rows), label="Accuracy by language")
+        rows = [{"System": sys_,
+                 **{tier: f"{v * 100:.1f}%" for tier, v in tiers.items()}}
+                for sys_, tiers in ml["by_tier"].items()]
+        gr.DataFrame(pd.DataFrame(rows), label="Accuracy by popularity tier")
+
+
+# ----------------------------------------------------- extraction bench tab
+def build_extraction_tab():
+    import gradio as gr
+
+    path = os.path.join(os.path.dirname(BENCH_FILE),
+                        "bench_extraction_results.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            graded = json.load(fh)
+    except OSError:
+        graded = None
+
+    gr.Markdown("## Extraction benchmark (NER)\n"
+                "Span-producing systems only — that is the ability this "
+                "benchmark measures. Decision engines (Laya, Jev, von, so1) "
+                "and pure classifiers (GLiClass) have no span output and do "
+                "not appear here; they compete in the Classification "
+                "benchmark tab instead.")
+    if graded:
+        rows = []
+        for system, tiers in graded["systems"].items():
+            rows.append({"System": system,
+                         **{tier: round(tiers[tier]["f1"], 2)
+                            for tier in ("easy", "medium", "hard")}})
+        gr.DataFrame(pd.DataFrame(rows),
+                     label="Strict span+label F1 by tier (6 texts per tier)")
 
     try:
         with open(BENCH_FILE, encoding="utf-8") as fh:
-            bench = json.load(fh)
+            flat = json.load(fh)
     except OSError:
-        gr.Markdown("### No bench_results.json yet\nRun `python bench.py` "
-                    "first, then reload this page.")
-        return
-
-    repeats = bench["meta"].get("repeats_per_case", "?")
-
-    rows = []
-    for task, systems in bench["classification"].items():
-        for system, m in systems.items():
-            rows.append({
-                "Task": task,
-                "System": system,
-                "Accuracy %": round(m["accuracy"] * 100, 1),
-                "Stability %": round(m.get("stability", 0) * 100, 0),
-                "Mean s/text": m["mean_latency_s"],
-                "σ s": m.get("latency_std_s", 0),
-            })
-    df = pd.DataFrame(rows)
-    acc_wide = df.pivot(index="System", columns="Task", values="Accuracy %")
-    acc_wide["Avg %"] = acc_wide.mean(axis=1).round(1)
-    acc_wide = acc_wide.reset_index().rename_axis(None, axis=1)
-
-    stab_wide = df.pivot(index="System", columns="Task", values="Stability %")
-    stab_wide = stab_wide.reset_index().rename_axis(None, axis=1)
-
-    lat_wide = df.pivot(index="System", columns="Task", values="Mean s/text")
-    lat_wide = lat_wide.round(3).reset_index().rename_axis(None, axis=1)
-
-    ner_rows = [{"System": name,
+        flat = None
+    if flat:
+        rows = [{"System": name,
                  "Precision": round(m["precision"], 2),
                  "Recall": round(m["recall"], 2),
                  "Strict F1": round(m["f1"], 2),
                  "Span stability %": round(m.get("stability", 0) * 100, 0),
                  "Mean s/text": m["mean_latency_s"]}
-                for name, m in bench["ner"].items()]
-    ner_rows.append({"System": "Jev", "Precision": "-",
-                     "Recall": "-", "Strict F1": "n/a (no span output)",
-                     "Span stability %": "-", "Mean s/text": "-"})
-    ner_rows.append({"System": "Laya (local)", "Precision": "-",
-                     "Recall": "-", "Strict F1": "n/a (no span output)",
-                     "Span stability %": "-", "Mean s/text": "-"})
-    ner_df = pd.DataFrame(ner_rows)
-
-    gr.Markdown("## Benchmark results\n"
-                f"Run {bench['meta']['date']} on {bench['meta']['device']}. "
-                "Zero-shot, identical labels, out-of-the-box defaults. "
-                "Jev and Laya classification runs as one batched call per "
-                "task (per-text latency = batch latency / n).")
-    gr.DataFrame(acc_wide, label="Classification accuracy (%)")
-    gr.BarPlot(
-        df, x="System", y="Accuracy %", color="Task",
-        title="Classification accuracy by task (%)",
-        y_lim=(50, 102), height=260,
-    )
-    gr.DataFrame(stab_wide, label=(
-        f"Determinism — identical prediction across all {repeats} runs "
-        "(% of cases)"))
-    gr.DataFrame(lat_wide, label="Classification latency (mean s per text)")
-    gr.DataFrame(ner_df, label="NER — strict span+label match")
-    gr.Markdown("#### Notes\n" + "\n".join(
-        f"- {note}" for note in bench["meta"]["notes"]))
-
-
-# ----------------------------------------------------------- v2 (graded/ml)
-def build_v2_tab():
-    import gradio as gr
-
-    graded_path = os.path.join(os.path.dirname(BENCH_FILE),
-                               "bench_graded_results.json")
-    ml_path = os.path.join(os.path.dirname(BENCH_FILE),
-                           "bench_multilingual_results.json")
-    have_graded, have_ml = True, True
-    try:
-        with open(graded_path, encoding="utf-8") as fh:
-            graded = json.load(fh)
-    except OSError:
-        have_graded = False
-    try:
-        with open(ml_path, encoding="utf-8") as fh:
-            ml = json.load(fh)
-    except OSError:
-        have_ml = False
-    if not (have_graded or have_ml):
-        gr.Markdown("### Run `bench_graded.py` and/or "
-                    "`bench_multilingual.py` first.")
-        return
-
-    if have_graded:
-        gr.Markdown("## Graded benchmark — easy / medium / hard tiers\n"
-                    "Sentiment & topic accuracy and NER F1 per tier. "
-                    "Easy = one strong signal; medium = mixed signals; "
-                    "hard = sarcasm, negation flips, lowercase brands, "
-                    "context-dependent ambiguity.")
-        for task in ("sentiment", "topic"):
-            rows = []
-            for tier in ("easy", "medium", "hard"):
-                for system, m in graded["classification"][task][tier].items():
-                    rows.append({"Tier": tier, "System": system,
-                                 "Accuracy %": round(m["accuracy"] * 100, 1)})
-            gr.DataFrame(pd.DataFrame(rows).pivot(
-                index="System", columns="Tier", values="Accuracy %")
-                .reset_index().rename_axis(None, axis=1),
-                label=f"{task.capitalize()} accuracy (%) by tier")
-        rows = []
-        for tier, systems in graded["ner"].items():
-            for system, m in systems.items():
-                rows.append({"Tier": tier, "System": system,
-                             "Strict F1": round(m["f1"], 2)})
-        gr.DataFrame(pd.DataFrame(rows).pivot(
-            index="System", columns="Tier", values="Strict F1")
-            .reset_index().rename_axis(None, axis=1),
-            label="NER strict F1 by tier (Laya/Jev: no spans)")
-
-    if have_ml:
-        gr.Markdown("## Multilingual benchmark — 9 languages, no English\n"
-                    "Same six sentence meanings per language "
-                    "(2 pos / 2 neg / 2 neutral), English labels. "
-                    "GLiFormer-large is an English-only **control** "
-                    "(expected to fail). Sentences verified by blind "
-                    "back-translation; Sinhala pending native-speaker "
-                    "review in the PR.")
-        langs = list(next(iter(ml["by_language"].values())).keys())
-        rows = [{"Language": lang,
-                 **{sys: f"{accs[lang] * 100:.0f}%"
-                    for sys, accs in ml["by_language"].items()}}
-                for lang in langs]
-        gr.DataFrame(pd.DataFrame(rows), label="Accuracy by language")
-        rows = [{"System": sys,
-                 **{tier: f"{v * 100:.1f}%" for tier, v in tiers.items()}}
-                for sys, tiers in ml["by_tier"].items()]
+                for name, m in flat["ner"].items()]
         gr.DataFrame(pd.DataFrame(rows),
-                     label="Accuracy by popularity tier "
-                           "(popular: es/fr/zh · medium: vi/tr/uk · "
-                           "rare: si/is/cy)")
-
-
-    newcomers_path = os.path.join(os.path.dirname(BENCH_FILE),
-                                  "bench_newcomers_results.json")
-    try:
-        with open(newcomers_path, encoding="utf-8") as fh:
-            newcomers = json.load(fh)
-    except OSError:
-        newcomers = None
-    if newcomers:
-        gr.Markdown("## Newcomers — GLiClass v3.0 · von-1.0 · "
-                    "open-alternative-jev (so1)\n"
-                    "Classification only (no span output). von runs in a "
-                    "separate venv (needs transformers 5); so1 uses "
-                    "Qwen2.5-0.5B as its base LLM on CPU.")
-        for task in ("sentiment", "topic"):
-            rows = []
-            for system, entry in newcomers["systems"].items():
-                rows.append({
-                    "System": system,
-                    **{tier: f"{entry['classification'][task][tier]['accuracy'] * 100:.1f}%"
-                       for tier in ("easy", "medium", "hard")},
-                    "s/text": min(
-                        entry["classification"][task][t]["mean_latency_s"]
-                        for t in ("easy", "medium", "hard"))})
-            gr.DataFrame(pd.DataFrame(rows),
-                         label=f"{task.capitalize()} accuracy (%) by tier")
-
+                     label="Flat suite (10 texts) — P/R/F1 + 5x determinism")
+        gr.Markdown("#### Notes\n" + "\n".join(
+            f"- {note}" for note in flat["meta"]["notes"][:4]))
 
 # -------------------------------------------------------------- compare tab
 def build_laya_tab():
@@ -535,10 +469,10 @@ def main() -> None:
         build_gliformer_tab(gliformer)
         build_laya_tab()
         build_jev_tab()
-        with gr.Tab("Benchmark"):
-            build_benchmark_tab()
-        with gr.Tab("Benchmarks v2"):
-            build_v2_tab()
+        with gr.Tab("Classification benchmark"):
+            build_classification_tab()
+        with gr.Tab("Extraction benchmark"):
+            build_extraction_tab()
         with gr.Tab("Compare"):
             build_compare_tab()
 

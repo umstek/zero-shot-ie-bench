@@ -26,8 +26,9 @@ import json
 import sys
 import time
 
-from bench import (NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, run_gliformer,
-                   run_gliner25, run_jev, run_laya, spans_of, strict_prf)
+from bench import (NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS,
+                   merge_classification, run_gliformer, run_gliner25,
+                   run_jev, run_laya, spans_of, strict_prf, write_extraction)
 
 TIERS = ("easy", "medium", "hard")
 
@@ -231,8 +232,17 @@ def main() -> None:
                     "mean_latency_s": res[task]["mean_latency_s"]}
         print(f"  done in {time.perf_counter() - t0:.0f}s")
 
-    with open("bench_graded_results.json", "w", encoding="utf-8") as fh:
-        json.dump(out, fh, indent=2, ensure_ascii=False)
+    cls = {}
+    for task in ("sentiment", "topic"):
+        for tier in TIERS:
+            for name, m in out["classification"][task][tier].items():
+                cls.setdefault(name, {}).setdefault(task, {})[tier] = m
+    for name, entry in cls.items():
+        merge_classification(name, entry)
+    write_extraction(
+        {name: {tier: {k: m[k] for k in ("precision", "recall", "f1")}
+                for tier, m in tiers.items()}
+         for name, tiers in out["ner"].items()})
 
     print("\n=== Accuracy by tier (sentiment / topic / NER-F1) ===")
     systems = [n for n, _ in EXTRACTORS] + ["Laya (local)", "Jev"]
