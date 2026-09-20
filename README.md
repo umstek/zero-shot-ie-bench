@@ -51,15 +51,16 @@ Classification accuracy (mean latency ± std per text):
 | Laya (local) | 95.8% | 83.3% | 0.164±0.009 (batched ÷ n) |
 | Jev (cloud) | 100% | 100% | 0.052±0.002 (batched ÷ n) |
 
-NER, strict span+label match (decision engines have no span output):
+NER, strict document+span+label match over 30 gold entities (decision
+engines have no span output; refreshed after correcting document identity):
 
 | System | Precision | Recall | F1 | s/text |
 |---|---|---|---|---|
-| GLiNER2.5-small | 0.77 | 0.96 | 0.86 | 0.058±0.011 |
-| GLiNER2.5-base | 0.93 | 1.00 | 0.97 | 0.117±0.007 |
-| GLiNER2.5-multi | 0.97 | 1.00 | 0.98 | 0.131±0.010 |
-| GLiFormer-base | 1.00 | 1.00 | **1.00** | 0.134±0.011 |
-| GLiFormer-large | 0.97 | 1.00 | 0.98 | 0.428±0.050 |
+| GLiNER2.5-small | 0.78 | 0.97 | 0.87 | 0.051±0.015 |
+| GLiNER2.5-base | 0.94 | 1.00 | 0.97 | 0.111±0.007 |
+| GLiNER2.5-multi | 0.97 | 1.00 | 0.98 | 0.127±0.037 |
+| GLiFormer-base | 1.00 | 1.00 | **1.00** | 0.129±0.023 |
+| GLiFormer-large | 0.97 | 1.00 | 0.98 | 0.447±0.066 |
 
 ### Determinism (5 runs per case)
 
@@ -75,7 +76,7 @@ Output stability — share of cases whose prediction was identical across all
 
 **Every system was fully deterministic** — identical predictions on every
 repeat, including the cloud API. The only measured variance is latency
-(σ ≈ 0.002–0.05 s; largest for GLiFormer-large). Zero-shot outputs are
+(σ ≈ 0.002–0.07 s; largest for GLiFormer-large). Zero-shot outputs are
 therefore reproducible run-to-run on identical inputs; what varies between
 machines is speed, not answers.
 
@@ -119,26 +120,28 @@ exact span-set match (18 questions):
 | gliclass-large | 81.2% | 0.411 | n/a | |
 | GLiNER2.5-multi | 79.2% | 0.152 | **67%** | 0.180 |
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
+| von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
 | GLiNER2.5-small | 70.8% | 0.043 | 33% | 0.053 |
 | Laya (local) | 68.8% | 0.143 | n/a | |
 | GLiFormer-base | 66.7% | 0.139 | 56% | 0.145 |
 | gliclass-edge | 66.7% | **0.016** | n/a | |
 | gliclass-modern-base | 66.7% | 0.051 | n/a | |
-| von-1.0 | 62.5% | 0.684 | n/a | |
 | so1 + Qwen2.5-0.5B | 43.8% | 0.237 | n/a | |
 
 Takeaways: the pool is deliberately mixed, so absolute numbers run lower
 than on the flat suite above. **gliclass-large is the best local sarcasm
 reader found** (the hardest sentiment questions; second only to cloud Jev)
 and gliclass-edge is the speed king at 16 ms/question. GLiNER2.5-multi is
-the most robust extractor. von-1.0's 93.5% card benchmark is on its own
-adversarial decision suite; on general sentiment/topic it underperforms —
-its strength is its trained domain, not open-ended classification. The so1
+the most robust extractor. von's trained option-marker backend scores
+79.2% here. Its earlier 62.5% row is withdrawn: the PyPI SDK's default NLI
+loader initialized an untrained classifier instead of loading the separate
+decision weights. The so1
 technique works mechanically on any ChatML LLM, but a 0.5B base model is
 not enough brain for it — the harness is the contribution, swap in a
 bigger LLM. Note: gliclass PyPI metadata asks for transformers ≥5 but runs
 fine on the pinned 4.57.6; von genuinely needs transformers 5, hence the
-separate `.venv-von`.
+separate `.venv-von`. Model download and loading are excluded from the
+latency measurements; the first forward pass is included.
 
 ## Multilingual benchmark (9 languages, no English)
 
@@ -160,10 +163,10 @@ PR for native-speaker review. All 13 systems answer the same 54 texts.
 | GLiFormer-large | 94% | 61% | 33% | 63% |
 | GLiNER2.5-base | 89% | 50% | 28% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
+| von-1.0 (option-marker) | 72% | 33% | 39% | 48% |
 | gliclass-modern-base | 44% | 33% | 39% | 39% |
 | so1 + Qwen2.5-0.5B | 39% | 39% | 33% | 37% |
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
-| von-1.0 | 33% | 33% | 33% | 33% |
 | gliclass-edge | 50% | 22% | 22% | 31% |
 
 Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
@@ -171,9 +174,12 @@ drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
 surprisingly well for an English-family release (100% on Chinese, and the
 best local Sinhala score at 67%); Jev is the only system at 100% on
 Sinhala. English-only encoders degrade with distance from English as
-expected. von-1.0 sits at chance here and is unstable run-to-run: repeat
-runs scored 33-48%, and some runs collapse to a single label (33% is
-exactly one label's share); the row above is one such run.
+expected. von's complete option-marker checkpoint scores 48% overall,
+including 50% on Sinhala. The old 33–48% runs used randomly initialized
+classifier weights and are invalid; they do not demonstrate instability
+of the trained model. The rerun uses pinned model and SDK revisions, saved
+in the results file. Laya Router preloads and retains both selected
+checkpoints before timing, so script changes do not include weight loading.
 The web UI renders the full system × language matrix as a
 heatmap.
 
@@ -191,7 +197,7 @@ heatmap.
 | Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
 | Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | chance-level, unstable (33-48% across runs) | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | Cost | free | free | free | free | free | free | $0.042/1M input |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
@@ -199,19 +205,26 @@ heatmap.
 
 ## Setup
 
-Python 3.10+ (tested on 3.13, Windows, CPU-only).
+Python 3.10+ for the main environment; 3.12+ for von (tested on 3.13,
+Windows, CPU-only).
 
 ```bash
 uv venv .venv
-uv pip install --python .venv -r requirements.txt
+uv pip install --python .venv -r requirements.txt --overrides overrides.txt
 # so1 is not on PyPI (needed by the so1 tab + benchmarks):
 uv pip install --python .venv "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev"
 # von needs transformers 5.x, so it lives in its own venv:
-uv venv .venv-von && uv pip install --python .venv-von von-sdk
-# or: python -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt
+uv venv --python 3.13 .venv-von
+uv pip install --python .venv-von -r requirements-von.txt
 ```
 
-Notes: `protobuf` and `sentencepiece` are pinned explicitly because
+Use uv for this install: `overrides.txt` deliberately overrides GLiClass
+0.1.20's transformers ≥5 metadata with the validated 4.57.6 version required
+by GLiNER2. This is an explicit compatibility exception for that pinned
+GLiClass release; plain pip dependency resolution cannot install this mix.
+Altair is included explicitly for the benchmark charts.
+
+Notes: `protobuf` and `sentencepiece` are included explicitly because
 `gliner2[local]` does not pull them in and the DeBERTa tokenizer needs them.
 Model checkpoints (~0.3–2.3 GB each) download from Hugging Face on first
 run. For Jev only: set `TYPESAFE_API_KEY` in the environment or a `.env`
@@ -247,7 +260,17 @@ benchmark tabs (**Classification benchmark**, **Extraction benchmark**,
 `bench_*_results.json` files) and a **Compare** tab (feature matrix).
 Benchmark charts are altair-based: sorted bars, a speed-accuracy scatter,
 accuracy-vs-difficulty lines and a system × language heatmap.
-von runs in its own venv (`.venv-von`) through `von_demo.py`.
+von runs in its own venv (`.venv-von`) through `von_demo.py`. Its shared
+loader (`von_client.py`) pins the upstream SDK and model revision and
+requires the complete `option_marker.pt` state dict. Missing or incompatible
+weights fail before inference; there is no random-head fallback. First use
+downloads both the encoder and trained option-marker state (about 3 GB total).
+
+Regression tests run without model downloads or cloud credentials:
+
+```bash
+.venv/Scripts/python -m unittest discover -s tests -v
+```
 
 ## Family maps
 
@@ -272,6 +295,7 @@ extra Laya checkpoints noted below):
 | `demo.py` / `demo_gliformer.py` / `demo_laya.py` / `demo_jev.py` | scripted tours, one per system, shared sample texts |
 | `app.py` | Gradio web UI: live tab per family + benchmark + compare |
 | `von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
+| `von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
 | `jev_client.py` | dependency-free Python client for the TypeSafe System One API |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |

@@ -154,17 +154,17 @@ def cls_summary(per_repeat, texts, gold):
 
 
 def ner_repeat_loop(predict_once, ner_texts, repeats):
-    """predict_once(text) -> frozenset of (start, end, label)."""
+    """Return document-indexed spans; predict_once returns (start, end, label)."""
     predicted: set = set()
     latencies: list[float] = []
     stable_texts = 0
-    for text, _ in ner_texts:
+    for document_id, (text, _) in enumerate(ner_texts):
         run_sets = []
         for _ in range(repeats):
             t0 = time.perf_counter()
             run_sets.append(predict_once(text))
             latencies.append(time.perf_counter() - t0)
-        predicted |= set(run_sets[0])
+        predicted.update((document_id, *span) for span in run_sets[0])
         if len(set(run_sets)) == 1:
             stable_texts += 1
     stats = lat_stats(latencies)
@@ -337,7 +337,9 @@ def main() -> None:
         "topic": ([t for t, _ in TOPIC], [g for _, g in TOPIC], TOPIC_LABELS),
     }
     ner_texts = [(text, spans_of(text, truth)) for text, truth in NER]
-    gold_ner = set().union(*[spans for _, spans in ner_texts])
+    gold_ner = {(document_id, *span)
+                for document_id, (_, spans) in enumerate(ner_texts)
+                for span in spans}
 
     all_results = {}
     for name, model_id in LOCAL_SYSTEMS:
@@ -376,7 +378,7 @@ def main() -> None:
                 "batch/n for Laya and Jev).",
                 "Laya and Jev: one batched call per task per repeat. "
                 "Local extractors: one call per text per repeat.",
-                "NER: strict span+label match; Laya and Jev excluded "
+                "NER: strict document+span+label match; Laya and Jev excluded "
                 "(no span output).",
                 "Laya: base English checkpoint; its card notes base "
                 "checkpoints are classification-shaped and probabilities "

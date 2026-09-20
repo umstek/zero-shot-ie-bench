@@ -15,10 +15,12 @@
       "GLiNER2.5 small/base/multi share one architecture; multi is the 287M multilingual checkpoint run on English.",
       "Determinism: every case ran 5 times; accuracy is scored on the first repeat; stability = share of cases whose prediction (label, or full NER span set) was identical across all repeats; latency_std is the spread of per-call latencies (per-text for extractors, batch/n for Laya and Jev).",
       "Laya and Jev: one batched call per task per repeat. Local extractors: one call per text per repeat.",
-      "NER: strict span+label match; Laya and Jev excluded (no span output).",
+      "NER: strict document+span+label match; Laya and Jev excluded (no span output).",
       "Laya: base English checkpoint; its card notes base checkpoints are classification-shaped and probabilities ship over-confident before temperature fitting. String instructions required (dict instructions collapse it).",
       "No gliner2.5-large exists; gliner2-large-v1 and gliner-community v2.5 checkpoints use the legacy span loader and were not run."
-    ]
+    ],
+    "ner_recorded": "2026-09-20 17:23",
+    "ner_scoring": "Micro precision/recall/F1 over (document_id, start, end, label); 30 gold entities, 5 repeats per text."
   },
   "classification": {
     "sentiment": {
@@ -195,43 +197,43 @@
   },
   "ner": {
     "GLiNER2.5-small": {
-      "precision": 0.7714,
-      "recall": 0.9643,
-      "f1": 0.8571,
-      "mean_latency_s": 0.058,
-      "latency_std_s": 0.011,
+      "precision": 0.7838,
+      "recall": 0.9667,
+      "f1": 0.8657,
+      "mean_latency_s": 0.051,
+      "latency_std_s": 0.015,
       "stability": 1.0
     },
     "GLiNER2.5-base": {
-      "precision": 0.9333,
+      "precision": 0.9375,
       "recall": 1.0,
-      "f1": 0.9655,
-      "mean_latency_s": 0.117,
+      "f1": 0.9677,
+      "mean_latency_s": 0.111,
       "latency_std_s": 0.007,
       "stability": 1.0
     },
     "GLiNER2.5-multi": {
-      "precision": 0.9655,
+      "precision": 0.9677,
       "recall": 1.0,
-      "f1": 0.9825,
-      "mean_latency_s": 0.131,
-      "latency_std_s": 0.01,
+      "f1": 0.9836,
+      "mean_latency_s": 0.127,
+      "latency_std_s": 0.037,
       "stability": 1.0
     },
     "GLiFormer-base": {
       "precision": 1.0,
       "recall": 1.0,
       "f1": 1.0,
-      "mean_latency_s": 0.134,
-      "latency_std_s": 0.011,
+      "mean_latency_s": 0.129,
+      "latency_std_s": 0.023,
       "stability": 1.0
     },
     "GLiFormer-large": {
-      "precision": 0.9655,
+      "precision": 0.9677,
       "recall": 1.0,
-      "f1": 0.9825,
-      "mean_latency_s": 0.428,
-      "latency_std_s": 0.05,
+      "f1": 0.9836,
+      "mean_latency_s": 0.447,
+      "latency_std_s": 0.066,
       "stability": 1.0
     }
   }

@@ -26,9 +26,9 @@
       "Laya Router recorded 2026-09-20 16:20, 289s, CPU",
       "so1 (Qwen2.5-0.5B) recorded 2026-09-20 16:21, 26s, CPU",
       "Jev recorded 2026-09-20 16:21, 1s, CPU",
-      "von recorded 2026-09-20 16:23, 47s, CPU",
-      "von recorded 2026-09-20 16:25, 40s, CPU",
-      "von decisions are not stable across runs: repeat runs on 2026-09-20 scored 33/35/48% (the 48% run predates the French fixture fix); the stored row is one run that collapsed to a single label (chance level)."
+      "Laya Router recorded 2026-09-20 17:29, 65s, CPU",
+      "von recorded 2026-09-20 17:27, 25s, CPU",
+      "Earlier von rows are superseded: the PyPI NLI loader initialized an untrained classifier. The current row uses the complete pinned option-marker checkpoint; those old runs do not establish trained-model instability."
     ]
   },
   "by_language": {
@@ -165,13 +165,13 @@
       "Welsh": 0.3333
     },
     "von": {
-      "Spanish": 0.3333,
-      "French": 0.3333,
-      "Chinese": 0.3333,
+      "Spanish": 0.6667,
+      "French": 0.8333,
+      "Chinese": 0.6667,
       "Vietnamese": 0.3333,
       "Turkish": 0.3333,
       "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
+      "Sinhala": 0.5,
       "Icelandic": 0.3333,
       "Welsh": 0.3333
     }
@@ -238,14 +238,14 @@
       "rare": 0.3333
     },
     "von": {
-      "popular": 0.3333,
+      "popular": 0.7222,
       "medium": 0.3333,
-      "rare": 0.3333
+      "rare": 0.3889
     }
   },
   "latency": {
     "GLiNER2.5-multi": 0.237,
-    "Laya Router": 5.313,
+    "Laya Router": 0.139,
     "Jev": 0.021,
     "GLiFormer-large": 0.717,
     "GLiNER2.5-small": 0.078,
@@ -256,7 +256,7 @@
     "gliclass-base": 0.183,
     "gliclass-large": 0.501,
     "so1 (Qwen2.5-0.5B)": 0.281,
-    "von": 0.698
+    "von": 0.289
   },
   "laya_routing": {
     "Spanish": {
@@ -288,6 +288,18 @@
     },
     "Welsh": {
       "english": 6
+    }
+  },
+  "timing": {
+    "von": "Model download and loading excluded; first forward pass included.",
+    "Laya Router": "Model download and loading excluded; first forward pass included."
+  },
+  "provenance": {
+    "von": {
+      "model": "wfzyx/von-1.0",
+      "model_revision": "fbc0196efa4fa1825557a8d5adad464fa1e872bb",
+      "sdk_revision": "a94aa368ff4dcc58cdfd569cf0b4b1ae7d592d54",
+      "backend": "option-marker"
     }
   }
 }
