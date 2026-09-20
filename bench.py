@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -411,8 +412,10 @@ def main() -> None:
         out["ner"][name] = {"precision": p, "recall": r, "f1": f1,
                             **res["ner"]}
 
-    with open("bench_results.json", "w", encoding="utf-8") as fh:
+    tmp = "bench_results.json.tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
+    os.replace(tmp, "bench_results.json")
 
     print(f"\n=== Classification accuracy | stability over {args.repeats} "
           "runs ===")

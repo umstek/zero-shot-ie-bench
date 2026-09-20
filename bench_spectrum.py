@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -222,7 +223,7 @@ def main() -> None:
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:
             data = json.load(fh)
-    except OSError:
+    except (OSError, json.JSONDecodeError):
         data = {}
     data.setdefault("meta", {
         "pools": {"classification": 48, "ner": 18},
@@ -234,8 +235,10 @@ def main() -> None:
     data["systems"] = {k: v for k, v in data.get("systems", {}).items()
                        if k != name}
     data["systems"][name] = entry
-    with open(RESULTS_FILE, "w", encoding="utf-8") as fh:
+    tmp = RESULTS_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(data, fh, indent=2, ensure_ascii=False)
+    os.replace(tmp, RESULTS_FILE)
     ner_note = (f", NER exact {entry['ner_exact_rate'] * 100:.0f}%"
                 if ner_ok is not None else "")
     print(f"  classification {entry['cls_accuracy'] * 100:.1f}%{ner_note} "

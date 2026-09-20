@@ -28,7 +28,7 @@
       "Jev recorded 2026-09-20 16:21, 1s, CPU",
       "von recorded 2026-09-20 16:23, 47s, CPU",
       "von recorded 2026-09-20 16:25, 40s, CPU",
-      "von decisions are not stable across runs: three identical-input runs on 2026-09-20 scored 33/35/48%; the stored row is one run that collapsed to a single label (chance level)."
+      "von decisions are not stable across runs: repeat runs on 2026-09-20 scored 33/35/48% (the 48% run predates the French fixture fix); the stored row is one run that collapsed to a single label (chance level)."
     ]
   },
   "by_language": {

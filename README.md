@@ -171,9 +171,9 @@ drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
 surprisingly well for an English-family release (100% on Chinese, and the
 best local Sinhala score at 67%); Jev is the only system at 100% on
 Sinhala. English-only encoders degrade with distance from English as
-expected. von-1.0 sits at chance here and is unstable run-to-run: three
-runs on identical inputs scored 33-48%, and some runs collapse to a
-single label (33% = the neutral share); the row above is one such run.
+expected. von-1.0 sits at chance here and is unstable run-to-run: repeat
+runs scored 33-48%, and some runs collapse to a single label (33% is
+exactly one label's share); the row above is one such run.
 The web UI renders the full system × language matrix as a
 heatmap.
 
@@ -191,7 +191,7 @@ heatmap.
 | Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
 | Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | partial (48%) | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | chance-level, unstable (33-48% across runs) | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | Cost | free | free | free | free | free | free | $0.042/1M input |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
