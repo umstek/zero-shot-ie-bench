@@ -56,58 +56,73 @@ def get_jev_client():
 
 
 # ------------------------------------------------- classification bench tab
+# ------------------------------------------------- classification bench tab
 def build_classification_tab():
     import gradio as gr
 
     path = os.path.join(os.path.dirname(BENCH_FILE),
-                        "bench_classification_results.json")
+                        "bench_spectrum_results.json")
     try:
         with open(path, encoding="utf-8") as fh:
             bench = json.load(fh)
     except OSError:
-        gr.Markdown("### Run `bench_graded.py` / `bench_newcomers.py` first.")
+        gr.Markdown("### Run `bench_spectrum.py --system <name>` first.")
         return
-
     systems = bench["systems"]
+    n_q = len(next(iter(systems.values()))["cls_correct"])
+
+    # difficulty per question: fraction of answering systems that failed it
+    difficulty = []
+    for i in range(n_q):
+        answers = [s["cls_correct"][i] for s in systems.values()]
+        difficulty.append(1 - sum(answers) / len(answers))
+
     gr.Markdown("## Classification benchmark\n"
-                f"One suite for **every classification-capable system** "
-                f"({len(systems)}): extractors, decision engines, and "
-                "purpose-built classifiers. Graded tiers: easy / medium / "
-                "hard, 8 texts per tier per task.")
-    for task in ("sentiment", "topic"):
-        rows = []
-        for system, entry in systems.items():
-            tiers = entry[task]
-            rows.append({"System": system,
-                         **{tier: f"{tiers[tier]['accuracy'] * 100:.1f}%"
-                            for tier in ("easy", "medium", "hard")},
-                         "s/text": min(tiers[t]["mean_latency_s"]
-                                       for t in tiers)})
-        gr.DataFrame(pd.DataFrame(rows),
-                     label=f"{task.capitalize()} accuracy (%) by tier")
+                f"One mixed pool of {n_q} questions (varying difficulty, "
+                "sentiment + topics). A question's difficulty is "
+                "**measured**: the fraction of systems that answered it "
+                "wrong. No difficulty buckets — the charts show each "
+                "system across the whole spectrum.")
+    rows = [[sys_, round(s["cls_accuracy"] * 100, 1), s["cls_mean_latency_s"]]
+            for sys_, s in systems.items()]
+    gr.DataFrame(rows, headers=["System", "Accuracy %", "s per text"],
+                 datatype=["str", "number", "number"], label=
+                 f"Overall accuracy on the mixed pool ({n_q} questions)")
+    acc_df = pd.DataFrame([{"System": s, "Accuracy %": round(v * 100, 1)}
+                           for s, v in ((k, x["cls_accuracy"])
+                                        for k, x in systems.items())])
+    gr.BarPlot(acc_df, x="System", y="Accuracy %", color="System",
+               title="Classification accuracy, mixed pool (%)",
+               height=300)
+    lat_df = pd.DataFrame([{"System": s, "s per text": v}
+                           for s, v in ((k, x["cls_mean_latency_s"])
+                                        for k, x in systems.items())])
+    gr.BarPlot(lat_df, x="System", y="s per text", color="System",
+               title="Mean latency per question (CPU; Jev/Laya batch ÷ n)",
+               height=300)
 
-    for task in ("sentiment", "topic"):
-        long_rows = [{"System": system, "Tier": tier,
-                      "Accuracy %": round(entry[task][tier]["accuracy"] * 100, 1)}
-                     for system, entry in systems.items()
-                     for tier in ("easy", "medium", "hard")]
-        gr.BarPlot(pd.DataFrame(long_rows), x="System", y="Accuracy %",
-                   color="Tier", title=f"{task.capitalize()} accuracy by "
-                   "difficulty tier (%)", y_lim=(0, 105), height=300)
-    speed_rows = [{"System": system,
-                   "s per text": round(sum(
-                       entry[t][tier]["mean_latency_s"]
-                       for t in entry for tier in entry[t])
-                       / sum(len(entry[t]) for t in entry), 3)}
-                  for system, entry in systems.items()]
-    gr.BarPlot(pd.DataFrame(speed_rows), x="System", y="s per text",
-               color="System", title="Mean latency per text, averaged over "
-               "tiers (CPU; Jev/Laya = batch latency / n)", height=300)
+    # accuracy along the difficulty spectrum (no buckets)
+    thresholds = sorted({round(t / 20, 2) for t in range(21)})
+    spec_rows = []
+    for sys_, s in systems.items():
+        for th in thresholds:
+            idx = [i for i in range(n_q) if difficulty[i] <= th]
+            if len(idx) < 4:
+                continue
+            acc = sum(s["cls_correct"][i] for i in idx) / len(idx)
+            spec_rows.append({"Question difficulty ≤": th,
+                              "System": sys_,
+                              "Accuracy %": round(acc * 100, 1)})
+    if spec_rows:
+        gr.LinePlot(pd.DataFrame(spec_rows), x="Question difficulty ≤",
+                    y="Accuracy %", color="System", height=380,
+                    title="Accuracy along the difficulty spectrum — "
+                          "each point = accuracy on questions at most "
+                          "this hard (measured difficulty, no buckets)")
 
-    gr.Markdown("#### Determinism\nEvery system above was measured 5x on "
-                "the flat suite in `bench.py`: **100% output-stable** "
-                "(identical predictions and NER span sets on every repeat; "
-                "only latency jittered). Details: bench_results.json.")
+    gr.Markdown("#### Determinism\nSystems were measured 5x on the flat "
+                "suite in `bench.py`: **100% output-stable** on every "
+                "repeat. Details: bench_results.json.")
 
     ml_path = os.path.join(os.path.dirname(BENCH_FILE),
                            "bench_multilingual_results.json")
@@ -118,26 +133,23 @@ def build_classification_tab():
         ml = None
     if ml:
         gr.Markdown("### Multilingual sub-suite — only multilingual-capable "
-                    "systems\n9 languages, no English (popular: es/fr/zh · "
-                    "medium: vi/tr/uk · rare: si/is/cy). GLiFormer-large is "
+                    "systems\n9 languages, no English. GLiFormer-large is "
                     "an English-only **control**.")
         langs = list(next(iter(ml["by_language"].values())).keys())
-        rows = [{"Language": lang,
-                 **{sys_: f"{accs[lang] * 100:.0f}%"
-                    for sys_, accs in ml["by_language"].items()}}
+        rows = [[lang] + [f"{accs[lang] * 100:.0f}%"
+                          for accs in ml["by_language"].values()]
                 for lang in langs]
-        gr.DataFrame(pd.DataFrame(rows), label="Accuracy by language")
+        gr.DataFrame(rows, headers=["Language"] + list(
+            ml["by_language"].keys()),
+            datatype=["str"] * (1 + len(ml["by_language"])),
+            label="Accuracy by language")
         long_rows = [{"Language": lang, "System": sys_,
                       "Accuracy %": round(accs[lang] * 100, 1)}
                      for sys_, accs in ml["by_language"].items()
                      for lang in langs]
         gr.BarPlot(pd.DataFrame(long_rows), x="Language", y="Accuracy %",
-                   color="System", title="Multilingual accuracy by language (%)",
-                   y_lim=(0, 105), height=300)
-        rows = [{"System": sys_,
-                 **{tier: f"{v * 100:.1f}%" for tier, v in tiers.items()}}
-                for sys_, tiers in ml["by_tier"].items()]
-        gr.DataFrame(pd.DataFrame(rows), label="Accuracy by popularity tier")
+                   color="System", title="Multilingual accuracy by "
+                   "language (%)", height=320)
 
 
 # ----------------------------------------------------- extraction bench tab
@@ -145,52 +157,61 @@ def build_extraction_tab():
     import gradio as gr
 
     path = os.path.join(os.path.dirname(BENCH_FILE),
-                        "bench_extraction_results.json")
+                        "bench_spectrum_results.json")
     try:
         with open(path, encoding="utf-8") as fh:
-            graded = json.load(fh)
+            bench = json.load(fh)
     except OSError:
-        graded = None
+        gr.Markdown("### Run `bench_spectrum.py --system <name>` first.")
+        return
+    extractors = {s: v for s, v in bench["systems"].items()
+                  if "ner_exact" in v}
+    if not extractors:
+        gr.Markdown("### No NER results yet.")
+        return
+    n_q = len(next(iter(extractors.values()))["ner_exact"])
+    difficulty = []
+    for i in range(n_q):
+        answers = [s["ner_exact"][i] for s in extractors.values()]
+        difficulty.append(1 - sum(answers) / len(answers))
 
     gr.Markdown("## Extraction benchmark (NER)\n"
-                "Span-producing systems only — that is the ability this "
-                "benchmark measures. Decision engines (Laya, Jev, von, so1) "
-                "and pure classifiers (GLiClass) have no span output and do "
-                "not appear here; they compete in the Classification "
-                "benchmark tab instead.")
-    if graded:
-        rows = []
-        for system, tiers in graded["systems"].items():
-            rows.append({"System": system,
-                         **{tier: round(tiers[tier]["f1"], 2)
-                            for tier in ("easy", "medium", "hard")}})
-        gr.DataFrame(pd.DataFrame(rows),
-                     label="Strict span+label F1 by tier (6 texts per tier)")
-        long_rows = [{"System": system, "Tier": tier,
-                      "Strict F1": round(tiers[tier]["f1"], 2)}
-                     for system, tiers in graded["systems"].items()
-                     for tier in ("easy", "medium", "hard")]
-        gr.BarPlot(pd.DataFrame(long_rows), x="System", y="Strict F1",
-                   color="Tier", title="NER strict F1 by difficulty tier",
-                   y_lim=(0, 1.05), height=300)
+                f"One mixed pool of {n_q} questions (varying difficulty). "
+                "Scored as exact match: a question counts only if the "
+                "system returned exactly the gold span set. Difficulty is "
+                "measured — the fraction of extractors that failed the "
+                "question. Span-less systems (decision engines, "
+                "classifiers) are not part of this ability and live in "
+                "the Classification benchmark tab.")
+    rows = [[s, round(v["ner_exact_rate"] * 100, 1),
+             v["ner_mean_latency_s"]] for s, v in extractors.items()]
+    gr.DataFrame(rows, headers=["System", "Exact-match %", "s per text"],
+                 datatype=["str", "number", "number"],
+                 label=f"Exact span-set match on the mixed pool ({n_q} "
+                       "questions)")
+    acc_df = pd.DataFrame([{"System": s, "Exact match %":
+                            round(v * 100, 1)}
+                           for s, v in ((k, x["ner_exact_rate"])
+                                        for k, x in extractors.items())])
+    gr.BarPlot(acc_df, x="System", y="Exact match %", color="System",
+               title="NER exact-match rate, mixed pool (%)",
+               height=300)
+    thresholds = sorted({round(t / 20, 2) for t in range(21)})
+    spec_rows = []
+    for sys_, s in extractors.items():
+        for th in thresholds:
+            idx = [i for i in range(n_q) if difficulty[i] <= th]
+            if len(idx) < 3:
+                continue
+            rate = sum(s["ner_exact"][i] for i in idx) / len(idx)
+            spec_rows.append({"Question difficulty ≤": th,
+                              "System": sys_,
+                              "Exact match %": round(rate * 100, 1)})
+    if spec_rows:
+        gr.LinePlot(pd.DataFrame(spec_rows), x="Question difficulty ≤",
+                    y="Exact match %", color="System", height=380,
+                    title="Exact match along the difficulty spectrum")
 
-    try:
-        with open(BENCH_FILE, encoding="utf-8") as fh:
-            flat = json.load(fh)
-    except OSError:
-        flat = None
-    if flat:
-        rows = [{"System": name,
-                 "Precision": round(m["precision"], 2),
-                 "Recall": round(m["recall"], 2),
-                 "Strict F1": round(m["f1"], 2),
-                 "Span stability %": round(m.get("stability", 0) * 100, 0),
-                 "Mean s/text": m["mean_latency_s"]}
-                for name, m in flat["ner"].items()]
-        gr.DataFrame(pd.DataFrame(rows),
-                     label="Flat suite (10 texts) — P/R/F1 + 5x determinism")
-        gr.Markdown("#### Notes\n" + "\n".join(
-            f"- {note}" for note in flat["meta"]["notes"][:4]))
 
 # --------------------------------------------------------------- laya tab
 def build_laya_tab():
@@ -261,6 +282,7 @@ def get_laya_agent():
 
 
 def build_compare_tab():
+
     import gradio as gr
 
     gr.Markdown("""
