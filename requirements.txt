@@ -1,0 +1,7 @@
+gliner2[local]>=2.0.0
+gliformer>=0.1.2
+laya>=0.3.4
+# gliner2[local] misses these two; the DeBERTa tokenizer needs them
+protobuf
+sentencepiece
+gradio>=5.0
