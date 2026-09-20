@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -59,7 +60,7 @@ LANGUAGES: dict[str, list[tuple[str, str]]] = {
         ("Este libro fue publicado en 2019 y tiene 300 páginas.", "neutral"),
     ],
     "French": [
-        ("La nourriture de ce restaurant est délicieux et le personnel est très aimable.", "positive"),
+        ("La nourriture de ce restaurant est délicieuse et le personnel est très aimable.", "positive"),
         ("Je suis très content de mon nouveau téléphone ; la batterie tient toute la journée.", "positive"),
         ("Le bus était bondé et lent, et je suis arrivé très en retard.", "negative"),
         ("Ce film était long et ennuyeux ; je regrette de l'avoir vu.", "negative"),
@@ -295,7 +296,7 @@ def main() -> None:
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:
             out = json.load(fh)
-    except OSError:
+    except (OSError, json.JSONDecodeError):
         out = {"meta": {}, "by_language": {}, "by_tier": {}, "latency": {}}
     out.setdefault("meta", {}).setdefault("notes", []).append(
         f"{name} recorded {time.strftime('%Y-%m-%d %H:%M')}, "
@@ -303,21 +304,23 @@ def main() -> None:
 
     by_lang = {}
     for lang in LANGUAGES:
-        idx = [i for i, l in enumerate(lang_of) if l == lang]
+        idx = [i for i, lg in enumerate(lang_of) if lg == lang]
         by_lang[lang] = round(sum(1 for i in idx if preds[i] == gold[i])
                               / len(idx), 4)
     by_tier = {}
     for tier in ("popular", "medium", "rare"):
-        langs = [l for l, t in TIERS.items() if t == tier]
-        by_tier[tier] = round(statistics.mean([by_lang[l] for l in langs]), 4)
+        langs = [lg for lg, t in TIERS.items() if t == tier]
+        by_tier[tier] = round(statistics.mean([by_lang[lg] for lg in langs]), 4)
 
     out["by_language"][name] = by_lang
     out["by_tier"][name] = by_tier
     out["latency"][name] = round(lat, 3)
     if laya_routes:
         out["laya_routing"] = laya_routes
-    with open(RESULTS_FILE, "w", encoding="utf-8") as fh:
+    tmp = RESULTS_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
+    os.replace(tmp, RESULTS_FILE)
 
     overall = statistics.mean(by_lang.values())
     print(f"  overall {overall * 100:.1f}%  "

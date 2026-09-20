@@ -5,7 +5,7 @@ gliclass>=0.1.20
 # von-sdk needs transformers 5.x -> install it in a SEPARATE venv:
 #   uv venv .venv-von && uv pip install --python .venv-von von-sdk
 # so1 is not on PyPI:
-#   uv pip install "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev"
+#   uv pip install "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev@6ad87d7"
 # PIN: the main venv is validated on transformers 4.57.6 - do not bump
 transformers==4.57.6
 tokenizers==0.22.2
