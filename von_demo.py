@@ -29,7 +29,8 @@ def main() -> None:
                 "probabilities": res.probabilities,
                 "confidence": res.confidence,
             })
-        print(json.dumps({"results": results}, ensure_ascii=False))
+        # ASCII-escaped JSON survives Windows pipes using legacy code pages.
+        print(json.dumps({"results": results}))
     except Exception as exc:
         print(json.dumps({"error": f"{type(exc).__name__}: {exc}"}))
 
