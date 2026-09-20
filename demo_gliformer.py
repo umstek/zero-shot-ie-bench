@@ -202,7 +202,9 @@ def main() -> None:
     parser.add_argument("--model", choices=MODELS, default="large")
     args = parser.parse_args()
 
-    print(f"Loading {MODELS[args.model]} (first run downloads ~2.3 GB for large)...")
+    sizes = {"base": "~0.8 GB", "large": "~2.3 GB"}
+    print(f"Loading {MODELS[args.model]} "
+          f"(first run downloads {sizes[args.model]})...")
     t0 = time.perf_counter()
     from gliformer import GLiFormer
 
