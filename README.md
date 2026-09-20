@@ -143,6 +143,26 @@ fine on the pinned 4.57.6; von genuinely needs transformers 5, hence the
 separate `.venv-von`. Model download and loading are excluded from the
 latency measurements; the first forward pass is included.
 
+The web UI renders these as interactive charts; the same charts, as
+images (regenerate after re-running the benchmarks with
+`python make_chart_images.py`):
+
+**Classification (48-question mixed pool)**
+
+![Classification accuracy, mixed pool](docs/charts/cls_accuracy.png)
+
+![Speed vs accuracy — up and left is better](docs/charts/cls_tradeoff.png)
+
+![Accuracy vs question difficulty](docs/charts/cls_spectrum.png)
+
+![Mean latency per question](docs/charts/cls_latency.png)
+
+**NER exact-match (18 questions, extractors only)**
+
+![NER exact-match rate, mixed pool](docs/charts/ner_exact.png)
+
+![Exact match vs question difficulty](docs/charts/ner_spectrum.png)
+
 ## Multilingual benchmark (9 languages, no English)
 
 `bench_multilingual.py` — the same six sentence meanings per language
@@ -169,6 +189,10 @@ PR for native-speaker review. All 13 systems answer the same 54 texts.
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
 | gliclass-edge | 50% | 22% | 22% | 31% |
 
+![Accuracy by system and language](docs/charts/ml_heatmap.png)
+
+![Overall multilingual accuracy](docs/charts/ml_overall.png)
+
 Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
 drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
 surprisingly well for an English-family release (100% on Chinese, and the
@@ -180,8 +204,6 @@ classifier weights and are invalid; they do not demonstrate instability
 of the trained model. The rerun uses pinned model and SDK revisions, saved
 in the results file. Laya Router preloads and retains both selected
 checkpoints before timing, so script changes do not include weight loading.
-The web UI renders the full system × language matrix as a
-heatmap.
 
 ## Feature comparison
 
@@ -301,6 +323,7 @@ extra Laya checkpoints noted below):
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
 | `bench_multilingual.py` | 9-language zero-shot suite, all 13 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `bench_*_results.json` | latest results, rendered by the web UI |
 
 ## License
