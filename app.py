@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 
 import altair as alt
@@ -99,24 +100,68 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         width=640, height=max(180, 26 * len(order) + 50))
 
 
+def _scatter_label_layers(df: pd.DataFrame):
+    """Split points into text layers with a per-layer dy so labels of
+    neighboring points don't print through each other (greedy packing
+    in approximate pixel space)."""
+    lx = [math.log10(v) for v in df["s per question"]]
+    ys = [float(v) for v in df["Accuracy %"]]
+    xmin, xmax = min(lx), max(lx)
+    ymin, ymax = min(ys), max(ys)
+
+    def span(v, lo, hi, size):
+        return size / 2 if hi == lo else (v - lo) / (hi - lo) * size
+
+    pts = sorted(
+        ((span(x, xmin, xmax, 560), span(y, ymin, ymax, 320), name)
+         for x, y, name in zip(lx, ys, df["System"])),
+        key=lambda p: p[0])
+    placed: list[tuple[float, float, float, float]] = []
+    groups: dict[int, list[str]] = {}
+    for px_, py_, name in pts:
+        width = 6.5 * len(name)
+        for dy in (0, -14, 14, -28, 28, -42, 42):
+            box = (px_ + 8, px_ + 8 + width,
+                   py_ + dy - 6, py_ + dy + 6)
+            if not any(box[0] - 2 < b[1] and box[1] + 2 > b[0]
+                       and box[2] - 2 < b[3] and box[3] + 2 > b[2]
+                       for b in placed):
+                placed.append(box)
+                groups.setdefault(dy, []).append(name)
+                break
+        else:
+            groups.setdefault(0, []).append(name)
+    return [(dy, df[df["System"].isin(names)])
+            for dy, names in groups.items()]
+
+
 def tradeoff_scatter(df: pd.DataFrame, title: str):
     """Accuracy vs latency: every system one labeled point."""
+    def x_enc():
+        return alt.X("s per question:Q", scale=alt.Scale(type="log"),
+                     title="Mean latency per question, s (log)")
+
+    def y_enc():
+        return alt.Y("Accuracy %:Q", scale=alt.Scale(domain=[0, 100]),
+                     title="Accuracy %")
+
     points = (
         alt.Chart(df, title=title)
         .mark_circle(size=90)
         .encode(
-            x=alt.X("s per question:Q", scale=alt.Scale(type="log"),
-                    title="Mean latency per question, s (log)"),
-            y=alt.Y("Accuracy %:Q", scale=alt.Scale(domain=[0, 100]),
-                    title="Accuracy %"),
+            x=x_enc(), y=y_enc(),
             tooltip=[alt.Tooltip("System:N"),
                      alt.Tooltip("Accuracy %:Q", format=".1f"),
                      alt.Tooltip("s per question:Q", format=".3f")],
         )
     )
-    labels = points.mark_text(align="left", dx=8, fontSize=10).encode(
-        text="System:N")
-    return (points + labels).interactive().properties(
+    layers = [points]
+    for dy, sub in _scatter_label_layers(df):
+        layers.append(
+            alt.Chart(sub)
+            .mark_text(align="left", dx=8, dy=dy, fontSize=10)
+            .encode(x=x_enc(), y=y_enc(), text="System:N"))
+    return alt.layer(*layers).interactive().properties(
         width=640, height=380)
 
 
