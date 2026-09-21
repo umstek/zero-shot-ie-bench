@@ -99,7 +99,7 @@ Honest caveats:
   the combined multi-task call where large succeeded; base embeddings are
   768-d vs large 1024-d.
 
-## Mixed-pool spectrum benchmark (all 13 systems)
+## Mixed-pool spectrum benchmark (all 14 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -122,6 +122,7 @@ exact span-set match (18 questions):
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
 | von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
 | GLiNER2.5-small | 70.8% | 0.043 | 33% | 0.053 |
+| Laya typed-decisions | 70.8% | 1.243 | n/a | |
 | Laya (local) | 68.8% | 0.143 | n/a | |
 | GLiFormer-base | 66.7% | 0.139 | 56% | 0.145 |
 | gliclass-edge | 66.7% | **0.016** | n/a | |
@@ -171,7 +172,7 @@ Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish, Ukrainian ·
 Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified by blind
 back-translation through an independent model instance (it caught 8 errors,
 including a sentiment-flipping Sinhala word) and the full table is in the
-PR for native-speaker review. All 13 systems answer the same 54 texts.
+PR for native-speaker review. All 14 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
@@ -181,6 +182,7 @@ PR for native-speaker review. All 13 systems answer the same 54 texts.
 | Laya Router (mmBERT) | 89% | 94% | 44% | 76% |
 | gliclass-base | 94% | 67% | 39% | 67% |
 | GLiFormer-large | 94% | 61% | 33% | 63% |
+| Laya typed-decisions | 100% | 44% | 33% | 59% |
 | GLiNER2.5-base | 89% | 50% | 28% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
 | von-1.0 (option-marker) | 72% | 33% | 39% | 48% |
@@ -197,7 +199,11 @@ Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
 drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
 surprisingly well for an English-family release (100% on Chinese, and the
 best local Sinhala score at 67%); Jev is the only system at 100% on
-Sinhala. English-only encoders degrade with distance from English as
+Sinhala. Laya's English-only `typed-decisions` specialist — its
+strongest checkpoint on the vendor's own workflow benchmark — holds 100%
+on the popular tier here but collapses on non-Latin scripts (33% rare,
+59% overall; the Router-based row stays the family's best multilingual
+entry). English-only encoders degrade with distance from English as
 expected. von's complete option-marker checkpoint scores 48% overall,
 including 50% on Sinhala. The old 33–48% runs used randomly initialized
 classifier weights and are invalid; they do not demonstrate instability
@@ -267,10 +273,10 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
                                          # (--repeats N) → bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → bench_spectrum_results.json
-                                         # (13 systems; von runs the same
+                                         # (14 systems; von runs the same
                                          # command under .venv-von/Scripts/python)
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 13 systems →
+                                         # 9 languages, all 14 systems →
                                          # bench_multilingual_results.json
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
@@ -322,7 +328,7 @@ extra Laya checkpoints noted below):
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 13 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 14 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `bench_*_results.json` | latest results, rendered by the web UI |
 
