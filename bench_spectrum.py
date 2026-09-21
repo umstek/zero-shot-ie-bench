@@ -56,7 +56,8 @@ GLICLASS = {
     "gliclass-large": "knowledgator/gliclass-large-v3.0",
 }
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS)
-               + ["Laya (local)", "Jev", "von", "so1 (Qwen2.5-0.5B)"])
+               + ["Laya (local)", "Laya typed-decisions", "Jev", "von",
+                  "so1 (Qwen2.5-0.5B)"])
 
 
 def classify_extractor(model_id: str, gliformer: bool):
@@ -89,14 +90,14 @@ def classify_extractor(model_id: str, gliformer: bool):
     return cls_one, ner_one
 
 
-def classify_batched(client_kind: str):
+def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
     """Laya or Jev: one batched call per task, preds mapped back per question."""
     if client_kind == "laya":
         import laya
 
         from jev_client import choice
 
-        agent = laya.load("convaiinnovations/laya")
+        agent = laya.load(repo)
         INSTR = {
             "sentiment": 'What is the overall sentiment of this text: "{text}"',
             "topic": 'Which topic category does this text belong to: "{text}"',
@@ -172,8 +173,12 @@ def main() -> None:
                 t1 = time.perf_counter()
                 ner_ok.append(ner_one(q["text"]) == q["gold"])
                 ner_lat.append(time.perf_counter() - t1)
-    elif name in ("Laya (local)", "Jev"):
-        run_task = classify_batched("laya" if name.startswith("Laya") else "jev")
+    elif name in ("Laya (local)", "Laya typed-decisions", "Jev"):
+        repo = ("convaiinnovations/laya-typed-decisions"
+                if name == "Laya typed-decisions"
+                else "convaiinnovations/laya")
+        run_task = classify_batched("laya" if name.startswith("Laya") else "jev",
+                                    repo=repo)
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()

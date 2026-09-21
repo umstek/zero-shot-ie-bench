@@ -151,7 +151,8 @@ GLICLASS = {
     "gliclass-large": "knowledgator/gliclass-large-v3.0",
 }
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
-               + ["Laya Router", "von", "so1 (Qwen2.5-0.5B)", "Jev"])
+               + ["Laya Router", "Laya typed-decisions", "von",
+                  "so1 (Qwen2.5-0.5B)", "Jev"])
 
 
 def make_classifier(name: str):
@@ -244,6 +245,26 @@ def run_laya_router(texts, lang_of):
     return preds, statistics.mean(lat), routed
 
 
+def run_laya_typed(texts):
+    """Single English-only typed-decisions checkpoint, no routing."""
+    import laya
+
+    from jev_client import choice
+
+    agent = laya.load("convaiinnovations/laya-typed-decisions")
+    question = choice(
+        "What is the overall sentiment of the text in the state: positive, "
+        "negative, or neutral?",
+        {label: None for label in SENTIMENT_LABELS})
+    preds, lat = [], []
+    for text in texts:
+        t0 = time.perf_counter()
+        out = agent.predict({"text": text}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
 def run_jev(texts):
     from jev_client import JevClient, choice
 
@@ -297,6 +318,8 @@ def main() -> None:
         lat = statistics.mean(lat)
     elif name == "Laya Router":
         preds, lat, laya_routes = run_laya_router(texts, lang_of)
+    elif name == "Laya typed-decisions":
+        preds, lat = run_laya_typed(texts)
     else:  # Jev
         preds, lat = run_jev(texts)
 

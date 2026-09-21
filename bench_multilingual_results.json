@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 13 systems answer the same 54 texts.",
+      "All 14 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -28,7 +28,8 @@
       "Jev recorded 2026-09-20 16:21, 1s, CPU",
       "Laya Router recorded 2026-09-20 17:29, 65s, CPU",
       "von recorded 2026-09-20 17:27, 25s, CPU",
-      "Earlier von rows are superseded: the PyPI NLI loader initialized an untrained classifier. The current row uses the complete pinned option-marker checkpoint; those old runs do not establish trained-model instability."
+      "Earlier von rows are superseded: the PyPI NLI loader initialized an untrained classifier. The current row uses the complete pinned option-marker checkpoint; those old runs do not establish trained-model instability.",
+      "Laya typed-decisions recorded 2026-09-21 16:16, 189s, CPU"
     ]
   },
   "by_language": {
@@ -174,6 +175,17 @@
       "Sinhala": 0.5,
       "Icelandic": 0.3333,
       "Welsh": 0.3333
+    },
+    "Laya typed-decisions": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.5,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.5,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -241,6 +253,11 @@
       "popular": 0.7222,
       "medium": 0.3333,
       "rare": 0.3889
+    },
+    "Laya typed-decisions": {
+      "popular": 1.0,
+      "medium": 0.4444,
+      "rare": 0.3333
     }
   },
   "latency": {
@@ -256,7 +273,8 @@
     "gliclass-base": 0.183,
     "gliclass-large": 0.501,
     "so1 (Qwen2.5-0.5B)": 0.281,
-    "von": 0.289
+    "von": 0.289,
+    "Laya typed-decisions": 1.184
   },
   "laya_routing": {
     "Spanish": {
@@ -292,7 +310,8 @@
   },
   "timing": {
     "von": "Model download and loading excluded; first forward pass included.",
-    "Laya Router": "Model download and loading excluded; first forward pass included."
+    "Laya Router": "Model download and loading excluded; first forward pass included.",
+    "Laya typed-decisions": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {
