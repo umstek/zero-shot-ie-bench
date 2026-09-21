@@ -101,66 +101,91 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
 
 
 def _scatter_label_layers(df: pd.DataFrame):
-    """Split points into text layers with a per-layer dy so labels of
-    neighboring points don't print through each other (greedy packing
-    in approximate pixel space)."""
-    lx = [math.log10(v) for v in df["s per question"]]
-    ys = [float(v) for v in df["Accuracy %"]]
-    xmin, xmax = min(lx), max(lx)
-    ymin, ymax = min(ys), max(ys)
+    """Split points into (dy, side, sub-frame) label groups so labels of
+    neighboring points don't print through each other.
 
-    def span(v, lo, hi, size):
-        return size / 2 if hi == lo else (v - lo) / (hi - lo) * size
+    Packing runs in canvas pixel space via an affine data-to-pixel mapping
+    calibrated against actual vl-convert renders of single-point probes
+    (residuals < 0.2 px) for the axis config tradeoff_scatter builds:
+    width 640, height 380, log x over [min*0.8, max*1.2], y over [0, 100].
+    The plot area then starts at (43.4, 9.5) inside the ~690x427 canvas; the
+    chart title shifts everything down uniformly and needs no adjustment."""
+    dmin = math.log10(df["s per question"].min() * 0.8)
+    slope = 640 / (math.log10(df["s per question"].max() * 1.2) - dmin)
 
-    pts = sorted(
-        ((span(x, xmin, xmax, 560), span(y, ymin, ymax, 320), name)
-         for x, y, name in zip(lx, ys, df["System"])),
-        key=lambda p: p[0])
-    placed: list[tuple[float, float, float, float]] = []
-    groups: dict[int, list[str]] = {}
-    for px_, py_, name in pts:
+    def px_(v):
+        return 43.4 + (math.log10(v) - dmin) * slope
+
+    def py_(acc):
+        return 9.5 + (100 - acc) / 100 * 380
+
+    pts = sorted(((px_(v), py_(acc), str(name))
+                  for v, acc, name in zip(df["s per question"],
+                                          df["Accuracy %"], df["System"])),
+                 key=lambda p: p[0])
+    # every point marker is an obstacle for every label (radius ~5.4 px,
+    # padded to 6); canvas is ~690 px wide with the plot ending at ~683
+    placed = [(x - 6, x + 6, y - 6, y + 6) for x, y, _ in pts]
+
+    def collisions(box):
+        return sum(1 for b in placed
+                   if box[0] - 3 < b[1] and box[1] + 3 > b[0]
+                   and box[2] - 2 < b[3] and box[3] + 2 > b[2])
+
+    groups: dict[tuple[int, str], list[str]] = {}
+    for x, y, name in pts:
         width = 6.5 * len(name)
-        for dy in (0, -14, 14, -28, 28, -42, 42):
-            box = (px_ + 8, px_ + 8 + width,
-                   py_ + dy - 6, py_ + dy + 6)
-            if not any(box[0] - 2 < b[1] and box[1] + 2 > b[0]
-                       and box[2] - 2 < b[3] and box[3] + 2 > b[2]
-                       for b in placed):
-                placed.append(box)
-                groups.setdefault(dy, []).append(name)
-                break
-        else:
-            groups.setdefault(0, []).append(name)
-    return [(dy, df[df["System"].isin(names)])
-            for dy, names in groups.items()]
+        # dy=0 on either side outranks any vertical offset: a label centered
+        # on its own marker is the clearest association, especially where two
+        # markers stack within ~10 px and an offset label reads as the other
+        # dot's name
+        spots = [(side, x + 11, x + 11 + width, dy)
+                 if side == "right" else (side, x - 11 - width, x - 11, dy)
+                 for dy in (0, -16, 16, -32, 32, -48, 48, -64, 64)
+                 for side in ("right", "left")]
+        spots = [s for s in spots if s[1] >= 2 and s[2] <= 686]
+        chosen = next((s for s in spots
+                       if collisions((s[1], s[2], y + s[3] - 8, y + s[3] + 6)) == 0),
+                      None)
+        if chosen is None:  # never drop a label: take the least-colliding spot
+            chosen = min(spots, key=lambda s: collisions(
+                (s[1], s[2], y + s[3] - 8, y + s[3] + 6)))
+        side, x0, x1, dy = chosen
+        placed.append((x0, x1, y + dy - 8, y + dy + 6))
+        groups.setdefault((dy, side), []).append(name)
+    return [(dy, side, df[df["System"].isin(names)])
+            for (dy, side), names in groups.items()]
 
 
 def tradeoff_scatter(df: pd.DataFrame, title: str):
-    """Accuracy vs latency: every system one labeled point."""
-    def x_enc():
-        return alt.X("s per question:Q", scale=alt.Scale(type="log"),
-                     title="Mean latency per question, s (log)")
-
-    def y_enc():
-        return alt.Y("Accuracy %:Q", scale=alt.Scale(domain=[0, 100]),
-                     title="Accuracy %")
-
+    """Accuracy vs latency: every system one labeled point. All layers
+    share one explicit x/y scale — per-layer auto domains would place
+    subsets' labels on a different coordinate system than the points."""
+    xscale = alt.Scale(type="log",
+                       domain=[df["s per question"].min() * 0.8,
+                               df["s per question"].max() * 1.2])
+    yscale = alt.Scale(domain=[0, 100])
     points = (
         alt.Chart(df, title=title)
         .mark_circle(size=90)
         .encode(
-            x=x_enc(), y=y_enc(),
+            x=alt.X("s per question:Q", scale=xscale,
+                    title="Mean latency per question, s (log)"),
+            y=alt.Y("Accuracy %:Q", scale=yscale, title="Accuracy %"),
             tooltip=[alt.Tooltip("System:N"),
                      alt.Tooltip("Accuracy %:Q", format=".1f"),
                      alt.Tooltip("s per question:Q", format=".3f")],
         )
     )
     layers = [points]
-    for dy, sub in _scatter_label_layers(df):
+    for dy, side, sub in _scatter_label_layers(df):
         layers.append(
             alt.Chart(sub)
-            .mark_text(align="left", dx=8, dy=dy, fontSize=10)
-            .encode(x=x_enc(), y=y_enc(), text="System:N"))
+            .mark_text(align="left" if side == "right" else "right",
+                       dx=11 if side == "right" else -11, dy=dy, fontSize=10)
+            .encode(x=alt.X("s per question:Q", scale=xscale),
+                    y=alt.Y("Accuracy %:Q", scale=yscale),
+                    text="System:N"))
     return alt.layer(*layers).interactive().properties(
         width=640, height=380)
 
