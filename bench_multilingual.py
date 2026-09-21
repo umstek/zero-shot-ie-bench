@@ -15,6 +15,9 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system von
 
 Jev is a paid API: it runs all 54 texts as one batched request.
+Kev 0.8B needs its local server running first (System One contract):
+    cd ../kev && uv run --extra serve python -m kev.serve \
+        --run jaredpalmer/kev-0.8b --port 8009
 
 Ground-truth verification: sentences were blind-translated back to English
 by one independent cold-context model instance (separate agent, no labels
@@ -152,7 +155,7 @@ GLICLASS = {
 }
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + ["Laya Router", "Laya typed-decisions", "von",
-                  "so1 (Qwen2.5-0.5B)", "Jev"])
+                  "so1 (Qwen2.5-0.5B)", "Jev", "Kev 0.8B (local)"])
 
 
 def make_classifier(name: str):
@@ -283,6 +286,26 @@ def run_jev(texts):
              for i in range(len(texts))], dt / len(texts))
 
 
+def run_kev(texts):
+    """Kev 0.8B: local System One server (kev.serve, port 8009), one
+    request per text so latency is comparable with the other local models.
+    String instructions — the shape Laya and Kev both expect."""
+    from jev_client import JevClient, choice
+
+    client = JevClient(base_url="http://127.0.0.1:8009/v1/systemone",
+                       model="kev-latest")
+    preds, lat = [], []
+    for text in texts:
+        question = choice(
+            f'What is the overall sentiment of this text: "{text}"',
+            {label: None for label in SENTIMENT_LABELS})
+        t0 = time.perf_counter()
+        out = client.ask({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -320,6 +343,8 @@ def main() -> None:
         preds, lat, laya_routes = run_laya_router(texts, lang_of)
     elif name == "Laya typed-decisions":
         preds, lat = run_laya_typed(texts)
+    elif name == "Kev 0.8B (local)":
+        preds, lat = run_kev(texts)
     else:  # Jev
         preds, lat = run_jev(texts)
 

@@ -122,15 +122,29 @@ def _scatter_label_layers(df: pd.DataFrame):
     pts = sorted(((px_(v), py_(acc), str(name))
                   for v, acc, name in zip(df["s per question"],
                                           df["Accuracy %"], df["System"])),
-                 key=lambda p: p[0])
+                 key=lambda p: p[0], reverse=True)
+    # sweep right-to-left: the right edge is the crowded frontier, so the
+    # rightmost points claim their lanes first and leftward points (open
+    # space) absorb the offsets. Within an x column, markers stack within
+    # ~10 px; place the LOWER dot's label first so it claims its own row
+    # (dy=0) and the upper dot offsets up or mirrors to the other side.
+    ordered = []
+    cluster = []
+    for p in pts:
+        if cluster and cluster[-1][0] - p[0] >= 25:
+            ordered.extend(sorted(cluster, key=lambda p: -p[1]))
+            cluster = []
+        cluster.append(p)
+    ordered.extend(sorted(cluster, key=lambda p: -p[1]))
+    pts = ordered
     # every point marker is an obstacle for every label (radius ~5.4 px,
     # padded to 6); canvas is ~690 px wide with the plot ending at ~683
     placed = [(x - 6, x + 6, y - 6, y + 6) for x, y, _ in pts]
 
     def collisions(box):
         return sum(1 for b in placed
-                   if box[0] - 3 < b[1] and box[1] + 3 > b[0]
-                   and box[2] - 2 < b[3] and box[3] + 2 > b[2])
+                   if box[0] - 2 < b[1] and box[1] + 2 > b[0]
+                   and box[2] - 1 < b[3] and box[3] + 1 > b[2])
 
     groups: dict[tuple[int, str], list[str]] = {}
     for x, y, name in pts:

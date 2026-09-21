@@ -58,28 +58,34 @@ def noul(instructions, criteria: dict | None = None) -> dict:
 
 
 class JevClient:
-    def __init__(self, api_key: str | None = None, model: str = DEFAULT_MODEL):
-        self.api_key = api_key or load_api_key()
+    def __init__(self, api_key: str | None = None, model: str = DEFAULT_MODEL,
+                 base_url: str = SYSTEM_ONE_URL):
+        self.base_url = base_url
         self.model = model
-        if not self.api_key:
-            raise RuntimeError(
-                "No TYPESAFE_API_KEY found. Set the environment variable or "
-                "create a .env file next to jev_client.py with "
-                "TYPESAFE_API_KEY=... (see README)."
-            )
+        # any other System One endpoint (e.g. a local kev server) needs no key
+        if base_url != SYSTEM_ONE_URL:
+            self.api_key = api_key or ""
+        else:
+            self.api_key = api_key or load_api_key()
+            if not self.api_key:
+                raise RuntimeError(
+                    "No TYPESAFE_API_KEY found. Set the environment variable "
+                    "or create a .env file next to jev_client.py with "
+                    "TYPESAFE_API_KEY=... (see README)."
+                )
 
     def ask(self, state, questions: dict, timeout: int = 120) -> dict:
         body = json.dumps(
             {"model": self.model, "state": state, "questions": questions}
         ).encode("utf-8")
+        headers = {"content-type": "application/json"}
+        if self.api_key:
+            headers["authorization"] = f"Bearer {self.api_key}"
         request = urllib.request.Request(
-            SYSTEM_ONE_URL,
+            self.base_url,
             data=body,
             method="POST",
-            headers={
-                "authorization": f"Bearer {self.api_key}",
-                "content-type": "application/json",
-            },
+            headers=headers,
         )
         t0 = time.perf_counter()
         try:

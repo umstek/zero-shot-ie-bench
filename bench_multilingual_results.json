@@ -29,7 +29,8 @@
       "Laya Router recorded 2026-09-20 17:29, 65s, CPU",
       "von recorded 2026-09-20 17:27, 25s, CPU",
       "Earlier von rows are superseded: the PyPI NLI loader initialized an untrained classifier. The current row uses the complete pinned option-marker checkpoint; those old runs do not establish trained-model instability.",
-      "Laya typed-decisions recorded 2026-09-21 16:16, 189s, CPU"
+      "Laya typed-decisions recorded 2026-09-21 16:16, 189s, CPU",
+      "Kev 0.8B (local) recorded 2026-09-21 21:58, 93s, CPU"
     ]
   },
   "by_language": {
@@ -186,6 +187,17 @@
       "Sinhala": 0.3333,
       "Icelandic": 0.3333,
       "Welsh": 0.3333
+    },
+    "Kev 0.8B (local)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.5,
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -258,6 +270,11 @@
       "popular": 1.0,
       "medium": 0.4444,
       "rare": 0.3333
+    },
+    "Kev 0.8B (local)": {
+      "popular": 0.9444,
+      "medium": 0.8889,
+      "rare": 0.5
     }
   },
   "latency": {
@@ -274,7 +291,8 @@
     "gliclass-large": 0.501,
     "so1 (Qwen2.5-0.5B)": 0.281,
     "von": 0.289,
-    "Laya typed-decisions": 1.184
+    "Laya typed-decisions": 1.184,
+    "Kev 0.8B (local)": 1.715
   },
   "laya_routing": {
     "Spanish": {
@@ -311,7 +329,8 @@
   "timing": {
     "von": "Model download and loading excluded; first forward pass included.",
     "Laya Router": "Model download and loading excluded; first forward pass included.",
-    "Laya typed-decisions": "Model download and loading excluded; first forward pass included."
+    "Laya typed-decisions": "Model download and loading excluded; first forward pass included.",
+    "Kev 0.8B (local)": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {

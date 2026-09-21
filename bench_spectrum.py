@@ -13,6 +13,10 @@ Run from the MAIN venv for most systems, from .venv-von for von:
     ...
     .venv-von/Scripts/python bench_spectrum.py --system von
 
+Kev 0.8B needs its local server running first (System One contract):
+    cd ../kev && uv run --extra serve python -m kev.serve \
+        --run jaredpalmer/kev-0.8b --port 8009
+
 Output: bench_spectrum_results.json
 """
 
@@ -56,8 +60,8 @@ GLICLASS = {
     "gliclass-large": "knowledgator/gliclass-large-v3.0",
 }
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS)
-               + ["Laya (local)", "Laya typed-decisions", "Jev", "von",
-                  "so1 (Qwen2.5-0.5B)"])
+               + ["Laya (local)", "Laya typed-decisions", "Jev",
+                  "Kev 0.8B (local)", "von", "so1 (Qwen2.5-0.5B)"])
 
 
 def classify_extractor(model_id: str, gliformer: bool):
@@ -91,17 +95,19 @@ def classify_extractor(model_id: str, gliformer: bool):
 
 
 def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
-    """Laya or Jev: one batched call per task, preds mapped back per question."""
+    """Laya, Jev, or Kev: one batched call per task, preds mapped back per
+    question. Kev serves the same System One contract locally (kev.serve,
+    port 8009) and gets string instructions like Laya."""
+    INSTR = {
+        "sentiment": 'What is the overall sentiment of this text: "{text}"',
+        "topic": 'Which topic category does this text belong to: "{text}"',
+    }
     if client_kind == "laya":
         import laya
 
         from jev_client import choice
 
         agent = laya.load(repo)
-        INSTR = {
-            "sentiment": 'What is the overall sentiment of this text: "{text}"',
-            "topic": 'Which topic category does this text belong to: "{text}"',
-        }
 
         def run_task(task: str, texts: list[str]) -> list:
             labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
@@ -110,6 +116,21 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
                                 {l: None for l in labels})
                 for i, t in enumerate(texts)}
             out = agent.predict({"task": task}, questions)
+            return [out["answers"][f"t{i}"].get("choice")
+                    for i in range(len(texts))]
+    elif client_kind == "kev":
+        from jev_client import JevClient, choice
+
+        client = JevClient(base_url="http://127.0.0.1:8009/v1/systemone",
+                           model="kev-latest")
+
+        def run_task(task: str, texts: list[str]) -> list:
+            labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
+            questions = {
+                f"t{i}": choice(INSTR[task].format(text=t),
+                                {l: None for l in labels})
+                for i, t in enumerate(texts)}
+            out = client.ask({"task": task}, questions)
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
     else:
@@ -173,12 +194,14 @@ def main() -> None:
                 t1 = time.perf_counter()
                 ner_ok.append(ner_one(q["text"]) == q["gold"])
                 ner_lat.append(time.perf_counter() - t1)
-    elif name in ("Laya (local)", "Laya typed-decisions", "Jev"):
+    elif name in ("Laya (local)", "Laya typed-decisions", "Jev",
+                  "Kev 0.8B (local)"):
         repo = ("convaiinnovations/laya-typed-decisions"
                 if name == "Laya typed-decisions"
                 else "convaiinnovations/laya")
-        run_task = classify_batched("laya" if name.startswith("Laya") else "jev",
-                                    repo=repo)
+        kind = ("laya" if name.startswith("Laya")
+                else "kev" if name.startswith("Kev") else "jev")
+        run_task = classify_batched(kind, repo=repo)
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()
