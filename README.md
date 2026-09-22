@@ -329,6 +329,7 @@ extra Laya checkpoints noted below):
 | `knowledgator/gliformer-large-v1` | 575.6M | benchmarked; family is base+large only, no small |
 | `convaiinnovations/laya` (+multilingual, typed-decisions) | 421M / 322M | English root benchmarked; subfolders exist for the other two |
 | `jaredpalmer/kev-0.8b` | 0.8B (9.3M trained) | Qwen3.5 base + LoRA/head; 4B/9B siblings exist but are impractical on CPU — 0.8B benchmarked |
+| `akhilaaa3/Jev-Omni` | 12B | multimodal (text/image/audio/video) Gemma 4 fine-tune, own API — not run: needs a CUDA GPU and ~50 GB fp32 weights |
 | `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader — not run |
 | `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line — not run |
 
