@@ -307,10 +307,12 @@ def run_systemone(texts, port: int, model: str):
 
     client = JevClient(base_url=f"http://127.0.0.1:{port}/v1/systemone",
                        model=model)
-    # pay any lazy model loading before the timed loop
+    # pay any lazy model loading before the timed loop; OpenThai's cold
+    # load runs minutes, past ask()'s 120 s default
     client.ask({"task": "warmup"},
                {"w": choice('Sentiment of "good"?',
-                            {"positive": None, "negative": None})})
+                            {"positive": None, "negative": None})},
+               timeout=600)
     preds, lat = [], []
     for text in texts:
         question = choice(
@@ -441,8 +443,12 @@ def main() -> None:
     out["by_language"][name] = by_lang
     out["by_tier"][name] = by_tier
     out["latency"][name] = round(lat, 3)
+    warmed = name.startswith(("Kev", "decider", "OpenThai"))
     out.setdefault("timing", {})[name] = (
-        "Model download and loading excluded; first forward pass included.")
+        "Model download and loading excluded; "
+        + ("one untimed warm-up question pays the server's lazy weight "
+           "load first - timed latencies are warmed." if warmed
+           else "first forward pass included."))
     if name == "von":
         from von_client import provenance
 

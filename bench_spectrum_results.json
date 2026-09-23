@@ -1703,7 +1703,7 @@
       ],
       "cls_accuracy": 0.7292,
       "cls_mean_latency_s": 0.587,
-      "timing": "Model download and loading excluded; first forward pass included."
+      "timing": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
     },
     "AgentJev 0.6B (local)": {
       "recorded": "2026-09-23 08:40",
@@ -1915,7 +1915,7 @@
       ],
       "cls_accuracy": 0.8333,
       "cls_mean_latency_s": 2.144,
-      "timing": "Model download and loading excluded; first forward pass included."
+      "timing": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
     },
     "OpenThai 0.8B (local)": {
       "recorded": "2026-09-23 11:43",
@@ -2021,7 +2021,7 @@
       ],
       "cls_accuracy": 0.7083,
       "cls_mean_latency_s": 0.504,
-      "timing": "Model download and loading excluded; first forward pass included."
+      "timing": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
     },
     "Verdict 151M (local)": {
       "recorded": "2026-09-23 11:44",

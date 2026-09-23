@@ -157,10 +157,12 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
                      "/v1/systemone",
             model=f"{client_kind}-latest")
-        # pay any lazy model loading before the timed section
+        # pay any lazy model loading before the timed section; OpenThai's
+        # cold load runs minutes, past ask()'s 120 s default
         client.ask({"task": "warmup"},
                    {"w": choice('Sentiment of "good"?',
-                                {"positive": None, "negative": None})})
+                                {"positive": None, "negative": None})},
+                   timeout=600)
 
         def run_task(task: str, texts: list[str]) -> list:
             labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
@@ -315,13 +317,18 @@ def main() -> None:
             cls_preds.append(out[0].choice)
 
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
+    warmed = name.startswith(("Kev", "decider", "OpenThai"))
     entry = {
         "recorded": time.strftime("%Y-%m-%d %H:%M"),
         "cls_preds": cls_preds,
         "cls_correct": correct,
         "cls_accuracy": round(sum(correct) / len(correct), 4),
         "cls_mean_latency_s": round(statistics.mean(cls_lat), 3),
-        "timing": "Model download and loading excluded; first forward pass included.",
+        "timing": ("Model download and loading excluded; one untimed "
+                   "warm-up question pays the server's lazy weight load "
+                   "first - timed latencies are warmed." if warmed else
+                   "Model download and loading excluded; first forward "
+                   "pass included."),
     }
     if ner_ok is not None:
         entry["ner_exact"] = ner_ok

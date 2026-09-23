@@ -403,10 +403,10 @@
     "von": "Model download and loading excluded; first forward pass included.",
     "Laya Router": "Model download and loading excluded; first forward pass included.",
     "Laya typed-decisions": "Model download and loading excluded; first forward pass included.",
-    "Kev 0.8B (local)": "Model download and loading excluded; first forward pass included.",
+    "Kev 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "AgentJev 0.6B (local)": "Model download and loading excluded; first forward pass included.",
-    "decider 0.8B (local)": "Model download and loading excluded; first forward pass included.",
-    "OpenThai 0.8B (local)": "Model download and loading excluded; first forward pass included.",
+    "decider 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "OpenThai 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Verdict 151M (local)": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
