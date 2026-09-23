@@ -581,28 +581,28 @@ def build_compare_tab():
     import gradio as gr
 
     gr.Markdown("""
-## Feature comparison — all seven families
+## Feature comparison — all twelve families
 
 GLiNER 2.5 = small/base/multi checkpoints · GLiClass = edge/modern-base/
 base/large — per-size scores live in the benchmark tabs.
 
-| | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev |
-|---|---|---|---|---|---|---|---|
-| **Ability group** | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Cost | free | free | free | free | free | free | $0.042/1M input |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
-| Notable | boundary architecture | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) |
+| | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Ability group** | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ❌ choice only |
+| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ binary choice |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cost | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 |
+| Notable | boundary architecture | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention |
 
 Three benchmark tabs follow from this table: **Classification** (every
 system, one mixed pool), **Extraction** (the five span-producing systems)
