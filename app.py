@@ -59,33 +59,49 @@ def get_jev_client():
 
 # --------------------------------------------------------------- charts
 def hbar_chart(df: pd.DataFrame, value: str, title: str,
-               value_title: str, descending: bool = True):
+               value_title: str, descending: bool = True,
+               log: bool = False):
     """Horizontal bars, one row per System, sorted by value.
 
     Gradio's built-in BarPlot stacks series whenever `color` is set and
     offers no grouping/horizontal options, so benchmark charts are
     altair charts rendered through gr.Plot instead.
+
+    log=True for value ranges spanning orders of magnitude (latency):
+    bars then start at the domain floor instead of zero, so relative
+    differences stay visible at the fast end.
     """
     order = df.sort_values(value, ascending=not descending)["System"].tolist()
+    log_extra: dict = {}
+    if log:
+        # bars default to a zero baseline, which a log scale cannot show
+        # (it would clamp outside the domain and render nothing); anchor
+        # every bar at the domain floor instead
+        floor = df[value].min() * 0.6
+        xscale = alt.Scale(type="log", domain=[floor, df[value].max() * 1.5])
+        df = df.assign(**{"_floor": floor})
+        log_extra = {"x2": alt.X2("_floor:Q")}
+    else:
+        xscale = alt.Scale(domain=[0, df[value].max() * 1.12])
     return (
         alt.Chart(df, title=title)
         .mark_bar()
         .encode(
             y=alt.Y("System:N", sort=order, title=None,
                     axis=alt.Axis(labelFontSize=12)),
-            x=alt.X(f"{value}:Q", title=value_title, scale=alt.Scale(
-                domain=[0, df[value].max() * 1.12])),
+            x=alt.X(f"{value}:Q", title=value_title, scale=xscale),
             tooltip=[alt.Tooltip("System:N"), alt.Tooltip(f"{value}:Q",
                      format=".3f")],
+            **log_extra,
         )
         .properties(width=640, height=max(180, 26 * len(order) + 50))
     )
 
 
 def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
-                       value_title: str):
+                       value_title: str, fmt: str = ".1f", log: bool = False):
     """hbar_chart plus the numeric value printed at each bar's end."""
-    base = hbar_chart(df, value, title, value_title)
+    base = hbar_chart(df, value, title, value_title, log=log)
     order = df.sort_values(value, ascending=False)["System"].tolist()
     labels = (
         alt.Chart(df)
@@ -93,11 +109,14 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         .encode(
             y=alt.Y("System:N", sort=order, title=None),
             x=alt.X(f"{value}:Q"),
-            text=alt.Text(f"{value}:Q", format=".1f"),
+            text=alt.Text(f"{value}:Q", format=fmt),
         )
     )
     return (base + labels).properties(
         width=640, height=max(180, 26 * len(order) + 50))
+
+
+_SCATTER_W, _SCATTER_H = 800, 460  # 19 systems; grew from 640x380
 
 
 def _scatter_label_layers(df: pd.DataFrame):
@@ -107,30 +126,44 @@ def _scatter_label_layers(df: pd.DataFrame):
     Packing runs in canvas pixel space via an affine data-to-pixel mapping
     calibrated against actual vl-convert renders of single-point probes
     (residuals < 0.2 px) for the axis config tradeoff_scatter builds:
-    width 640, height 380, log x over [min*0.8, max*1.2], y over [0, 100].
-    The plot area then starts at (43.4, 9.5) inside the ~690x427 canvas; the
-    chart title shifts everything down uniformly and needs no adjustment."""
+    log x over [min*0.8, max*1.2], y over [0, 100]. The plot area then
+    starts at (43.4, 9.5) inside the canvas; the chart title shifts
+    everything down uniformly and needs no adjustment."""
     dmin = math.log10(df["s per question"].min() * 0.8)
-    slope = 640 / (math.log10(df["s per question"].max() * 1.2) - dmin)
+    slope = _SCATTER_W / (math.log10(df["s per question"].max() * 1.2) - dmin)
 
     def px_(v):
         return 43.4 + (math.log10(v) - dmin) * slope
 
     def py_(acc):
-        return 9.5 + (100 - acc) / 100 * 380
+        return 9.5 + (100 - acc) / 100 * _SCATTER_H
 
     pts = sorted(((px_(v), py_(acc), str(name))
                   for v, acc, name in zip(df["s per question"],
                                           df["Accuracy %"], df["System"])),
-                 key=lambda p: p[0])
+                 key=lambda p: p[0], reverse=True)
+    # sweep right-to-left: the right edge is the crowded frontier, so the
+    # rightmost points claim their lanes first and leftward points (open
+    # space) absorb the offsets. Within an x column, markers stack within
+    # ~10 px; place the LOWER dot's label first so it claims its own row
+    # (dy=0) and the upper dot offsets up or mirrors to the other side.
+    ordered = []
+    cluster = []
+    for p in pts:
+        if cluster and cluster[-1][0] - p[0] >= 25:
+            ordered.extend(sorted(cluster, key=lambda p: -p[1]))
+            cluster = []
+        cluster.append(p)
+    ordered.extend(sorted(cluster, key=lambda p: -p[1]))
+    pts = ordered
     # every point marker is an obstacle for every label (radius ~5.4 px,
-    # padded to 6); canvas is ~690 px wide with the plot ending at ~683
+    # padded to 6); labels must stay inside the canvas (plot + ~6 px margin)
     placed = [(x - 6, x + 6, y - 6, y + 6) for x, y, _ in pts]
 
     def collisions(box):
         return sum(1 for b in placed
-                   if box[0] - 3 < b[1] and box[1] + 3 > b[0]
-                   and box[2] - 2 < b[3] and box[3] + 2 > b[2])
+                   if box[0] - 2 < b[1] and box[1] + 2 > b[0]
+                   and box[2] - 1 < b[3] and box[3] + 1 > b[2])
 
     groups: dict[tuple[int, str], list[str]] = {}
     for x, y, name in pts:
@@ -143,7 +176,8 @@ def _scatter_label_layers(df: pd.DataFrame):
                  if side == "right" else (side, x - 11 - width, x - 11, dy)
                  for dy in (0, -16, 16, -32, 32, -48, 48, -64, 64)
                  for side in ("right", "left")]
-        spots = [s for s in spots if s[1] >= 2 and s[2] <= 686]
+        spots = [s for s in spots
+                 if s[1] >= 2 and s[2] <= _SCATTER_W + 40]
         chosen = next((s for s in spots
                        if collisions((s[1], s[2], y + s[3] - 8, y + s[3] + 6)) == 0),
                       None)
@@ -178,6 +212,15 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
         )
     )
     layers = [points]
+    rules = []
+    # inverse of the packer's data->pixel map, for leader endpoints
+    dmin = math.log10(df["s per question"].min() * 0.8)
+    slope = _SCATTER_W / (math.log10(df["s per question"].max() * 1.2)
+                          - dmin)
+
+    def data_x(px: float) -> float:
+        return 10 ** ((px - 43.4) / slope + dmin)
+
     for dy, side, sub in _scatter_label_layers(df):
         layers.append(
             alt.Chart(sub)
@@ -186,12 +229,40 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
             .encode(x=alt.X("s per question:Q", scale=xscale),
                     y=alt.Y("Accuracy %:Q", scale=yscale),
                     text="System:N"))
-    return alt.layer(*layers).interactive().properties(
-        width=640, height=380)
+        if dy:
+            # a label pushed off its marker's row (stacked pairs, crowded
+            # frontier) can read as the neighbor dot's label; an elbow
+            # leader — short horizontal stub, then a vertical riser just
+            # outside the marker column — settles the association without
+            # crossing a stacked neighbor the way a diagonal would
+            col = 9 if side == "right" else -9
+            seg_rows = []
+            for v, a in zip(sub["s per question"], sub["Accuracy %"]):
+                x0 = 43.4 + (math.log10(v) - dmin) * slope
+                seg_rows.append({  # marker -> elbow column
+                    "s per question": v, "Accuracy %": a,
+                    "_x2": data_x(x0 + col), "_y2": a})
+                seg_rows.append({  # elbow column -> label center
+                    "s per question": data_x(x0 + col), "Accuracy %": a,
+                    "_x2": data_x(x0 + col),
+                    "_y2": a - (dy - 1) / _SCATTER_H * 100})
+            rules.append(
+                alt.Chart(pd.DataFrame(seg_rows))
+                .mark_rule(stroke="#999999", strokeWidth=0.6)
+                .encode(x=alt.X("s per question:Q", scale=xscale),
+                        y=alt.Y("Accuracy %:Q", scale=yscale),
+                        x2="_x2:Q", y2="_y2:Q"))
+    return alt.layer(*rules, *layers).interactive().properties(
+        width=_SCATTER_W, height=_SCATTER_H)
 
 
 def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
-    """Accuracy across the measured difficulty range, one line per system."""
+    """Accuracy across the measured difficulty range, one line per system.
+    Lines also carry per-system dash patterns: systems that agree on a
+    stretch would otherwise overplot each other and the later-drawn line
+    would erase the earlier one."""
+    dashes = [[1, 0], [6, 3], [2, 2], [10, 2, 2, 2], [8, 8],
+              [3, 1, 3, 4], [12, 2, 4, 2], [1, 3]]
     return (
         alt.Chart(df, title=title)
         .mark_line(point=True, strokeWidth=2)
@@ -204,6 +275,11 @@ def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
             color=alt.Color("System:N",
                             legend=alt.Legend(columns=2,
                                               labelFontSize=11)),
+            strokeDash=alt.StrokeDash(
+                "System:N", legend=None,
+                scale=alt.Scale(
+                    range=[dashes[i % len(dashes)]
+                           for i in range(df["System"].nunique())])),
             tooltip=["System:N", "Question difficulty ≤:Q",
                      alt.Tooltip(f"{y_title}:Q", format=".1f")],
         )
@@ -505,28 +581,28 @@ def build_compare_tab():
     import gradio as gr
 
     gr.Markdown("""
-## Feature comparison — all seven families
+## Feature comparison — all twelve families
 
 GLiNER 2.5 = small/base/multi checkpoints · GLiClass = edge/modern-base/
 base/large — per-size scores live in the benchmark tabs.
 
-| | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev |
-|---|---|---|---|---|---|---|---|
-| **Ability group** | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Cost | free | free | free | free | free | free | $0.042/1M input |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
-| Notable | boundary architecture | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) |
+| | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Ability group** | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) |
+| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cost | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 |
+| Notable | boundary architecture | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention |
 
 Three benchmark tabs follow from this table: **Classification** (every
 system, one mixed pool), **Extraction** (the five span-producing systems)

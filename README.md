@@ -1,9 +1,9 @@
 # zero-shot-ie-bench
 
-Seven zero-shot information-extraction and classification families —
-extractor encoders, a purpose-built classifier, and typed-decision engines
-(local and cloud) — demoed, benchmarked, and cross-compared in one repo
-with a web UI.
+Nineteen zero-shot systems across twelve information-extraction and
+classification families — extractor encoders, a purpose-built classifier,
+and typed-decision engines (local and cloud) — demoed, benchmarked, and
+cross-compared in one repo with a web UI.
 
 | System | Kind | Size | License / cost |
 |---|---|---|---|
@@ -13,6 +13,11 @@ with a web UI.
 | [Laya](https://huggingface.co/convaiinnovations/laya) (`laya`) | local typed-decision engine (choice/score/noul) | 421M (322M multilingual) | Apache 2.0, free |
 | [von-1.0](https://huggingface.co/wfzyx/von-1.0) (`von-sdk`) | local typed-decision engine (System One protocol) | 396M | Apache 2.0, free |
 | [open-alternative-jev](https://github.com/ikermoel/open-alternative-jev) (`so1`) | local decision harness over any ChatML LLM (logprobs) | BYO LLM (tested Qwen2.5-0.5B) | MIT, free |
+| [Kev](https://github.com/jaredpalmer/kev) (`jaredpalmer/kev-0.8b`) | local decision engine (open-weight Jev lookalike, System One contract) | 0.8B (9.3M trained) | Apache 2.0, free |
+| [AgentJev](https://github.com/malevrigns/agent-jev) | local decision engine (candidate head over Qwen3-0.6B, own API) | 0.6B | Apache 2.0, free |
+| [decider](https://huggingface.co/Mapika/decider-0.8b) (`decider-ai`) | local decision engine (System One contract) | 0.8B | Apache 2.0, free |
+| [OpenThai-SystemOne](https://huggingface.co/iapp-technology/OpenThai-SystemOne) (`openthai-systemone`) | local decision engine (Thai/English, System One contract) | 0.8B | Apache 2.0 package; weights gated on HF |
+| [Verdict](https://huggingface.co/heman10x/rlcd-modernbert-151m) | local decision encoder (ModernBERT + abstention head) | 151M | Apache 2.0, free |
 | [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | paid API |
 
 The GLiNER lineage forked: Urchade Zaratiana (original GLiNER author,
@@ -20,15 +25,22 @@ ex-Knowledgator) is on the GLiNER2 paper with Fastino; Knowledgator kept the
 classic `gliner` package, built GLiFormer on it and also maintains GLiClass.
 Laya's card positions it explicitly as the open local counterpart of cloud
 Jev; von speaks the same System One protocol locally, and so1 is a library
-that turns any open LLM into a Jev-style decider. Three different animals:
+that turns any open LLM into a Jev-style decider. The open "Jev
+alternative" wave added five more local engines, all benchmarked here:
+Kev and AgentJev (open-weight Jev lookalikes), decider and
+OpenThai-SystemOne (further System One contract servers), and Verdict (a
+151M ModernBERT decision head with trained abstention). Three different
+animals:
 
 - **Extractors** (GLiNER 2.5, GLiFormer): spans, entities, relations,
   records — per-text calls, run offline.
 - **Classifiers** (GLiClass): zero-shot text→label scores with every label
   answered in one forward pass.
-- **Decision engines** (Laya, von, so1, Jev): you ask typed questions
-  (`choice`, `score`, `noul`) over a JSON state; all questions in one call
-  are answered together (one forward pass / one request).
+- **Decision engines** (Laya, von, so1, Kev, AgentJev, decider, OpenThai,
+  Verdict, Jev): you ask typed questions (`choice`, `score`, `noul`) over a
+  JSON state; all questions in one call are answered together (one forward
+  pass / one request). This benchmark exercises Verdict's `choice`
+  questions only; its API also defines `score` rubrics and `noul`.
 
 ## Benchmark results
 
@@ -99,7 +111,7 @@ Honest caveats:
   the combined multi-task call where large succeeded; base embeddings are
   768-d vs large 1024-d.
 
-## Mixed-pool spectrum benchmark (all 14 systems)
+## Mixed-pool spectrum benchmark (all 19 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -116,33 +128,56 @@ exact span-set match (18 questions):
 |---|---|---|---|---|
 | Jev (cloud) | **93.8%** | 0.037 | n/a | |
 | GLiNER2.5-base | 83.3% | 0.111 | 61% | 0.135 |
+| decider 0.8B (local) | 83.3% | 2.144 | n/a | |
 | gliclass-base | 81.2% | 0.110 | n/a | |
 | gliclass-large | 81.2% | 0.411 | n/a | |
 | GLiNER2.5-multi | 79.2% | 0.152 | **67%** | 0.180 |
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
 | von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
+| AgentJev 0.6B (local) | 79.2% | 0.646 | n/a | |
+| Kev 0.8B (local) | 72.9% | 0.587 | n/a | |
 | GLiNER2.5-small | 70.8% | 0.043 | 33% | 0.053 |
+| OpenThai 0.8B (local) | 70.8% | 0.504 | n/a | |
 | Laya typed-decisions | 70.8% | 1.243 | n/a | |
 | Laya (local) | 68.8% | 0.143 | n/a | |
 | GLiFormer-base | 66.7% | 0.139 | 56% | 0.145 |
 | gliclass-edge | 66.7% | **0.016** | n/a | |
 | gliclass-modern-base | 66.7% | 0.051 | n/a | |
 | so1 + Qwen2.5-0.5B | 43.8% | 0.237 | n/a | |
+| Verdict 151M (local) | 39.6% | 0.165 | n/a | |
 
 Takeaways: the pool is deliberately mixed, so absolute numbers run lower
 than on the flat suite above. **gliclass-large is the best local sarcasm
 reader found** (the hardest sentiment questions; second only to cloud Jev)
 and gliclass-edge is the speed king at 16 ms/question. GLiNER2.5-multi is
 the most robust extractor. von's trained option-marker backend scores
-79.2% here. Its earlier 62.5% row is withdrawn: the PyPI SDK's default NLI
+79.2% here; its earlier 62.5% row is withdrawn: the PyPI SDK's default NLI
 loader initialized an untrained classifier instead of loading the separate
-decision weights. The so1
+decision weights. Kev 0.8B — Jared Palmer's open-weights reconstruction
+of Jev's architecture (LoRA + pointer head over a frozen Qwen3.5-0.8B
+base, served locally on the same System One contract) — lands at 72.9%,
+and AgentJev-0.6B (Qwen3-0.6B backbone with the LM head replaced by a
+permutation-equivariant candidate head, own loopback API) reaches 79.2%
+at 0.646 s/question — 17× Jev's batched cloud latency, but local and
+free. The newest wave: decider-0.8B, a third-party
+Qwen3.5-0.8B-Base System One server, is the strongest local decision
+engine at 83.3% (tying GLiNER2.5-base) — but at 2.1 s/question it is also
+the slowest system on this page. OpenThai-SystemOne (Qwen3.5-0.8B with a
+Gated DeltaNet hybrid backbone and a 256-way slot head, Thai/English
+tuning) scores 70.8% at 0.5 s after a multi-minute lazy warm-up.
+Verdict, an RLCD-trained 151M ModernBERT decision head, is the fastest
+decision engine here (0.165 s) but abstains on 22/48 questions —
+abstention scores as wrong, so 39.6% overall (73% on the 26 it does
+answer). The so1
 technique works mechanically on any ChatML LLM, but a 0.5B base model is
 not enough brain for it — the harness is the contribution, swap in a
 bigger LLM. Note: gliclass PyPI metadata asks for transformers ≥5 but runs
 fine on the pinned 4.57.6; von genuinely needs transformers 5, hence the
 separate `.venv-von`. Model download and loading are excluded from the
-latency measurements; the first forward pass is included.
+latency measurements; the first forward pass is included — except the
+local System One servers (Kev, decider, OpenThai), which answer one
+untimed warm-up question first (lazy weight loading), so their latencies
+are warmed.
 
 The web UI renders these as interactive charts; the same charts, as
 images (regenerate after re-running the benchmarks with
@@ -172,16 +207,20 @@ Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish, Ukrainian ·
 Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified by blind
 back-translation through an independent model instance (it caught 8 errors,
 including a sentiment-flipping Sinhala word) and the full table is in the
-PR for native-speaker review. All 14 systems answer the same 54 texts.
+PR for native-speaker review. All 19 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
 | Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
+| decider 0.8B (local) | 100% | 100% | 50% | 83% |
+| OpenThai 0.8B (local) | 100% | 100% | 50% | 83% |
 | gliclass-large | 100% | 89% | 56% | 81% |
+| Kev 0.8B (local) | 94% | 89% | 50% | 78% |
 | Laya Router (mmBERT) | 89% | 94% | 44% | 76% |
 | gliclass-base | 94% | 67% | 39% | 67% |
 | GLiFormer-large | 94% | 61% | 33% | 63% |
+| AgentJev 0.6B (local) | 83% | 83% | 22% | 63% |
 | Laya typed-decisions | 100% | 44% | 33% | 59% |
 | GLiNER2.5-base | 89% | 50% | 28% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
@@ -190,6 +229,7 @@ PR for native-speaker review. All 14 systems answer the same 54 texts.
 | so1 + Qwen2.5-0.5B | 39% | 39% | 33% | 37% |
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
 | gliclass-edge | 50% | 22% | 22% | 31% |
+| Verdict 151M (local) | 50% | 11% | 6% | 22% |
 
 ![Accuracy by system and language](docs/charts/ml_heatmap.png)
 
@@ -199,7 +239,18 @@ Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
 drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
 surprisingly well for an English-family release (100% on Chinese, and the
 best local Sinhala score at 67%); Jev is the only system at 100% on
-Sinhala. Laya's English-only `typed-decisions` specialist — its
+Sinhala. Kev 0.8B lands at 78% (94/89/50 across tiers), between
+gliclass-large (81%) and Laya Router (76%) — the Qwen3.5 backbone
+carries far more multilingual pretraining than any encoder here, though
+Welsh (33%) still trips it. decider and
+OpenThai — two more Qwen3.5-0.8B System One servers — repeat that shape
+exactly at 83% (100/100/50): flawless through the medium tier, 50% on the
+rare scripts. Verdict's English-only ModernBERT encoder collapses to 22%.
+AgentJev-0.6B
+inverts that picture: a Qwen3-0.6B backbone scores a flat 83% through six
+languages, then collapses on the rare tier (22% — 17% Sinhala/Icelandic),
+so multilingual reach tracks the backbone's pretraining breadth. Laya's
+English-only `typed-decisions` specialist — its
 strongest checkpoint on the vendor's own workflow benchmark — holds 100%
 on the popular tier here but collapses on non-Latin scripts (33% rare,
 59% overall; the Router-based row stays the family's best multilingual
@@ -213,28 +264,30 @@ checkpoints before timing, so script changes do not include weight loading.
 
 ## Feature comparison
 
-| Capability | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev |
-|---|---|---|---|---|---|---|---|
-| Ability group | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Cost | free | free | free | free | free | free | $0.042/1M input |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API |
-| Batch shape | per text | per text (batch_size) | per text, all labels | all questions, one pass | per text | one packed prompt | all questions, one request |
+| Capability | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Ability group | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) |
+| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cost | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 |
+| Batch shape | per text | per text (batch_size) | per text, all labels | all questions, one pass | per text | one packed prompt | all questions, one request | all questions, one request | all questions, one request | all questions, one request | all questions, one request | per text, all options |
 
 ## Setup
 
 Python 3.10+ for the main environment; 3.12+ for von (tested on 3.13,
-Windows, CPU-only).
+Windows, CPU-only). Shell commands assume a POSIX shell — Git Bash on
+Windows works; the `NAME=value` server launches in particular will not
+parse in PowerShell/cmd.
 
 ```bash
 uv venv .venv
@@ -244,6 +297,33 @@ uv pip install --python .venv "open-alternative-jev @ git+https://github.com/ike
 # von needs transformers 5.x, so it lives in its own venv:
 uv venv --python 3.13 .venv-von
 uv pip install --python .venv-von -r requirements-von.txt
+# Kev (Jev's open-weights lookalike) serves the same System One contract
+# locally; it needs transformers >=5.17, so it runs from its own clone:
+git clone https://github.com/jaredpalmer/kev.git ../kev
+cd ../kev && uv sync --extra serve && cd -
+# start it before benchmarking "Kev 0.8B (local)":
+uv run --extra serve --project ../kev python -m kev.serve \
+    --run jaredpalmer/kev-0.8b --port 8009
+# AgentJev (own /api/evaluate contract) also runs from its own clone;
+# weights convert to .pt once (see its model card):
+git clone https://github.com/malevrigns/agent-jev.git ../agent-jev
+# decider + OpenThai-SystemOne also serve the System One contract; both
+# live in a shared transformers-5 CPU venv (here C:/venvs/agent-jev):
+uv venv C:/venvs/agent-jev
+uv pip install --python C:/venvs/agent-jev/Scripts/python.exe \
+    "decider-ai[serve]" "openthai-systemone[server]" onnxruntime
+# start them (separate terminals) before benchmarking; both lazy-load
+# weights on the first request, so the benchmarks fire one untimed
+# warm-up question first:
+DECIDER_MODEL=Mapika/decider-0.8b DECIDER_DEVICE=cpu \
+    C:/venvs/agent-jev/Scripts/python -m uvicorn decider.serve:app --port 8018
+OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne \
+    C:/venvs/agent-jev/Scripts/python -m uvicorn \
+    openthai_systemone.server:app --port 8029
+# Verdict runs in-process (no server) from the Verdict-open-jev checkout;
+# set VERDICT_HOME if it is not at C:\src\verdict (its artifacts download
+# from heman10x/rlcd-modernbert-151m), and run the benchmarks with the
+# agent-jev venv python.
 ```
 
 Use uv for this install: `overrides.txt` deliberately overrides GLiClass
@@ -273,11 +353,15 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
                                          # (--repeats N) → bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → bench_spectrum_results.json
-                                         # (14 systems; von runs the same
-                                         # command under .venv-von/Scripts/python)
+                                         # (19 systems; von: same command
+                                         # under .venv-von/Scripts/python)
+# decider/OpenThai speak plain HTTP, so any interpreter works — but Verdict
+# imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
+C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 14 systems →
+                                         # 9 languages, all 19 systems →
                                          # bench_multilingual_results.json
+                                         # (same interpreter rules)
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
 
@@ -313,6 +397,12 @@ extra Laya checkpoints noted below):
 | `knowledgator/gliformer-base-v1` | ~190M | benchmarked; best NER F1 here |
 | `knowledgator/gliformer-large-v1` | 575.6M | benchmarked; family is base+large only, no small |
 | `convaiinnovations/laya` (+multilingual, typed-decisions) | 421M / 322M | English root benchmarked; subfolders exist for the other two |
+| `jaredpalmer/kev-0.8b` | 0.8B (9.3M trained) | Qwen3.5 base + LoRA/head; 4B/9B siblings exist but are impractical on CPU — 0.8B benchmarked |
+| `aimeigaoshou/agent-jev` | 0.6B | Qwen3 base, LM head swapped for a candidate head; single checkpoint — benchmarked |
+| `Mapika/decider-0.8b` | 0.8B (752M) | Qwen3.5-0.8B-Base fine-tune, PyPI `decider-ai` System One server — benchmarked |
+| `iapp/OpenThai-SystemOne` | 0.8B | Qwen3.5 Gated DeltaNet hybrid + 256-way slot head, Thai/English — benchmarked (weights gated on HF) |
+| `heman10x/rlcd-modernbert-151m` | 151M | ModernBERT-base decision head with trained abstention ("Verdict") — benchmarked |
+| `akhilaaa3/Jev-Omni` | 12B | multimodal (text/image/audio/video) Gemma 4 fine-tune, own API — not run: needs a CUDA GPU and ~50 GB fp32 weights |
 | `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader — not run |
 | `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line — not run |
 
@@ -324,11 +414,12 @@ extra Laya checkpoints noted below):
 | `app.py` | Gradio web UI: live tab per family + benchmark + compare |
 | `von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
 | `von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
-| `jev_client.py` | dependency-free Python client for the TypeSafe System One API |
+| `jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
+| `agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 14 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 19 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `bench_*_results.json` | latest results, rendered by the web UI |
 

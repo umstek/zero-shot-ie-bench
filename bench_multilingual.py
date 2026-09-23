@@ -1,4 +1,4 @@
-"""Multilingual zero-shot classification benchmark (no English).
+r"""Multilingual zero-shot classification benchmark (no English).
 
 9 languages x 6 texts (2 positive, 2 negative, 2 neutral sentiment), same
 sentence meanings across languages, labels in English (standard zero-shot
@@ -15,6 +15,20 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system von
 
 Jev is a paid API: it runs all 54 texts as one batched request.
+Kev 0.8B needs its local server running first (System One contract):
+    cd ../kev && uv run --extra serve python -m kev.serve \
+        --run jaredpalmer/kev-0.8b --port 8009
+AgentJev 0.6B likewise (own /api/evaluate contract):
+    cd ../agent-jev && <python> -m jev_service.server \
+        --checkpoint agentjev_v1.pt --model-path <Qwen3-0.6B snapshot> \
+        --temperatures temperatures.json --port 8149 --device cpu
+decider 0.8B and OpenThai 0.8B serve the System One contract as well
+(shared agent-jev venv): DECIDER_MODEL=Mapika/decider-0.8b DECIDER_DEVICE=cpu
+<py> -m uvicorn decider.serve:app --port 8018, respectively
+OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne <py> -m uvicorn
+openthai_systemone.server:app --port 8029. Verdict 151M runs in-process
+from the Verdict-open-jev checkout (VERDICT_HOME, default C:\src\verdict)
+under the agent-jev venv python.
 
 Ground-truth verification: sentences were blind-translated back to English
 by one independent cold-context model instance (separate agent, no labels
@@ -152,7 +166,9 @@ GLICLASS = {
 }
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + ["Laya Router", "Laya typed-decisions", "von",
-                  "so1 (Qwen2.5-0.5B)", "Jev"])
+                  "so1 (Qwen2.5-0.5B)", "Jev", "Kev 0.8B (local)",
+                  "AgentJev 0.6B (local)", "decider 0.8B (local)",
+                  "OpenThai 0.8B (local)", "Verdict 151M (local)"])
 
 
 def make_classifier(name: str):
@@ -283,6 +299,74 @@ def run_jev(texts):
              for i in range(len(texts))], dt / len(texts))
 
 
+def run_systemone(texts, port: int, model: str):
+    """Local System One server (Kev/decider/OpenThai), one request per text
+    so latency is comparable with the other local models. String
+    instructions — the shape these servers and Laya both expect."""
+    from jev_client import JevClient, choice
+
+    client = JevClient(base_url=f"http://127.0.0.1:{port}/v1/systemone",
+                       model=model)
+    # pay any lazy model loading before the timed loop; OpenThai's cold
+    # load runs minutes, past ask()'s 120 s default
+    client.ask({"task": "warmup"},
+               {"w": choice('Sentiment of "good"?',
+                            {"positive": None, "negative": None})},
+               timeout=600)
+    preds, lat = [], []
+    for text in texts:
+        question = choice(
+            f'What is the overall sentiment of this text: "{text}"',
+            {label: None for label in SENTIMENT_LABELS})
+        t0 = time.perf_counter()
+        out = client.ask({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
+def run_verdict(texts):
+    """Verdict 151M: in-process rlcd DecisionEngine (Verdict-open-jev
+    checkout, agent-jev venv); abstention counts as no prediction."""
+    home = os.environ.get("VERDICT_HOME", r"C:\src\verdict")
+    sys.path.insert(0, home)
+    from rlcd import Choice, DecisionEngine, Option
+
+    engine = DecisionEngine(model_name_or_path=os.path.join(
+        home, "artifacts", "v2"), device="cpu")
+    options = [Option(id=l, description=d)
+               for l, d in SENTIMENT_LABELS.items()]
+    preds, lat = [], []
+    for text in texts:
+        query = Choice(id="q", question="What is the overall sentiment "
+                                        "of this text?", options=options)
+        t0 = time.perf_counter()
+        res = engine.evaluate(context=text, queries=[query]).results[0]
+        lat.append(time.perf_counter() - t0)
+        preds.append(None if res.is_abstention else res.selected_id)
+    return preds, statistics.mean(lat)
+
+
+def run_agentjev(texts):
+    """AgentJev-0.6B: own loopback contract (port 8149), one request per
+    text, fixed per-label option descriptions (no per-question leakage)."""
+    from agentjev_client import ask
+
+    options = {label: f"The text expresses {label} sentiment"
+               for label in SENTIMENT_LABELS}
+    preds, lat = [], []
+    for text in texts:
+        question = {"id": "q", "type": "choice",
+                    "question": f'What is the overall sentiment of this '
+                                f'text: "{text}"',
+                    "options": options}
+        t0 = time.perf_counter()
+        out = ask({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["q"]["value"])
+    return preds, statistics.mean(lat)
+
+
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -320,6 +404,16 @@ def main() -> None:
         preds, lat, laya_routes = run_laya_router(texts, lang_of)
     elif name == "Laya typed-decisions":
         preds, lat = run_laya_typed(texts)
+    elif name == "Kev 0.8B (local)":
+        preds, lat = run_systemone(texts, 8009, "kev-latest")
+    elif name == "AgentJev 0.6B (local)":
+        preds, lat = run_agentjev(texts)
+    elif name == "decider 0.8B (local)":
+        preds, lat = run_systemone(texts, 8018, "decider-0.8b")
+    elif name == "OpenThai 0.8B (local)":
+        preds, lat = run_systemone(texts, 8029, "openthai-systemone")
+    elif name == "Verdict 151M (local)":
+        preds, lat = run_verdict(texts)
     else:  # Jev
         preds, lat = run_jev(texts)
 
@@ -349,8 +443,12 @@ def main() -> None:
     out["by_language"][name] = by_lang
     out["by_tier"][name] = by_tier
     out["latency"][name] = round(lat, 3)
+    warmed = name.startswith(("Kev", "decider", "OpenThai"))
     out.setdefault("timing", {})[name] = (
-        "Model download and loading excluded; first forward pass included.")
+        "Model download and loading excluded; "
+        + ("one untimed warm-up question pays the server's lazy weight "
+           "load first - timed latencies are warmed." if warmed
+           else "first forward pass included."))
     if name == "von":
         from von_client import provenance
 
