@@ -353,13 +353,15 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
                                          # (--repeats N) → bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → bench_spectrum_results.json
-                                         # (19 systems; von runs the same
-                                         # command under .venv-von, and
-                                         # decider/OpenThai/Verdict under
-                                         # the agent-jev venv python)
+                                         # (19 systems; von: same command
+                                         # under .venv-von/Scripts/python)
+# decider/OpenThai speak plain HTTP, so any interpreter works — but Verdict
+# imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
+C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
                                          # 9 languages, all 19 systems →
                                          # bench_multilingual_results.json
+                                         # (same interpreter rules)
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
 
