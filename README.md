@@ -99,7 +99,7 @@ Honest caveats:
   the combined multi-task call where large succeeded; base embeddings are
   768-d vs large 1024-d.
 
-## Mixed-pool spectrum benchmark (all 15 systems)
+## Mixed-pool spectrum benchmark (all 16 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -121,6 +121,7 @@ exact span-set match (18 questions):
 | GLiNER2.5-multi | 79.2% | 0.152 | **67%** | 0.180 |
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
 | von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
+| AgentJev 0.6B (local) | 79.2% | 0.646 | n/a | |
 | Kev 0.8B (local) | 72.9% | 0.587 | n/a | |
 | GLiNER2.5-small | 70.8% | 0.043 | 33% | 0.053 |
 | Laya typed-decisions | 70.8% | 1.243 | n/a | |
@@ -140,7 +141,10 @@ loader initialized an untrained classifier instead of loading the separate
 decision weights. Kev 0.8B — Jared Palmer's open-weights reconstruction
 of Jev's architecture (LoRA + pointer head over a frozen Qwen3.5-0.8B
 base, served locally on the same System One contract) — lands at 72.9%,
-the best score among the fully-local decision engines in this pool. The so1
+and AgentJev-0.6B (Qwen3-0.6B backbone with the LM head replaced by a
+permutation-equivariant candidate head, own loopback API) tops the local
+decision engines at 79.2% — tying GLiNER2.5-base-adjacent scores at a
+tenth of Jev's latency. The so1
 technique works mechanically on any ChatML LLM, but a 0.5B base model is
 not enough brain for it — the harness is the contribution, swap in a
 bigger LLM. Note: gliclass PyPI metadata asks for transformers ≥5 but runs
@@ -176,7 +180,7 @@ Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish, Ukrainian ·
 Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified by blind
 back-translation through an independent model instance (it caught 8 errors,
 including a sentiment-flipping Sinhala word) and the full table is in the
-PR for native-speaker review. All 15 systems answer the same 54 texts.
+PR for native-speaker review. All 16 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
@@ -187,6 +191,7 @@ PR for native-speaker review. All 15 systems answer the same 54 texts.
 | Laya Router (mmBERT) | 89% | 94% | 44% | 76% |
 | gliclass-base | 94% | 67% | 39% | 67% |
 | GLiFormer-large | 94% | 61% | 33% | 63% |
+| AgentJev 0.6B (local) | 83% | 83% | 22% | 63% |
 | Laya typed-decisions | 100% | 44% | 33% | 59% |
 | GLiNER2.5-base | 89% | 50% | 28% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
@@ -206,7 +211,10 @@ surprisingly well for an English-family release (100% on Chinese, and the
 best local Sinhala score at 67%); Jev is the only system at 100% on
 Sinhala. Kev 0.8B is the second-best local system at 78% (94/89/50 across
 tiers) — the Qwen3.5 backbone carries far more multilingual pretraining
-than any encoder here, though Welsh (33%) still trips it. Laya's
+than any encoder here, though Welsh (33%) still trips it. AgentJev-0.6B
+inverts that picture: a Qwen3-0.6B backbone scores a flat 83% through six
+languages, then collapses on the rare tier (22% — 17% Sinhala/Icelandic),
+so multilingual reach tracks the backbone's pretraining breadth. Laya's
 English-only `typed-decisions` specialist — its
 strongest checkpoint on the vendor's own workflow benchmark — holds 100%
 on the popular tier here but collapses on non-Latin scripts (33% rare,
@@ -221,23 +229,23 @@ checkpoints before timing, so script changes do not include weight loading.
 
 ## Feature comparison
 
-| Capability | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev | Kev |
-|---|---|---|---|---|---|---|---|---|
-| Ability group | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Cost | free | free | free | free | free | free | $0.042/1M input | free (CPU time) |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 |
-| Batch shape | per text | per text (batch_size) | per text, all labels | all questions, one pass | per text | one packed prompt | all questions, one request | all questions, one request |
+| Capability | GLiNER 2.5 | GLiFormer | GLiClass | Laya | von | so1 | Jev | Kev | AgentJev |
+|---|---|---|---|---|---|---|---|---|---|
+| Ability group | Extractor | Extractor | Classifier | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Cost | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 |
+| Batch shape | per text | per text (batch_size) | per text, all labels | all questions, one pass | per text | one packed prompt | all questions, one request | all questions, one request | all questions, one request |
 
 ## Setup
 
@@ -259,6 +267,9 @@ cd ../kev && uv sync --extra serve && cd -
 # start it before benchmarking "Kev 0.8B (local)":
 uv run --extra serve --project ../kev python -m kev.serve \
     --run jaredpalmer/kev-0.8b --port 8009
+# AgentJev (own /api/evaluate contract) also runs from its own clone;
+# weights convert to .pt once (see its model card):
+git clone https://github.com/malevrigns/agent-jev.git ../agent-jev
 ```
 
 Use uv for this install: `overrides.txt` deliberately overrides GLiClass
@@ -288,10 +299,10 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
                                          # (--repeats N) → bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → bench_spectrum_results.json
-                                         # (15 systems; von runs the same
+                                         # (16 systems; von runs the same
                                          # command under .venv-von/Scripts/python)
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 15 systems →
+                                         # 9 languages, all 16 systems →
                                          # bench_multilingual_results.json
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
@@ -329,6 +340,7 @@ extra Laya checkpoints noted below):
 | `knowledgator/gliformer-large-v1` | 575.6M | benchmarked; family is base+large only, no small |
 | `convaiinnovations/laya` (+multilingual, typed-decisions) | 421M / 322M | English root benchmarked; subfolders exist for the other two |
 | `jaredpalmer/kev-0.8b` | 0.8B (9.3M trained) | Qwen3.5 base + LoRA/head; 4B/9B siblings exist but are impractical on CPU — 0.8B benchmarked |
+| `aimeigaoshou/agent-jev` | 0.6B | Qwen3 base, LM head swapped for a candidate head; single checkpoint — benchmarked |
 | `akhilaaa3/Jev-Omni` | 12B | multimodal (text/image/audio/video) Gemma 4 fine-tune, own API — not run: needs a CUDA GPU and ~50 GB fp32 weights |
 | `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader — not run |
 | `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line — not run |
@@ -341,11 +353,12 @@ extra Laya checkpoints noted below):
 | `app.py` | Gradio web UI: live tab per family + benchmark + compare |
 | `von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
 | `von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
-| `jev_client.py` | dependency-free Python client for the TypeSafe System One API |
+| `jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
+| `agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 15 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 16 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `bench_*_results.json` | latest results, rendered by the web UI |
 

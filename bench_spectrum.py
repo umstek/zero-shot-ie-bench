@@ -16,6 +16,10 @@ Run from the MAIN venv for most systems, from .venv-von for von:
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
         --run jaredpalmer/kev-0.8b --port 8009
+AgentJev 0.6B likewise (own /api/evaluate contract):
+    cd ../agent-jev && <python> -m jev_service.server \
+        --checkpoint agentjev_v1.pt --model-path <Qwen3-0.6B snapshot> \
+        --temperatures temperatures.json --port 8149 --device cpu
 
 Output: bench_spectrum_results.json
 """
@@ -61,7 +65,8 @@ GLICLASS = {
 }
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS)
                + ["Laya (local)", "Laya typed-decisions", "Jev",
-                  "Kev 0.8B (local)", "von", "so1 (Qwen2.5-0.5B)"])
+                  "Kev 0.8B (local)", "AgentJev 0.6B (local)", "von",
+                  "so1 (Qwen2.5-0.5B)"])
 
 
 def classify_extractor(model_id: str, gliformer: bool):
@@ -95,13 +100,23 @@ def classify_extractor(model_id: str, gliformer: bool):
 
 
 def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
-    """Laya, Jev, or Kev: one batched call per task, preds mapped back per
-    question. Kev serves the same System One contract locally (kev.serve,
-    port 8009) and gets string instructions like Laya."""
+    """Laya, Jev, Kev, or AgentJev: one batched call per task, preds mapped
+    back per question. Kev serves the same System One contract locally
+    (kev.serve, port 8009) and gets string instructions like Laya; AgentJev
+    has its own /api/evaluate contract (port 8149) with label descriptions
+    as option semantics."""
     INSTR = {
         "sentiment": 'What is the overall sentiment of this text: "{text}"',
         "topic": 'Which topic category does this text belong to: "{text}"',
     }
+
+    def _options(task: str) -> dict:
+        # AgentJev needs a description per option; topics already carry one,
+        # sentiment gets a fixed per-label phrase (no per-question leakage)
+        return ({label: f"The text expresses {label} sentiment"
+                 for label in SENTIMENT_LABELS} if task == "sentiment"
+                else dict(TOPIC_LABELS))
+
     if client_kind == "laya":
         import laya
 
@@ -133,6 +148,17 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             out = client.ask({"task": task}, questions)
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
+    elif client_kind == "agentjev":
+        from agentjev_client import ask
+
+        def run_task(task: str, texts: list[str]) -> list:
+            questions = {
+                f"t{i}": {"id": f"t{i}", "type": "choice",
+                          "question": INSTR[task].format(text=t),
+                          "options": _options(task)}
+                for i, t in enumerate(texts)}
+            out = ask({"task": task}, questions)
+            return [out[f"t{i}"]["value"] for i in range(len(texts))]
     else:
         from jev_client import JevClient
 
@@ -195,12 +221,14 @@ def main() -> None:
                 ner_ok.append(ner_one(q["text"]) == q["gold"])
                 ner_lat.append(time.perf_counter() - t1)
     elif name in ("Laya (local)", "Laya typed-decisions", "Jev",
-                  "Kev 0.8B (local)"):
+                  "Kev 0.8B (local)", "AgentJev 0.6B (local)"):
         repo = ("convaiinnovations/laya-typed-decisions"
                 if name == "Laya typed-decisions"
                 else "convaiinnovations/laya")
         kind = ("laya" if name.startswith("Laya")
-                else "kev" if name.startswith("Kev") else "jev")
+                else "kev" if name.startswith("Kev")
+                else "agentjev" if name.startswith("AgentJev")
+                else "jev")
         run_task = classify_batched(kind, repo=repo)
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]

@@ -18,6 +18,10 @@ Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
         --run jaredpalmer/kev-0.8b --port 8009
+AgentJev 0.6B likewise (own /api/evaluate contract):
+    cd ../agent-jev && <python> -m jev_service.server \
+        --checkpoint agentjev_v1.pt --model-path <Qwen3-0.6B snapshot> \
+        --temperatures temperatures.json --port 8149 --device cpu
 
 Ground-truth verification: sentences were blind-translated back to English
 by one independent cold-context model instance (separate agent, no labels
@@ -155,7 +159,8 @@ GLICLASS = {
 }
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + ["Laya Router", "Laya typed-decisions", "von",
-                  "so1 (Qwen2.5-0.5B)", "Jev", "Kev 0.8B (local)"])
+                  "so1 (Qwen2.5-0.5B)", "Jev", "Kev 0.8B (local)",
+                  "AgentJev 0.6B (local)"])
 
 
 def make_classifier(name: str):
@@ -306,6 +311,26 @@ def run_kev(texts):
     return preds, statistics.mean(lat)
 
 
+def run_agentjev(texts):
+    """AgentJev-0.6B: own loopback contract (port 8149), one request per
+    text, fixed per-label option descriptions (no per-question leakage)."""
+    from agentjev_client import ask
+
+    options = {label: f"The text expresses {label} sentiment"
+               for label in SENTIMENT_LABELS}
+    preds, lat = [], []
+    for text in texts:
+        question = {"id": "q", "type": "choice",
+                    "question": f'What is the overall sentiment of this '
+                                f'text: "{text}"',
+                    "options": options}
+        t0 = time.perf_counter()
+        out = ask({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["q"]["value"])
+    return preds, statistics.mean(lat)
+
+
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -345,6 +370,8 @@ def main() -> None:
         preds, lat = run_laya_typed(texts)
     elif name == "Kev 0.8B (local)":
         preds, lat = run_kev(texts)
+    elif name == "AgentJev 0.6B (local)":
+        preds, lat = run_agentjev(texts)
     else:  # Jev
         preds, lat = run_jev(texts)
 

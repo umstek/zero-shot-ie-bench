@@ -100,6 +100,9 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         width=640, height=max(180, 26 * len(order) + 50))
 
 
+_SCATTER_W, _SCATTER_H = 800, 460  # 16 systems; grew from 640x380
+
+
 def _scatter_label_layers(df: pd.DataFrame):
     """Split points into (dy, side, sub-frame) label groups so labels of
     neighboring points don't print through each other.
@@ -107,17 +110,17 @@ def _scatter_label_layers(df: pd.DataFrame):
     Packing runs in canvas pixel space via an affine data-to-pixel mapping
     calibrated against actual vl-convert renders of single-point probes
     (residuals < 0.2 px) for the axis config tradeoff_scatter builds:
-    width 640, height 380, log x over [min*0.8, max*1.2], y over [0, 100].
-    The plot area then starts at (43.4, 9.5) inside the ~690x427 canvas; the
-    chart title shifts everything down uniformly and needs no adjustment."""
+    log x over [min*0.8, max*1.2], y over [0, 100]. The plot area then
+    starts at (43.4, 9.5) inside the canvas; the chart title shifts
+    everything down uniformly and needs no adjustment."""
     dmin = math.log10(df["s per question"].min() * 0.8)
-    slope = 640 / (math.log10(df["s per question"].max() * 1.2) - dmin)
+    slope = _SCATTER_W / (math.log10(df["s per question"].max() * 1.2) - dmin)
 
     def px_(v):
         return 43.4 + (math.log10(v) - dmin) * slope
 
     def py_(acc):
-        return 9.5 + (100 - acc) / 100 * 380
+        return 9.5 + (100 - acc) / 100 * _SCATTER_H
 
     pts = sorted(((px_(v), py_(acc), str(name))
                   for v, acc, name in zip(df["s per question"],
@@ -138,7 +141,7 @@ def _scatter_label_layers(df: pd.DataFrame):
     ordered.extend(sorted(cluster, key=lambda p: -p[1]))
     pts = ordered
     # every point marker is an obstacle for every label (radius ~5.4 px,
-    # padded to 6); canvas is ~690 px wide with the plot ending at ~683
+    # padded to 6); labels must stay inside the canvas (plot + ~6 px margin)
     placed = [(x - 6, x + 6, y - 6, y + 6) for x, y, _ in pts]
 
     def collisions(box):
@@ -157,7 +160,8 @@ def _scatter_label_layers(df: pd.DataFrame):
                  if side == "right" else (side, x - 11 - width, x - 11, dy)
                  for dy in (0, -16, 16, -32, 32, -48, 48, -64, 64)
                  for side in ("right", "left")]
-        spots = [s for s in spots if s[1] >= 2 and s[2] <= 686]
+        spots = [s for s in spots
+                 if s[1] >= 2 and s[2] <= _SCATTER_W + 40]
         chosen = next((s for s in spots
                        if collisions((s[1], s[2], y + s[3] - 8, y + s[3] + 6)) == 0),
                       None)
@@ -201,7 +205,7 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
                     y=alt.Y("Accuracy %:Q", scale=yscale),
                     text="System:N"))
     return alt.layer(*layers).interactive().properties(
-        width=640, height=380)
+        width=_SCATTER_W, height=_SCATTER_H)
 
 
 def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
