@@ -45,10 +45,10 @@ def spectrum_charts(bench):
         "cls_accuracy": hbar_chart_labeled(
             summary, "Accuracy %", "Classification accuracy, mixed pool",
             "Accuracy %"),
-        "cls_latency": hbar_chart(
-            summary.sort_values("s per question"), "s per question",
+        "cls_latency": hbar_chart_labeled(
+            summary, "s per question",
             "Mean latency per question (CPU; Jev/Laya batch ÷ n)",
-            "seconds"),
+            "seconds (log)", fmt=".3f", log=True),
         "cls_tradeoff": tradeoff_scatter(
             summary, "Speed vs accuracy — up and left is better"),
     }
