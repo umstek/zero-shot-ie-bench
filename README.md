@@ -39,7 +39,8 @@ animals:
 - **Decision engines** (Laya, von, so1, Kev, AgentJev, decider, OpenThai,
   Verdict, Jev): you ask typed questions (`choice`, `score`, `noul`) over a
   JSON state; all questions in one call are answered together (one forward
-  pass / one request). Verdict answers `choice` only, from an encoder.
+  pass / one request). This benchmark exercises Verdict's `choice`
+  questions only; its API also defines `score` rubrics and `noul`.
 
 ## Benchmark results
 
@@ -157,7 +158,8 @@ of Jev's architecture (LoRA + pointer head over a frozen Qwen3.5-0.8B
 base, served locally on the same System One contract) — lands at 72.9%,
 and AgentJev-0.6B (Qwen3-0.6B backbone with the LM head replaced by a
 permutation-equivariant candidate head, own loopback API) reaches 79.2%
-at a tenth of Jev's latency. The newest wave: decider-0.8B, a third-party
+at 0.646 s/question — 17× Jev's batched cloud latency, but local and
+free. The newest wave: decider-0.8B, a third-party
 Qwen3.5-0.8B-Base System One server, is the strongest local decision
 engine at 83.3% (tying GLiNER2.5-base) — but at 2.1 s/question it is also
 the slowest system on this page. OpenThai-SystemOne (Qwen3.5-0.8B with a
@@ -172,7 +174,10 @@ not enough brain for it — the harness is the contribution, swap in a
 bigger LLM. Note: gliclass PyPI metadata asks for transformers ≥5 but runs
 fine on the pinned 4.57.6; von genuinely needs transformers 5, hence the
 separate `.venv-von`. Model download and loading are excluded from the
-latency measurements; the first forward pass is included.
+latency measurements; the first forward pass is included — except the
+local System One servers (Kev, decider, OpenThai), which answer one
+untimed warm-up question first (lazy weight loading), so their latencies
+are warmed.
 
 The web UI renders these as interactive charts; the same charts, as
 images (regenerate after re-running the benchmarks with
@@ -234,9 +239,10 @@ Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
 drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
 surprisingly well for an English-family release (100% on Chinese, and the
 best local Sinhala score at 67%); Jev is the only system at 100% on
-Sinhala. Kev 0.8B is the second-best local system at 78% (94/89/50 across
-tiers) — the Qwen3.5 backbone carries far more multilingual pretraining
-than any encoder here, though Welsh (33%) still trips it. decider and
+Sinhala. Kev 0.8B lands at 78% (94/89/50 across tiers), between
+gliclass-large (81%) and Laya Router (76%) — the Qwen3.5 backbone
+carries far more multilingual pretraining than any encoder here, though
+Welsh (33%) still trips it. decider and
 OpenThai — two more Qwen3.5-0.8B System One servers — repeat that shape
 exactly at 83% (100/100/50): flawless through the medium tier, 50% on the
 rare scripts. Verdict's English-only ModernBERT encoder collapses to 22%.
@@ -267,8 +273,8 @@ checkpoints before timing, so script changes do not include weight loading.
 | Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ❌ choice only |
-| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ binary choice |
+| Ordinal score rubrics | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) |
+| Yes/no judgments | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -279,7 +285,9 @@ checkpoints before timing, so script changes do not include weight loading.
 ## Setup
 
 Python 3.10+ for the main environment; 3.12+ for von (tested on 3.13,
-Windows, CPU-only).
+Windows, CPU-only). Shell commands assume a POSIX shell — Git Bash on
+Windows works; the `NAME=value` server launches in particular will not
+parse in PowerShell/cmd.
 
 ```bash
 uv venv .venv
@@ -303,7 +311,7 @@ git clone https://github.com/malevrigns/agent-jev.git ../agent-jev
 # live in a shared transformers-5 CPU venv (here C:/venvs/agent-jev):
 uv venv C:/venvs/agent-jev
 uv pip install --python C:/venvs/agent-jev/Scripts/python.exe \
-    decider-ai openthai-systemone onnxruntime
+    "decider-ai[serve]" "openthai-systemone[server]" onnxruntime
 # start them (separate terminals) before benchmarking; both lazy-load
 # weights on the first request, so the benchmarks fire one untimed
 # warm-up question first:
