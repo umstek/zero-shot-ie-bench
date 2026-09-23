@@ -31,7 +31,11 @@
       "Earlier von rows are superseded: the PyPI NLI loader initialized an untrained classifier. The current row uses the complete pinned option-marker checkpoint; those old runs do not establish trained-model instability.",
       "Laya typed-decisions recorded 2026-09-21 16:16, 189s, CPU",
       "Kev 0.8B (local) recorded 2026-09-21 21:58, 93s, CPU",
-      "AgentJev 0.6B (local) recorded 2026-09-23 08:41, 55s, CPU"
+      "AgentJev 0.6B (local) recorded 2026-09-23 08:41, 55s, CPU",
+      "decider 0.8B (local) recorded 2026-09-23 11:51, 431s, CPU",
+      "OpenThai 0.8B (local) recorded 2026-09-23 11:52, 54s, CPU",
+      "Verdict 151M (local) recorded 2026-09-23 11:53, 33s, CPU",
+      "Verdict 151M (local) recorded 2026-09-23 11:54, 22s, CPU"
     ]
   },
   "by_language": {
@@ -210,6 +214,39 @@
       "Sinhala": 0.1667,
       "Icelandic": 0.1667,
       "Welsh": 0.3333
+    },
+    "decider 0.8B (local)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.5,
+      "Icelandic": 0.5,
+      "Welsh": 0.5
+    },
+    "OpenThai 0.8B (local)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.6667,
+      "Welsh": 0.5
+    },
+    "Verdict 151M (local)": {
+      "Spanish": 0.5,
+      "French": 0.6667,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.0,
+      "Turkish": 0.0,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.0,
+      "Icelandic": 0.0,
+      "Welsh": 0.1667
     }
   },
   "by_tier": {
@@ -292,6 +329,21 @@
       "popular": 0.8333,
       "medium": 0.8333,
       "rare": 0.2222
+    },
+    "decider 0.8B (local)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.5
+    },
+    "OpenThai 0.8B (local)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.5
+    },
+    "Verdict 151M (local)": {
+      "popular": 0.5,
+      "medium": 0.1111,
+      "rare": 0.0556
     }
   },
   "latency": {
@@ -310,7 +362,10 @@
     "von": 0.289,
     "Laya typed-decisions": 1.184,
     "Kev 0.8B (local)": 1.715,
-    "AgentJev 0.6B (local)": 1.019
+    "AgentJev 0.6B (local)": 1.019,
+    "decider 0.8B (local)": 7.877,
+    "OpenThai 0.8B (local)": 0.998,
+    "Verdict 151M (local)": 0.179
   },
   "laya_routing": {
     "Spanish": {
@@ -349,7 +404,10 @@
     "Laya Router": "Model download and loading excluded; first forward pass included.",
     "Laya typed-decisions": "Model download and loading excluded; first forward pass included.",
     "Kev 0.8B (local)": "Model download and loading excluded; first forward pass included.",
-    "AgentJev 0.6B (local)": "Model download and loading excluded; first forward pass included."
+    "AgentJev 0.6B (local)": "Model download and loading excluded; first forward pass included.",
+    "decider 0.8B (local)": "Model download and loading excluded; first forward pass included.",
+    "OpenThai 0.8B (local)": "Model download and loading excluded; first forward pass included.",
+    "Verdict 151M (local)": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {

@@ -1,4 +1,4 @@
-"""Spectrum benchmark: one mixed pool of questions per ability.
+r"""Spectrum benchmark: one mixed pool of questions per ability.
 
 All classification questions (sentiment + topic) form one pool of 48; NER
 questions form one pool of 18. Every system answers every question; a
@@ -20,6 +20,16 @@ AgentJev 0.6B likewise (own /api/evaluate contract):
     cd ../agent-jev && <python> -m jev_service.server \
         --checkpoint agentjev_v1.pt --model-path <Qwen3-0.6B snapshot> \
         --temperatures temperatures.json --port 8149 --device cpu
+decider 0.8B and OpenThai 0.8B also serve the System One contract (both
+installed in the shared agent-jev venv):
+    DECIDER_MODEL=Mapika/decider-0.8b DECIDER_DEVICE=cpu <py> -m uvicorn \
+        decider.serve:app --host 127.0.0.1 --port 8018
+    OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne <py> -m uvicorn \
+        openthai_systemone.server:app --host 127.0.0.1 --port 8029
+Verdict 151M runs in-process from the Verdict-open-jev checkout
+(VERDICT_HOME, default C:\src\verdict) under the agent-jev venv python:
+    C:/venvs/agent-jev/Scripts/python bench_spectrum.py \
+        --system "Verdict 151M (local)"
 
 Output: bench_spectrum_results.json
 """
@@ -65,8 +75,14 @@ GLICLASS = {
 }
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS)
                + ["Laya (local)", "Laya typed-decisions", "Jev",
-                  "Kev 0.8B (local)", "AgentJev 0.6B (local)", "von",
-                  "so1 (Qwen2.5-0.5B)"])
+                  "Kev 0.8B (local)", "AgentJev 0.6B (local)",
+                  "decider 0.8B (local)", "OpenThai 0.8B (local)",
+                  "Verdict 151M (local)", "von", "so1 (Qwen2.5-0.5B)"])
+
+# local servers speaking the System One wire format: one JevClient pattern,
+# different ports. decider and OpenThai lazy-load their weights on the first
+# request, so callers fire one untimed warmup question.
+SYSTEMONE_LOCAL_PORTS = {"kev": 8009, "decider": 8018, "openthai": 8029}
 
 
 def classify_extractor(model_id: str, gliformer: bool):
@@ -100,11 +116,12 @@ def classify_extractor(model_id: str, gliformer: bool):
 
 
 def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
-    """Laya, Jev, Kev, or AgentJev: one batched call per task, preds mapped
-    back per question. Kev serves the same System One contract locally
-    (kev.serve, port 8009) and gets string instructions like Laya; AgentJev
-    has its own /api/evaluate contract (port 8149) with label descriptions
-    as option semantics."""
+    """Laya, Jev, AgentJev, or a local System One server (Kev, decider,
+    OpenThai): one batched call per task, preds mapped back per question.
+    The locals serve the same wire format as Jev on their own ports and get
+    string instructions — the shape Laya and Kev both expect; AgentJev has
+    its own /api/evaluate contract (port 8149) with label descriptions as
+    option semantics."""
     INSTR = {
         "sentiment": 'What is the overall sentiment of this text: "{text}"',
         "topic": 'Which topic category does this text belong to: "{text}"',
@@ -133,11 +150,17 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             out = agent.predict({"task": task}, questions)
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
-    elif client_kind == "kev":
+    elif client_kind in SYSTEMONE_LOCAL_PORTS:
         from jev_client import JevClient, choice
 
-        client = JevClient(base_url="http://127.0.0.1:8009/v1/systemone",
-                           model="kev-latest")
+        client = JevClient(
+            base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
+                     "/v1/systemone",
+            model=f"{client_kind}-latest")
+        # pay any lazy model loading before the timed section
+        client.ask({"task": "warmup"},
+                   {"w": choice('Sentiment of "good"?',
+                                {"positive": None, "negative": None})})
 
         def run_task(task: str, texts: list[str]) -> list:
             labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
@@ -221,13 +244,16 @@ def main() -> None:
                 ner_ok.append(ner_one(q["text"]) == q["gold"])
                 ner_lat.append(time.perf_counter() - t1)
     elif name in ("Laya (local)", "Laya typed-decisions", "Jev",
-                  "Kev 0.8B (local)", "AgentJev 0.6B (local)"):
+                  "Kev 0.8B (local)", "AgentJev 0.6B (local)",
+                  "decider 0.8B (local)", "OpenThai 0.8B (local)"):
         repo = ("convaiinnovations/laya-typed-decisions"
                 if name == "Laya typed-decisions"
                 else "convaiinnovations/laya")
         kind = ("laya" if name.startswith("Laya")
                 else "kev" if name.startswith("Kev")
                 else "agentjev" if name.startswith("AgentJev")
+                else "decider" if name.startswith("decider")
+                else "openthai" if name.startswith("OpenThai")
                 else "jev")
         run_task = classify_batched(kind, repo=repo)
         for task in ("sentiment", "topic"):
@@ -237,6 +263,29 @@ def main() -> None:
             dt = time.perf_counter() - t1
             cls_preds.extend(preds)
             cls_lat.extend([dt / len(texts)] * len(texts))
+    elif name == "Verdict 151M (local)":
+        # in-process rlcd engine; run this entry under the agent-jev venv
+        # python (torch + transformers 5), which the other entries don't need
+        home = os.environ.get("VERDICT_HOME", r"C:\src\verdict")
+        sys.path.insert(0, home)
+        from rlcd import Choice, DecisionEngine, Option
+
+        engine = DecisionEngine(model_name_or_path=os.path.join(
+            home, "artifacts", "v2"), device="cpu")
+        QUESTION = {"sentiment": "What is the overall sentiment of this text?",
+                    "topic": "Which topic category does this text belong to?"}
+        for q in CLS_QUESTIONS:
+            desc = dict(SENTIMENT_LABELS if q["task"] == "sentiment"
+                        else TOPIC_LABELS)
+            query = Choice(id="q", question=QUESTION[q["task"]],
+                           options=[Option(id=l, description=d)
+                                    for l, d in desc.items()])
+            t1 = time.perf_counter()
+            res = engine.evaluate(context=q["text"],
+                                  queries=[query]).results[0]
+            cls_lat.append(time.perf_counter() - t1)
+            # abstaining answers nothing: wrong against any gold label
+            cls_preds.append(None if res.is_abstention else res.selected_id)
     elif name == "von":
         from von_client import load_von_decider
 
