@@ -404,6 +404,7 @@ extra Laya checkpoints noted below):
 | `heman10x/rlcd-modernbert-151m` | 151M | ModernBERT-base decision head with trained abstention ("Verdict") — benchmarked |
 | `akhilaaa3/Jev-Omni` | 12B | multimodal (text/image/audio/video) Gemma 4 fine-tune, own API — not run: needs a CUDA GPU and ~50 GB fp32 weights |
 | `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader — not run |
+| `fastino/GLiNER2.5-Decide` | 340M | decision-tuned GLiNER 2.5 sibling — trial-run (see below), not benchmarked |
 | `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line — not run |
 
 ## Noted, not benchmarked
@@ -433,6 +434,27 @@ accuracy-only scores in this README):
 | JevK5 v0.2.0 | #3 at 62.04 |
 | Cygnet | #4 at 61.76 |
 | Hopper | #5 at 59.43 |
+
+### Trial-pool runs, not promoted
+
+A sweep of the community "All about Jev" catalog (1,619 entries → 8
+candidates that passed the not-already-run / looks-plausible / CPU-runnable
+filters). Each runnable one was tried on two fixed mini-pools from this
+repo's own graded questions — 12 easy-tier and 16 hard-tier classification,
+plus NER where the model supports it. These numbers are **measured here,
+but on trial pools** — they are not the 48-question spectrum above and the
+systems are not part of the 19:
+
+| System | Trial result |
+|---|---|
+| `fastino/GLiNER2.5-Decide` (340M) | 12/12 easy, 13/16 hard cls; NER 3/3 easy, 1/3 hard (over-extracts); ~0.35 s/q on the main venv's `gliner2` stack. The strongest candidate found — queued for a full spectrum run |
+| `alibiserikbay/JevK5-Lite` (437M) | 12/12 easy, 11/16 hard; ~0.40 s/q. Lite build of JevBench's #3; needs the `jevk5` package under transformers 5 |
+| `notnotsamuel/LFM2.5-350M-RLCD` (350M) | 10/12 easy; 0.65 s/q; NER not expressible in its schema subset |
+| `Quazim0t0/Byrne-Jev-79M` | 9/12 easy, 7/16 hard — dominated by the systems above |
+| `pngwn/nanodiff-350m-typed-decisions` | 6/12 easy at 10.5 s/q — "choice at chance" per its own card |
+| `tasksource/modernbert-tasksource-jev` | unrunnable — its `modernjev` package is unpublished, source links 404, card says "preview, not ready to use" |
+| `shreyanbr/system-one-gold` | unrunnable — requires a `systemone` engine package and calibration file that are not published |
+| `idlabs/jev-typed-decisions-causal-0.6b` | gated on HF (401) |
 
 ## Repo layout
 
