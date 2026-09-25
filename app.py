@@ -15,6 +15,7 @@ import argparse
 import json
 import math
 import os
+import threading
 
 import altair as alt
 import pandas as pd
@@ -624,17 +625,21 @@ GLINER_MODELS = {
     "Decide — 340M, decision-tuned": "fastino/GLiNER2.5-Decide",
 }
 _GLINER_MODELS: dict[str, object] = {}
+_GLINER_LOCK = threading.Lock()
 
 
 def get_gliner_model(model_id: str):
     """Lazy per-checkpoint loader (the preloaded base is seeded in
-    build_gliner_tab); Decide needs ~10-30 s on its first click."""
-    if model_id not in _GLINER_MODELS:
-        from gliner2 import AutoExtractor
+    build_gliner_tab); Decide needs ~10-30 s on its first click. The
+    lock stops concurrent tab events from both paying that first load
+    and holding two copies of the 340M checkpoint."""
+    with _GLINER_LOCK:
+        if model_id not in _GLINER_MODELS:
+            from gliner2 import AutoExtractor
 
-        _GLINER_MODELS[model_id] = AutoExtractor.from_pretrained(
-            model_id, map_location="cpu")
-    return _GLINER_MODELS[model_id]
+            _GLINER_MODELS[model_id] = AutoExtractor.from_pretrained(
+                model_id, map_location="cpu")
+        return _GLINER_MODELS[model_id]
 
 
 def build_gliner_tab(model):
@@ -994,6 +999,9 @@ def build_jevk5_tab():
             labels = parse_labels(labels_csv)
             if not texts or not labels:
                 return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels "
+                                 "(jevk5 rejects a label set of one)"}
             helper = os.path.join(os.path.dirname(
                 os.path.abspath(__file__)), "jevk5_demo.py")
             try:
@@ -1050,6 +1058,13 @@ def build_lfm_tab():
             labels = parse_labels(labels_csv)
             if not texts or not labels:
                 return {"error": "provide text lines and allowed values"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct values"}
+            if len(labels) > 12:
+                # the engine branches (and forks its cache) once per
+                # candidate — bound the fan-out before spawning it
+                return {"error": "at most 12 values (each is a separate "
+                                 "constrained-decoding branch)"}
             helper = os.path.join(os.path.dirname(
                 os.path.abspath(__file__)), "lfm_rlcd_demo.py")
             try:

@@ -180,7 +180,9 @@ JevBench's #3 JevK5, adds 81.2% at 0.392 s/question (tied with the
 gliclass v3.0 pair) and a perfect 100% on the multilingual popular tier
 (78% overall).
 Verdict, an RLCD-trained 151M ModernBERT decision head, is the fastest
-local decision engine here (0.165 s) but abstains on 22/48 questions —
+local decision engine here measured per question (0.165 s — Laya's lower
+0.143 s is a batched average, not per-question comparable) but abstains
+on 22/48 questions —
 abstention scores as wrong, so 39.6% overall (73% on the 26 it does
 answer). The so1
 technique works mechanically on any ChatML LLM, but a 0.5B base model is
