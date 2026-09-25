@@ -13,6 +13,8 @@ per invocation (results merge into the shared file):
 
     python bench_multilingual.py --system GLiNER2.5-base
     .venv-von/Scripts/python bench_multilingual.py --system von
+    .venv-von/Scripts/python bench_multilingual.py --system JevK5-Lite
+    .venv-von/Scripts/python bench_multilingual.py --system "LFM2.5-RLCD 350M"
 
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
@@ -153,6 +155,7 @@ GLINER = {
     "GLiNER2.5-small": "fastino/gliner2.5-small-v1",
     "GLiNER2.5-base": "fastino/gliner2.5-base-v1",
     "GLiNER2.5-multi": "fastino/gliner2.5-multi-v1",
+    "GLiNER2.5-Decide": "fastino/GLiNER2.5-Decide",
 }
 GLIFORMER = {
     "GLiFormer-base": "knowledgator/gliformer-base-v1",
@@ -166,9 +169,11 @@ GLICLASS = {
 }
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + ["Laya Router", "Laya typed-decisions", "von",
-                  "so1 (Qwen2.5-0.5B)", "Jev", "Kev 0.8B (local)",
-                  "AgentJev 0.6B (local)", "decider 0.8B (local)",
-                  "OpenThai 0.8B (local)", "Verdict 151M (local)"])
+                  "JevK5-Lite", "LFM2.5-RLCD 350M",
+                  "so1 (Qwen2.5-0.5B)", "Jev",
+                  "Kev 0.8B (local)", "AgentJev 0.6B (local)",
+                  "decider 0.8B (local)", "OpenThai 0.8B (local)",
+                  "Verdict 151M (local)"])
 
 
 def make_classifier(name: str):
@@ -209,7 +214,8 @@ def make_classifier(name: str):
 
 
 def make_decider(name: str):
-    """Per-text sentiment decider for von / so1."""
+    """Per-text sentiment decider for von / so1, label-head classifier
+    for JevK5-Lite (same per-text call shape)."""
     labels = list(SENTIMENT_LABELS)
     if name == "von":
         from von_client import load_von_decider
@@ -221,6 +227,38 @@ def make_decider(name: str):
                 state=text, choices=dict(SENTIMENT_LABELS),
                 instructions="What is the overall sentiment of this "
                              "text?").choice
+    elif name == "JevK5-Lite":
+        # in-process label-head classifier, run under the .venv-von python
+        # (transformers 5.17 + jevk5)
+        from jevk5 import JevK5Lite
+
+        lite = JevK5Lite.from_pretrained("alibiserikbay/JevK5-Lite",
+                                         threads=16)
+
+        def one(text: str):
+            out = lite.classify(text, {"task": labels})
+            return out["task"]["labels"][0] if out["task"]["labels"] else None
+    elif name == "LFM2.5-RLCD 350M":
+        # in-process constrained-decision engine (vendored rlcd_engine/),
+        # run under the .venv-von python (transformers 5.17 + jsonschema)
+        from rlcd_engine.engine import Engine
+
+        engine = Engine(device="cpu", dtype="float32")
+        schema = {"type": "object",
+                  "properties": {"sentiment": {"type": "string",
+                                               "description": "The overall "
+                                                             "sentiment of "
+                                                             "the text",
+                                               "enum": labels}},
+                  "required": ["sentiment"],
+                  "additionalProperties": False}
+
+        def one(text: str):
+            res = engine.constrained(text, schema)
+            try:
+                return json.loads(res["text"])["sentiment"]
+            except (KeyError, ValueError):
+                return None
     else:
         from so1 import Choice, Decider
 
@@ -392,7 +430,8 @@ def main() -> None:
             preds.append(one(text))
             lat.append(time.perf_counter() - t1)
         lat = statistics.mean(lat)
-    elif name in ("von", "so1 (Qwen2.5-0.5B)"):
+    elif name in ("von", "so1 (Qwen2.5-0.5B)", "JevK5-Lite",
+                  "LFM2.5-RLCD 350M"):
         one = make_decider(name)
         preds, lat = [], []
         for text in texts:
@@ -443,6 +482,10 @@ def main() -> None:
     out["by_language"][name] = by_lang
     out["by_tier"][name] = by_tier
     out["latency"][name] = round(lat, 3)
+    notes = out.setdefault("meta", {}).setdefault("notes", [])
+    if notes and notes[0].startswith("All "):
+        notes[0] = (f"All {len(out['by_language'])} systems answer "
+                    "the same 54 texts.")
     warmed = name.startswith(("Kev", "decider", "OpenThai"))
     out.setdefault("timing", {})[name] = (
         "Model download and loading excluded; "

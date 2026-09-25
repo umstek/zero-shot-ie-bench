@@ -8,10 +8,13 @@ that got it wrong (continuous 0.0-1.0).
 Per-question predictions are stored (not just aggregates) so the app can
 plot accuracy along the difficulty spectrum.
 
-Run from the MAIN venv for most systems, from .venv-von for von:
+Run from the MAIN venv for most systems, from .venv-von for von,
+JevK5-Lite and LFM2.5-RLCD 350M:
     python bench_spectrum.py --system GLiNER2.5-base
     ...
     .venv-von/Scripts/python bench_spectrum.py --system von
+    .venv-von/Scripts/python bench_spectrum.py --system JevK5-Lite
+    .venv-von/Scripts/python bench_spectrum.py --system "LFM2.5-RLCD 350M"
 
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
@@ -64,6 +67,7 @@ EXTRACTORS = {
     "GLiNER2.5-small": "fastino/gliner2.5-small-v1",
     "GLiNER2.5-base": "fastino/gliner2.5-base-v1",
     "GLiNER2.5-multi": "fastino/gliner2.5-multi-v1",
+    "GLiNER2.5-Decide": "fastino/GLiNER2.5-Decide",
     "GLiFormer-base": "knowledgator/gliformer-base-v1",
     "GLiFormer-large": "knowledgator/gliformer-large-v1",
 }
@@ -77,7 +81,8 @@ ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS)
                + ["Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                  "Verdict 151M (local)", "von", "so1 (Qwen2.5-0.5B)"])
+                  "Verdict 151M (local)", "von", "JevK5-Lite",
+                  "LFM2.5-RLCD 350M", "so1 (Qwen2.5-0.5B)"])
 
 # local servers speaking the System One wire format: one JevClient pattern,
 # different ports. decider and OpenThai lazy-load their weights on the first
@@ -302,6 +307,52 @@ def main() -> None:
                                       "of this text?")
             cls_lat.append(time.perf_counter() - t1)
             cls_preds.append(res.choice)
+    elif name == "JevK5-Lite":
+        # in-process label-head classifier like von, run under the
+        # .venv-von python (transformers 5.17 + jevk5); classification
+        # only - no span extraction, so no NER answers
+        from jevk5 import JevK5Lite
+
+        lite = JevK5Lite.from_pretrained("alibiserikbay/JevK5-Lite",
+                                         threads=16)
+        for q in CLS_QUESTIONS:
+            labels = list(SENTIMENT_LABELS if q["task"] == "sentiment"
+                          else TOPIC_LABELS)
+            t1 = time.perf_counter()
+            out = lite.classify(q["text"], {"task": labels})
+            cls_lat.append(time.perf_counter() - t1)
+            cls_preds.append(out["task"]["labels"][0]
+                             if out["task"]["labels"] else None)
+    elif name == "LFM2.5-RLCD 350M":
+        # in-process constrained-decision engine (vendored rlcd_engine/),
+        # run under the .venv-von python (transformers 5.17 + jsonschema);
+        # classification only - the supported schema subset (flat
+        # boolean/string-enum fields) cannot express span extraction, so
+        # no NER answers
+        from rlcd_engine.engine import Engine
+
+        engine = Engine(device="cpu", dtype="float32")
+        FIELD_DESC = {"sentiment": "The overall sentiment of the text",
+                      "topic": "The topic category of the text"}
+
+        def schema_for(task: str) -> dict:
+            return {"type": "object",
+                    "properties": {task: {"type": "string",
+                                          "description": FIELD_DESC[task],
+                                          "enum": list(SENTIMENT_LABELS
+                                                       if task == "sentiment"
+                                                       else TOPIC_LABELS)}},
+                    "required": [task],
+                    "additionalProperties": False}
+
+        for q in CLS_QUESTIONS:
+            t1 = time.perf_counter()
+            res = engine.constrained(q["text"], schema_for(q["task"]))
+            cls_lat.append(time.perf_counter() - t1)
+            try:
+                cls_preds.append(json.loads(res["text"])[q["task"]])
+            except (KeyError, ValueError):
+                cls_preds.append(None)
     else:  # so1
         from so1 import Choice, Decider
 
@@ -352,7 +403,8 @@ def main() -> None:
                       "answered it wrong (continuous 0-1, computed by the "
                       "app from stored per-question results)",
         "notes": ["One mixed pool per ability (48 classification, 18 NER).",
-                  "von runs in .venv-von; so1 uses Qwen2.5-0.5B."]})
+                  "von, JevK5-Lite and LFM2.5-RLCD 350M run in .venv-von; "
+                  "so1 uses Qwen2.5-0.5B."]})
     data["systems"] = {k: v for k, v in data.get("systems", {}).items()
                        if k != name}
     data["systems"][name] = entry
