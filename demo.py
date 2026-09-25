@@ -9,12 +9,16 @@ One boundary-architecture model, six tasks, no fine-tuning:
   6. structured records (who bought what, kept as records)
 
 Model family: fastino/gliner2.5-{small,base,multi}-v1
+Section 7 also tours the decision-tuned sibling fastino/GLiNER2.5-Decide
+(340M) on the same sample texts — on the mixed-pool benchmark it is the
+second-best local classifier and still NER-capable.
 Docs: https://github.com/fastino-ai/GLiNER2
 
 Run:
     python demo.py                 # base checkpoint (194M, English)
     python demo.py --model small   # 74M, fastest on CPU
     python demo.py --model multi   # 287M, multilingual
+    python demo.py --model decide  # 340M decision-tuned sibling
 """
 
 from __future__ import annotations
@@ -28,9 +32,11 @@ MODELS = {
     "small": "fastino/gliner2.5-small-v1",
     "base": "fastino/gliner2.5-base-v1",
     "multi": "fastino/gliner2.5-multi-v1",
+    "decide": "fastino/GLiNER2.5-Decide",
 }
 
 MODEL_ID = MODELS["base"]  # set in main(); sections that reload use this
+DECIDE_MODEL_ID = MODELS["decide"]
 
 
 def banner(title: str) -> None:
@@ -194,7 +200,43 @@ def records(model):
     show(result)
 
 
-SECTIONS = [entities, classification, relations, joint, attributes, records]
+# ---------------------------------------------------------------- showcase 7
+def decide_sibling(model):
+    banner("7. GLiNER2.5-Decide - decision-tuned sibling, same sample texts")
+    if MODEL_ID == DECIDE_MODEL_ID:
+        print("  (this tour already runs Decide - section skipped)")
+        return
+    from gliner2 import AutoExtractor
+
+    print(f"Loading {DECIDE_MODEL_ID} (340M; benchmarked here at 85.4% "
+          "classification @ 0.412 s/q - second-best local classifier - "
+          "and 61% NER exact match)...")
+    sibling = timed(AutoExtractor.from_pretrained, DECIDE_MODEL_ID,
+                    map_location="cpu")
+
+    banner("7a. Entity extraction - the same text as section 1a")
+    text = "Apple CEO Tim Cook announced the iPhone 15 in Cupertino yesterday."
+    print(f'  text: "{text}"')
+    result = timed(
+        sibling.extract_entities,
+        text,
+        ["company", "person", "product", "location"],
+        include_confidence=True,
+        include_spans=True,
+    )
+    show(result.get("entities"))
+
+    banner("7b. Classification - the same laptop text as section 2a")
+    result = timed(
+        sibling.classify_text,
+        "This laptop has amazing performance but terrible battery life!",
+        {"sentiment": ["positive", "negative", "neutral"]},
+    )
+    show(result)
+
+
+SECTIONS = [entities, classification, relations, joint, attributes, records,
+            decide_sibling]
 
 
 def main() -> None:
