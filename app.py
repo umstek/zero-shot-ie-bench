@@ -99,10 +99,12 @@ def hbar_chart(df: pd.DataFrame, value: str, title: str,
 
 
 def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
-                       value_title: str, fmt: str = ".1f", log: bool = False):
+                       value_title: str, fmt: str = ".1f", log: bool = False,
+                       descending: bool = True):
     """hbar_chart plus the numeric value printed at each bar's end."""
-    base = hbar_chart(df, value, title, value_title, log=log)
-    order = df.sort_values(value, ascending=False)["System"].tolist()
+    base = hbar_chart(df, value, title, value_title, descending=descending,
+                      log=log)
+    order = df.sort_values(value, ascending=not descending)["System"].tolist()
     labels = (
         alt.Chart(df)
         .mark_text(align="left", dx=3, fontSize=11)
@@ -354,9 +356,9 @@ def build_classification_tab():
     gr.Plot(hbar_chart_labeled(summary, "Accuracy %",
                                "Classification accuracy, mixed pool",
                                "Accuracy %"))
-    gr.Plot(hbar_chart(summary.sort_values("s per question"), "s per question",
+    gr.Plot(hbar_chart(summary, "s per question",
                        "Mean latency per question (CPU; Jev/Laya batch ÷ n)",
-                       "seconds"))
+                       "seconds", descending=False))
     gr.Plot(tradeoff_scatter(summary, "Speed vs accuracy — up and left "
                                       "is better"))
 
