@@ -421,7 +421,7 @@ Blocked by hardware or runtime:
 | `Mapika/decider-2b`, `decider-35b-a3b` | larger decider siblings of the benchmarked `decider-0.8b`; GPU-priced |
 | `fastino/gliner2-{base,large,multi}-v1` | older span-architecture GLiNER 2 line, different loader |
 | `gliner-community/gliner_*-v2.5` | classic `gliner` line (LUKE-descended); a one-off CPU trial of `gliner_large-v2.5` scored 56.2% classification / 67% NER at ~0.4 s/question — dominated by GLiNER2.5-base, so not added |
-| [TypeLLM](https://github.com/TypeLLM/TypeLLM) | type-safe generation harness on SGLang; Linux + GPU only, no CPU path. Self-reports 195/231 JevBench items (228/231 with thinking mode) on Qwen3.8-27B |
+| [TypeLLM](https://github.com/TypeLLM/TypeLLM) | type-safe generation harness; documented Qwen3.8-27B setup uses a Linux SGLang GPU server. Self-reports 195/231 JevBench items (228/231 with thinking mode) |
 
 Seen only on the JevBench v1.4.2 leaderboard (its composite is a harmonic
 mean of Intelligence/Calibration/Speed/Cost — a different metric from the
