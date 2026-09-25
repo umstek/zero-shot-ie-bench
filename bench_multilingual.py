@@ -13,6 +13,9 @@ per invocation (results merge into the shared file):
 
     python bench_multilingual.py --system GLiNER2.5-base
     .venv-von/Scripts/python bench_multilingual.py --system von
+    .venv-von/Scripts/python bench_multilingual.py --system JevK5-Lite
+    .venv-von/Scripts/python bench_multilingual.py --system "LFM2.5-RLCD 350M"
+    .venv-von/Scripts/python bench_multilingual.py --system "MoJev 0.85B"
 
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
@@ -153,6 +156,7 @@ GLINER = {
     "GLiNER2.5-small": "fastino/gliner2.5-small-v1",
     "GLiNER2.5-base": "fastino/gliner2.5-base-v1",
     "GLiNER2.5-multi": "fastino/gliner2.5-multi-v1",
+    "GLiNER2.5-Decide": "fastino/GLiNER2.5-Decide",
 }
 GLIFORMER = {
     "GLiFormer-base": "knowledgator/gliformer-base-v1",
@@ -164,11 +168,20 @@ GLICLASS = {
     "gliclass-base": "knowledgator/gliclass-base-v3.0",
     "gliclass-large": "knowledgator/gliclass-large-v3.0",
 }
+RERANKERS = {
+    "mxbai-rerank-base-v2": "mixedbread-ai/mxbai-rerank-base-v2",
+    "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
+    "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
+}
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
+               + list(RERANKERS) + ["Certo 421M", "MoJev 0.85B",
+                                    "nanodiff 350M"]
                + ["Laya Router", "Laya typed-decisions", "von",
-                  "so1 (Qwen2.5-0.5B)", "Jev", "Kev 0.8B (local)",
-                  "AgentJev 0.6B (local)", "decider 0.8B (local)",
-                  "OpenThai 0.8B (local)", "Verdict 151M (local)"])
+                  "JevK5-Lite", "LFM2.5-RLCD 350M",
+                  "so1 (Qwen2.5-0.5B)", "Jev",
+                  "Kev 0.8B (local)", "AgentJev 0.6B (local)",
+                  "decider 0.8B (local)", "OpenThai 0.8B (local)",
+                  "Verdict 151M (local)"])
 
 
 def make_classifier(name: str):
@@ -192,6 +205,33 @@ def make_classifier(name: str):
         def one(text: str):
             out = model.classify(text, labels, threshold=0.5)
             return out[0]["class_name"] if out else None
+    elif name == "Certo 421M":
+        # calibrated non-generative decision model (vendored certo_engine/):
+        # score each label description against the state in one forward pass
+        from huggingface_hub import snapshot_download
+
+        from certo_engine import DecisionModel
+
+        model = DecisionModel.load(
+            snapshot_download("altslate/certo-decision-model"), device="cpu")
+        options = [{"id": label, "description": desc}
+                   for label, desc in SENTIMENT_LABELS.items()]
+
+        def one(text: str):
+            return model.decide(text, options)["top"]
+    elif name in RERANKERS:
+        # cross-encoder reranker as decision engine: score one
+        # (instruction, label) pair per label, pick the highest-scoring
+        # label (same pair shape as bench_spectrum.py)
+        from sentence_transformers import CrossEncoder
+
+        model = CrossEncoder(RERANKERS[name], device="cpu")
+
+        def one(text: str):
+            pairs = [('What is the overall sentiment of this text: '
+                      f'"{text}"', label) for label in labels]
+            scores = model.predict(pairs)
+            return labels[max(range(len(scores)), key=lambda i: scores[i])]
     else:  # gliclass
         from transformers import AutoTokenizer
 
@@ -209,7 +249,8 @@ def make_classifier(name: str):
 
 
 def make_decider(name: str):
-    """Per-text sentiment decider for von / so1."""
+    """Per-text sentiment decider for von / so1, label-head classifier
+    for JevK5-Lite (same per-text call shape)."""
     labels = list(SENTIMENT_LABELS)
     if name == "von":
         from von_client import load_von_decider
@@ -221,6 +262,63 @@ def make_decider(name: str):
                 state=text, choices=dict(SENTIMENT_LABELS),
                 instructions="What is the overall sentiment of this "
                              "text?").choice
+    elif name == "JevK5-Lite":
+        # in-process label-head classifier, run under the .venv-von python
+        # (transformers 5.17 + jevk5)
+        from jevk5 import JevK5Lite
+
+        lite = JevK5Lite.from_pretrained("alibiserikbay/JevK5-Lite",
+                                         threads=16)
+
+        def one(text: str):
+            out = lite.classify(text, {"task": labels})
+            return out["task"]["labels"][0] if out["task"]["labels"] else None
+    elif name == "LFM2.5-RLCD 350M":
+        # in-process constrained-decision engine (vendored rlcd_engine/),
+        # run under the .venv-von python (transformers 5.17 + jsonschema)
+        from rlcd_engine.engine import Engine
+
+        engine = Engine(device="cpu", dtype="float32")
+        schema = {"type": "object",
+                  "properties": {"sentiment": {"type": "string",
+                                               "description": "The overall "
+                                                             "sentiment of "
+                                                             "the text",
+                                               "enum": labels}},
+                  "required": ["sentiment"],
+                  "additionalProperties": False}
+
+        def one(text: str):
+            res = engine.constrained(text, schema)
+            try:
+                return json.loads(res["text"])["sentiment"]
+            except (KeyError, ValueError):
+                return None
+    elif name == "MoJev 0.85B":
+        # in-process packed one-pass decision scorer (vendored
+        # mojev_engine/), run under the .venv-von python (transformers 5.17
+        # for the Qwen3.5 encoder)
+        from mojev_engine import load_engine
+
+        score, _ = load_engine("cpu")
+
+        def one(text: str):
+            pred, _ = score(text, "sentiment",
+                            "What is the overall sentiment of this text?",
+                            labels)
+            return pred
+    elif name == "nanodiff 350M":
+        # diffusion-LM decision model: nanodiff_engine vendors the NanoDiff
+        # class (BY571/nanoDiff); runs in the MAIN venv (tiktoken),
+        # slow (~10 s/text)
+        from nanodiff_engine.runner import QUESTION, load_model, predict
+
+        model, _ = load_model("cpu")
+
+        def one(text: str):
+            pred, _ = predict(model, text, QUESTION["sentiment"],
+                              labels, "cpu")
+            return pred
     else:
         from so1 import Choice, Decider
 
@@ -384,7 +482,8 @@ def main() -> None:
     laya_routes = None
     print(f"{name}: 54 texts (9 languages x 6) ...")
     t0 = time.perf_counter()
-    if name in GLINER or name in GLIFORMER or name in GLICLASS:
+    if (name in GLINER or name in GLIFORMER or name in GLICLASS
+            or name in RERANKERS or name == "Certo 421M"):
         one = make_classifier(name)
         preds, lat = [], []
         for text in texts:
@@ -392,7 +491,8 @@ def main() -> None:
             preds.append(one(text))
             lat.append(time.perf_counter() - t1)
         lat = statistics.mean(lat)
-    elif name in ("von", "so1 (Qwen2.5-0.5B)"):
+    elif name in ("von", "so1 (Qwen2.5-0.5B)", "JevK5-Lite",
+                  "LFM2.5-RLCD 350M", "MoJev 0.85B", "nanodiff 350M"):
         one = make_decider(name)
         preds, lat = [], []
         for text in texts:
@@ -414,8 +514,13 @@ def main() -> None:
         preds, lat = run_systemone(texts, 8029, "openthai-systemone")
     elif name == "Verdict 151M (local)":
         preds, lat = run_verdict(texts)
-    else:  # Jev
+    elif name == "Jev":
         preds, lat = run_jev(texts)
+    else:
+        # a new ALL_SYSTEMS entry without a dispatch branch must never
+        # fall through to the paid Jev API
+        raise SystemExit(f"unwired system {name!r} — add a dispatch "
+                         "branch in main()")
 
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:
@@ -443,6 +548,10 @@ def main() -> None:
     out["by_language"][name] = by_lang
     out["by_tier"][name] = by_tier
     out["latency"][name] = round(lat, 3)
+    notes = out.setdefault("meta", {}).setdefault("notes", [])
+    if notes and notes[0].startswith("All "):
+        notes[0] = (f"All {len(out['by_language'])} systems answer "
+                    "the same 54 texts.")
     warmed = name.startswith(("Kev", "decider", "OpenThai"))
     out.setdefault("timing", {})[name] = (
         "Model download and loading excluded; "
