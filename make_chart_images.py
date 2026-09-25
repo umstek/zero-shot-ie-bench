@@ -48,7 +48,7 @@ def spectrum_charts(bench):
         "cls_latency": hbar_chart_labeled(
             summary, "s per question",
             "Mean latency per question (CPU; Jev/Laya batch ÷ n)",
-            "seconds (log)", fmt=".3f", log=True),
+            "seconds (log)", fmt=".3f", log=True, descending=False),
         "cls_tradeoff": tradeoff_scatter(
             summary, "Speed vs accuracy — up and left is better"),
     }
