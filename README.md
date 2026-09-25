@@ -189,12 +189,15 @@ permutation-equivariant candidate head, own loopback API) reaches 79.2%
 at 0.646 s/question — 17× Jev's batched cloud latency, but local and
 free. The newest wave: decider-0.8B, a third-party
 Qwen3.5-0.8B-Base System One server, is the strongest local decision
-engine at 83.3% (tying GLiNER2.5-base) — but at 2.1 s/question it is also
-the slowest system on this page. OpenThai-SystemOne (Qwen3.5-0.8B with a
+engine at 83.3% (tying GLiNER2.5-base) — but at 2.1 s/question it was
+the slowest system here when it landed (the later MoJev and nanodiff
+additions are slower). OpenThai-SystemOne (Qwen3.5-0.8B with a
 Gated DeltaNet hybrid backbone and a 256-way slot head, Thai/English
 tuning) scores 70.8% at 0.5 s after a multi-minute lazy warm-up.
 GLiNER2.5-Decide — Fastino's decision-tuned GLiNER 2.5 sibling — is the
-second-best local classifier at 85.4% (only cloud Jev is higher) and is
+best local classifier on the mixed pool at 85.4% (only cloud Jev is
+higher; the flat-suite GLiNER/GLiFormer rows above sit at 100% on their
+own easier pool) and is
 still NER-capable at 61% exact match. JevK5-Lite, the lite build of
 JevBench's #3 JevK5, adds 81.2% at 0.392 s/question (tied with the
 gliclass v3.0 pair) and a perfect 100% on the multilingual popular tier
@@ -501,7 +504,7 @@ extra Laya checkpoints noted below):
 | `fastino/gliner2.5-small-v1` | 74M | DeBERTa-v3-xsmall, fast CPU — benchmarked |
 | `fastino/gliner2.5-base-v1` | 194M | default English — benchmarked |
 | `fastino/gliner2.5-multi-v1` | 287M | mDeBERTa, multilingual — benchmarked; largest 2.5, no `large` exists |
-| `fastino/GLiNER2.5-Decide` | 340M | decision-tuned sibling — benchmarked; second-best local cls |
+| `fastino/GLiNER2.5-Decide` | 340M | decision-tuned sibling — benchmarked; best local cls on the mixed pool |
 | `knowledgator/gliformer-base-v1` | ~190M | benchmarked; best NER F1 here |
 | `knowledgator/gliformer-large-v1` | 575.6M | benchmarked; family is base+large only, no small |
 | `convaiinnovations/laya` (+multilingual, typed-decisions) | 421M / 322M | English root benchmarked; subfolders exist for the other two |
@@ -552,9 +555,11 @@ accuracy-only scores in this README):
 
 ### Trial-pool runs, not promoted
 
-A sweep of the community "All about Jev" catalog (1,619 entries → 8
-candidates that passed the not-already-run / looks-plausible / CPU-runnable
-filters). Each runnable one was tried on two fixed mini-pools from this
+A sweep of the community "All about Jev" catalog (1,619 entries → 9
+candidates that passed the not-already-run and looks-plausible filters —
+CPU-runnability could only be established at trial time, and four of the
+nine turned out unrunnable or gated). Each runnable one was tried on two
+fixed mini-pools from this
 repo's own graded questions — 12 easy-tier and 16 hard-tier classification,
 plus NER where the model supports it. These numbers are **measured here,
 but on trial pools** — not the 48-question spectrum above. Four of the
