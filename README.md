@@ -406,6 +406,34 @@ extra Laya checkpoints noted below):
 | `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader — not run |
 | `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line — not run |
 
+## Noted, not benchmarked
+
+Systems we looked at but never ran on this CPU-only bench. Every number in
+this section is **borrowed** (JevBench or the project's own report), not
+measured here — the tables above only carry numbers from our pools.
+
+Blocked by hardware or runtime:
+
+| System | Why not run here |
+|---|---|
+| `akhilaaa3/Jev-Omni` | 12B multimodal Gemma 4 fine-tune; needs CUDA and ~50 GB fp32 weights |
+| kev 4B / 9B | `kev-0.8b`'s larger siblings; impractical on CPU |
+| `Mapika/decider-2b`, `decider-35b-a3b` | larger decider siblings of the benchmarked `decider-0.8b`; GPU-priced |
+| `fastino/gliner2-{base,large,multi}-v1` | older span-architecture GLiNER 2 line, different loader |
+| `gliner-community/gliner_*-v2.5` | classic `gliner` line (LUKE-descended); a one-off CPU trial of `gliner_large-v2.5` scored 56.2% classification / 67% NER at ~0.4 s/question — dominated by GLiNER2.5-base, so not added |
+| [TypeLLM](https://github.com/TypeLLM/TypeLLM) | type-safe generation harness; documented Qwen3.8-27B setup uses a Linux SGLang GPU server. Self-reports 195/231 JevBench items (228/231 with thinking mode) |
+
+Seen only on the JevBench v1.4.2 leaderboard (its composite is a harmonic
+mean of Intelligence/Calibration/Speed/Cost — a different metric from the
+accuracy-only scores in this README):
+
+| System | JevBench v1.4.2 (borrowed) |
+|---|---|
+| decider-4b v2 | #1 at 64.13 — but Jev 1.13.0 (#2, 63.29) keeps the Intelligence (53.1 vs 49.4) and Calibration (76.3 vs 75.0) leads; decider wins Speed (92.9 vs 83.3) and Cost. We benchmarked `decider-0.8b` only |
+| JevK5 v0.2.0 | #3 at 62.04 |
+| Cygnet | #4 at 61.76 |
+| Hopper | #5 at 59.43 |
+
 ## Repo layout
 
 | File | What it is |
