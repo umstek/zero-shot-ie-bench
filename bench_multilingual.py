@@ -514,8 +514,13 @@ def main() -> None:
         preds, lat = run_systemone(texts, 8029, "openthai-systemone")
     elif name == "Verdict 151M (local)":
         preds, lat = run_verdict(texts)
-    else:  # Jev
+    elif name == "Jev":
         preds, lat = run_jev(texts)
+    else:
+        # a new ALL_SYSTEMS entry without a dispatch branch must never
+        # fall through to the paid Jev API
+        raise SystemExit(f"unwired system {name!r} — add a dispatch "
+                         "branch in main()")
 
     try:
         with open(RESULTS_FILE, encoding="utf-8") as fh:

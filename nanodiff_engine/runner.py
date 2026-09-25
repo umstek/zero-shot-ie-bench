@@ -11,9 +11,10 @@ from __future__ import annotations
 import torch
 
 from .nanodiff import Config, NanoDiff
-from .decision_format import (MASK, RESPONSE_LEN, build_single_prompt,
-                              build_single_response, encode_example,
-                              option_token_ids)
+from .decision_format import (MASK, PROMPT_LEN, RESPONSE_LEN,
+                              build_single_prompt, build_single_response,
+                              encode_example, n_tokens, option_token_ids,
+                              truncate_tokens)
 
 CKPT = ("pngwn/nanodiff-350m-typed-decisions-lam1::"
         "nanodiff-350m-typed-decisions-lam1.pt")
@@ -35,7 +36,16 @@ def load_model(device):
 
 @torch.no_grad()
 def predict(model, state, question, options, device):
+    # budget the state so the fully assembled prompt fits PROMPT_LEN;
+    # encode_example hard-rejects longer prompts (the release's eval path
+    # never sees them, a long user state in the demo/app would)
+    budget = PROMPT_LEN - n_tokens(build_single_prompt("", question, options))
+    state = truncate_tokens(state, max(0, budget))
     prompt_str = build_single_prompt(state, question, options)
+    while n_tokens(prompt_str) > PROMPT_LEN and budget > 0:
+        budget -= 8
+        state = truncate_tokens(state, budget)
+        prompt_str = build_single_prompt(state, question, options)
     response_str, letter_offsets = build_single_response([0])  # " A"
     prompt_ids, response_ids, answer_tokens = encode_example(
         prompt_str, response_str, letter_offsets)

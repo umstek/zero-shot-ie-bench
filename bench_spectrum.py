@@ -196,7 +196,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
                 for i, t in enumerate(texts)}
             out = ask({"task": task}, questions)
             return [out[f"t{i}"]["value"] for i in range(len(texts))]
-    else:
+    elif client_kind == "jev":
         from jev_client import JevClient
 
         client = JevClient()
@@ -204,6 +204,8 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
         def run_task(task: str, texts: list[str]) -> list:
             labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
             return client.classify(texts, dict(labels), task=task)
+    else:
+        raise SystemExit(f"unknown client kind {client_kind!r}")
     return run_task
 
 
@@ -327,7 +329,9 @@ def main() -> None:
                 else "agentjev" if name.startswith("AgentJev")
                 else "decider" if name.startswith("decider")
                 else "openthai" if name.startswith("OpenThai")
-                else "jev")
+                else "jev" if name == "Jev" else None)
+        if kind is None:   # unmapped names must never reach the cloud API
+            raise SystemExit(f"unwired system {name!r} — add a kind mapping")
         run_task = classify_batched(kind, repo=repo)
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
@@ -455,7 +459,7 @@ def main() -> None:
                                    else TOPIC_LABELS), "cpu")
             cls_lat.append(time.perf_counter() - t1)
             cls_preds.append(pred)
-    else:  # so1
+    elif name == "so1 (Qwen2.5-0.5B)":
         from so1 import Choice, Decider
 
         decider = Decider.from_pretrained("Qwen/Qwen2.5-0.5B", backend="hf")
@@ -468,6 +472,9 @@ def main() -> None:
                                  mode="separate")
             cls_lat.append(time.perf_counter() - t1)
             cls_preds.append(out[0].choice)
+    else:
+        raise SystemExit(f"unwired system {name!r} — add a dispatch "
+                         "branch in main()")
 
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
     warmed = name.startswith(("Kev", "decider", "OpenThai"))

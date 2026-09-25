@@ -19,9 +19,10 @@ def load_engine(device: str = "cpu"):
     (chosen option text, probabilities in caller order), mirroring
     serve.py Engine.answer for a single choice question (name is the schema
     field name read by Field.prompt)."""
-    model = AutoModel.from_pretrained(REPO, trust_remote_code=True)
+    model = AutoModel.from_pretrained(REPO, revision=REVISION,
+                                      trust_remote_code=True)
     model = model.to(device).eval()
-    tokenizer = AutoTokenizer.from_pretrained(REPO)
+    tokenizer = AutoTokenizer.from_pretrained(REPO, revision=REVISION)
     context_tokens = int(model.config.context_tokens)
 
     @torch.no_grad()

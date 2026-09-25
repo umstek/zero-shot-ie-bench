@@ -61,7 +61,9 @@ def timed(fn, *args, **kwargs):
 
 def decide_one(score, text: str, task: str, labels: list[str]) -> dict:
     """One text, one choice field: packed candidates, one pass."""
-    choice, probs = score(text, task, QUESTION[task], labels)
+    question = QUESTION.get(
+        task, f"Which {task} category does this text belong to?")
+    choice, probs = score(text, task, question, labels)
     return {
         "choice": choice,
         "probabilities": {label: round(prob, 4)

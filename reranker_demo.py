@@ -34,7 +34,13 @@ SHARED_TEXTS = [
 ]
 SENTIMENT_LABELS = ["positive", "negative", "neutral"]
 TOPIC_LABELS = ["technology", "business", "sports", "politics"]
-INSTRUCTION = 'What is the overall {task} of this text: "{text}"'
+# same wording as bench_spectrum.py classify_reranker so demo and bench
+# scores compare directly; free-form task words get the generic template
+INSTRUCTIONS = {
+    "sentiment": 'What is the overall sentiment of this text: "{text}"',
+    "topic": 'Which topic category does this text belong to: "{text}"',
+}
+GENERIC_INSTRUCTION = 'What is the overall {task} of this text: "{text}"'
 
 
 def banner(title: str) -> None:
@@ -57,7 +63,8 @@ def timed(fn, *args, **kwargs):
 
 def score_pairs(model, text: str, task: str, labels: list[str]):
     """One (instruction, label) pair per label; returns label -> score."""
-    pairs = [(INSTRUCTION.format(task=task, text=text), label)
+    instr = INSTRUCTIONS.get(task, GENERIC_INSTRUCTION)
+    pairs = [(instr.format(task=task, text=text), label)
              for label in labels]
     scores = model.predict(pairs)
     return dict(zip(labels, (round(float(s), 4) for s in scores)))
