@@ -297,7 +297,9 @@ def accuracy_heatmap(df: pd.DataFrame, title: str):
                     .mean().sort_values(ascending=False).index.tolist(),
                     title=None, axis=alt.Axis(labelAngle=-40,
                                               labelFontSize=11)),
-            y=alt.Y("Language:N", title=None),
+            y=alt.Y("Language:N", sort=df.groupby("Language")["Accuracy %"]
+                    .mean().sort_values(ascending=False).index.tolist(),
+                    title=None),
             color=alt.Color("Accuracy %:Q", scale=alt.Scale(
                 domain=[0, 100], scheme="redyellowgreen"),
                 legend=alt.Legend(format=".0f")),
@@ -469,15 +471,17 @@ def build_multilingual_tab():
                 "medium: Vietnamese, Turkish, Ukrainian · rare: Sinhala, "
                 "Icelandic, Welsh. Color in the heatmap always spans "
                 "0-100%.")
-    order = (pd.DataFrame({s: [v[l] for l in langs]
-                           for s, v in by_language.items()},
-                          index=langs).mean()
-             .sort_values(ascending=False).index.tolist())
+    frame = pd.DataFrame({s: [v[l] for l in langs]
+                          for s, v in by_language.items()},
+                         index=langs)
+    order = frame.mean().sort_values(ascending=False).index.tolist()
+    lang_order = (frame.mean(axis=1).sort_values(ascending=False)
+                  .index.tolist())
     rows = [[s] + [f"{by_language[s][lang] * 100:.0f}"
-                   for lang in langs]
+                   for lang in lang_order]
             + [f"{sum(by_language[s][l] for l in langs) / len(langs) * 100:.0f}"]
             for s in order]
-    gr.DataFrame(rows, headers=["System"] + langs + ["All"],
+    gr.DataFrame(rows, headers=["System"] + lang_order + ["All"],
                  datatype=["str"] * (len(langs) + 2),
                  label="Accuracy by language (%)")
     heat = pd.DataFrame([{"System": s, "Language": lang,
