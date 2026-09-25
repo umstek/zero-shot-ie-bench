@@ -15,6 +15,7 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system von
     .venv-von/Scripts/python bench_multilingual.py --system JevK5-Lite
     .venv-von/Scripts/python bench_multilingual.py --system "LFM2.5-RLCD 350M"
+    .venv-von/Scripts/python bench_multilingual.py --system "MoJev 0.85B"
 
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
@@ -167,7 +168,14 @@ GLICLASS = {
     "gliclass-base": "knowledgator/gliclass-base-v3.0",
     "gliclass-large": "knowledgator/gliclass-large-v3.0",
 }
+RERANKERS = {
+    "mxbai-rerank-base-v2": "mixedbread-ai/mxbai-rerank-base-v2",
+    "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
+    "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
+}
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
+               + list(RERANKERS) + ["Certo 421M", "MoJev 0.85B",
+                                    "nanodiff 350M"]
                + ["Laya Router", "Laya typed-decisions", "von",
                   "JevK5-Lite", "LFM2.5-RLCD 350M",
                   "so1 (Qwen2.5-0.5B)", "Jev",
@@ -197,6 +205,33 @@ def make_classifier(name: str):
         def one(text: str):
             out = model.classify(text, labels, threshold=0.5)
             return out[0]["class_name"] if out else None
+    elif name == "Certo 421M":
+        # calibrated non-generative decision model (vendored certo_engine/):
+        # score each label description against the state in one forward pass
+        from huggingface_hub import snapshot_download
+
+        from certo_engine import DecisionModel
+
+        model = DecisionModel.load(
+            snapshot_download("altslate/certo-decision-model"), device="cpu")
+        options = [{"id": label, "description": desc}
+                   for label, desc in SENTIMENT_LABELS.items()]
+
+        def one(text: str):
+            return model.decide(text, options)["top"]
+    elif name in RERANKERS:
+        # cross-encoder reranker as decision engine: score one
+        # (instruction, label) pair per label, pick the highest-scoring
+        # label (same pair shape as bench_spectrum.py)
+        from sentence_transformers import CrossEncoder
+
+        model = CrossEncoder(RERANKERS[name], device="cpu")
+
+        def one(text: str):
+            pairs = [('What is the overall sentiment of this text: '
+                      f'"{text}"', label) for label in labels]
+            scores = model.predict(pairs)
+            return labels[max(range(len(scores)), key=lambda i: scores[i])]
     else:  # gliclass
         from transformers import AutoTokenizer
 
@@ -259,6 +294,31 @@ def make_decider(name: str):
                 return json.loads(res["text"])["sentiment"]
             except (KeyError, ValueError):
                 return None
+    elif name == "MoJev 0.85B":
+        # in-process packed one-pass decision scorer (vendored
+        # mojev_engine/), run under the .venv-von python (transformers 5.17
+        # for the Qwen3.5 encoder)
+        from mojev_engine import load_engine
+
+        score, _ = load_engine("cpu")
+
+        def one(text: str):
+            pred, _ = score(text, "sentiment",
+                            "What is the overall sentiment of this text?",
+                            labels)
+            return pred
+    elif name == "nanodiff 350M":
+        # diffusion-LM decision model: nanodiff_engine vendors the NanoDiff
+        # class (BY571/nanoDiff); runs in the MAIN venv (tiktoken),
+        # slow (~10 s/text)
+        from nanodiff_engine.runner import QUESTION, load_model, predict
+
+        model, _ = load_model("cpu")
+
+        def one(text: str):
+            pred, _ = predict(model, text, QUESTION["sentiment"],
+                              labels, "cpu")
+            return pred
     else:
         from so1 import Choice, Decider
 
@@ -422,7 +482,8 @@ def main() -> None:
     laya_routes = None
     print(f"{name}: 54 texts (9 languages x 6) ...")
     t0 = time.perf_counter()
-    if name in GLINER or name in GLIFORMER or name in GLICLASS:
+    if (name in GLINER or name in GLIFORMER or name in GLICLASS
+            or name in RERANKERS or name == "Certo 421M"):
         one = make_classifier(name)
         preds, lat = [], []
         for text in texts:
@@ -431,7 +492,7 @@ def main() -> None:
             lat.append(time.perf_counter() - t1)
         lat = statistics.mean(lat)
     elif name in ("von", "so1 (Qwen2.5-0.5B)", "JevK5-Lite",
-                  "LFM2.5-RLCD 350M"):
+                  "LFM2.5-RLCD 350M", "MoJev 0.85B", "nanodiff 350M"):
         one = make_decider(name)
         preds, lat = [], []
         for text in texts:

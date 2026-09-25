@@ -9,12 +9,13 @@ Per-question predictions are stored (not just aggregates) so the app can
 plot accuracy along the difficulty spectrum.
 
 Run from the MAIN venv for most systems, from .venv-von for von,
-JevK5-Lite and LFM2.5-RLCD 350M:
+JevK5-Lite, LFM2.5-RLCD 350M and MoJev 0.85B:
     python bench_spectrum.py --system GLiNER2.5-base
     ...
     .venv-von/Scripts/python bench_spectrum.py --system von
     .venv-von/Scripts/python bench_spectrum.py --system JevK5-Lite
     .venv-von/Scripts/python bench_spectrum.py --system "LFM2.5-RLCD 350M"
+    .venv-von/Scripts/python bench_spectrum.py --system "MoJev 0.85B"
 
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
@@ -77,8 +78,14 @@ GLICLASS = {
     "gliclass-base": "knowledgator/gliclass-base-v3.0",
     "gliclass-large": "knowledgator/gliclass-large-v3.0",
 }
-ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS)
-               + ["Laya (local)", "Laya typed-decisions", "Jev",
+RERANKERS = {
+    "mxbai-rerank-base-v2": "mixedbread-ai/mxbai-rerank-base-v2",
+    "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
+    "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
+}
+ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
+               + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
+                  "Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
                   "Verdict 151M (local)", "von", "JevK5-Lite",
@@ -217,6 +224,48 @@ def classify_gliclass(model_id: str):
     return cls_one
 
 
+def classify_reranker(repo: str):
+    """Cross-encoder reranker as decision engine (shared by the three
+    rerankers): score one (instruction, label) pair per label and pick the
+    highest-scoring label. Classification only - rerankers cannot extract
+    spans, so no NER answers."""
+    from sentence_transformers import CrossEncoder
+
+    model = CrossEncoder(repo, device="cpu")
+    instr = {"sentiment": 'What is the overall sentiment of this text: "{text}"',
+             "topic": 'Which topic category does this text belong to: "{text}"'}
+
+    def cls_one(text: str, task: str) -> str | None:
+        labels = list(SENTIMENT_LABELS if task == "sentiment"
+                      else TOPIC_LABELS)
+        pairs = [(instr[task].format(text=text), label) for label in labels]
+        scores = model.predict(pairs)
+        return labels[max(range(len(scores)), key=lambda i: scores[i])]
+    return cls_one
+
+
+def classify_certo():
+    """Certo 421M: calibrated non-generative decision model (vendored
+    certo_engine/, card documents no PyPI package). One forward pass scores
+    each label description against the state; argmax = decision. Classification
+    only - fixed option lists in, one label out, no span extraction."""
+    from huggingface_hub import snapshot_download
+
+    from certo_engine import DecisionModel
+
+    model = DecisionModel.load(
+        snapshot_download("altslate/certo-decision-model"), device="cpu")
+    OPTIONS = {
+        task: [{"id": label, "description": desc}
+               for label, desc in (SENTIMENT_LABELS if task == "sentiment"
+                                   else TOPIC_LABELS).items()]
+        for task in ("sentiment", "topic")}
+
+    def cls_one(text: str, task: str) -> str | None:
+        return model.decide(text, OPTIONS[task])["top"]
+    return cls_one
+
+
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -250,6 +299,23 @@ def main() -> None:
                 t1 = time.perf_counter()
                 ner_ok.append(ner_one(q["text"]) == q["gold"])
                 ner_lat.append(time.perf_counter() - t1)
+    elif name in RERANKERS:
+        # in-process cross-encoder rerankers as decision engines,
+        # classification only - no span extraction, so no NER answers
+        cls_one = classify_reranker(RERANKERS[name])
+        for q in CLS_QUESTIONS:
+            t1 = time.perf_counter()
+            cls_preds.append(cls_one(q["text"], q["task"]))
+            cls_lat.append(time.perf_counter() - t1)
+    elif name == "Certo 421M":
+        # in-process decision head over a ModernBERT-large backbone
+        # (vendored certo_engine/); classification only - no span
+        # extraction, so no NER answers
+        cls_one = classify_certo()
+        for q in CLS_QUESTIONS:
+            t1 = time.perf_counter()
+            cls_preds.append(cls_one(q["text"], q["task"]))
+            cls_lat.append(time.perf_counter() - t1)
     elif name in ("Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)"):
@@ -353,6 +419,42 @@ def main() -> None:
                 cls_preds.append(json.loads(res["text"])[q["task"]])
             except (KeyError, ValueError):
                 cls_preds.append(None)
+    elif name == "MoJev 0.85B":
+        # in-process packed one-pass decision scorer (vendored
+        # mojev_engine/), run under the .venv-von python (transformers 5.17
+        # for the Qwen3.5 encoder); classification only - fixed candidate
+        # menus in, one label out, no span extraction, so no NER answers
+        from mojev_engine import load_engine
+
+        score, _ = load_engine("cpu")
+        QUESTION = {"sentiment": "What is the overall sentiment of this "
+                                 "text?",
+                    "topic": "Which topic category does this text belong "
+                             "to?"}
+        for q in CLS_QUESTIONS:
+            t1 = time.perf_counter()
+            pred, _ = score(q["text"], q["task"], QUESTION[q["task"]],
+                            list(SENTIMENT_LABELS if q["task"] == "sentiment"
+                                 else TOPIC_LABELS))
+            cls_lat.append(time.perf_counter() - t1)
+            cls_preds.append(pred)
+    elif name == "nanodiff 350M":
+        # diffusion-LM decision model: nanodiff_engine vendors the NanoDiff
+        # class (BY571/nanoDiff) and the pngwn typed-decision format; one
+        # bidirectional forward, softmax restricted to option-letter token
+        # ids. Classification only - a single-letter choice interface, no
+        # span extraction, so no NER answers. Runs in the MAIN venv
+        # (tiktoken); slow (~10 s/question).
+        from nanodiff_engine.runner import QUESTION, load_model, predict
+
+        model, _ = load_model("cpu")
+        for q in CLS_QUESTIONS:
+            t1 = time.perf_counter()
+            pred, _ = predict(model, q["text"], QUESTION[q["task"]],
+                              list(SENTIMENT_LABELS if q["task"] == "sentiment"
+                                   else TOPIC_LABELS), "cpu")
+            cls_lat.append(time.perf_counter() - t1)
+            cls_preds.append(pred)
     else:  # so1
         from so1 import Choice, Decider
 

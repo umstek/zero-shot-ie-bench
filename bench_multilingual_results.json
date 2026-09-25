@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 22 systems answer the same 54 texts.",
+      "All 28 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -38,7 +38,13 @@
       "Verdict 151M (local) recorded 2026-09-23 11:54, 22s, CPU",
       "GLiNER2.5-Decide recorded 2026-09-25 19:23, 40s, CPU",
       "JevK5-Lite recorded 2026-09-25 19:30, 36s, CPU",
-      "LFM2.5-RLCD 350M recorded 2026-09-25 19:41, 35s, CPU"
+      "LFM2.5-RLCD 350M recorded 2026-09-25 19:41, 35s, CPU",
+      "GTE-rerank-ModernBERT-base recorded 2026-09-25 21:09, 23s, CPU",
+      "bge-reranker-v2-m3 recorded 2026-09-25 21:09, 30s, CPU",
+      "mxbai-rerank-base-v2 recorded 2026-09-25 21:11, 83s, CPU",
+      "Certo 421M recorded 2026-09-25 21:30, 48s, CPU",
+      "MoJev 0.85B recorded 2026-09-25 21:46, 311s, CPU",
+      "nanodiff 350M recorded 2026-09-25 22:11, 670s, CPU"
     ]
   },
   "by_language": {
@@ -283,6 +289,72 @@
       "Sinhala": 0.0,
       "Icelandic": 0.1667,
       "Welsh": 0.1667
+    },
+    "GTE-rerank-ModernBERT-base": {
+      "Spanish": 0.8333,
+      "French": 0.3333,
+      "Chinese": 0.6667,
+      "Vietnamese": 0.5,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.3333
+    },
+    "bge-reranker-v2-m3": {
+      "Spanish": 0.6667,
+      "French": 0.6667,
+      "Chinese": 0.6667,
+      "Vietnamese": 0.6667,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 0.6667
+    },
+    "mxbai-rerank-base-v2": {
+      "Spanish": 0.5,
+      "French": 0.6667,
+      "Chinese": 0.5,
+      "Vietnamese": 0.5,
+      "Turkish": 0.5,
+      "Ukrainian": 0.5,
+      "Sinhala": 0.5,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "Certo 421M": {
+      "Spanish": 0.3333,
+      "French": 0.1667,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.1667,
+      "Turkish": 0.5,
+      "Ukrainian": 0.1667,
+      "Sinhala": 0.1667,
+      "Icelandic": 0.3333,
+      "Welsh": 0.5
+    },
+    "MoJev 0.85B": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.5,
+      "Icelandic": 0.5,
+      "Welsh": 0.5
+    },
+    "nanodiff 350M": {
+      "Spanish": 0.3333,
+      "French": 0.1667,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -395,6 +467,36 @@
       "popular": 0.7778,
       "medium": 0.6667,
       "rare": 0.1111
+    },
+    "GTE-rerank-ModernBERT-base": {
+      "popular": 0.6111,
+      "medium": 0.3333,
+      "rare": 0.3889
+    },
+    "bge-reranker-v2-m3": {
+      "popular": 0.6667,
+      "medium": 0.6667,
+      "rare": 0.6667
+    },
+    "mxbai-rerank-base-v2": {
+      "popular": 0.5556,
+      "medium": 0.5,
+      "rare": 0.3889
+    },
+    "Certo 421M": {
+      "popular": 0.2778,
+      "medium": 0.2778,
+      "rare": 0.3333
+    },
+    "MoJev 0.85B": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.5
+    },
+    "nanodiff 350M": {
+      "popular": 0.2778,
+      "medium": 0.3889,
+      "rare": 0.3889
     }
   },
   "latency": {
@@ -419,7 +521,13 @@
     "Verdict 151M (local)": 0.179,
     "GLiNER2.5-Decide": 0.443,
     "JevK5-Lite": 0.457,
-    "LFM2.5-RLCD 350M": 0.507
+    "LFM2.5-RLCD 350M": 0.507,
+    "GTE-rerank-ModernBERT-base": 0.181,
+    "bge-reranker-v2-m3": 0.318,
+    "mxbai-rerank-base-v2": 1.252,
+    "Certo 421M": 0.715,
+    "MoJev 0.85B": 5.53,
+    "nanodiff 350M": 12.223
   },
   "laya_routing": {
     "Spanish": {
@@ -464,7 +572,13 @@
     "Verdict 151M (local)": "Model download and loading excluded; first forward pass included.",
     "GLiNER2.5-Decide": "Model download and loading excluded; first forward pass included.",
     "JevK5-Lite": "Model download and loading excluded; first forward pass included.",
-    "LFM2.5-RLCD 350M": "Model download and loading excluded; first forward pass included."
+    "LFM2.5-RLCD 350M": "Model download and loading excluded; first forward pass included.",
+    "GTE-rerank-ModernBERT-base": "Model download and loading excluded; first forward pass included.",
+    "bge-reranker-v2-m3": "Model download and loading excluded; first forward pass included.",
+    "mxbai-rerank-base-v2": "Model download and loading excluded; first forward pass included.",
+    "Certo 421M": "Model download and loading excluded; first forward pass included.",
+    "MoJev 0.85B": "Model download and loading excluded; first forward pass included.",
+    "nanodiff 350M": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {
