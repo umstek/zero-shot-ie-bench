@@ -7,12 +7,12 @@ cloud, the hosted ones behind OpenRouter's decision and rerank endpoints)
 — demoed, benchmarked, and cross-compared in one repo with a web UI.
 
 | System | Kind | Size | License | Cost |
-|---|---|---|---|
+|---|---|---|---|---|
 | [GLiNER 2.5](https://github.com/fastino-ai/GLiNER2) (`fastino/gliner2.5-*`) | local extractor encoder (boundary arch) | 74M / 194M / 287M | Apache 2.0 | $0 · local |
 | [GLiNER2.5-Decide](https://huggingface.co/fastino/GLiNER2.5-Decide) (`fastino/GLiNER2.5-Decide`) | local decision-tuned classifier in the GLiNER 2.5 family (spans + label heads, one pass) | 340M | Apache 2.0 | $0 · local |
 | [GLiFormer](https://github.com/Knowledgator/GLiFormer) (`knowledgator/gliformer-*`) | local extractor encoder (layout-aware DeBERTa) | ~190M / 575.6M | Apache 2.0 | $0 · local |
 | [GLiClass](https://github.com/knowledgator/gliclass) (`knowledgator/gliclass-*-v3.0`) | local zero-shot classifier (all labels, one pass) | 33M / 151M / 187M / 439M | Apache 2.0 | $0 · local |
-| [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) · [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) · [GTE-rerank-ModernBERT-base](https://huggingface.co/Alibaba-NLP/gte-reranker-modernbert-base) | local cross-encoder rerankers (score text+label pairs, argmax = decision) | 494M / 568M / 150M | Apache 2.0 | $0 · local |
+| [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) · [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) · [GTE-rerank-ModernBERT-base](https://huggingface.co/Alibaba-NLP/gte-rerank-modernbert-base) | local cross-encoder rerankers (score text+label pairs, argmax = decision) | 494M / 568M / 150M | Apache 2.0 | $0 · local |
 | [Laya](https://huggingface.co/convaiinnovations/laya) (`laya`) | local typed-decision engine (choice/score/noul) | 421M (322M multilingual) | Apache 2.0 | $0 · local |
 | [von-1.0](https://huggingface.co/wfzyx/von-1.0) (`von-sdk`) | local typed-decision engine (System One protocol) | 396M | Apache 2.0 | $0 · local |
 | [open-alternative-jev](https://github.com/ikermoel/open-alternative-jev) (`so1`) | local decision harness over any ChatML LLM (logprobs) | BYO LLM (tested Qwen2.5-0.5B) | MIT | $0 · local |
@@ -40,50 +40,25 @@ marks who bills per request: `$0 · local` systems cost no API money
 hosted run](#measured-cost-per-hosted-run)); ‡ Jev's provider reports
 tokens but no cost, so it has no measured $ figure.
 
-The GLiNER lineage forked: Urchade Zaratiana (original GLiNER author,
-ex-Knowledgator) is on the GLiNER2 paper with Fastino; Knowledgator kept the
-classic `gliner` package, built GLiFormer on it and also maintains GLiClass.
-Laya's card positions it explicitly as the open local counterpart of cloud
-Jev; von speaks the same System One protocol locally, and so1 is a library
-that turns any open LLM into a Jev-style decider. The open "Jev
-alternative" wave added seven more local engines, all benchmarked here:
-Kev and AgentJev (open-weight Jev lookalikes), decider and
-OpenThai-SystemOne (further System One contract servers), Verdict (a
-151M ModernBERT decision head with trained abstention), JevK5-Lite (the
-CPU-sized lite build of JevBench's #3 JevK5) and LFM2.5-RLCD (an
-RLCD-trained LFM2.5 driven by a constrained-decoding engine). The newest
-cut widens the mechanism space: three cross-encoder rerankers pressed
-into service as decision engines (score text+label pairs, take the
-argmax), Certo (a calibrated per-option score head over ModernBERT-large),
-MoJev (packed one-pass candidate scoring over a Qwen3.5 + fla encoder)
-and nanodiff (a bidirectional diffusion LM — the only non-autoregressive
-system here). Four different animals:
-
-- **Extractors** (GLiNER 2.5, GLiFormer): spans, entities, relations,
-  records — per-text calls, run offline.
-- **Classifiers** (GLiClass): zero-shot text→label scores with every label
-  answered in one forward pass.
-- **Cross-encoder rerankers** (mxbai-rerank-base-v2, bge-reranker-v2-m3,
-  GTE-rerank-ModernBERT-base locally; Qwen3, Voyage 2.5, NVIDIA Nemotron VL
-  and Cohere Rerank via OpenRouter †): relevance scores for (instruction,
-  label) pairs — one pair per label, argmax = decision. No NER, no
-  generation; a zero-shot classifier built out of a reranker.
-- **Decision engines** (Laya, von, so1, Kev, AgentJev, decider, OpenThai,
-  Verdict, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, Jev; hosted:
-  Kev 4B and the Span-01 behavior scorer via OpenRouter †): you ask
-  typed questions (`choice`, `score`, `noul`) over a JSON state; all
-  questions in one call are answered together (one forward pass / one
-  request). This benchmark exercises Verdict's `choice` questions only;
-  its API also defines `score` rubrics and `noul`.
+Four mechanism families are represented — **extractors** (GLiNER 2.5,
+GLiFormer: spans/entities/relations/records), **classifiers** (GLiClass:
+all labels in one forward pass), **cross-encoder rerankers** as decision
+engines (score one (instruction, label) pair per label, argmax — local
+trio + seven hosted), and **typed-decision engines** (ask `choice` /
+`score` / `noul` questions over a JSON state, all answered in one
+call — Laya, von, so1, the local open-weight Jev lookalikes Kev /
+AgentJev / decider / OpenThai / JevK5-Lite, Verdict, LFM2.5-RLCD, Certo,
+MoJev, nanodiff, and cloud Jev / Kev 4B / Span-01). The GLiNER lineage
+forked between Fastino (GLiNER 2.5, original author Urchade Zaratiana)
+and Knowledgator (classic `gliner`, GLiFormer, GLiClass); Laya's card
+positions itself as the open local counterpart of cloud Jev.
 
 ## Benchmark results
 
 Measured on CPU, zero-shot, identical label sets and descriptions,
-out-of-the-box defaults. Full detail and per-item misses in
-[`results/bench_results.json`](results/bench_results.json); methodology notes in `bench.py`.
-
-Every case runs 5 times; accuracy below is from the first run, and the
-determinism section shows whether repeats changed anything (spoiler: no).
+out-of-the-box defaults; every case runs 5 times. Full detail in
+[`results/bench_results.json`](results/bench_results.json); methodology
+in `bench.py`.
 
 Classification accuracy (mean latency ± std per text):
 
@@ -98,7 +73,7 @@ Classification accuracy (mean latency ± std per text):
 | Jev (cloud) | 100% | 100% | 0.052±0.002 (batched ÷ n) |
 
 NER, strict document+span+label match over 30 gold entities (decision
-engines have no span output; refreshed after correcting document identity):
+engines have no span output):
 
 | System | Precision | Recall | F1 | s/text |
 |---|---|---|---|---|
@@ -108,52 +83,28 @@ engines have no span output; refreshed after correcting document identity):
 | GLiFormer-base | 1.00 | 1.00 | **1.00** | 0.129±0.023 |
 | GLiFormer-large | 0.97 | 1.00 | 0.98 | 0.447±0.066 |
 
-### Determinism (5 runs per case)
+**Every system was fully deterministic** — identical predictions on all
+5 runs including the cloud API; only latency varies (σ ≈ 0.002–0.07 s).
 
-Output stability — share of cases whose prediction was identical across all
-5 runs (label for classification, full span set for NER):
+Caveats worth knowing:
 
-| System | Sentiment | Topic | NER span sets |
-|---|---|---|---|
-| GLiNER2.5 small/base/multi | 100% | 100% | 100% |
-| GLiFormer base/large | 100% | 100% | 100% |
-| Laya (local) | 100% | 100% | n/a |
-| Jev (cloud) | 100% | 100% | n/a |
-
-**Every system was fully deterministic** — identical predictions on every
-repeat, including the cloud API. The only measured variance is latency
-(σ ≈ 0.002–0.07 s; largest for GLiFormer-large). Zero-shot outputs are
-therefore reproducible run-to-run on identical inputs; what varies between
-machines is speed, not answers.
-
-Honest caveats:
-
-- The sentiment set is easy (everything ≥83%); misses for the small GLiNER
-  model are neutrals drifting to pos/neg; both GLiFormer topic misses lean
-  "business" (base misses one more than large — but beats large on NER).
-- Jev ran as one batched request per task per repeat; Laya as one batched
-  forward pass per task per repeat — per-text latency is batch ÷ n for both.
-- **Laya prompt-format gotcha found here:** dict-shaped `instructions`
-  (which Jev handles fine) collapse Laya onto one label (58.3% sentiment);
-  with string instructions it scores 95.8%. Benchmarked with strings.
-- Laya's own card is candid: base checkpoints are classification-shaped,
-  near-chance zero-shot on nuanced decision workflows, probabilities ship
-  over-confident before temperature fitting, and >20-option `choice`
-  questions are weak without raising `head_max_len`.
-- GLiFormer demo quirks: the large checkpoint missed the second purchase in
-  flat-record mode while base caught both; base returned empty results in
-  the combined multi-task call where large succeeded; base embeddings are
-  768-d vs large 1024-d.
+- The sentiment set is easy (everything ≥83%); GLiFormer topic misses
+  lean "business" (base misses one more than large — but beats large on
+  NER).
+- Jev and Laya ran as one batched request/forward per task; per-text
+  latency is batch ÷ n.
+- **Laya prompt-format gotcha:** dict-shaped `instructions` (fine on Jev)
+  collapse Laya onto one label (58.3%); benchmarked with strings, where
+  it scores 95.8%.
 
 ## Mixed-pool spectrum benchmark (all 38 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
 varying difficulty); the six extractors also answer 18 NER questions.
-After all systems have run, each question's difficulty is **measured** as
-the fraction of answering systems that got it wrong (continuous 0–1); the
-web UI plots each system's accuracy along that spectrum, and per-question
-predictions live in `results/bench_spectrum_results.json`.
+Question difficulty is **measured** as the fraction of answering systems
+that got it wrong; the web UI plots accuracy along that spectrum, and
+per-question predictions live in `results/bench_spectrum_results.json`.
 
 Classification accuracy on the mixed pool (48 questions), NER scored as
 exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
@@ -199,85 +150,35 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | nanodiff 350M | 25.0% | 11.56 | n/a | |
 | Certo 421M | 22.9% | 1.014 | n/a | |
 
-Takeaways: the pool is deliberately mixed, so absolute numbers run lower
-than on the flat suite above. **gliclass-large is the best local sarcasm
-reader found** (the hardest sentiment questions; second only to cloud Jev)
-and gliclass-edge is the speed king at 16 ms/question. GLiNER2.5-multi is
-the most robust extractor. von's trained option-marker backend scores
-79.2% here; its earlier 62.5% row is withdrawn: the PyPI SDK's default NLI
-loader initialized an untrained classifier instead of loading the separate
-decision weights. Kev 0.8B — Jared Palmer's open-weights reconstruction
-of Jev's architecture (LoRA + pointer head over a frozen Qwen3.5-0.8B
-base, served locally on the same System One contract) — lands at 72.9%,
-and AgentJev-0.6B (Qwen3-0.6B backbone with the LM head replaced by a
-permutation-equivariant candidate head, own loopback API) reaches 79.2%
-at 0.646 s/question — 17× Jev's batched cloud latency, but local and
-free. The newest wave: decider-0.8B, a third-party
-Qwen3.5-0.8B-Base System One server, is the strongest local decision
-engine at 83.3% (tying GLiNER2.5-base) — but at 2.1 s/question it was
-the slowest system here when it landed (the later MoJev and nanodiff
-additions are slower). OpenThai-SystemOne (Qwen3.5-0.8B with a
-Gated DeltaNet hybrid backbone and a 256-way slot head, Thai/English
-tuning) scores 70.8% at 0.5 s after a multi-minute lazy warm-up.
-GLiNER2.5-Decide — Fastino's decision-tuned GLiNER 2.5 sibling — is the
-best local classifier on the mixed pool at 85.4% (only cloud Jev is
-higher; the flat-suite GLiNER/GLiFormer rows above sit at 100% on their
-own easier pool) and is
-still NER-capable at 61% exact match. JevK5-Lite, the lite build of
-JevBench's #3 JevK5, adds 81.2% at 0.392 s/question (tied with the
-gliclass v3.0 pair) and a perfect 100% on the multilingual popular tier
-(78% overall).
-Verdict, an RLCD-trained 151M ModernBERT decision head, is the fastest
-local decision engine here measured per question (0.165 s — Laya's lower
-0.143 s is a batched average, not per-question comparable) but abstains
-on 22/48 questions —
-abstention scores as wrong, so 39.6% overall (73% on the 26 it does
-answer). The so1
-technique works mechanically on any ChatML LLM, but a 0.5B base model is
-not enough brain for it — the harness is the contribution, swap in a
-bigger LLM. Note: gliclass PyPI metadata asks for transformers ≥5 but runs
-fine on the pinned 4.57.6; von genuinely needs transformers 5, hence the
-separate `.venv-von`. Model download and loading are excluded from the
-latency measurements; the first forward pass is included — except the
-local System One servers (Kev, decider, OpenThai), which answer one
-untimed warm-up question first (lazy weight loading), so their latencies
-are warmed.
+Takeaways:
 
-The 28-system cut adds a new mechanism and two datapoints. **Rerankers
-can double as decision engines on our pools**: bge-reranker-v2-m3 scores
-each (instruction, label) pair and takes the argmax to reach 72.9% —
-Kev/OpenThai level — where the same rerankers sit near zero on JevBench's
-composite leaderboard. MoJev 0.85B's packed one-pass scoring lands at
-72.9% here, and its multilingual 83% ties the Qwen3.5-hybrid club. The
-negative datapoint is nanodiff: a diffusion LM at 350M is chance-level
-(25.0%) and, at 11.56 s/question, the slowest system in this repo —
-3.4x the next-slowest. Certo 421M is kept as a census row at chance too (22.9%, near-uniform
-option probabilities) — JevBench's Intelligence-0 verdict confirmed on
-our pools.
-
-The OpenRouter wave adds the hosting axis: the Kev family benched locally
-at 0.8B is also served as `jaredpalmer/kev-4b` behind OpenRouter's
-`/systemone` router (TypeSafe wire format; SiliconFlow endpoint,
-$0.042/M input). Hosted kev-4b ties GLiNER2.5-Decide for the best
-non-Jev decision-engine mixed-pool score (85.4%) and takes second place
-overall on the multilingual suite (98.1% — Jev 100%, next local 89%).
-The wave's headline, though, is **qwen3-reranker-8b at 87.5%** — the
-best non-Jev mixed-pool score of all 38 systems, one more datapoint for
-rerankers doubling as decision engines (billed $0.0032 for the whole
-48-question run — it is not free despite the listing). The Respan
-Span-01 behavior scorer lands 85.4% on the mixed pool and 98%
-multilingual (tied with kev-4b; its Lite tier drops to 79% / 87%), and
-Cohere's Rerank 4 Pro scores 83% on both suites — its re-run dropped
-one mixed-pool question from the first pass's 85.4% (hosted-endpoint
-variance; every other system reproduced its first-pass numbers exactly).
-The cheaper hosted tiers fade fast: voyage rerank-2.5
-79%/74% (lite 65%/65%), Cohere 4 Fast 71%/56%, v3.5 67%/65%. The one
-clear miss is NVIDIA's Nemotron Rerank VL 1B — a vision reranker scored
-on text-only pairs, 35%/41%. All hosted rows are non-ZDR †. Also on
-OpenRouter but deliberately not benched: `typesafe/jev-1.13`
-(RBAC-gated there, and Jev is already measured through TypeSafe's own
-API) and `typesafe/jev-router` (a chat router, not a typed-decision
-endpoint).
+- **qwen3-reranker-8b at 87.5% is the best non-Jev system of all 38** —
+  one more datapoint for rerankers doubling as decision engines (bge
+  locally reaches 72.9%, Kev/OpenThai level, where the same rerankers
+  sit near zero on JevBench's leaderboard).
+- Best local classifier: GLiNER2.5-Decide 85.4% (still NER-capable at
+  61%); best local sarcasm reader: gliclass-large; speed king:
+  gliclass-edge at 16 ms/question; most robust extractor:
+  GLiNER2.5-multi.
+- Hosted kev-4b ties Decide at 85.4% and is 2nd overall multilingual
+  (98.1%); Span-01 matches it on both (85.4% / 98%); the cheaper hosted
+  tiers fade fast (voyage-2.5 79%/74%, Cohere 4 Fast 71%/56%, v3.5
+  67%/65%), and Nemotron VL is the one clear miss — a vision reranker
+  scored on text-only pairs (35%/41%).
+- von's 79.2% replaces a withdrawn 62.5% row (the PyPI SDK's default
+  NLI loader had initialized untrained classifier weights).
+- Verdict is the fastest local decision engine per question but
+  abstains on 22/48 (abstention scores wrong): 73% on what it answers,
+  39.6% overall. so1 works mechanically, but a 0.5B base LLM is not
+  enough brain — swap in a bigger one.
+- Chance-level negatives kept as census rows: nanodiff 350M (diffusion
+  LM, 25.0%, slowest at 11.6 s/question) and Certo 421M (22.9%,
+  near-uniform option probabilities).
+- Latencies exclude model download/loading, include the first forward
+  pass — except the local System One servers (Kev, decider, OpenThai),
+  which answer one untimed warm-up question first (lazy weight
+  loading). gliclass runs fine on pinned transformers 4.57.6 despite
+  ≥5 metadata; von genuinely needs 5 (`.venv-von`).
 
 ### Measured cost per hosted run
 
@@ -300,24 +201,20 @@ reconstructed from list prices. Measured on these exact runs (one pass;
 | cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
 | Jev (cloud) | — | — | not reported ‡ |
 
-The cost charts below plot the **metered** systems only — free-tier
-models bill $0 (Span-01 Lite is priced $0.0 on its plain id, identical
-to its `:free` twin, and Nemotron is benched on the `:free` variant),
-so they stay in this table but never on a cost axis; Jev is off it too
-(‡ no reported cost).
-
-Three things the measurements say that the price lists don't: Cohere
-bills ~2.5 search units per rerank request at 5-6 label documents, so a
-48-question run on 4-pro costs $0.12, not the naive 48 × $0.001; kev-4b
-and Span-01 land near $1e-6/question — three orders below Cohere —
-because kev batches each 24-question task into one System One request
-and Span's per-question payloads are tiny; and TypeSafe's usage block
-‡ reports input tokens (6,094 / 6,430 across the 2 + 1 batched requests)
-but no cost field, so Jev has no measured $ figure to plot.
+The cost charts plot the **metered** systems only — free tiers bill $0
+(Span-01 Lite's plain id is priced $0.0, same as its `:free` twin;
+Nemotron runs on `:free`) and Jev reports no cost (‡ tokens only:
+6,094 / 6,430 input across its 2 + 1 batched requests). What the
+measurements say that the price lists don't: Cohere bills ~2.5 search
+units per rerank request (a 48-q run on 4-pro costs $0.12, not the
+naive 48 × $0.001); kev-4b and Span-01 sit near $1e-6/question — kev
+batches each 24-question task into one request, Span's payloads are
+tiny. Not benched on OpenRouter on purpose: `typesafe/jev-1.13`
+(RBAC-gated; Jev measured via TypeSafe directly) and
+`typesafe/jev-router` (a chat router, not a typed-decision endpoint).
 
 The web UI renders these as interactive charts; the same charts, as
-images (regenerate after re-running the benchmarks with
-`python make_chart_images.py`):
+images (regenerate with `python make_chart_images.py`):
 
 **Classification (48-question mixed pool)**
 
@@ -343,11 +240,11 @@ images (regenerate after re-running the benchmarks with
 
 `bench_multilingual.py` — the same six sentence meanings per language
 (2 positive / 2 negative / 2 neutral sentiment), labels in English.
-Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish, Ukrainian ·
-Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified by blind
-back-translation through an independent model instance (it caught 8 errors,
-including a sentiment-flipping Sinhala word) and the full table is in the
-PR for native-speaker review. All 38 systems answer the same 54 texts.
+Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish,
+Ukrainian · Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified
+by blind back-translation through an independent model instance (it
+caught 8 errors, including a sentiment-flipping Sinhala word). All 38
+systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
@@ -393,43 +290,27 @@ PR for native-speaker review. All 38 systems answer the same 54 texts.
 
 ![Overall multilingual accuracy](docs/charts/ml_overall.png)
 
-Per-language highlights: GLiNER2.5-multi is perfect through Ukrainian but
-drops on Welsh (67%) and Sinhala (33%); gliclass-large transfers
-surprisingly well for an English-family release (100% on Chinese, and a
-joint-best local Sinhala score at 67%, tied with Kev 0.8B); Jev is the
-only system at 100% on
-Sinhala. Kev 0.8B lands at 78% (94/89/50 across tiers), between
-gliclass-large (81%) and Laya Router (76%) — the Qwen3.5 backbone
-carries far more multilingual pretraining than any encoder here, though
-Welsh (33%) still trips it. decider and
-OpenThai — two more Qwen3.5-0.8B System One servers — repeat that shape
-exactly at 83% (100/100/50): flawless through the medium tier, 50% on the
-rare scripts. MoJev 0.85B joins that club exactly — 100% through the
-medium tier, 50% rare, 83% overall — its packed one-pass scorer riding the
-same multilingual Qwen3.5 pretraining. bge-reranker-v2-m3 is an odd flat
-67/67/67 across all three tiers — and the flatness is structural, not a
-scoring artifact: a re-run with score dumps shows it never predicts
-neutral (35 negative / 19 positive across all 54 texts), so in every
-language it gets the four subjective texts right and mislabels both
-neutral ones as negative — a language-independent 4/6. The
-English-leaning rerankers
-(mxbai 48%, GTE 44%), Certo (30%) and nanodiff (35%) sit in the lower
-half. Verdict's English-only ModernBERT encoder collapses to 22%.
-AgentJev-0.6B
-inverts that picture: a Qwen3-0.6B backbone scores a flat 83% through six
-languages, then collapses on the rare tier (22% — 17% Sinhala/Icelandic),
-so multilingual reach tracks the backbone's pretraining breadth. Laya's
-English-only `typed-decisions` specialist — its
-strongest checkpoint on the vendor's own workflow benchmark — holds 100%
-on the popular tier here but collapses on non-Latin scripts (33% rare,
-59% overall; the Router-based row stays the family's best multilingual
-entry). English-only encoders degrade with distance from English as
-expected. von's complete option-marker checkpoint scores 48% overall,
-including 50% on Sinhala. The old 33–48% runs used randomly initialized
-classifier weights and are invalid; they do not demonstrate instability
-of the trained model. The rerun uses pinned model and SDK revisions, saved
-in the results file. Laya Router preloads and retains both selected
-checkpoints before timing, so script changes do not include weight loading.
+Highlights:
+
+- Multilingual reach tracks the backbone's pretraining breadth: the
+  Qwen3.5-0.8B trio (decider, OpenThai, MoJev) repeats 100/100/50
+  exactly; AgentJev's smaller Qwen3-0.6B holds 83% through six
+  languages then collapses on rare scripts (22%).
+- GLiNER2.5-multi is perfect through Ukrainian but drops on Welsh/Sinhala
+  (89% overall — best local); gliclass-large transfers surprisingly
+  well for an English-family release (81%, 100% Chinese, joint-best
+  local Sinhala 67%); Jev is the only 100%-on-Sinhala system.
+- bge-reranker-v2-m3's flat 67/67/67 is structural: it never predicts
+  neutral (35 neg / 19 pos across all 54 texts), so every language
+  scores exactly 4/6 — right on the four subjective texts, wrong on
+  both neutrals. Reproduced bit-for-bit with score dumps.
+- Laya's English-only typed-decisions specialist holds 100% popular but
+  collapses on non-Latin scripts (59% overall); the Router row (76%) is
+  the family's best. English-only encoders (Verdict 22%) degrade with
+  distance from English as expected.
+- von's complete option-marker checkpoint scores 48% (old 33–48% runs
+  used randomly initialized weights and are invalid; the rerun pins
+  model + SDK revisions, recorded in the results file).
 
 ## Feature comparison
 
@@ -513,13 +394,13 @@ Use uv for this install: `overrides.txt` deliberately overrides GLiClass
 0.1.20's transformers ≥5 metadata with the validated 4.57.6 version required
 by GLiNER2. This is an explicit compatibility exception for that pinned
 GLiClass release; plain pip dependency resolution cannot install this mix.
-Altair is included explicitly for the benchmark charts.
-
-Notes: `protobuf` and `sentencepiece` are included explicitly because
-`gliner2[local]` does not pull them in and the DeBERTa tokenizer needs them.
-Model checkpoints (~0.3–2.3 GB each) download from Hugging Face on first
-run. For Jev only: set `TYPESAFE_API_KEY` in the environment or a `.env`
-file in the repo root (gitignored) — see `engines/jev_client.py`; Jev is a paid API.
+Altair is included explicitly for the benchmark charts. `protobuf` and
+`sentencepiece` are included explicitly because `gliner2[local]` does not
+pull them in and the DeBERTa tokenizer needs them. Model checkpoints
+(~0.3–2.3 GB each) download from Hugging Face on first run. Cloud keys
+live in a repo-root `.env` (gitignored): `TYPESAFE_API_KEY` for Jev
+(paid API, see `engines/jev_client.py`) and `OPENROUTER_API_KEY` for the
+hosted OpenRouter systems (see `engines/openrouter_client.py`).
 
 ## Run
 
@@ -567,29 +448,28 @@ C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (loca
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
 
-The web UI has live tabs — GLiNER 2.5 (checkpoint selector includes the
-decision-tuned GLiNER2.5-Decide), GLiFormer, GLiClass (all four v3.0
-sizes), Rerankers (all three checkpoints, in-process pair scoring), Laya
-(local), von, JevK5-Lite, LFM2.5-RLCD, Certo (in-process `decide()`),
-MoJev, nanodiff, so1 and Jev (cloud) —
-plus three benchmark tabs (**Classification benchmark**,
-**Extraction benchmark**, **Multilingual benchmark**; tables and charts
-from the `results/bench_*_results.json` files) and a **Compare** tab (feature
+## Web UI
+
+`app.py` serves a live demo tab per family — GLiNER 2.5 (checkpoint
+selector includes GLiNER2.5-Decide), GLiFormer, GLiClass, Rerankers,
+Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1, Jev
+(cloud), and OpenRouter (all ten hosted systems: Kev 4B, Span-01/Lite,
+seven rerankers — one metered API request per click, needs
+`OPENROUTER_API_KEY`) — plus benchmark tabs (classification / extraction
+/ multilingual: tables and charts from `results/bench_*_results.json`,
+including the cost-vs-accuracy charts) and a Compare tab (feature
 matrix). The remaining local engines (Kev, AgentJev, decider, OpenThai,
-Verdict) run as separate servers or venvs and are covered in the
-benchmark and compare tabs. Benchmark charts are altair-based: sorted
-bars, a speed-accuracy scatter, accuracy-vs-difficulty lines and a
-system × language heatmap. von, JevK5-Lite, LFM2.5-RLCD and MoJev run in
-their own venv (`.venv-von`): the von tab spawns `demos/von_demo.py`, the
-JevK5-Lite, LFM2.5-RLCD and MoJev tabs spawn `demos/jevk5_demo.py` /
-`demos/lfm_rlcd_demo.py --serve` / `demos/mojev_demo.py --serve`, each loading its
-model once per click in a single `.venv-von` process. The nanodiff tab
-spawns `demos/nanodiff_demo.py --serve` under the main venv python for the same
-one-process-per-click pattern. von's shared loader (`engines/von_client.py`) pins
-the upstream SDK and model revision and requires the complete
-`option_marker.pt` state dict. Missing or incompatible weights fail
-before inference; there is no random-head fallback. First use downloads
-both the encoder and trained option-marker state (about 3 GB total).
+Verdict) run as separate servers or venvs and are covered by the
+benchmark and compare tabs.
+
+The `.venv-von` systems (von, JevK5-Lite, LFM2.5-RLCD, MoJev) spawn
+one-shot `demos/*_demo.py --serve` runners, each loading its model once
+per click in a single `.venv-von` process; nanodiff does the same under
+the main venv. von's shared loader (`engines/von_client.py`) pins the
+upstream SDK and model revision and requires the complete
+`option_marker.pt` state dict — missing or incompatible weights fail
+before inference; there is no random-head fallback (first use downloads
+~3 GB).
 
 Regression tests run without model downloads or cloud credentials:
 
@@ -620,7 +500,7 @@ extra Laya checkpoints noted below):
 | `notnotsamuel/LFM2.5-350M-RLCD` | 350M | LFM2.5 backbone + RLCD training; vendored constrained-decoding engine (`engines/rlcd_engine/`) — benchmarked |
 | `mixedbread-ai/mxbai-rerank-base-v2` | 494M | cross-encoder reranker, (instruction, label) pair scoring — benchmarked as a decision engine |
 | `BAAI/bge-reranker-v2-m3` | 568M | XLM-RoBERTa-large cross-encoder, multilingual — benchmarked; best reranker here (72.9%) |
-| `Alibaba-NLP/gte-reranker-modernbert-base` | 150M | ModernBERT-base cross-encoder — benchmarked |
+| `Alibaba-NLP/gte-rerank-modernbert-base` | 150M | ModernBERT-base cross-encoder — benchmarked |
 | `altslate/certo-decision-model` | 421M | ModernBERT-large + calibrated per-option score head; vendored engine (`engines/certo_engine/`) — benchmarked |
 | `MoLeMo-Lab/mojev` | 0.85B | Qwen3.5 + fla packed one-pass scorer, loads via trust_remote_code; adapted engine (`engines/mojev_engine/`) — benchmarked |
 | `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (BY571/nanoDiff architecture); vendored engine (`engines/nanodiff_engine/`) — benchmarked |
@@ -630,16 +510,16 @@ extra Laya checkpoints noted below):
 
 ## Noted, not benchmarked
 
-Systems we looked at but never ran on this CPU-only bench. Every number in
-this section is **borrowed** (JevBench or the project's own report), not
-measured here — the tables above only carry numbers from our pools.
+Systems we looked at but never ran on this CPU-only bench. Every number
+in this section is **borrowed** (JevBench or the project's own report),
+not measured here — the tables above only carry numbers from our pools.
 
 Blocked by hardware or runtime:
 
 | System | Why not run here |
 |---|---|
 | `akhilaaa3/Jev-Omni` | 12B multimodal Gemma 4 fine-tune; needs CUDA and ~50 GB fp32 weights |
-| kev 4B / 9B | `kev-0.8b`'s larger siblings; impractical on CPU |
+| kev 4B / 9B (local) | `kev-0.8b`'s larger siblings; impractical on CPU (4B benched via OpenRouter) |
 | `Mapika/decider-2b`, `decider-35b-a3b` | larger decider siblings of the benchmarked `decider-0.8b`; GPU-priced |
 | `fastino/gliner2-{base,large,multi}-v1` | older span-architecture GLiNER 2 line, different loader |
 | `gliner-community/gliner_*-v2.5` | classic `gliner` line (LUKE-descended); a one-off CPU trial of `gliner_large-v2.5` scored 56.2% classification / 67% NER at ~0.4 s/question — dominated by GLiNER2.5-base, so not added |
@@ -659,16 +539,12 @@ accuracy-only scores in this README):
 ### Trial-pool runs, not promoted
 
 A sweep of the community "All about Jev" catalog (1,619 entries → 9
-candidates that passed the not-already-run and looks-plausible filters —
-CPU-runnability could only be established at trial time, and four of the
-nine turned out unrunnable or gated). Each runnable one was tried on two
-fixed mini-pools from this
-repo's own graded questions — 12 easy-tier and 16 hard-tier classification,
-plus NER where the model supports it. These numbers are **measured here,
-but on trial pools** — not the 48-question spectrum above. Four of the
-candidates have since graduated to the full benchmark: GLiNER2.5-Decide,
-JevK5-Lite, LFM2.5-RLCD 350M and nanodiff 350M (as the lam1 arm) are rows
-in the tables above now. The remaining trial results:
+plausible candidates, four of them unrunnable or gated) tried each
+runnable one on two fixed mini-pools from this repo's graded questions —
+12 easy-tier and 16 hard-tier classification, plus NER where supported.
+Measured here, but on trial pools — not the 48-question spectrum. Four
+graduated to the full benchmark (GLiNER2.5-Decide, JevK5-Lite,
+LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 
 | System | Trial result |
 |---|---|
@@ -706,7 +582,7 @@ in the tables above now. The remaining trial results:
 ## License
 
 MIT — see [LICENSE](LICENSE). Model licenses belong to their authors
-(Apache 2.0 for the open model families; so1's library is MIT; the
-vendored `engines/certo_engine/`, `engines/mojev_engine/` and `engines/nanodiff_engine/` are MIT;
-the LiquidAI/LFM2.5-350M weights behind LFM2.5-RLCD are under the LFM Open
-License v1.0); Jev access is subject to TypeSafe AI's terms.
+(Apache 2.0 for the open model families; so1's library and the vendored
+`engines/*_engine/` packages are MIT; the LiquidAI/LFM2.5-350M weights
+behind LFM2.5-RLCD are under the LFM Open License v1.0); Jev access is
+subject to TypeSafe AI's terms.
