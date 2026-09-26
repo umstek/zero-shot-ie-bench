@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 
@@ -69,14 +70,24 @@ def systemone(model: str):
 def _post(url: str, body: dict, timeout: int = 120) -> dict:
     headers = {"content-type": "application/json",
                "authorization": f"Bearer {load_openrouter_key()}"}
-    request = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"),
-                                     method="POST", headers=headers)
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", "replace")[:300]
-        raise RuntimeError(f"OpenRouter HTTP {exc.code}: {detail}") from exc
+    # :free models share a 20-requests/minute account limit; a benchmark
+    # run outpaces it, so wait out the reset window instead of dying
+    waits = (0, 20, 40, 60, 60)
+    for attempt, wait in enumerate(waits, 1):
+        if wait:
+            time.sleep(wait)
+        request = urllib.request.Request(
+            url, data=json.dumps(body).encode("utf-8"),
+            method="POST", headers=headers)
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429 and attempt < len(waits):
+                continue
+            detail = exc.read().decode("utf-8", "replace")[:300]
+            raise RuntimeError(f"OpenRouter HTTP {exc.code}: {detail}") from exc
+    raise RuntimeError("OpenRouter retry loop exhausted")  # unreachable
 
 
 def rerank(model: str, query: str, documents: list[str],
@@ -110,11 +121,12 @@ def noul_classify(model: str, text: str, question: str,
                   labels: list[str]) -> str | None:
     """Span-01 style behavior scoring as classification: one noul
     (yes-probability) question per label in a single request, argmax wins.
-    The criteria key must stay absent - Span rejects an explicit null."""
+    The criteria key must stay absent - Span rejects an explicit null -
+    and the state must be a plain string (Span scores conversation spans)."""
     client = systemone(model)
     questions = {f"l{i}": {"type": "noul", "instructions": question.format(label=label)}
                  for i, label in enumerate(labels)}
-    out = client.ask({"text": text}, questions)
+    out = client.ask(text, questions)
     probs = {i: out["answers"][f"l{i}"].get("noul", 0.0)
              for i in range(len(labels))}
     return labels[max(probs, key=probs.get)]
