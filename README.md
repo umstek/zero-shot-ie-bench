@@ -248,11 +248,14 @@ non-Jev decision-engine mixed-pool score (85.4%) and takes second place
 overall on the multilingual suite (98.1% — Jev 100%, next local 89%).
 The wave's headline, though, is **qwen3-reranker-8b at 87.5%** — the
 best non-Jev mixed-pool score of all 38 systems, one more datapoint for
-rerankers doubling as decision engines (Qwen serves it free). The Respan
+rerankers doubling as decision engines (billed $0.0032 for the whole
+48-question run — it is not free despite the listing). The Respan
 Span-01 behavior scorer lands 85.4% on the mixed pool and 98%
 multilingual (tied with kev-4b; its Lite tier drops to 79% / 87%), and
-Cohere's Rerank 4 Pro joins the 85.4% mixed-pool club with 83%
-multilingual. The cheaper hosted tiers fade fast: voyage rerank-2.5
+Cohere's Rerank 4 Pro scores 83% on both suites — its re-run dropped
+one mixed-pool question from the first pass's 85.4% (hosted-endpoint
+variance; every other system reproduced its first-pass numbers exactly).
+The cheaper hosted tiers fade fast: voyage rerank-2.5
 79%/74% (lite 65%/65%), Cohere 4 Fast 71%/56%, v3.5 67%/65%. The one
 clear miss is NVIDIA's Nemotron Rerank VL 1B — a vision reranker scored
 on text-only pairs, 35%/41%. All hosted rows are non-ZDR †. Also on
@@ -260,6 +263,36 @@ OpenRouter but deliberately not benched: `typesafe/jev-1.13`
 (RBAC-gated there, and Jev is already measured through TypeSafe's own
 API) and `typesafe/jev-router` (a chat router, not a typed-decision
 endpoint).
+
+### Measured cost per hosted run
+
+Each hosted system's results entry carries the provider's own usage
+accounting — the `usage` block billed per API response, never
+reconstructed from list prices. Measured on these exact runs (one pass;
+48 mixed-pool questions / 54 multilingual texts):
+
+| System | 48-q run | 54-text run | $ / question |
+|---|---|---|---|
+| Span-01 Lite † | $0 | $0 | $0 (free tier) |
+| nemotron-rerank-vl-1b † | $0 | $0 | $0 (free tier) |
+| Span-01 † | $0.000040 | $0.000040 | $0.0000009 |
+| voyage-rerank-2.5-lite † | $0.000070 | $0.000120 | $0.0000014 |
+| Kev 4B (OpenRouter) | $0.000072 | $0.000106 | $0.0000015 |
+| voyage-rerank-2.5 † | $0.000170 | $0.000290 | $0.0000035 |
+| qwen3-reranker-8b † | $0.0032 | $0.0036 | $0.0000667 |
+| cohere-rerank-v3.5 † | $0.048 | $0.054 | $0.0010 |
+| cohere-rerank-4-fast † | $0.096 | $0.108 | $0.0020 |
+| cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
+| Jev (cloud) | — | — | not reported ‡ |
+
+Three things the measurements say that the price lists don't: Cohere
+bills ~2.5 search units per rerank request at 5-6 label documents, so a
+48-question run on 4-pro costs $0.12, not the naive 48 × $0.001; kev-4b
+and Span-01 land near $1e-6/question — three orders below Cohere —
+because kev batches each 24-question task into one System One request
+and Span's per-question payloads are tiny; and TypeSafe's usage block
+‡ reports input tokens (6,094 / 6,430 across the 2 + 1 batched requests)
+but no cost field, so Jev has no measured $ figure to plot.
 
 The web UI renders these as interactive charts; the same charts, as
 images (regenerate after re-running the benchmarks with
@@ -270,6 +303,8 @@ images (regenerate after re-running the benchmarks with
 ![Classification accuracy, mixed pool](docs/charts/cls_accuracy.png)
 
 ![Speed vs accuracy — up and left is better](docs/charts/cls_tradeoff.png)
+
+![Cost vs accuracy, hosted systems — up and left is better](docs/charts/cls_cost.png)
 
 ![Accuracy vs question difficulty](docs/charts/cls_spectrum.png)
 
@@ -295,7 +330,7 @@ PR for native-speaker review. All 38 systems answer the same 54 texts.
 |---|---|---|---|---|
 | Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
 | Span-01 † | 100% | 100% | 94% | 98% |
-| qwen3-reranker-8b (OpenRouter) † | 100% | 100% | 83% | 94% |
+| qwen3-reranker-8b (OpenRouter) † | 100% | 100% | 89% | 96% |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
 | Span-01 Lite † | 100% | 100% | 61% | 87% |
 | decider 0.8B (local) | 100% | 100% | 50% | 83% |
