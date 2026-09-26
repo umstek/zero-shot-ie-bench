@@ -151,14 +151,18 @@ web UI plots each system's accuracy along that spectrum, and per-question
 predictions live in `results/bench_spectrum_results.json`.
 
 Classification accuracy on the mixed pool (48 questions), NER scored as
-exact span-set match (18 questions):
+exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 | System | Classification | s/question | NER exact | s/question |
 |---|---|---|---|---|
 | Jev (cloud) | **93.8%** | 0.037 | n/a | |
+| qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a | |
 | GLiNER2.5-Decide | 85.4% | 0.412 | 61% | 0.476 |
+| Kev 4B (OpenRouter) † | 85.4% | 0.079 | n/a | |
+| Span-01 † | 85.4% | 0.440 | n/a | |
 | GLiNER2.5-base | 83.3% | 0.111 | 61% | 0.135 |
 | decider 0.8B (local) | 83.3% | 2.144 | n/a | |
+| cohere-rerank-4-pro (OpenRouter) † | 83.3% | 0.418 | n/a | |
 | gliclass-base | 81.2% | 0.110 | n/a | |
 | gliclass-large | 81.2% | 0.411 | n/a | |
 | JevK5-Lite | 81.2% | 0.392 | n/a | |
@@ -166,6 +170,8 @@ exact span-set match (18 questions):
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
 | von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
 | AgentJev 0.6B (local) | 79.2% | 0.646 | n/a | |
+| Span-01 Lite † | 79.2% | 0.440 | n/a | |
+| voyage-rerank-2.5 (OpenRouter) † | 79.2% | 0.373 | n/a | |
 | Kev 0.8B (local) | 72.9% | 0.587 | n/a | |
 | bge-reranker-v2-m3 | 72.9% | 0.339 | n/a | |
 | MoJev 0.85B | 72.9% | 3.375 | n/a | |
@@ -173,14 +179,18 @@ exact span-set match (18 questions):
 | OpenThai 0.8B (local) | 70.8% | 0.504 | n/a | |
 | Laya typed-decisions | 70.8% | 1.243 | n/a | |
 | mxbai-rerank-base-v2 | 70.8% | 1.338 | n/a | |
+| cohere-rerank-4-fast (OpenRouter) † | 70.8% | 0.371 | n/a | |
 | Laya (local) | 68.8% | 0.143 | n/a | |
 | GLiFormer-base | 66.7% | 0.139 | 56% | 0.145 |
 | gliclass-edge | 66.7% | **0.016** | n/a | |
 | gliclass-modern-base | 66.7% | 0.051 | n/a | |
+| cohere-rerank-v3.5 (OpenRouter) † | 66.7% | 0.500 | n/a | |
+| voyage-rerank-2.5-lite (OpenRouter) † | 64.6% | 0.358 | n/a | |
 | GTE-rerank-ModernBERT-base | 60.4% | 0.183 | n/a | |
 | LFM2.5-RLCD 350M | 56.2% | 0.469 | n/a | |
 | so1 + Qwen2.5-0.5B | 43.8% | 0.237 | n/a | |
 | Verdict 151M (local) | 39.6% | 0.165 | n/a | |
+| nemotron-rerank-vl-1b (OpenRouter) † | 35.4% | 4.521 | n/a | |
 | nanodiff 350M | 25.0% | 11.56 | n/a | |
 | Certo 421M | 22.9% | 1.014 | n/a | |
 

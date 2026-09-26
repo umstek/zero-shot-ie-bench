@@ -553,7 +553,10 @@ def main() -> None:
                          "branch in main()")
 
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
-    warmed = name.startswith(("Kev", "decider", "OpenThai"))
+    # only the local System One servers get the untimed warm-up ask; the
+    # hosted or-kev endpoint is stateless, so every request is timed
+    warmed = (name.startswith(("Kev", "decider", "OpenThai"))
+              and name != "Kev 4B (OpenRouter)")
     entry = {
         "recorded": time.strftime("%Y-%m-%d %H:%M"),
         "cls_preds": cls_preds,

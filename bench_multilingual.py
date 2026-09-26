@@ -639,7 +639,10 @@ def main() -> None:
     if notes and notes[0].startswith("All "):
         notes[0] = (f"All {len(out['by_language'])} systems answer "
                     "the same 54 texts.")
-    warmed = name.startswith(("Kev", "decider", "OpenThai"))
+    # only the local System One servers get the untimed warm-up ask; the
+    # hosted or-kev endpoint is stateless, so every request is timed
+    warmed = (name.startswith(("Kev", "decider", "OpenThai"))
+              and name != "Kev 4B (OpenRouter)")
     out.setdefault("timing", {})[name] = (
         "Model download and loading excluded; "
         + ("one untimed warm-up question pays the server's lazy weight "

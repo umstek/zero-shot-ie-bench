@@ -3215,7 +3215,7 @@
       ],
       "cls_accuracy": 0.8542,
       "cls_mean_latency_s": 0.079,
-      "timing": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+      "timing": "Model download and loading excluded; first forward pass included.",
       "usage": {
         "paid_requests": 2,
         "cost_usd": 7.2e-05,

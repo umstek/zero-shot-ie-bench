@@ -770,7 +770,7 @@
     "Certo 421M": "Model download and loading excluded; first forward pass included.",
     "MoJev 0.85B": "Model download and loading excluded; first forward pass included.",
     "nanodiff 350M": "Model download and loading excluded; first forward pass included.",
-    "Kev 4B (OpenRouter)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Kev 4B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "Span-01": "Model download and loading excluded; first forward pass included.",
     "Span-01 Lite": "Model download and loading excluded; first forward pass included.",
     "qwen3-reranker-8b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
