@@ -1,6 +1,6 @@
 # zero-shot-ie-bench
 
-Forty zero-shot systems (thirty-eight of them benchmarked) across
+Forty-one zero-shot systems (thirty-eight of them benchmarked) across
 twenty-three information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
@@ -14,6 +14,7 @@ cross-compared in one repo with a web UI.
 | [GLiFormer](https://github.com/Knowledgator/GLiFormer) (`knowledgator/gliformer-*`) | local extractor encoder (layout-aware DeBERTa) | ~190M / 575.6M | Apache 2.0 | $0 · local |
 | [GLiREL](https://github.com/jackboyla/GLiREL) (`jackboyla/glirel-large-v0`) | local zero-shot relation extractor (label-prompted encoder over entity pairs) | ~467M | CC BY-NC-SA 4.0 | $0 · local |
 | [GLiNER-relex](https://huggingface.co/knowledgator/gliner-relex-multi-v1.0) (`knowledgator/gliner-relex-multi-v1.0`) | local joint extractor (zero-shot NER + relations in one pass, multilingual) | ~319M | Apache 2.0 | $0 · local |
+| [ReLiK](https://github.com/SapienzaNLP/relik) (`relik-ie/relik-relation-extraction-small`) | local retriever-reader relation extractor (closed Wikidata-property vocabulary: E5-small retriever + DeBERTa-v3 reader, untyped reader spans) | 33.4M retriever + 146.5M reader (~180M) | HF card Apache 2.0; repo has no LICENSE file and its README footer says CC BY-NC-SA 4.0 | $0 · local |
 | [GLiClass](https://github.com/knowledgator/gliclass) (`knowledgator/gliclass-*-v3.0`) | local zero-shot classifier (all labels, one pass) | 33M / 151M / 187M / 439M | Apache 2.0 | $0 · local |
 | [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) · [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) · [GTE-rerank-ModernBERT-base](https://huggingface.co/Alibaba-NLP/gte-rerank-modernbert-base) | local cross-encoder rerankers (score text+label pairs, argmax = decision) | 494M / 568M / 150M | Apache 2.0 | $0 · local |
 | [Laya](https://huggingface.co/convaiinnovations/laya) (`laya`) | local typed-decision engine (choice/score/noul) | 421M (322M multilingual) | Apache 2.0 | $0 · local |
@@ -45,8 +46,10 @@ tokens but no cost, so it has no measured $ figure.
 
 Four mechanism families are represented — **extractors** (GLiNER 2.5,
 GLiFormer: spans/entities/relations/records, plus GLiREL: zero-shot
-relations over entity pairs it is handed, and GLiNER-relex: joint NER +
-relations in one pass), **classifiers** (GLiClass:
+relations over entity pairs it is handed, GLiNER-relex: joint NER +
+relations in one pass, and ReLiK: retriever-reader relations over a
+closed Wikidata-property vocabulary — no free-text labels, every
+prediction is a real Wikidata property), **classifiers** (GLiClass:
 all labels in one forward pass), **cross-encoder rerankers** as decision
 engines (score one (instruction, label) pair per label, argmax — local
 trio + seven hosted), and **typed-decision engines** (ask `choice` /
@@ -345,9 +348,9 @@ Highlights:
 ## Setup
 
 Python 3.10+ for the main environment; 3.12+ for von (tested on 3.13,
-Windows, CPU-only). Shell commands assume a POSIX shell — Git Bash on
-Windows works; the `NAME=value` server launches in particular will not
-parse in PowerShell/cmd.
+Windows, CPU-only) and 3.11 for relik. Shell commands assume a POSIX
+shell — Git Bash on Windows works; the `NAME=value` server launches in
+particular will not parse in PowerShell/cmd.
 
 ```bash
 uv venv .venv
@@ -360,6 +363,11 @@ uv pip install --python .venv sentence-transformers==5.7.0
 # von needs transformers 5.x, so it lives in its own venv:
 uv venv --python 3.13 .venv-von
 uv pip install --python .venv-von -r requirements-von.txt
+# relik needs torch 2.3.1 + faiss-cpu, so Python 3.11 and its own venv
+# (on Windows `import relik` additionally needs the csv shim that
+# engines/relik_client.py installs — no site-packages patching):
+uv venv --python 3.11 .venv-relik
+uv pip install --python .venv-relik -r requirements-relik.txt
 # Kev (Jev's open-weights lookalike) serves the same System One contract
 # locally; it needs transformers >=5.17, so it runs from its own clone:
 git clone https://github.com/jaredpalmer/kev.git ../kev
@@ -428,6 +436,9 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
                                          # entity spans it scores pairs of)
 .venv/Scripts/python demos/demo_gliner_relex.py # GLiNER-relex: joint NER +
                                          # relations in one pass (multilingual)
+.venv-relik/Scripts/python demos/demo_relik.py  # ReLiK retriever-reader
+                                         # relations (closed Wikidata
+                                         # vocabulary; Python 3.11 venv)
 .venv/Scripts/python demos/demo_laya.py        # Laya tour + multilingual Router
 .venv/Scripts/python demos/demo_jev.py         # Jev tour (2 paid API requests)
 .venv-von/Scripts/python demos/jevk5_demo.py   # JevK5-Lite tour (label-head
@@ -467,20 +478,22 @@ C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (loca
 
 `app.py` serves a live demo tab per family — GLiNER 2.5 (checkpoint
 selector includes GLiNER2.5-Decide), GLiFormer, GLiREL, GLiNER-relex,
-GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
-nanodiff, so1, Jev (cloud), and OpenRouter (all ten hosted systems: Kev 4B,
-Span-01/Lite, seven rerankers — one metered API request per click, needs
-`OPENROUTER_API_KEY`) — plus benchmark tabs (classification / extraction
-/ multilingual: tables and charts from `results/bench_*_results.json`,
-including the cost-vs-accuracy charts) and a Compare tab (feature
-matrix). The remaining local engines (Kev, AgentJev, decider, OpenThai,
-Verdict) run as separate servers or venvs and are covered by the
-benchmark and compare tabs.
+ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo,
+MoJev, nanodiff, so1, Jev (cloud), and OpenRouter (all ten hosted systems:
+Kev 4B, Span-01/Lite, seven rerankers — one metered API request per click,
+needs `OPENROUTER_API_KEY`) — plus benchmark tabs (classification /
+extraction / multilingual: tables and charts from
+`results/bench_*_results.json`, including the cost-vs-accuracy charts) and
+a Compare tab (feature matrix). The remaining local engines (Kev,
+AgentJev, decider, OpenThai, Verdict) run as separate servers or venvs
+and are covered by the benchmark and compare tabs.
 
 The `.venv-von` systems (von, JevK5-Lite, LFM2.5-RLCD, MoJev) spawn
 one-shot `demos/*_demo.py --serve` runners, each loading its model once
 per click in a single `.venv-von` process; nanodiff does the same under
-the main venv. von's shared loader (`engines/von_client.py`) pins the
+the main venv, and ReLiK spawns `demos/relik_demo.py` from `.venv-relik`
+(first click loads the pipeline and, once, downloads ~700 MB). von's
+shared loader (`engines/von_client.py`) pins the
 upstream SDK and model revision and requires the complete
 `option_marker.pt` state dict — missing or incompatible weights fail
 before inference; there is no random-head fallback (first use downloads
@@ -573,7 +586,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 
 | File | What it is |
 |---|---|
-| `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_glirel.py` / `demos/demo_gliner_relex.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
+| `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_glirel.py` / `demos/demo_gliner_relex.py` / `demos/demo_relik.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
 | `demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/lfm_rlcd_demo.py` | LFM2.5-RLCD tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
@@ -583,6 +596,8 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `app.py` | Gradio web UI: live tab per family + benchmark + compare |
 | `demos/von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
 | `engines/von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
+| `demos/relik_demo.py` | one-shot ReLiK runner inside `.venv-relik`, spawned by the ReLiK tab |
+| `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK retriever-reader pipeline |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
 | `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Span-01, seven rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
@@ -600,4 +615,7 @@ MIT — see [LICENSE](LICENSE). Model licenses belong to their authors
 (Apache 2.0 for the open model families; so1's library and the vendored
 `engines/*_engine/` packages are MIT; the LiquidAI/LFM2.5-350M weights
 behind LFM2.5-RLCD are under the LFM Open License v1.0); Jev access is
-subject to TypeSafe AI's terms.
+subject to TypeSafe AI's terms. ReLiK's licensing is ambiguous and
+recorded as-is: the relik repo carries no LICENSE file, its README
+footer calls the data and software CC BY-NC-SA 4.0, and the model card
+says Apache 2.0.

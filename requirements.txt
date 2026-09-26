@@ -11,6 +11,10 @@ gliclass==0.1.20
 # von-sdk needs transformers 5.x -> install it in a SEPARATE venv:
 #   uv venv --python 3.13 .venv-von
 #   uv pip install --python .venv-von -r requirements-von.txt
+# relik needs torch 2.3.1 + faiss-cpu on Python 3.11 -> its own venv too
+# (`import relik` needs the Windows csv shim in engines/relik_client.py):
+#   uv venv --python 3.11 .venv-relik
+#   uv pip install --python .venv-relik -r requirements-relik.txt
 # so1 is not on PyPI:
 #   uv pip install "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev@6ad87d7"
 # PIN: the main venv is validated on transformers 4.57.6 - do not bump

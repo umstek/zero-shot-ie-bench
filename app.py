@@ -1,10 +1,10 @@
-"""Interactive demo + benchmarks for forty zero-shot IE/classification
+"""Interactive demo + benchmarks for forty-one zero-shot IE/classification
 systems across twenty-three families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
-GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
+ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff, so1, Jev (cloud) and OpenRouter (hosted); benchmark tabs hold
-the measured numbers for the thirty-eight benchmarked systems (GLiREL
-and GLiNER-relex are demoed but not yet benchmarked), the
+the measured numbers for the thirty-eight benchmarked systems (GLiREL,
+GLiNER-relex and ReLiK are demoed but not yet benchmarked), the
 OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
 
 Run:
@@ -1235,6 +1235,65 @@ def build_gliner_relex_tab():
                               grr_threshold, grr_rel_threshold], grr_json)
 
 
+# ---------------------------------------------------------- ReLiK tab
+RELIK_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        ".venv-relik", "Scripts", "python.exe")
+
+
+def build_relik_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("ReLiK"):
+        gr.Markdown("### ReLiK (~180M, local, CPU) — retriever-reader relation "
+                    "extraction over a closed Wikidata vocabulary\n"
+                    "SapienzaNLP's ACL 2024 pipeline: an E5-small retriever "
+                    "(33M) fetches the most similar relation definitions from "
+                    "a fixed index (618 Wikidata properties in this small "
+                    "checkpoint, e.g. \"headquarters location\" P159) and a "
+                    "DeBERTa-v3 reader (146M) scores span pairs against "
+                    "them — so you cannot type free-text relation labels "
+                    "like GLiREL/GLiNER-relex; every prediction is a real "
+                    "Wikidata property. The reader finds the entity spans "
+                    "itself, untyped (--NME--). HF card Apache 2.0; the "
+                    "relik repo has no LICENSE file and its README footer "
+                    "says CC BY-NC-SA 4.0. It needs its own venv "
+                    "(`.venv-relik`, torch 2.3.1 + faiss-cpu): each click "
+                    "spawns `demos/relik_demo.py`, which loads the pipeline "
+                    "once and answers every line in that single process "
+                    "(install `requirements-relik.txt` there; first use "
+                    "downloads ~700 MB).")
+        with gr.Tab("Relations"):
+            rk_text = gr.Textbox(label="Texts (one per line)",
+                                 value=SAMPLE_TEXT, lines=5)
+            rk_button = gr.Button("Extract relations", variant="primary")
+            rk_out = gr.JSON(label="Per line: triplets (Wikidata property "
+                                   "labels, confidence) + reader spans")
+
+        def run_relik(texts_block):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            if not texts:
+                return {"error": "provide text lines"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "relik_demo.py")
+            try:
+                proc = subprocess.run(
+                    [RELIK_PY, helper],
+                    input=json.dumps({"texts": texts}),
+                    capture_output=True, text=True, timeout=600)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        rk_button.click(run_relik, [rk_text], rk_out)
+
+
 def build_jev_tab():
     import gradio as gr
 
@@ -1989,8 +2048,8 @@ def main() -> None:
         gr.Markdown("# Zero-shot information extraction & classification\n"
                     "Live tabs for the in-process and spawnable systems: "
                     "GLiNER 2.5 (with the decision-tuned GLiNER2.5-Decide "
-                    "sibling), GLiFormer, GLiREL, GLiNER-relex, GLiClass, "
-                    "Rerankers "
+                    "sibling), GLiFormer, GLiREL, GLiNER-relex, ReLiK, "
+                    "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
                     "so1, the cloud Jev and the ten OpenRouter-hosted "
@@ -2003,6 +2062,7 @@ def main() -> None:
         build_gliformer_tab(gliformer)
         build_glirel_tab()
         build_gliner_relex_tab()
+        build_relik_tab()
         build_gliclass_tab()
         build_reranker_tab()
         build_laya_tab()
