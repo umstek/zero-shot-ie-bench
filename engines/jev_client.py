@@ -61,9 +61,12 @@ def noul(instructions, criteria: dict | None = None) -> dict:
 
 class JevClient:
     def __init__(self, api_key: str | None = None, model: str = DEFAULT_MODEL,
-                 base_url: str = SYSTEM_ONE_URL):
+                 base_url: str = SYSTEM_ONE_URL, usage_sink=None):
         self.base_url = base_url
         self.model = model
+        # optional callable fed each response's usage row (cost/tokens),
+        # so benchmark drivers can account paid usage without re-parsing
+        self.usage_sink = usage_sink
         # any other System One endpoint (e.g. a local kev server) needs no key
         if base_url != SYSTEM_ONE_URL:
             self.api_key = api_key or ""
@@ -98,6 +101,8 @@ class JevClient:
             raise RuntimeError(f"Jev HTTP {exc.code}: {detail}") from exc
         if "answers" not in payload:
             raise RuntimeError(f"Jev response missing answers: {payload!r:.300}")
+        if self.usage_sink:
+            self.usage_sink(payload.get("usage"))
         payload["_latency_s"] = round(time.perf_counter() - t0, 3)
         return payload
 

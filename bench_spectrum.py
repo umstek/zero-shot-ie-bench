@@ -154,7 +154,8 @@ def classify_extractor(model_id: str, gliformer: bool):
     return cls_one, ner_one
 
 
-def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
+def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
+                     tracker=None):
     """Laya, Jev, AgentJev, or a local System One server (Kev, decider,
     OpenThai): one batched call per task, preds mapped back per question.
     The locals serve the same wire format as Jev on their own ports and get
@@ -196,7 +197,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             # OpenRouter-hosted kev-4b: same wire format, Bearer key
             from engines.openrouter_client import systemone
 
-            client = systemone("jaredpalmer/kev-4b")
+            client = systemone("jaredpalmer/kev-4b", tracker)
         else:
             client = JevClient(
                 base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
@@ -232,7 +233,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
     elif client_kind == "jev":
         from engines.jev_client import JevClient
 
-        client = JevClient()
+        client = JevClient(usage_sink=tracker.add if tracker else None)
 
         def run_task(task: str, texts: list[str]) -> list:
             labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
@@ -315,6 +316,7 @@ def main() -> None:
     cls_lat: list[float] = []
     ner_ok: list[bool] | None = None
     ner_lat: list[float] = []
+    tracker = None  # set by the hosted branches; locals stay untracked
 
     if name in EXTRACTORS or name in GLICLASS:
         if name in EXTRACTORS:
@@ -346,9 +348,10 @@ def main() -> None:
         # OpenRouter-hosted rerankers: same decision-engine mapping as the
         # local cross-encoders (score one (instruction, label) pair per
         # label, argmax), one API request per question. Non-ZDR endpoints.
-        from engines.openrouter_client import rerank_classify
+        from engines.openrouter_client import UsageTracker, rerank_classify
 
         model_id = OPENROUTER_RERANKERS[name]
+        tracker = UsageTracker()
         instr = {"sentiment": 'What is the overall sentiment of this text: "{text}"',
                  "topic": 'Which topic category does this text belong to: "{text}"'}
         for q in CLS_QUESTIONS:
@@ -356,15 +359,17 @@ def main() -> None:
                           else TOPIC_LABELS)
             t1 = time.perf_counter()
             cls_preds.append(rerank_classify(
-                model_id, instr[q["task"]].format(text=q["text"]), labels))
+                model_id, instr[q["task"]].format(text=q["text"]), labels,
+                tracker))
             cls_lat.append(time.perf_counter() - t1)
     elif name in ("Span-01", "Span-01 Lite"):
         # OpenRouter-hosted behavior scorer: one noul (yes-probability)
         # question per label in one request, argmax = classification.
         # Non-ZDR endpoint. Classification only - no span extraction.
-        from engines.openrouter_client import noul_classify
+        from engines.openrouter_client import UsageTracker, noul_classify
 
         model_id = OPENROUTER_SYSTEMONE[name]
+        tracker = UsageTracker()
         QUESTION = {"sentiment": "Does this text express {label} sentiment?",
                     "topic": "Is this text about the {label} topic?"}
         for q in CLS_QUESTIONS:
@@ -372,7 +377,8 @@ def main() -> None:
                           else TOPIC_LABELS)
             t1 = time.perf_counter()
             cls_preds.append(noul_classify(model_id, q["text"],
-                                           QUESTION[q["task"]], labels))
+                                           QUESTION[q["task"]], labels,
+                                           tracker))
             cls_lat.append(time.perf_counter() - t1)
     elif name == "Certo 421M":
         # in-process decision head over a ModernBERT-large backbone
@@ -387,6 +393,8 @@ def main() -> None:
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
                   "Kev 4B (OpenRouter)"):
+        from engines.openrouter_client import UsageTracker
+
         repo = ("convaiinnovations/laya-typed-decisions"
                 if name == "Laya typed-decisions"
                 else "convaiinnovations/laya")
@@ -399,7 +407,8 @@ def main() -> None:
                 else "jev" if name == "Jev" else None)
         if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
-        run_task = classify_batched(kind, repo=repo)
+        tracker = UsageTracker() if name in ("Jev", "Kev 4B (OpenRouter)") else None
+        run_task = classify_batched(kind, repo=repo, tracker=tracker)
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()
@@ -557,6 +566,9 @@ def main() -> None:
                    "Model download and loading excluded; first forward "
                    "pass included."),
     }
+    if tracker and tracker.requests:
+        # measured provider accounting for the hosted run (48 questions)
+        entry["usage"] = tracker.as_dict()
     if ner_ok is not None:
         entry["ner_exact"] = ner_ok
         entry["ner_exact_rate"] = round(sum(ner_ok) / len(ner_ok), 4)

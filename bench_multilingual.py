@@ -209,7 +209,7 @@ ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                   "Verdict 151M (local)"])
 
 
-def make_classifier(name: str):
+def make_classifier(name: str, tracker=None):
     """Per-text sentiment classifier for encoder/classifier systems."""
     labels = list(SENTIMENT_LABELS)
 
@@ -268,7 +268,7 @@ def make_classifier(name: str):
             return rerank_classify(
                 model_id,
                 f'What is the overall sentiment of this text: "{text}"',
-                labels)
+                labels, tracker)
     elif name in ("Span-01", "Span-01 Lite"):
         # OpenRouter-hosted behavior scorer: one noul (yes-probability)
         # question per label in one request, argmax = classification.
@@ -280,7 +280,7 @@ def make_classifier(name: str):
         def one(text: str):
             return noul_classify(model_id, text,
                                  "Does this text express {label} sentiment?",
-                                 labels)
+                                 labels, tracker)
     else:  # gliclass
         from transformers import AutoTokenizer
 
@@ -428,10 +428,10 @@ def run_laya_typed(texts):
     return preds, statistics.mean(lat)
 
 
-def run_jev(texts):
+def run_jev(texts, tracker=None):
     from engines.jev_client import JevClient, choice
 
-    client = JevClient()
+    client = JevClient(usage_sink=tracker.add if tracker else None)
     questions = {
         f"t{i}": choice(
             {"task": "sentiment classification of this text",
@@ -446,14 +446,14 @@ def run_jev(texts):
              for i in range(len(texts))], dt / len(texts))
 
 
-def run_or_kev(texts):
+def run_or_kev(texts, tracker=None):
     """OpenRouter-hosted kev-4b: same per-text System One request shape as
     run_systemone (string instructions), no warmup - the endpoint is
     stateless. Non-ZDR endpoint."""
     from engines.jev_client import choice
     from engines.openrouter_client import systemone
 
-    client = systemone("jaredpalmer/kev-4b")
+    client = systemone("jaredpalmer/kev-4b", tracker)
     preds, lat = [], []
     for text in texts:
         question = choice(
@@ -549,13 +549,18 @@ def main() -> None:
             lang_of.append(lang)
 
     laya_routes = None
+    tracker = None  # set by the hosted branches; locals stay untracked
     print(f"{name}: 54 texts (9 languages x 6) ...")
     t0 = time.perf_counter()
     if (name in GLINER or name in GLIFORMER or name in GLICLASS
             or name in RERANKERS or name in OPENROUTER_RERANKERS
             or name in ("Span-01", "Span-01 Lite")
             or name == "Certo 421M"):
-        one = make_classifier(name)
+        if name in OPENROUTER_RERANKERS or name in ("Span-01", "Span-01 Lite"):
+            from engines.openrouter_client import UsageTracker
+
+            tracker = UsageTracker()
+        one = make_classifier(name, tracker)
         preds, lat = [], []
         for text in texts:
             t1 = time.perf_counter()
@@ -586,9 +591,15 @@ def main() -> None:
     elif name == "Verdict 151M (local)":
         preds, lat = run_verdict(texts)
     elif name == "Kev 4B (OpenRouter)":
-        preds, lat = run_or_kev(texts)
+        from engines.openrouter_client import UsageTracker
+
+        tracker = UsageTracker()
+        preds, lat = run_or_kev(texts, tracker)
     elif name == "Jev":
-        preds, lat = run_jev(texts)
+        from engines.openrouter_client import UsageTracker
+
+        tracker = UsageTracker()
+        preds, lat = run_jev(texts, tracker)
     else:
         # a new ALL_SYSTEMS entry without a dispatch branch must never
         # fall through to the paid Jev API
@@ -621,6 +632,9 @@ def main() -> None:
     out["by_language"][name] = by_lang
     out["by_tier"][name] = by_tier
     out["latency"][name] = round(lat, 3)
+    if tracker and tracker.requests:
+        # measured provider accounting for the hosted run (54 texts)
+        out.setdefault("usage", {})[name] = tracker.as_dict()
     notes = out.setdefault("meta", {}).setdefault("notes", [])
     if notes and notes[0].startswith("All "):
         notes[0] = (f"All {len(out['by_language'])} systems answer "

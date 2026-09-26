@@ -53,7 +53,29 @@ def load_openrouter_key() -> str:
     return ""
 
 
-def systemone(model: str):
+class UsageTracker:
+    """Accumulates provider usage rows (cost, tokens, request count) across
+    a benchmark run, so per-system cost is measured, not reconstructed."""
+
+    def __init__(self):
+        self.requests = 0
+        self.cost = 0.0
+        self.input_tokens = 0
+
+    def add(self, usage) -> None:
+        if not isinstance(usage, dict):
+            return
+        self.requests += 1
+        self.cost += float(usage.get("cost") or 0)
+        self.input_tokens += int(usage.get("input_tokens") or 0)
+
+    def as_dict(self) -> dict:
+        return {"paid_requests": self.requests,
+                "cost_usd": round(self.cost, 6),
+                "input_tokens": self.input_tokens}
+
+
+def systemone(model: str, tracker: UsageTracker | None = None):
     """A JevClient pointed at OpenRouter's /systemone router."""
     from engines.jev_client import JevClient
 
@@ -64,7 +86,8 @@ def systemone(model: str):
             "or create a .env file in the repo root with "
             "OPENROUTER_API_KEY=... (see README)."
         )
-    return JevClient(api_key=api_key, model=model, base_url=SYSTEMONE_URL)
+    return JevClient(api_key=api_key, model=model, base_url=SYSTEMONE_URL,
+                     usage_sink=tracker.add if tracker else None)
 
 
 def _post(url: str, body: dict, timeout: int = 120) -> dict:
@@ -91,7 +114,8 @@ def _post(url: str, body: dict, timeout: int = 120) -> dict:
 
 
 def rerank(model: str, query: str, documents: list[str],
-           top_n: int | None = None) -> list[dict]:
+           top_n: int | None = None,
+           tracker: UsageTracker | None = None) -> list[dict]:
     """Relevance-score every document against the query.
 
     Returns the endpoint's results rows ({"index": i, "relevance_score": s})
@@ -101,29 +125,31 @@ def rerank(model: str, query: str, documents: list[str],
     if top_n is not None:
         body["top_n"] = top_n
     payload = _post(RERANK_URL, body)
+    if tracker:
+        tracker.add(payload.get("usage"))
     results = payload.get("results")
     if not isinstance(results, list):
         raise RuntimeError(f"rerank response missing results: {payload!r:.300}")
     return results
 
 
-def rerank_classify(model: str, instruction: str,
-                    labels: list[str]) -> str | None:
+def rerank_classify(model: str, instruction: str, labels: list[str],
+                    tracker: UsageTracker | None = None) -> str | None:
     """Pick the label whose (instruction, label) pair scores highest."""
-    rows = rerank(model, instruction, labels)
+    rows = rerank(model, instruction, labels, tracker=tracker)
     scores = {row["index"]: row["relevance_score"] for row in rows}
     if not scores:
         return None
     return labels[max(scores, key=scores.get)]
 
 
-def noul_classify(model: str, text: str, question: str,
-                  labels: list[str]) -> str | None:
+def noul_classify(model: str, text: str, question: str, labels: list[str],
+                  tracker: UsageTracker | None = None) -> str | None:
     """Span-01 style behavior scoring as classification: one noul
     (yes-probability) question per label in a single request, argmax wins.
     The criteria key must stay absent - Span rejects an explicit null -
     and the state must be a plain string (Span scores conversation spans)."""
-    client = systemone(model)
+    client = systemone(model, tracker)
     questions = {f"l{i}": {"type": "noul", "instructions": question.format(label=label)}
                  for i, label in enumerate(labels)}
     out = client.ask(text, questions)
