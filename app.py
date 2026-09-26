@@ -1,10 +1,11 @@
 """Interactive demo + benchmarks for thirty-eight zero-shot IE/classification
 systems across twenty-three families. Live tabs: GLiNER 2.5 (with the
-decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiClass, Rerankers,
-Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1, Jev
-(cloud) and OpenRouter (hosted); benchmark tabs hold the measured numbers
-for all of them, the OpenRouter-hosted systems (Kev 4B, Span-01, seven
-rerankers) included.
+decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiClass,
+Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1,
+Jev (cloud) and OpenRouter (hosted); benchmark tabs hold the measured
+numbers for the thirty-eight benchmarked systems (GLiREL is demoed but
+not yet benchmarked), the OpenRouter-hosted systems (Kev 4B, Span-01,
+seven rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -17,6 +18,7 @@ import argparse
 import json
 import math
 import os
+import re
 import threading
 
 import altair as alt
@@ -964,6 +966,111 @@ def build_gliformer_tab(model):
                              [gfc_text, gfc_labels], gfc_out)
 
 
+# --------------------------------------------------------------- GLiREL tab
+# GLiREL scores (head, tail) entity pairs against free-text relation labels,
+# but needs entity spans as input — so the tab pipes the preloaded GLiNER 2.5
+# base into it. Its own spaCy wrapper applies allowed_head/allowed_tail
+# constraints post-hoc; we don't expose them in the tab.
+GLIREL_MODEL = "jackboyla/glirel-large-v0"
+GLIREL_ENTITY_LABELS = ["company", "person", "product", "location",
+                        "organization"]
+_GLIREL_MODELS: dict[str, object] = {}
+_GLIREL_LOCK = threading.Lock()
+# Same regex as GLiREL's internal tokenization (model.py) so the token
+# indices we hand it stay aligned with its head_pos/tail_pos output.
+_GLIREL_TOKEN_RE = re.compile(r"\w+(?:[-_]\w+)*|\S")
+
+
+def get_glirel_model():
+    """Lazy loader: the ~467M checkpoint (~1.7 GB) downloads and loads on
+    the first click, so startup only preloads GLiNER + GLiFormer."""
+    with _GLIREL_LOCK:
+        if GLIREL_MODEL not in _GLIREL_MODELS:
+            from glirel import GLiREL
+
+            _GLIREL_MODELS[GLIREL_MODEL] = GLiREL.from_pretrained(GLIREL_MODEL)
+        return _GLIREL_MODELS[GLIREL_MODEL]
+
+
+def glirel_ner(text: str) -> tuple[list[str], list[list]]:
+    """GLiNER 2.5 char spans -> GLiREL's ner format ([start, end, type,
+    text], end index inclusive)."""
+    tokens, offsets = [], []
+    for match in _GLIREL_TOKEN_RE.finditer(text):
+        tokens.append(match.group())
+        offsets.append((match.start(), match.end()))
+    result = get_gliner_model(SYSTEMS["GLiNER 2.5"]).extract_entities(
+        text, GLIREL_ENTITY_LABELS, include_confidence=True, include_spans=True)
+    ner = []
+    for label, items in result.get("entities", {}).items():
+        for item in items:
+            idx = [i for i, (s, e) in enumerate(offsets)
+                   if s < item["end"] and e > item["start"]]
+            if idx:
+                ner.append([idx[0], idx[-1], label, item["text"]])
+    return tokens, ner
+
+
+def glirel_extract(text: str, relation_labels: list[str],
+                   threshold: float) -> list[dict]:
+    """Entities + relations in one pass, sorted by score."""
+    tokens, ner = glirel_ner(text)
+    if len(ner) < 2:
+        return []
+    relations = get_glirel_model().predict_relations(
+        tokens, relation_labels, threshold=threshold, ner=ner, top_k=2)
+    type_of = {(ent[0], ent[1] + 1): ent[2] for ent in ner}
+    rows = [{"relation": rel["label"],
+             "head": " ".join(rel["head_text"]),
+             "head_type": type_of.get(tuple(rel["head_pos"]), "?"),
+             "tail": " ".join(rel["tail_text"]),
+             "tail_type": type_of.get(tuple(rel["tail_pos"]), "?"),
+             "score": round(rel["score"], 3)}
+            for rel in relations]
+    return sorted(rows, key=lambda r: r["score"], reverse=True)
+
+
+def build_glirel_tab():
+    import gradio as gr
+
+    with gr.Tab("GLiREL"):
+        gr.Markdown("### GLiREL large (~467M, local, CPU) — zero-shot "
+                    "relation extraction (CC BY-NC-SA 4.0)\n"
+                    "GLiNER-lineage label-prompted encoder: give it entity "
+                    "spans plus free-text relation labels and it scores "
+                    "every (head, tail) pair in one pass. Entities come "
+                    "from the preloaded GLiNER 2.5 base checkpoint "
+                    "(company, person, product, location, organization). "
+                    "Loads on first click (~1.7 GB download).")
+        with gr.Tab("Relations"):
+            with gr.Row():
+                rl_text = gr.Textbox(label="Text", value=SAMPLE_TEXT, lines=5)
+                rl_labels = gr.Textbox(
+                    label="Relation labels (comma-separated)",
+                    value="works_for, located_in, announced, ceo_of")
+            rl_threshold = gr.Slider(minimum=0.0, maximum=1.0, value=0.3,
+                                     step=0.05, label="Score threshold")
+            rl_button = gr.Button("Extract relations", variant="primary")
+            rl_json = gr.JSON(label="Relations (sorted by score)")
+
+            def run_relations(text, labels_csv, threshold):
+                labels = parse_labels(labels_csv)
+                if not text or not labels:
+                    return {"error": "provide text and at least one "
+                                     "relation label"}
+                try:
+                    relations = glirel_extract(text, labels, threshold)
+                except Exception as exc:
+                    return {"error": str(exc)}
+                return relations or {
+                    "note": "no relation scored above the threshold "
+                            "(GLiNER also needs to find at least two "
+                            "entities)"}
+
+            rl_button.click(run_relations,
+                            [rl_text, rl_labels, rl_threshold], rl_json)
+
+
 def build_jev_tab():
     import gradio as gr
 
@@ -1718,17 +1825,18 @@ def main() -> None:
         gr.Markdown("# Zero-shot information extraction & classification\n"
                     "Live tabs for the in-process and spawnable systems: "
                     "GLiNER 2.5 (with the decision-tuned GLiNER2.5-Decide "
-                    "sibling), GLiFormer, GLiClass, Rerankers (three "
-                    "cross-encoders as decision engines), Laya, von, "
-                    "JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1, "
-                    "the cloud Jev and the ten OpenRouter-hosted systems. "
-                    "The remaining local engines (Kev, "
+                    "sibling), GLiFormer, GLiREL, GLiClass, Rerankers "
+                    "(three cross-encoders as decision engines), Laya, "
+                    "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
+                    "so1, the cloud Jev and the ten OpenRouter-hosted "
+                    "systems. The remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
                     "measured numbers for all 38 systems across twenty-three "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
+        build_glirel_tab()
         build_gliclass_tab()
         build_reranker_tab()
         build_laya_tab()

@@ -1,16 +1,18 @@
 # zero-shot-ie-bench
 
-Thirty-eight zero-shot systems across twenty-three information-extraction
-and classification families — extractor encoders, a purpose-built
-classifier, cross-encoder rerankers, and typed-decision engines (local and
-cloud, the hosted ones behind OpenRouter's decision and rerank endpoints)
-— demoed, benchmarked, and cross-compared in one repo with a web UI.
+Thirty-nine zero-shot systems (thirty-eight of them benchmarked) across
+twenty-three information-extraction and classification families —
+extractor encoders, a purpose-built classifier, cross-encoder rerankers,
+and typed-decision engines (local and cloud, the hosted ones behind
+OpenRouter's decision and rerank endpoints) — demoed, benchmarked, and
+cross-compared in one repo with a web UI.
 
 | System | Kind | Size | License | Cost |
 |---|---|---|---|---|
 | [GLiNER 2.5](https://github.com/fastino-ai/GLiNER2) (`fastino/gliner2.5-*`) | local extractor encoder (boundary arch) | 74M / 194M / 287M | Apache 2.0 | $0 · local |
 | [GLiNER2.5-Decide](https://huggingface.co/fastino/GLiNER2.5-Decide) (`fastino/GLiNER2.5-Decide`) | local decision-tuned classifier in the GLiNER 2.5 family (spans + label heads, one pass) | 340M | Apache 2.0 | $0 · local |
 | [GLiFormer](https://github.com/Knowledgator/GLiFormer) (`knowledgator/gliformer-*`) | local extractor encoder (layout-aware DeBERTa) | ~190M / 575.6M | Apache 2.0 | $0 · local |
+| [GLiREL](https://github.com/jackboyla/GLiREL) (`jackboyla/glirel-large-v0`) | local zero-shot relation extractor (label-prompted encoder over entity pairs) | ~467M | CC BY-NC-SA 4.0 | $0 · local |
 | [GLiClass](https://github.com/knowledgator/gliclass) (`knowledgator/gliclass-*-v3.0`) | local zero-shot classifier (all labels, one pass) | 33M / 151M / 187M / 439M | Apache 2.0 | $0 · local |
 | [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) · [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) · [GTE-rerank-ModernBERT-base](https://huggingface.co/Alibaba-NLP/gte-rerank-modernbert-base) | local cross-encoder rerankers (score text+label pairs, argmax = decision) | 494M / 568M / 150M | Apache 2.0 | $0 · local |
 | [Laya](https://huggingface.co/convaiinnovations/laya) (`laya`) | local typed-decision engine (choice/score/noul) | 421M (322M multilingual) | Apache 2.0 | $0 · local |
@@ -41,7 +43,8 @@ hosted run](#measured-cost-per-hosted-run)); ‡ Jev's provider reports
 tokens but no cost, so it has no measured $ figure.
 
 Four mechanism families are represented — **extractors** (GLiNER 2.5,
-GLiFormer: spans/entities/relations/records), **classifiers** (GLiClass:
+GLiFormer: spans/entities/relations/records, plus GLiREL: zero-shot
+relations over entity pairs it is handed), **classifiers** (GLiClass:
 all labels in one forward pass), **cross-encoder rerankers** as decision
 engines (score one (instruction, label) pair per label, argmax — local
 trio + seven hosted), and **typed-decision engines** (ask `choice` /
@@ -50,8 +53,10 @@ call — Laya, von, so1, the local open-weight Jev lookalikes Kev /
 AgentJev / decider / OpenThai / JevK5-Lite, Verdict, LFM2.5-RLCD, Certo,
 MoJev, nanodiff, and cloud Jev / Kev 4B / Span-01). The GLiNER lineage
 forked between Fastino (GLiNER 2.5, original author Urchade Zaratiana)
-and Knowledgator (classic `gliner`, GLiFormer, GLiClass); Laya's card
-positions itself as the open local counterpart of cloud Jev.
+and Knowledgator (classic `gliner`, GLiFormer, GLiClass); GLiREL
+(jackboyla) grows out of the same architecture into relation extraction,
+and Laya's card positions itself as the open local counterpart of cloud
+Jev.
 
 ## Benchmark results
 
@@ -415,6 +420,9 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
                                          # tours only that checkpoint)
 .venv/Scripts/python demos/demo_gliformer.py   # GLiFormer tour + embeddings
                                           # (--model base or large)
+.venv/Scripts/python demos/demo_glirel.py      # GLiREL zero-shot relations
+                                         # (GLiNER 2.5 base supplies the
+                                         # entity spans it scores pairs of)
 .venv/Scripts/python demos/demo_laya.py        # Laya tour + multilingual Router
 .venv/Scripts/python demos/demo_jev.py         # Jev tour (2 paid API requests)
 .venv-von/Scripts/python demos/jevk5_demo.py   # JevK5-Lite tour (label-head
@@ -453,10 +461,10 @@ C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (loca
 ## Web UI
 
 `app.py` serves a live demo tab per family — GLiNER 2.5 (checkpoint
-selector includes GLiNER2.5-Decide), GLiFormer, GLiClass, Rerankers,
-Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1, Jev
-(cloud), and OpenRouter (all ten hosted systems: Kev 4B, Span-01/Lite,
-seven rerankers — one metered API request per click, needs
+selector includes GLiNER2.5-Decide), GLiFormer, GLiREL, GLiClass,
+Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff,
+so1, Jev (cloud), and OpenRouter (all ten hosted systems: Kev 4B,
+Span-01/Lite, seven rerankers — one metered API request per click, needs
 `OPENROUTER_API_KEY`) — plus benchmark tabs (classification / extraction
 / multilingual: tables and charts from `results/bench_*_results.json`,
 including the cost-vs-accuracy charts) and a Compare tab (feature
@@ -560,7 +568,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 
 | File | What it is |
 |---|---|
-| `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
+| `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_glirel.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
 | `demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/lfm_rlcd_demo.py` | LFM2.5-RLCD tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
