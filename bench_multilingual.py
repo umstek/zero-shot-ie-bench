@@ -33,6 +33,12 @@ openthai_systemone.server:app --port 8029. Verdict 151M runs in-process
 from the Verdict-open-jev checkout (VERDICT_HOME, default C:\src\verdict)
 under the agent-jev venv python.
 
+OpenRouter-hosted systems need OPENROUTER_API_KEY in .env; their providers
+are not ZDR - they may retain request data:
+    python bench_multilingual.py --system "Kev 4B (OpenRouter)"
+    python bench_multilingual.py --system "Span-01 Lite"
+    python bench_multilingual.py --system "cohere-rerank-v3.5 (OpenRouter)"
+
 Ground-truth verification: sentences were blind-translated back to English
 by one independent cold-context model instance (separate agent, no labels
 in its instructions); it caught 8 errors (2 sentiment-flipping) which were
@@ -174,9 +180,27 @@ RERANKERS = {
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
     "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
 }
+# hosted on OpenRouter (see bench_spectrum.py for the full id map); same
+# names so results files line up across benchmarks
+OPENROUTER_SYSTEMONE = {
+    "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
+    "Span-01": "respan/span-01",
+    "Span-01 Lite": "respan/span-01-lite",
+}
+OPENROUTER_RERANKERS = {
+    "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
+    "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
+    "voyage-rerank-2.5 (OpenRouter)": "voyageai/rerank-2.5",
+    "nemotron-rerank-vl-1b (OpenRouter)":
+        "nvidia/llama-nemotron-rerank-vl-1b-v2:free",
+    "cohere-rerank-4-pro (OpenRouter)": "cohere/rerank-4-pro",
+    "cohere-rerank-4-fast (OpenRouter)": "cohere/rerank-4-fast",
+    "cohere-rerank-v3.5 (OpenRouter)": "cohere/rerank-v3.5",
+}
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
-               + list(RERANKERS) + ["Certo 421M", "MoJev 0.85B",
-                                    "nanodiff 350M"]
+               + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
+               + list(OPENROUTER_RERANKERS)
+               + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M"]
                + ["Laya Router", "Laya typed-decisions", "von",
                   "JevK5-Lite", "LFM2.5-RLCD 350M",
                   "so1 (Qwen2.5-0.5B)", "Jev",
@@ -233,6 +257,30 @@ def make_classifier(name: str):
                       f'"{text}"', label) for label in labels]
             scores = model.predict(pairs)
             return labels[max(range(len(scores)), key=lambda i: scores[i])]
+    elif name in OPENROUTER_RERANKERS:
+        # OpenRouter-hosted rerankers: same (instruction, label) pair
+        # mapping, one API request per text. Non-ZDR endpoints.
+        from engines.openrouter_client import rerank_classify
+
+        model_id = OPENROUTER_RERANKERS[name]
+
+        def one(text: str):
+            return rerank_classify(
+                model_id,
+                f'What is the overall sentiment of this text: "{text}"',
+                labels)
+    elif name in ("Span-01", "Span-01 Lite"):
+        # OpenRouter-hosted behavior scorer: one noul (yes-probability)
+        # question per label in one request, argmax = classification.
+        # Non-ZDR endpoint.
+        from engines.openrouter_client import noul_classify
+
+        model_id = OPENROUTER_SYSTEMONE[name]
+
+        def one(text: str):
+            return noul_classify(model_id, text,
+                                 "Does this text express {label} sentiment?",
+                                 labels)
     else:  # gliclass
         from transformers import AutoTokenizer
 
@@ -398,6 +446,26 @@ def run_jev(texts):
              for i in range(len(texts))], dt / len(texts))
 
 
+def run_or_kev(texts):
+    """OpenRouter-hosted kev-4b: same per-text System One request shape as
+    run_systemone (string instructions), no warmup - the endpoint is
+    stateless. Non-ZDR endpoint."""
+    from engines.jev_client import choice
+    from engines.openrouter_client import systemone
+
+    client = systemone("jaredpalmer/kev-4b")
+    preds, lat = [], []
+    for text in texts:
+        question = choice(
+            f'What is the overall sentiment of this text: "{text}"',
+            {label: None for label in SENTIMENT_LABELS})
+        t0 = time.perf_counter()
+        out = client.ask({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
 def run_systemone(texts, port: int, model: str):
     """Local System One server (Kev/decider/OpenThai), one request per text
     so latency is comparable with the other local models. String
@@ -484,7 +552,9 @@ def main() -> None:
     print(f"{name}: 54 texts (9 languages x 6) ...")
     t0 = time.perf_counter()
     if (name in GLINER or name in GLIFORMER or name in GLICLASS
-            or name in RERANKERS or name == "Certo 421M"):
+            or name in RERANKERS or name in OPENROUTER_RERANKERS
+            or name in ("Span-01", "Span-01 Lite")
+            or name == "Certo 421M"):
         one = make_classifier(name)
         preds, lat = [], []
         for text in texts:
@@ -515,6 +585,8 @@ def main() -> None:
         preds, lat = run_systemone(texts, 8029, "openthai-systemone")
     elif name == "Verdict 151M (local)":
         preds, lat = run_verdict(texts)
+    elif name == "Kev 4B (OpenRouter)":
+        preds, lat = run_or_kev(texts)
     elif name == "Jev":
         preds, lat = run_jev(texts)
     else:

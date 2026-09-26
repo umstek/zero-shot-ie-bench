@@ -1,8 +1,9 @@
-"""Interactive demo + benchmarks for twenty-eight zero-shot IE/classification
-systems across eighteen families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for thirty-eight zero-shot IE/classification
+systems across twenty-three families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiClass, Rerankers,
 Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1 and Jev
-(cloud); benchmark tabs hold the measured numbers for all of them.
+(cloud); benchmark tabs hold the measured numbers for all of them, the
+OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -122,7 +123,7 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         width=640, height=max(180, 26 * len(order) + 50))
 
 
-_SCATTER_W, _SCATTER_H = 860, 520  # 28 systems; grew from 800x460 (19)
+_SCATTER_W, _SCATTER_H = 980, 660  # 38 systems; grew from 860x520 (28)
 
 
 def _scatter_label_layers(df: pd.DataFrame):
@@ -1432,7 +1433,7 @@ def main() -> None:
                     "and the cloud Jev. The remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 28 systems across eighteen "
+                    "measured numbers for all 38 systems across twenty-three "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)

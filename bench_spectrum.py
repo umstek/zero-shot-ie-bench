@@ -35,6 +35,12 @@ Verdict 151M runs in-process from the Verdict-open-jev checkout
     C:/venvs/agent-jev/Scripts/python bench_spectrum.py \
         --system "Verdict 151M (local)"
 
+OpenRouter-hosted systems need OPENROUTER_API_KEY in .env; their providers
+are not ZDR - they may retain request data:
+    python bench_spectrum.py --system "Kev 4B (OpenRouter)"
+    python bench_spectrum.py --system "Span-01 Lite"
+    python bench_spectrum.py --system "cohere-rerank-v3.5 (OpenRouter)"
+
 Output: results/bench_spectrum_results.json
 """
 
@@ -84,7 +90,27 @@ RERANKERS = {
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
     "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
 }
+# hosted on OpenRouter: System One contract (kev, span) and the rerank
+# router. typesafe/jev-1.13 also lives there but is RBAC-gated and already
+# benched through the TypeSafe API directly; typesafe/jev-router is a chat
+# router, not a typed-decision endpoint.
+OPENROUTER_SYSTEMONE = {
+    "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
+    "Span-01": "respan/span-01",
+    "Span-01 Lite": "respan/span-01-lite",
+}
+OPENROUTER_RERANKERS = {
+    "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
+    "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
+    "voyage-rerank-2.5 (OpenRouter)": "voyageai/rerank-2.5",
+    "nemotron-rerank-vl-1b (OpenRouter)":
+        "nvidia/llama-nemotron-rerank-vl-1b-v2:free",
+    "cohere-rerank-4-pro (OpenRouter)": "cohere/rerank-4-pro",
+    "cohere-rerank-4-fast (OpenRouter)": "cohere/rerank-4-fast",
+    "cohere-rerank-v3.5 (OpenRouter)": "cohere/rerank-v3.5",
+}
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
+               + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
                   "Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
@@ -163,19 +189,25 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             out = agent.predict({"task": task}, questions)
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
-    elif client_kind in SYSTEMONE_LOCAL_PORTS:
+    elif client_kind in SYSTEMONE_LOCAL_PORTS or client_kind == "or-kev":
         from engines.jev_client import JevClient, choice
 
-        client = JevClient(
-            base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
-                     "/v1/systemone",
-            model=f"{client_kind}-latest")
-        # pay any lazy model loading before the timed section; OpenThai's
-        # cold load runs minutes, past ask()'s 120 s default
-        client.ask({"task": "warmup"},
-                   {"w": choice('Sentiment of "good"?',
-                                {"positive": None, "negative": None})},
-                   timeout=600)
+        if client_kind == "or-kev":
+            # OpenRouter-hosted kev-4b: same wire format, Bearer key
+            from engines.openrouter_client import systemone
+
+            client = systemone("jaredpalmer/kev-4b")
+        else:
+            client = JevClient(
+                base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
+                         "/v1/systemone",
+                model=f"{client_kind}-latest")
+            # pay any lazy model loading before the timed section; OpenThai's
+            # cold load runs minutes, past ask()'s 120 s default
+            client.ask({"task": "warmup"},
+                       {"w": choice('Sentiment of "good"?',
+                                    {"positive": None, "negative": None})},
+                       timeout=600)
 
         def run_task(task: str, texts: list[str]) -> list:
             labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
@@ -310,6 +342,38 @@ def main() -> None:
             t1 = time.perf_counter()
             cls_preds.append(cls_one(q["text"], q["task"]))
             cls_lat.append(time.perf_counter() - t1)
+    elif name in OPENROUTER_RERANKERS:
+        # OpenRouter-hosted rerankers: same decision-engine mapping as the
+        # local cross-encoders (score one (instruction, label) pair per
+        # label, argmax), one API request per question. Non-ZDR endpoints.
+        from engines.openrouter_client import rerank_classify
+
+        model_id = OPENROUTER_RERANKERS[name]
+        instr = {"sentiment": 'What is the overall sentiment of this text: "{text}"',
+                 "topic": 'Which topic category does this text belong to: "{text}"'}
+        for q in CLS_QUESTIONS:
+            labels = list(SENTIMENT_LABELS if q["task"] == "sentiment"
+                          else TOPIC_LABELS)
+            t1 = time.perf_counter()
+            cls_preds.append(rerank_classify(
+                model_id, instr[q["task"]].format(text=q["text"]), labels))
+            cls_lat.append(time.perf_counter() - t1)
+    elif name in ("Span-01", "Span-01 Lite"):
+        # OpenRouter-hosted behavior scorer: one noul (yes-probability)
+        # question per label in one request, argmax = classification.
+        # Non-ZDR endpoint. Classification only - no span extraction.
+        from engines.openrouter_client import noul_classify
+
+        model_id = OPENROUTER_SYSTEMONE[name]
+        QUESTION = {"sentiment": "Does this text express {label} sentiment?",
+                    "topic": "Is this text about the {label} topic?"}
+        for q in CLS_QUESTIONS:
+            labels = list(SENTIMENT_LABELS if q["task"] == "sentiment"
+                          else TOPIC_LABELS)
+            t1 = time.perf_counter()
+            cls_preds.append(noul_classify(model_id, q["text"],
+                                           QUESTION[q["task"]], labels))
+            cls_lat.append(time.perf_counter() - t1)
     elif name == "Certo 421M":
         # in-process decision head over a ModernBERT-large backbone
         # (vendored engines/certo_engine/); classification only - no span
@@ -321,17 +385,19 @@ def main() -> None:
             cls_lat.append(time.perf_counter() - t1)
     elif name in ("Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
-                  "decider 0.8B (local)", "OpenThai 0.8B (local)"):
+                  "decider 0.8B (local)", "OpenThai 0.8B (local)",
+                  "Kev 4B (OpenRouter)"):
         repo = ("convaiinnovations/laya-typed-decisions"
                 if name == "Laya typed-decisions"
                 else "convaiinnovations/laya")
         kind = ("laya" if name.startswith("Laya")
-                else "kev" if name.startswith("Kev")
+                else "kev" if name.startswith("Kev 0.8B")
                 else "agentjev" if name.startswith("AgentJev")
                 else "decider" if name.startswith("decider")
                 else "openthai" if name.startswith("OpenThai")
+                else "or-kev" if name == "Kev 4B (OpenRouter)"
                 else "jev" if name == "Jev" else None)
-        if kind is None:   # unmapped names must never reach the cloud API
+        if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
         run_task = classify_batched(kind, repo=repo)
         for task in ("sentiment", "topic"):
