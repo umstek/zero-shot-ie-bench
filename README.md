@@ -300,6 +300,12 @@ reconstructed from list prices. Measured on these exact runs (one pass;
 | cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
 | Jev (cloud) | — | — | not reported ‡ |
 
+The cost charts below plot the **metered** systems only — free-tier
+models bill $0 (Span-01 Lite is priced $0.0 on its plain id, identical
+to its `:free` twin, and Nemotron is benched on the `:free` variant),
+so they stay in this table but never on a cost axis; Jev is off it too
+(‡ no reported cost).
+
 Three things the measurements say that the price lists don't: Cohere
 bills ~2.5 search units per rerank request at 5-6 label documents, so a
 48-question run on 4-pro costs $0.12, not the naive 48 × $0.001; kev-4b
@@ -319,9 +325,9 @@ images (regenerate after re-running the benchmarks with
 
 ![Speed vs accuracy — up and left is better](docs/charts/cls_tradeoff.png)
 
-![Cost vs accuracy, hosted systems — up and left is better](docs/charts/cls_cost.png)
+![Cost vs accuracy, metered hosted systems — up and left is better](docs/charts/cls_cost.png)
 
-![Measured cost per question, hosted systems (ranked)](docs/charts/cls_cost_bars.png)
+![Measured cost per question, metered hosted systems (ranked)](docs/charts/cls_cost_bars.png)
 
 ![Accuracy vs question difficulty](docs/charts/cls_spectrum.png)
 

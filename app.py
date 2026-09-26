@@ -271,17 +271,17 @@ _COST_W, _COST_H = 860, 420
 
 
 def cost_scatter(df: pd.DataFrame, title: str):
-    """Accuracy vs measured cost per question for the hosted systems (the
-    rows that carry a usage block; local systems cost $0 by construction
-    and never appear). Runs that measured $0.00 — free tiers — pin to the
-    log-axis floor at the left edge. Labels are placed by a greedy
-    pixel-space collision search (est. 6.5 px/char, same yardstick as the
-    tradeoff packer): left-aligned off the marker, flipping side and dy
-    until clear of every other marker and placed label, so near-coincident
-    pairs (Span-01 / Kev 4B at ~1e-6) and vertical neighbors (cohere
-    v3.5 under 4-fast) both resolve. Display names drop the "
-    (OpenRouter)" suffix — redundant on an all-OpenRouter chart and 85 px
-    the right edge can't spare; tooltips keep the full system name."""
+    """Accuracy vs measured cost per question for the metered hosted
+    systems (callers filter to usage-reported cost > 0; free tiers and
+    unreported-cost systems stay off a cost axis). Labels are placed by a
+    greedy pixel-space collision search (est. 6.5 px/char, same yardstick
+    as the tradeoff packer): left-aligned off the marker, flipping side
+    and dy until clear of every other marker and placed label, so
+    near-coincident pairs (Span-01 / Kev 4B at ~1e-6) and vertical
+    neighbors (cohere v3.5 under 4-fast) both resolve. Display names drop
+    the " (OpenRouter)" suffix — redundant on an all-OpenRouter chart and
+    85 px the right edge can't spare; tooltips keep the full system
+    name."""
     floor = 1e-7  # $0.0000001/question: a decade below the cheapest paid tier
     plot = df.copy()
     plot["$ per question"] = plot["$ per question"].clip(lower=floor)
@@ -339,8 +339,7 @@ def cost_scatter(df: pd.DataFrame, title: str):
         .mark_circle(size=90)
         .encode(
             x=alt.X("$ per question:Q", scale=xscale,
-                    title="Measured cost per question, $ (log; $0 "
-                          "measured pinned at left edge)"),
+                    title="Measured cost per question, $ (log)"),
             y=alt.Y("Accuracy %:Q", scale=yscale, title="Accuracy %"),
             tooltip=[alt.Tooltip("System:N"),
                      alt.Tooltip("Accuracy %:Q", format=".1f"),
@@ -362,11 +361,10 @@ def cost_scatter(df: pd.DataFrame, title: str):
 
 
 def cost_bars(df: pd.DataFrame, title: str):
-    """Measured cost per classification question, ranked cheapest-first.
-    Log axis; free tiers that measured $0 pin to the same floor the
-    scatter uses and print "$0 (free tier)", paid tiers print scientific
-    notation. Jev never appears — its provider reports tokens but no
-    cost (COST_UNREPORTED)."""
+    """Measured cost per classification question, ranked cheapest-first,
+    for the metered hosted systems (free tiers stay off a cost axis).
+    Log axis; the floor clip is a guard in case a $0 row ever slips
+    through, printing "$0 (free tier)"."""
     floor = 1e-7
     plot = df.copy()
     vals = plot["$ per question"].clip(lower=floor)
@@ -382,7 +380,7 @@ def cost_bars(df: pd.DataFrame, title: str):
         .mark_bar()
         .encode(
             y=alt.Y("System:N", sort=order, title=None,
-                    axis=alt.Axis(labelFontSize=12)),
+                    axis=alt.Axis(labelFontSize=12, labelLimit=280)),
             x=alt.X("_v:Q", scale=xscale,
                     title="Measured cost per question, $ (log)",
                     axis=alt.Axis(format=".0e")),
@@ -521,19 +519,24 @@ def build_classification_tab():
                      label="Measured provider accounting for the hosted "
                            "systems (usage blocks in API responses; Jev's "
                            "provider reports tokens but no cost)")
+        # the cost charts carry metered systems only: $0 free tiers
+        # (Span-01 Lite, Nemotron) and Jev's unreported cost stay in the
+        # table above but not on a cost axis
         cost_summary = pd.DataFrame([
             {"System": s,
              "Accuracy %": round(v["cls_accuracy"] * 100, 1),
              "$ per question": v["usage"]["cost_usd"] / n_q}
             for s, v in hosted.items()
-            if s not in COST_UNREPORTED])
+            if s not in COST_UNREPORTED and v["usage"]["cost_usd"] > 0])
         if len(cost_summary):
             gr.Plot(cost_scatter(
                 cost_summary,
-                "Cost vs accuracy, hosted systems — up and left is better"))
+                "Cost vs accuracy, metered hosted systems — up and left "
+                "is better"))
             gr.Plot(cost_bars(
                 cost_summary,
-                "Measured cost per question, hosted systems (ranked)"))
+                "Measured cost per question, metered hosted systems "
+                "(ranked)"))
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []

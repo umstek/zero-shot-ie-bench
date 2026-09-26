@@ -54,9 +54,12 @@ def spectrum_charts(bench):
             summary, "Speed vs accuracy — up and left is better"),
     }
 
+    # metered systems only: $0 free tiers (Span-01 Lite, Nemotron) and
+    # Jev's unreported cost stay out of a cost chart
     hosted = {s: v for s, v in systems.items()
               if isinstance(v.get("usage"), dict)
               and v["usage"].get("paid_requests")
+              and v["usage"]["cost_usd"] > 0
               and s not in COST_UNREPORTED}
     if hosted:
         cost_summary = pd.DataFrame([
@@ -66,10 +69,11 @@ def spectrum_charts(bench):
             for s, v in hosted.items()])
         charts["cls_cost"] = cost_scatter(
             cost_summary,
-            "Cost vs accuracy, hosted systems — up and left is better")
+            "Cost vs accuracy, metered hosted systems — up and left "
+            "is better")
         charts["cls_cost_bars"] = cost_bars(
             cost_summary,
-            "Measured cost per question, hosted systems (ranked)")
+            "Measured cost per question, metered hosted systems (ranked)")
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []
