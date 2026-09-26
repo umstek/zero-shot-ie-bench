@@ -7,6 +7,8 @@ and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints) — demoed, benchmarked, and
 cross-compared in one repo with a web UI.
 
+Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**.
+
 | System | Kind | Size | License | Cost |
 |---|---|---|---|---|
 | [GLiNER 2.5](https://github.com/fastino-ai/GLiNER2) (`fastino/gliner2.5-*`) | local extractor encoder (boundary arch) | 74M / 194M / 287M | Apache 2.0 | $0 · local |
@@ -224,6 +226,8 @@ batches each 24-question task into one request, Span's payloads are
 tiny. Not benched on OpenRouter on purpose: `typesafe/jev-1.13`
 (RBAC-gated; Jev measured via TypeSafe directly) and
 `typesafe/jev-router` (a chat router, not a typed-decision endpoint).
+
+### Benchmark charts
 
 The web UI renders these as interactive charts; the same charts, as
 images (regenerate with `python make_chart_images.py`):
