@@ -15,8 +15,9 @@ import os
 import pandas as pd
 
 import app
-from app import (accuracy_heatmap, hbar_chart, hbar_chart_labeled,
-                 spectrum_line, tradeoff_scatter)
+from app import (COST_UNREPORTED, accuracy_heatmap, cost_scatter,
+                 hbar_chart, hbar_chart_labeled, spectrum_line,
+                 tradeoff_scatter)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                    "docs", "charts")
@@ -52,6 +53,20 @@ def spectrum_charts(bench):
         "cls_tradeoff": tradeoff_scatter(
             summary, "Speed vs accuracy — up and left is better"),
     }
+
+    hosted = {s: v for s, v in systems.items()
+              if isinstance(v.get("usage"), dict)
+              and v["usage"].get("paid_requests")
+              and s not in COST_UNREPORTED}
+    if hosted:
+        cost_summary = pd.DataFrame([
+            {"System": s,
+             "Accuracy %": round(v["cls_accuracy"] * 100, 1),
+             "$ per question": v["usage"]["cost_usd"] / n_q}
+            for s, v in hosted.items()])
+        charts["cls_cost"] = cost_scatter(
+            cost_summary,
+            "Cost vs accuracy, hosted systems — up and left is better")
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []

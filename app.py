@@ -125,6 +125,10 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
 
 _SCATTER_W, _SCATTER_H = 980, 660  # 38 systems; grew from 860x520 (28)
 
+# providers whose usage block reports tokens but no cost — no measured $
+# figure exists for these, so they stay off the cost chart (Jev/TypeSafe)
+COST_UNREPORTED = {"Jev"}
+
 
 def _scatter_label_layers(df: pd.DataFrame):
     """Split points into (dy, side, sub-frame) label groups so labels of
@@ -263,6 +267,100 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
         width=_SCATTER_W, height=_SCATTER_H)
 
 
+_COST_W, _COST_H = 860, 420
+
+
+def cost_scatter(df: pd.DataFrame, title: str):
+    """Accuracy vs measured cost per question for the hosted systems (the
+    rows that carry a usage block; local systems cost $0 by construction
+    and never appear). Runs that measured $0.00 — free tiers — pin to the
+    log-axis floor at the left edge. Labels are placed by a greedy
+    pixel-space collision search (est. 6.5 px/char, same yardstick as the
+    tradeoff packer): left-aligned off the marker, flipping side and dy
+    until clear of every other marker and placed label, so near-coincident
+    pairs (Span-01 / Kev 4B at ~1e-6) and vertical neighbors (cohere
+    v3.5 under 4-fast) both resolve. Display names drop the "
+    (OpenRouter)" suffix — redundant on an all-OpenRouter chart and 85 px
+    the right edge can't spare; tooltips keep the full system name."""
+    floor = 1e-7  # $0.0000001/question: a decade below the cheapest paid tier
+    plot = df.copy()
+    plot["$ per question"] = plot["$ per question"].clip(lower=floor)
+    dmax = float(plot["$ per question"].max()) * 6  # right-side label room
+    xscale = alt.Scale(type="log", domain=[floor, dmax])
+    yscale = alt.Scale(domain=[0, 100])
+    log_span = math.log10(dmax) - math.log10(floor)
+
+    def px(v: float) -> float:
+        return (math.log10(v) - math.log10(floor)) / log_span * _COST_W
+
+    plot["Label"] = plot["System"].str.replace(" (OpenRouter)", "",
+                                               regex=False)
+    plot["_side"], plot["_dy"] = "right", -13
+    pts = [(px(row["$ per question"]),
+            (100 - row["Accuracy %"]) / 100 * _COST_H,
+            row["Label"])
+           for _, row in plot.iterrows()]
+    # every marker is an obstacle for every label (radius ~5.4 px, padded);
+    # placed labels block later ones too
+    markers = [(x - 7, x + 7, y - 7, y + 7) for x, y, _ in pts]
+    placed: list[tuple] = []
+
+    def collisions(box, obstacles):
+        return sum(1 for b in obstacles
+                   if box[0] - 2 < b[1] and box[1] + 2 > b[0]
+                   and box[2] - 1 < b[3] and box[3] + 1 > b[2])
+
+    assign = []
+    for i, (x, y, label) in enumerate(pts):
+        w = 6.5 * len(label)
+        cands = []
+        for side in ("right", "left"):
+            x0 = x + 11 if side == "right" else x - 11 - w
+            if x0 < 2 or x0 + w > _COST_W + 40:
+                continue  # would run off the canvas edge
+            for dy in (-13, 13, -30, 30):
+                cands.append((side, x0, x0 + w, dy))
+        if not cands:  # pathological: squeeze in on the right regardless
+            cands = [("right", x + 11, x + 11 + w, -13)]
+        obstacles = markers[:i] + markers[i + 1:] + placed
+        chosen = next(
+            (c for c in cands
+             if collisions((c[1], c[2], y + c[3] - 8, y + c[3] + 6),
+                           obstacles) == 0),
+            # never drop a label: take the least-colliding spot
+            min(cands, key=lambda c: collisions(
+                (c[1], c[2], y + c[3] - 8, y + c[3] + 6), obstacles)))
+        side, x0, x1, dy = chosen
+        placed.append((x0, x1, y + dy - 8, y + dy + 6))
+        assign.append((side, dy))
+        plot.loc[i, "_side"], plot.loc[i, "_dy"] = side, dy
+    layers = [
+        alt.Chart(plot, title=title)
+        .mark_circle(size=90)
+        .encode(
+            x=alt.X("$ per question:Q", scale=xscale,
+                    title="Measured cost per question, $ (log; $0 "
+                          "measured pinned at left edge)"),
+            y=alt.Y("Accuracy %:Q", scale=yscale, title="Accuracy %"),
+            tooltip=[alt.Tooltip("System:N"),
+                     alt.Tooltip("Accuracy %:Q", format=".1f"),
+                     alt.Tooltip("$ per question:Q", format=".7f")],
+        )
+    ]
+    for side, dy in sorted(set(assign)):
+        sub = plot[(plot["_side"] == side) & (plot["_dy"] == dy)]
+        layers.append(
+            alt.Chart(sub)
+            .mark_text(align="left" if side == "right" else "right",
+                       dx=11 if side == "right" else -11, dy=int(dy),
+                       fontSize=10)
+            .encode(x=alt.X("$ per question:Q", scale=xscale),
+                    y=alt.Y("Accuracy %:Q", scale=yscale),
+                    text="Label:N"))
+    return alt.layer(*layers).interactive().properties(
+        width=_COST_W, height=_COST_H)
+
+
 def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
     """Accuracy across the measured difficulty range, one line per system.
     Lines also carry per-system dash patterns: systems that agree on a
@@ -366,6 +464,34 @@ def build_classification_tab():
                        "seconds", descending=False))
     gr.Plot(tradeoff_scatter(summary, "Speed vs accuracy — up and left "
                                       "is better"))
+
+    hosted = {s: v for s, v in systems.items()
+              if isinstance(v.get("usage"), dict)
+              and v["usage"].get("paid_requests")}
+    if hosted:
+        cost_rows = [[s,
+                      "not reported" if s in COST_UNREPORTED
+                      else f"${v['usage']['cost_usd']:.4f}",
+                      v["usage"]["paid_requests"],
+                      v["usage"].get("input_tokens", 0)]
+                     for s, v in hosted.items()]
+        gr.DataFrame(cost_rows,
+                     headers=["System", "Measured cost, whole run",
+                              "Paid requests", "Input tokens"],
+                     datatype=["str", "str", "number", "number"],
+                     label="Measured provider accounting for the hosted "
+                           "systems (usage blocks in API responses; Jev's "
+                           "provider reports tokens but no cost)")
+        cost_summary = pd.DataFrame([
+            {"System": s,
+             "Accuracy %": round(v["cls_accuracy"] * 100, 1),
+             "$ per question": v["usage"]["cost_usd"] / n_q}
+            for s, v in hosted.items()
+            if s not in COST_UNREPORTED])
+        if len(cost_summary):
+            gr.Plot(cost_scatter(
+                cost_summary,
+                "Cost vs accuracy, hosted systems — up and left is better"))
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []
