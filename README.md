@@ -591,6 +591,7 @@ in the tables above now. The remaining trial results:
 | `engines/von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
+| `engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
