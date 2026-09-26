@@ -5,7 +5,7 @@ pngwn/nanodiff-350m-typed-decisions-lam1 (350M) is a bidirectional diffusion
 LM - the only non-autoregressive system in this repo: the answer-letter slot
 is the only [MASK]ed token and ONE bidirectional forward scores every
 option (softmax restricted to the option-letter token ids); no decoding
-loop, no generation. Inference goes through the vendored nanodiff_engine/
+loop, no generation. Inference goes through the vendored engines/nanodiff_engine/
 (MIT; NanoDiff model class from BY571/nanoDiff plus the release's typed-
 decision format). Slow on CPU (~10 s/question) - kept as the diffusion
 datapoint.
@@ -13,11 +13,11 @@ datapoint.
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    .venv/Scripts/python nanodiff_demo.py
+    .venv/Scripts/python demos/nanodiff_demo.py
 
 Web-UI runner (the app's nanodiff tab spawns this like von_demo.py and
 talks JSON over stdin/stdout):
-    .venv/Scripts/python nanodiff_demo.py --serve
+    .venv/Scripts/python demos/nanodiff_demo.py --serve
     stdin:  {"texts": [str, ...], "task": str, "labels": [str, ...]}
     stdout: {"results": [{"choice": str | None,
                           "probabilities": {label: float}}, ...]}
@@ -25,6 +25,10 @@ talks JSON over stdin/stdout):
 """
 
 from __future__ import annotations
+
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 
 import json
 import sys
@@ -61,18 +65,18 @@ def timed(fn, *args, **kwargs):
 def _alias_vendored_nanodiff() -> None:
     """The checkpoint pickle stores its config objects under the upstream
     module name 'nanodiff' (BY571/nanoDiff); the vendored copy lives in
-    nanodiff_engine.nanodiff. Register it under the expected name so
+    engines.nanodiff_engine.nanodiff. Register it under the expected name so
     torch.load resolves the classes (same objects, no import hack inside
     the vendored engine)."""
-    import nanodiff_engine.nanodiff as vendored
-    import nanodiff_engine.nanodiff.config as vendored_config
+    import engines.nanodiff_engine.nanodiff as vendored
+    import engines.nanodiff_engine.nanodiff.config as vendored_config
 
     sys.modules.setdefault("nanodiff", vendored)
     sys.modules.setdefault("nanodiff.config", vendored_config)
 
 
 def load():
-    from nanodiff_engine.runner import load_model
+    from engines.nanodiff_engine.runner import load_model
 
     _alias_vendored_nanodiff()
     t0 = time.perf_counter()
@@ -84,7 +88,7 @@ def load():
 
 def decide_one(model, text: str, question: str, labels: list[str]) -> dict:
     """One masked bidirectional forward; softmax over option letters."""
-    from nanodiff_engine.runner import predict
+    from engines.nanodiff_engine.runner import predict
 
     choice, probs = predict(model, text, question, labels, "cpu")
     return {"choice": choice, "probabilities": probs}
@@ -146,8 +150,8 @@ def tour() -> None:
     show(row["probabilities"])
 
     print("\nDone. Same texts through the autoregressive decision engines:  "
-          ".venv/Scripts/python certo_demo.py / "
-          ".venv-von/Scripts/python mojev_demo.py\n")
+          ".venv/Scripts/python demos/certo_demo.py / "
+          ".venv-von/Scripts/python demos/mojev_demo.py\n")
 
 
 def main() -> None:

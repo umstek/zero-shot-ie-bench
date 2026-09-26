@@ -10,6 +10,10 @@ stdout: {"results": [{"choice": str, "probabilities": {label: float},
         or {"error": "Type: message"}
 """
 
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+
 import json
 import sys
 
@@ -17,7 +21,7 @@ import sys
 def main() -> None:
     payload = json.loads(sys.stdin.read())
     try:
-        from von_client import load_von_decider
+        from engines.von_client import load_von_decider
 
         decide = load_von_decider()
         results = []

@@ -8,13 +8,13 @@ import unittest
 
 class VonPipeTests(unittest.TestCase):
     def test_non_ascii_choices_round_trip_through_windows_code_page(self):
-        helper = Path(__file__).resolve().parents[1] / "von_demo.py"
+        helper = Path(__file__).resolve().parents[1] / "demos" / "von_demo.py"
         script = """
 import runpy, sys, types
 def decide(**kw):
     label = next(iter(kw['choices']))
     return types.SimpleNamespace(choice=label, probabilities={label: 1.0}, confidence=1.0)
-sys.modules['von_client'] = types.SimpleNamespace(load_von_decider=lambda: decide)
+sys.modules['engines.von_client'] = types.SimpleNamespace(load_von_decider=lambda: decide)
 runpy.run_path(sys.argv[1], run_name='__main__')
 """
         for label in ("你好", "හොඳයි"):

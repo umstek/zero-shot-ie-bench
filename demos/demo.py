@@ -15,10 +15,10 @@ second-best local classifier and still NER-capable.
 Docs: https://github.com/fastino-ai/GLiNER2
 
 Run:
-    python demo.py                 # base checkpoint (194M, English)
-    python demo.py --model small   # 74M, fastest on CPU
-    python demo.py --model multi   # 287M, multilingual
-    python demo.py --model decide  # 340M decision-tuned sibling
+    python demos/demo.py                 # base checkpoint (194M, English)
+    python demos/demo.py --model small   # 74M, fastest on CPU
+    python demos/demo.py --model multi   # 287M, multilingual
+    python demos/demo.py --model decide  # 340M decision-tuned sibling
 """
 
 from __future__ import annotations

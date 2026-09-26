@@ -5,17 +5,17 @@ state, question and every candidate value are packed under one tree
 attention mask (Qwen3.5 encoder with fla linear-attention kernels) and one
 forward pass returns a calibrated probability per candidate. The scorer
 class ships inside the HF repo and loads via trust_remote_code; the request
-path is adapted in the vendored mojev_engine/ (MIT). It needs transformers
+path is adapted in the vendored engines/mojev_engine/ (MIT). It needs transformers
 5.17 for the Qwen3.5 encoder, so it lives in .venv-von, not the main venv.
 
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    .venv-von/Scripts/python mojev_demo.py
+    .venv-von/Scripts/python demos/mojev_demo.py
 
 Web-UI runner (the app's MoJev tab spawns this like jevk5_demo.py and
 talks JSON over stdin/stdout):
-    .venv-von/Scripts/python mojev_demo.py --serve
+    .venv-von/Scripts/python demos/mojev_demo.py --serve
     stdin:  {"texts": [str, ...], "task": str, "labels": [str, ...]}
     stdout: {"results": [{"choice": str | None,
                           "probabilities": {label: float},
@@ -24,6 +24,10 @@ talks JSON over stdin/stdout):
 """
 
 from __future__ import annotations
+
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 
 import json
 import sys
@@ -76,7 +80,7 @@ def decide_one(score, text: str, task: str, labels: list[str]) -> dict:
 def serve() -> None:
     payload = json.loads(sys.stdin.read())
     try:
-        from mojev_engine import load_engine
+        from engines.mojev_engine import load_engine
 
         score, _ = load_engine("cpu")
         results = [decide_one(score, text, payload["task"],
@@ -95,7 +99,7 @@ def tour() -> None:
 
     print("Loading MoLeMo-Lab/mojev (0.85B Qwen3.5 encoder via "
           "trust_remote_code; first run downloads the checkpoint)...")
-    from mojev_engine import load_engine
+    from engines.mojev_engine import load_engine
 
     t0 = time.perf_counter()
     score, _ = load_engine("cpu")
@@ -124,8 +128,8 @@ def tour() -> None:
     show(row["probabilities"])
 
     print("\nDone. Same texts through the other decision engines:  "
-          ".venv/Scripts/python certo_demo.py / "
-          ".venv-von/Scripts/python jevk5_demo.py\n")
+          ".venv/Scripts/python demos/certo_demo.py / "
+          ".venv-von/Scripts/python demos/jevk5_demo.py\n")
 
 
 def main() -> None:

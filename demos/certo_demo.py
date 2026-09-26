@@ -4,16 +4,20 @@ altslate/certo-decision-model (421M) is a calibrated non-generative decision
 model: a ModernBERT-large backbone with a per-option query/scoring head that
 encodes the state once and scores every runtime option from its own text
 description in one forward pass - no text generation, nothing to parse.
-Inference goes through the vendored certo_engine/ (MIT; card documents no
+Inference goes through the vendored engines/certo_engine/ (MIT; card documents no
 PyPI package), so only huggingface_hub + transformers are needed.
 
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    .venv/Scripts/python certo_demo.py
+    .venv/Scripts/python demos/certo_demo.py
 """
 
 from __future__ import annotations
+
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 
 import sys
 import time
@@ -69,7 +73,7 @@ def main() -> None:
 
     from huggingface_hub import snapshot_download
 
-    from certo_engine import DecisionModel
+    from engines.certo_engine import DecisionModel
 
     print("Loading altslate/certo-decision-model (421M; first run downloads "
           "the checkpoint)...")
@@ -112,8 +116,8 @@ def main() -> None:
         print(f'  {res["top"]:<10} {probs}  "{text[:44]}"')
 
     print("\nDone. Same texts through the rerankers and the packed scorer:  "
-          ".venv/Scripts/python reranker_demo.py / "
-          ".venv-von/Scripts/python mojev_demo.py\n")
+          ".venv/Scripts/python demos/reranker_demo.py / "
+          ".venv-von/Scripts/python demos/mojev_demo.py\n")
 
 
 if __name__ == "__main__":

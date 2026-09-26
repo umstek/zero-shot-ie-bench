@@ -31,7 +31,7 @@ SAMPLE_TEXT = (
     "Alice works for Acme in Paris."
 )
 BENCH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          "bench_results.json")
+                          "results", "bench_results.json")
 
 
 def parse_labels(csv: str) -> list[str]:
@@ -56,7 +56,7 @@ def tile_highlights(text: str, spans: list[tuple[int, int, str]]):
 
 # --------------------------------------------------------------- Jev pieces
 def get_jev_client():
-    from jev_client import JevClient
+    from engines.jev_client import JevClient
 
     return JevClient()
 
@@ -384,7 +384,7 @@ def build_classification_tab():
 
     gr.Markdown("#### Determinism\nThe seven flat-suite systems were "
                 "measured 5x in `bench.py`: **100% output-stable** on "
-                "every repeat. Details: bench_results.json.")
+                "every repeat. Details: results/bench_results.json.")
 
 
 # ----------------------------------------------------- extraction bench tab
@@ -546,7 +546,7 @@ def build_laya_tab():
         def run_laya(texts_block, labels_csv, task_word):
             import laya
 
-            from jev_client import choice
+            from engines.jev_client import choice
 
             texts = [line.strip() for line in texts_block.splitlines()
                      if line.strip()]
@@ -613,7 +613,7 @@ benchmark tabs.
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT |
-| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and 3.4x the next-slowest latency |
+| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and 3.4x the next-slowest latency |
 
 Three benchmark tabs follow from this table: **Classification** (every
 system, one mixed pool), **Extraction** (the six span-producing systems)
@@ -808,7 +808,7 @@ def build_jev_tab():
                                   "probabilities) + usage")
 
         def run_jev(texts_block, labels_csv, task):
-            from jev_client import choice
+            from engines.jev_client import choice
 
             texts = [line.strip() for line in texts_block.splitlines()
                      if line.strip()]
@@ -916,7 +916,7 @@ def build_von_tab():
                     "396M ModernBERT with its trained option-marker head, "
                     "Apache 2.0. It needs transformers 5, "
                     "so the app runs it in a separate venv (`.venv-von`): "
-                    "each click spawns `von_demo.py`, which loads the model "
+                    "each click spawns `demos/von_demo.py`, which loads the model "
                     "once and answers every line in that single process. "
                     "Install `requirements-von.txt` in that environment; "
                     "first use downloads the complete trained checkpoint.")
@@ -945,7 +945,7 @@ def build_von_tab():
             if not texts or not choices:
                 return {"error": "provide text lines and choices"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "von_demo.py")
+                os.path.abspath(__file__)), "demos", "von_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper],
@@ -976,7 +976,7 @@ def build_jevk5_tab():
                     "jevk5 project: one forward pass scores every label "
                     "of every head with calibrated probabilities. It "
                     "needs transformers 5.17, so the app runs it in "
-                    "`.venv-von`: each click spawns `jevk5_demo.py "
+                    "`.venv-von`: each click spawns `demos/jevk5_demo.py "
                     "--serve`, which loads the model once and answers "
                     "every line in that single process (install "
                     "`jevk5[lite]` + `jsonschema` there — see README).")
@@ -1003,7 +1003,7 @@ def build_jevk5_tab():
                 return {"error": "provide at least two distinct labels "
                                  "(jevk5 rejects a label set of one)"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "jevk5_demo.py")
+                os.path.abspath(__file__)), "demos", "jevk5_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper, "--serve"],
@@ -1031,12 +1031,12 @@ def build_lfm_tab():
         gr.Markdown("### LFM2.5-RLCD 350M — constrained-decoding decision "
                     "engine\n"
                     "RLCD-trained LiquidAI LFM2.5-350M; the vendored "
-                    "`rlcd_engine/` prefills the context once, then scores "
+                    "`engines/rlcd_engine/` prefills the context once, then scores "
                     "every field's candidate values in one batched branch "
                     "pass and assembles the JSON from the argmax "
                     "likelihoods. It needs transformers 5.17 + "
                     "`jsonschema`, so the app runs it in `.venv-von`: "
-                    "each click spawns `lfm_rlcd_demo.py --serve`, which "
+                    "each click spawns `demos/lfm_rlcd_demo.py --serve`, which "
                     "loads the model once and answers every line in that "
                     "single process (see README).")
         lfm_text = gr.Textbox(
@@ -1066,7 +1066,7 @@ def build_lfm_tab():
                 return {"error": "at most 12 values (each is a separate "
                                  "constrained-decoding branch)"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "lfm_rlcd_demo.py")
+                os.path.abspath(__file__)), "demos", "lfm_rlcd_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper, "--serve"],
@@ -1162,7 +1162,7 @@ def get_certo_model():
     if _CERTO_MODEL is None:
         from huggingface_hub import snapshot_download
 
-        from certo_engine import DecisionModel
+        from engines.certo_engine import DecisionModel
 
         _CERTO_MODEL = DecisionModel.load(
             snapshot_download("altslate/certo-decision-model"), device="cpu")
@@ -1177,7 +1177,7 @@ def build_certo_tab():
                     "A ModernBERT-large backbone that encodes the state "
                     "once and scores every runtime option from its own "
                     "text description in one forward pass (vendored "
-                    "`certo_engine/`, MIT; no generation). In-process in "
+                    "`engines/certo_engine/`, MIT; no generation). In-process in "
                     "the main venv; first click loads the checkpoint. "
                     "Chance-level here (22.9%) as on JevBench — kept as "
                     "the census row.")
@@ -1226,7 +1226,7 @@ def build_mojev_tab():
                     "forward pass scores all candidates. Its scorer class "
                     "loads via trust_remote_code and needs transformers "
                     "5.17, so the app runs it in `.venv-von`: each click "
-                    "spawns `mojev_demo.py --serve`, which loads the model "
+                    "spawns `demos/mojev_demo.py --serve`, which loads the model "
                     "once and answers every line in that single process "
                     "(see README).")
         mj_text = gr.Textbox(
@@ -1251,7 +1251,7 @@ def build_mojev_tab():
             if len(set(labels)) < 2:
                 return {"error": "provide at least two distinct candidates"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "mojev_demo.py")
+                os.path.abspath(__file__)), "demos", "mojev_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper, "--serve"],
@@ -1284,9 +1284,9 @@ def build_nanodiff_tab():
                     "pngwn/nanodiff-350m-typed-decisions-lam1: the "
                     "answer-letter slot is the only [MASK]ed token and one "
                     "bidirectional forward scores every option (vendored "
-                    "`nanodiff_engine/`, MIT) — the only non-autoregressive "
+                    "`engines/nanodiff_engine/`, MIT) — the only non-autoregressive "
                     "system here. Runs in the main venv (tiktoken); the tab "
-                    "spawns `nanodiff_demo.py --serve`, which loads the "
+                    "spawns `demos/nanodiff_demo.py --serve`, which loads the "
                     "checkpoint once per click. Slow on CPU (~10 "
                     "s/question) — the diffusion datapoint, chance-level "
                     "at 350M.")
@@ -1316,7 +1316,7 @@ def build_nanodiff_tab():
                 return {"error": "at most 10 options (option-letter token "
                                  "ids A-J in the released format)"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "nanodiff_demo.py")
+                os.path.abspath(__file__)), "demos", "nanodiff_demo.py")
             try:
                 proc = subprocess.run(
                     [MAIN_PY, helper, "--serve"],

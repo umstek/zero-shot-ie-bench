@@ -28,8 +28,8 @@ Fairness notes
   - Laya needs string instructions (dict instructions collapse it onto one
     label - verified before benchmarking).
 
-Output: bench_results.json (flat-suite numbers, incl. determinism,
-cited by app.py's Classification benchmark tab).
+Output: results/bench_results.json (flat-suite numbers, incl.
+determinism, cited by app.py's Classification benchmark tab).
 """
 
 from __future__ import annotations
@@ -40,6 +40,9 @@ import os
 import statistics
 import sys
 import time
+
+RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "results", "bench_results.json")
 
 SENTIMENT_LABELS = {
     "positive": "Text expresses a clearly positive attitude",
@@ -250,7 +253,7 @@ def run_laya(cls_tasks, repeats: int):
     its native batched mode, symmetric with Jev's batching."""
     import laya
 
-    from jev_client import choice
+    from engines.jev_client import choice
 
     agent = laya.load("convaiinnovations/laya")
     results = {}
@@ -281,7 +284,7 @@ def run_laya(cls_tasks, repeats: int):
 
 
 def run_jev(cls_tasks, repeats: int):
-    from jev_client import JevClient
+    from engines.jev_client import JevClient
 
     client = JevClient()
     results = {}
@@ -414,10 +417,10 @@ def main() -> None:
         out["ner"][name] = {"precision": p, "recall": r, "f1": f1,
                             **res["ner"]}
 
-    tmp = "bench_results.json.tmp"
+    tmp = RESULTS_FILE + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
-    os.replace(tmp, "bench_results.json")
+    os.replace(tmp, RESULTS_FILE)
 
     print(f"\n=== Classification accuracy | stability over {args.repeats} "
           "runs ===")
@@ -430,7 +433,7 @@ def main() -> None:
     for name, m in out["ner"].items():
         print(f"  {name:<18} F1={m['f1']:.2f}  stable={m['stability'] * 100:.0f}%"
               f"  lat={m['mean_latency_s']}±{m['latency_std_s']}s")
-    print("\nWrote bench_results.json")
+    print(f"\nWrote {RESULTS_FILE}")
 
 
 if __name__ == "__main__":

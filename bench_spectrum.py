@@ -35,7 +35,7 @@ Verdict 151M runs in-process from the Verdict-open-jev checkout
     C:/venvs/agent-jev/Scripts/python bench_spectrum.py \
         --system "Verdict 151M (local)"
 
-Output: bench_spectrum_results.json
+Output: results/bench_spectrum_results.json
 """
 
 from __future__ import annotations
@@ -50,7 +50,8 @@ import time
 from bench import NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, spans_of
 from bench_graded import NER, SENTIMENT, TOPIC
 
-RESULTS_FILE = "bench_spectrum_results.json"
+RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "results", "bench_spectrum_results.json")
 
 # fixed question order: sentiment pool then topic pool then NER pool
 CLS_QUESTIONS = (
@@ -149,7 +150,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
     if client_kind == "laya":
         import laya
 
-        from jev_client import choice
+        from engines.jev_client import choice
 
         agent = laya.load(repo)
 
@@ -163,7 +164,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
     elif client_kind in SYSTEMONE_LOCAL_PORTS:
-        from jev_client import JevClient, choice
+        from engines.jev_client import JevClient, choice
 
         client = JevClient(
             base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
@@ -186,7 +187,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
     elif client_kind == "agentjev":
-        from agentjev_client import ask
+        from engines.agentjev_client import ask
 
         def run_task(task: str, texts: list[str]) -> list:
             questions = {
@@ -197,7 +198,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya"):
             out = ask({"task": task}, questions)
             return [out[f"t{i}"]["value"] for i in range(len(texts))]
     elif client_kind == "jev":
-        from jev_client import JevClient
+        from engines.jev_client import JevClient
 
         client = JevClient()
 
@@ -248,12 +249,12 @@ def classify_reranker(repo: str):
 
 def classify_certo():
     """Certo 421M: calibrated non-generative decision model (vendored
-    certo_engine/, card documents no PyPI package). One forward pass scores
+    engines/certo_engine/, card documents no PyPI package). One forward pass scores
     each label description against the state; argmax = decision. Classification
     only - fixed option lists in, one label out, no span extraction."""
     from huggingface_hub import snapshot_download
 
-    from certo_engine import DecisionModel
+    from engines.certo_engine import DecisionModel
 
     model = DecisionModel.load(
         snapshot_download("altslate/certo-decision-model"), device="cpu")
@@ -311,7 +312,7 @@ def main() -> None:
             cls_lat.append(time.perf_counter() - t1)
     elif name == "Certo 421M":
         # in-process decision head over a ModernBERT-large backbone
-        # (vendored certo_engine/); classification only - no span
+        # (vendored engines/certo_engine/); classification only - no span
         # extraction, so no NER answers
         cls_one = classify_certo()
         for q in CLS_QUESTIONS:
@@ -364,7 +365,7 @@ def main() -> None:
             # abstaining answers nothing: wrong against any gold label
             cls_preds.append(None if res.is_abstention else res.selected_id)
     elif name == "von":
-        from von_client import load_von_decider
+        from engines.von_client import load_von_decider
 
         decide = load_von_decider()
 
@@ -394,12 +395,12 @@ def main() -> None:
             cls_preds.append(out["task"]["labels"][0]
                              if out["task"]["labels"] else None)
     elif name == "LFM2.5-RLCD 350M":
-        # in-process constrained-decision engine (vendored rlcd_engine/),
+        # in-process constrained-decision engine (vendored engines/rlcd_engine/),
         # run under the .venv-von python (transformers 5.17 + jsonschema);
         # classification only - the supported schema subset (flat
         # boolean/string-enum fields) cannot express span extraction, so
         # no NER answers
-        from rlcd_engine.engine import Engine
+        from engines.rlcd_engine.engine import Engine
 
         engine = Engine(device="cpu", dtype="float32")
         FIELD_DESC = {"sentiment": "The overall sentiment of the text",
@@ -425,10 +426,10 @@ def main() -> None:
                 cls_preds.append(None)
     elif name == "MoJev 0.85B":
         # in-process packed one-pass decision scorer (vendored
-        # mojev_engine/), run under the .venv-von python (transformers 5.17
+        # engines/mojev_engine/), run under the .venv-von python (transformers 5.17
         # for the Qwen3.5 encoder); classification only - fixed candidate
         # menus in, one label out, no span extraction, so no NER answers
-        from mojev_engine import load_engine
+        from engines.mojev_engine import load_engine
 
         score, _ = load_engine("cpu")
         QUESTION = {"sentiment": "What is the overall sentiment of this "
@@ -443,13 +444,13 @@ def main() -> None:
             cls_lat.append(time.perf_counter() - t1)
             cls_preds.append(pred)
     elif name == "nanodiff 350M":
-        # diffusion-LM decision model: nanodiff_engine vendors the NanoDiff
+        # diffusion-LM decision model: engines/nanodiff_engine vendors the NanoDiff
         # class (BY571/nanoDiff) and the pngwn typed-decision format; one
         # bidirectional forward, softmax restricted to option-letter token
         # ids. Classification only - a single-letter choice interface, no
         # span extraction, so no NER answers. Runs in the MAIN venv
         # (tiktoken); slow (~10 s/question).
-        from nanodiff_engine.runner import QUESTION, load_model, predict
+        from engines.nanodiff_engine.runner import QUESTION, load_model, predict
 
         model, _ = load_model("cpu")
         for q in CLS_QUESTIONS:
@@ -495,7 +496,7 @@ def main() -> None:
         entry["ner_exact_rate"] = round(sum(ner_ok) / len(ner_ok), 4)
         entry["ner_mean_latency_s"] = round(statistics.mean(ner_lat), 3)
     if name == "von":
-        from von_client import provenance
+        from engines.von_client import provenance
 
         entry["provenance"] = provenance()
 

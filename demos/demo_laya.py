@@ -6,16 +6,20 @@ calibrated probabilities. All questions in one call are answered in a single
 forward pass. Apache 2.0, runs offline.
 
 Run:
-    python demo_laya.py       # loads English checkpoint (~808 MB once)
+    python demos/demo_laya.py       # loads English checkpoint (~808 MB once)
 """
 
 from __future__ import annotations
+
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 
 import json
 import sys
 import time
 
-from jev_client import choice, noul, score  # same question dict shape
+from engines.jev_client import choice, noul, score  # same question dict shape
 
 
 def banner(title: str) -> None:

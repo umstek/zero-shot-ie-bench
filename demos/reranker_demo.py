@@ -9,7 +9,7 @@ no NER, no generation. Needs sentence-transformers==5.7.0 (see README).
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    .venv/Scripts/python reranker_demo.py
+    .venv/Scripts/python demos/reranker_demo.py
 """
 
 from __future__ import annotations
@@ -116,8 +116,8 @@ def main() -> None:
         print(f"  {name:<28} -> {decide(scores)}  {scores}")
 
     print("\nDone. Same texts through the decision engines:  "
-          ".venv/Scripts/python certo_demo.py / "
-          ".venv-von/Scripts/python mojev_demo.py\n")
+          ".venv/Scripts/python demos/certo_demo.py / "
+          ".venv-von/Scripts/python demos/mojev_demo.py\n")
 
 
 if __name__ == "__main__":
