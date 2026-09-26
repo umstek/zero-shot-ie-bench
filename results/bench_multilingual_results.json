@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 28 systems answer the same 54 texts.",
+      "All 38 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -44,7 +44,28 @@
       "mxbai-rerank-base-v2 recorded 2026-09-25 21:11, 83s, CPU",
       "Certo 421M recorded 2026-09-25 21:30, 48s, CPU",
       "MoJev 0.85B recorded 2026-09-25 21:46, 311s, CPU",
-      "nanodiff 350M recorded 2026-09-25 22:11, 670s, CPU"
+      "nanodiff 350M recorded 2026-09-25 22:11, 670s, CPU",
+      "Kev 4B (OpenRouter) recorded 2026-09-26 12:15, 35s, CPU",
+      "Span-01 recorded 2026-09-26 12:24, 26s, CPU",
+      "Span-01 Lite recorded 2026-09-26 12:24, 45s, CPU",
+      "qwen3-reranker-8b (OpenRouter) recorded 2026-09-26 12:25, 27s, CPU",
+      "voyage-rerank-2.5-lite (OpenRouter) recorded 2026-09-26 12:25, 19s, CPU",
+      "voyage-rerank-2.5 (OpenRouter) recorded 2026-09-26 12:26, 21s, CPU",
+      "cohere-rerank-4-pro (OpenRouter) recorded 2026-09-26 12:26, 22s, CPU",
+      "cohere-rerank-4-fast (OpenRouter) recorded 2026-09-26 12:27, 26s, CPU",
+      "cohere-rerank-v3.5 (OpenRouter) recorded 2026-09-26 12:27, 20s, CPU",
+      "nemotron-rerank-vl-1b (OpenRouter) recorded 2026-09-26 12:33, 219s, CPU",
+      "Jev recorded 2026-09-26 12:49, 1s, CPU",
+      "Kev 4B (OpenRouter) recorded 2026-09-26 12:50, 36s, CPU",
+      "cohere-rerank-4-pro (OpenRouter) recorded 2026-09-26 12:50, 22s, CPU",
+      "cohere-rerank-4-fast (OpenRouter) recorded 2026-09-26 12:51, 20s, CPU",
+      "cohere-rerank-v3.5 (OpenRouter) recorded 2026-09-26 12:51, 22s, CPU",
+      "voyage-rerank-2.5 (OpenRouter) recorded 2026-09-26 12:51, 20s, CPU",
+      "voyage-rerank-2.5-lite (OpenRouter) recorded 2026-09-26 12:52, 19s, CPU",
+      "Span-01 recorded 2026-09-26 12:52, 22s, CPU",
+      "qwen3-reranker-8b (OpenRouter) recorded 2026-09-26 12:52, 27s, CPU",
+      "Span-01 Lite recorded 2026-09-26 12:53, 22s, CPU",
+      "nemotron-rerank-vl-1b (OpenRouter) recorded 2026-09-26 12:57, 240s, CPU"
     ]
   },
   "by_language": {
@@ -355,6 +376,116 @@
       "Sinhala": 0.3333,
       "Icelandic": 0.5,
       "Welsh": 0.3333
+    },
+    "Kev 4B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 0.8333
+    },
+    "Span-01": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 0.8333
+    },
+    "Span-01 Lite": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 0.5
+    },
+    "qwen3-reranker-8b (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.8333,
+      "Icelandic": 0.8333,
+      "Welsh": 1.0
+    },
+    "voyage-rerank-2.5-lite (OpenRouter)": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.6667,
+      "Turkish": 0.8333,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.5,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "voyage-rerank-2.5 (OpenRouter)": {
+      "Spanish": 0.8333,
+      "French": 0.8333,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.6667,
+      "Turkish": 0.6667,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.5,
+      "Icelandic": 0.8333,
+      "Welsh": 0.5
+    },
+    "cohere-rerank-4-pro (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 0.8333,
+      "Ukrainian": 0.8333,
+      "Sinhala": 0.8333,
+      "Icelandic": 0.5,
+      "Welsh": 0.5
+    },
+    "cohere-rerank-4-fast (OpenRouter)": {
+      "Spanish": 0.6667,
+      "French": 0.6667,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.6667,
+      "Turkish": 0.5,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "cohere-rerank-v3.5 (OpenRouter)": {
+      "Spanish": 0.6667,
+      "French": 0.5,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.5,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.5,
+      "Icelandic": 0.6667,
+      "Welsh": 0.8333
+    },
+    "nemotron-rerank-vl-1b (OpenRouter)": {
+      "Spanish": 0.6667,
+      "French": 0.3333,
+      "Chinese": 0.5,
+      "Vietnamese": 0.5,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -497,12 +628,62 @@
       "popular": 0.2778,
       "medium": 0.3889,
       "rare": 0.3889
+    },
+    "Kev 4B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
+    },
+    "Span-01": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
+    },
+    "Span-01 Lite": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.6111
+    },
+    "qwen3-reranker-8b (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.8889
+    },
+    "voyage-rerank-2.5-lite (OpenRouter)": {
+      "popular": 0.9444,
+      "medium": 0.6111,
+      "rare": 0.3889
+    },
+    "voyage-rerank-2.5 (OpenRouter)": {
+      "popular": 0.8333,
+      "medium": 0.7778,
+      "rare": 0.6111
+    },
+    "cohere-rerank-4-pro (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 0.8889,
+      "rare": 0.6111
+    },
+    "cohere-rerank-4-fast (OpenRouter)": {
+      "popular": 0.7222,
+      "medium": 0.6111,
+      "rare": 0.3333
+    },
+    "cohere-rerank-v3.5 (OpenRouter)": {
+      "popular": 0.6667,
+      "medium": 0.6111,
+      "rare": 0.6667
+    },
+    "nemotron-rerank-vl-1b (OpenRouter)": {
+      "popular": 0.5,
+      "medium": 0.3333,
+      "rare": 0.3889
     }
   },
   "latency": {
     "GLiNER2.5-multi": 0.237,
     "Laya Router": 0.139,
-    "Jev": 0.021,
+    "Jev": 0.017,
     "GLiFormer-large": 0.717,
     "GLiNER2.5-small": 0.078,
     "GLiNER2.5-base": 0.172,
@@ -527,7 +708,17 @@
     "mxbai-rerank-base-v2": 1.252,
     "Certo 421M": 0.715,
     "MoJev 0.85B": 5.53,
-    "nanodiff 350M": 12.223
+    "nanodiff 350M": 12.223,
+    "Kev 4B (OpenRouter)": 0.675,
+    "Span-01": 0.401,
+    "Span-01 Lite": 0.409,
+    "qwen3-reranker-8b (OpenRouter)": 0.506,
+    "voyage-rerank-2.5-lite (OpenRouter)": 0.358,
+    "voyage-rerank-2.5 (OpenRouter)": 0.363,
+    "cohere-rerank-4-pro (OpenRouter)": 0.413,
+    "cohere-rerank-4-fast (OpenRouter)": 0.371,
+    "cohere-rerank-v3.5 (OpenRouter)": 0.411,
+    "nemotron-rerank-vl-1b (OpenRouter)": 4.446
   },
   "laya_routing": {
     "Spanish": {
@@ -578,7 +769,18 @@
     "mxbai-rerank-base-v2": "Model download and loading excluded; first forward pass included.",
     "Certo 421M": "Model download and loading excluded; first forward pass included.",
     "MoJev 0.85B": "Model download and loading excluded; first forward pass included.",
-    "nanodiff 350M": "Model download and loading excluded; first forward pass included."
+    "nanodiff 350M": "Model download and loading excluded; first forward pass included.",
+    "Kev 4B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Span-01": "Model download and loading excluded; first forward pass included.",
+    "Span-01 Lite": "Model download and loading excluded; first forward pass included.",
+    "qwen3-reranker-8b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "voyage-rerank-2.5-lite (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "voyage-rerank-2.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "cohere-rerank-4-pro (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "cohere-rerank-4-fast (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "cohere-rerank-v3.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "nemotron-rerank-vl-1b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Jev": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {
@@ -586,6 +788,63 @@
       "model_revision": "fbc0196efa4fa1825557a8d5adad464fa1e872bb",
       "sdk_revision": "a94aa368ff4dcc58cdfd569cf0b4b1ae7d592d54",
       "backend": "option-marker"
+    }
+  },
+  "usage": {
+    "Jev": {
+      "paid_requests": 1,
+      "cost_usd": 0.0,
+      "input_tokens": 6430
+    },
+    "Kev 4B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000106,
+      "input_tokens": 2527
+    },
+    "cohere-rerank-4-pro (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.135,
+      "input_tokens": 0
+    },
+    "cohere-rerank-4-fast (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.108,
+      "input_tokens": 0
+    },
+    "cohere-rerank-v3.5 (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.054,
+      "input_tokens": 0
+    },
+    "voyage-rerank-2.5 (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000287,
+      "input_tokens": 0
+    },
+    "voyage-rerank-2.5-lite (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000115,
+      "input_tokens": 0
+    },
+    "Span-01": {
+      "paid_requests": 54,
+      "cost_usd": 4e-05,
+      "input_tokens": 1990
+    },
+    "qwen3-reranker-8b (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.003577,
+      "input_tokens": 0
+    },
+    "Span-01 Lite": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 1990
+    },
+    "nemotron-rerank-vl-1b (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 0
     }
   }
 }
