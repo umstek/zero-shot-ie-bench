@@ -1,9 +1,10 @@
 """Interactive demo + benchmarks for thirty-eight zero-shot IE/classification
 systems across twenty-three families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiClass, Rerankers,
-Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1 and Jev
-(cloud); benchmark tabs hold the measured numbers for all of them, the
-OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
+Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1, Jev
+(cloud) and OpenRouter (hosted); benchmark tabs hold the measured numbers
+for all of them, the OpenRouter-hosted systems (Kev 4B, Span-01, seven
+rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -1012,6 +1013,116 @@ def build_jev_tab():
         jev_button.click(run_jev, [jev_text, jev_labels, jev_task], jev_table)
 
 
+# -------------------------------------------------- OpenRouter (hosted) tab
+# The ten OpenRouter-hosted systems (same names and model ids as
+# bench_spectrum.py): three System One decision engines — Kev answers one
+# choice question, Span-01 scores one noul question per label — and seven
+# rerank endpoints used as decision engines via argmax over per-label
+# relevance.
+OPENROUTER_SYSTEMONE = {
+    "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
+    "Span-01": "respan/span-01",
+    "Span-01 Lite": "respan/span-01-lite",
+}
+OPENROUTER_RERANKERS = {
+    "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
+    "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
+    "voyage-rerank-2.5 (OpenRouter)": "voyageai/rerank-2.5",
+    "nemotron-rerank-vl-1b (OpenRouter)":
+        "nvidia/llama-nemotron-rerank-vl-1b-v2:free",
+    "cohere-rerank-4-pro (OpenRouter)": "cohere/rerank-4-pro",
+    "cohere-rerank-4-fast (OpenRouter)": "cohere/rerank-4-fast",
+    "cohere-rerank-v3.5 (OpenRouter)": "cohere/rerank-v3.5",
+}
+
+
+def build_openrouter_tab():
+    import gradio as gr
+
+    with gr.Tab("OpenRouter (hosted)"):
+        gr.Markdown("### The OpenRouter-hosted systems, live\n"
+                    "The ten hosted systems from the benchmark tabs: Kev 4B "
+                    "answers one choice question, Span-01 / Span-01 Lite "
+                    "score one noul question per label, and the seven "
+                    "rerankers score one (instruction, label) pair per "
+                    "label (argmax = decision). Requests leave the machine "
+                    "(non-ZDR providers, † in README); needs "
+                    "`OPENROUTER_API_KEY` in the repo-root `.env`. Each "
+                    "click is one metered API request (free tiers: "
+                    "Span-01 Lite, nemotron).")
+        oro_model = gr.Dropdown(
+            choices=list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS),
+            value="qwen3-reranker-8b (OpenRouter)", label="System")
+        oro_text = gr.Textbox(
+            label="Text",
+            value="Oh great, my package finally arrived — only two weeks "
+                  "late and crushed.", lines=3)
+        oro_labels = gr.Textbox(label="Labels (comma-separated)",
+                                value="positive, negative, neutral")
+        oro_task = gr.Textbox(label="Task word for the instruction",
+                              value="sentiment")
+        oro_button = gr.Button("Ask the hosted model", variant="primary")
+        oro_out = gr.JSON(label="Decision + per-label scores or "
+                                "probabilities + endpoint kind")
+
+        def run_openrouter(system, text, labels_csv, task):
+            from engines import openrouter_client
+            from engines.jev_client import choice
+
+            labels = parse_labels(labels_csv)
+            if not text or not labels:
+                return {"error": "provide text and at least one label"}
+            if not openrouter_client.load_openrouter_key():
+                return {"error": "no OPENROUTER_API_KEY in repo-root .env "
+                                 "(see engines/openrouter_client.py)"}
+            try:
+                if system in OPENROUTER_RERANKERS:
+                    # one request scores every label as a document
+                    rows = openrouter_client.rerank(
+                        OPENROUTER_RERANKERS[system],
+                        f'What is the overall {task} of this text: '
+                        f'"{text}"', labels)
+                    scores = {row["index"]: row["relevance_score"]
+                              for row in rows}
+                    ranked = {labels[i]: round(float(score), 4)
+                              for i, score in sorted(scores.items(),
+                                                     key=lambda kv: -kv[1])}
+                    return {"endpoint": "rerank",
+                            "decision": next(iter(ranked)),
+                            "relevance scores": ranked}
+                client = openrouter_client.systemone(
+                    OPENROUTER_SYSTEMONE[system])
+                if system == "Kev 4B (OpenRouter)":
+                    payload = client.ask({"task": task}, {"q": choice(
+                        f'What is the overall {task} of this text: '
+                        f'"{text}"', {label: None for label in labels})})
+                    answer = payload["answers"]["q"]
+                    out: dict = {"endpoint": "systemone (choice)",
+                                 "decision": answer.get("choice")}
+                    if answer.get("probabilities") is not None:
+                        out["probabilities"] = answer["probabilities"]
+                    return out
+                # Span-01: plain-string state, no criteria key (Span
+                # rejects both) — one noul question per label
+                payload = client.ask(text, {
+                    f"l{i}": {"type": "noul", "instructions":
+                              f"Does this text express {label} sentiment?"}
+                    for i, label in enumerate(labels)})
+                probs = {label: round(float(payload["answers"][f"l{i}"]
+                                           .get("noul", 0.0)), 4)
+                         for i, label in enumerate(labels)}
+                ranked = dict(sorted(probs.items(), key=lambda kv: -kv[1]))
+                return {"endpoint": "systemone (noul)",
+                        "decision": next(iter(ranked)),
+                        "noul probabilities": ranked}
+            except Exception as exc:
+                return {"error": str(exc)}
+
+        oro_button.click(run_openrouter,
+                         [oro_model, oro_text, oro_labels, oro_task],
+                         oro_out)
+
+
 # ------------------------------------------------------------ gliclass tab
 GLICLASS_MODELS = {
     "edge — 33M, fastest": "knowledgator/gliclass-edge-v3.0",
@@ -1600,8 +1711,9 @@ def main() -> None:
                     "GLiNER 2.5 (with the decision-tuned GLiNER2.5-Decide "
                     "sibling), GLiFormer, GLiClass, Rerankers (three "
                     "cross-encoders as decision engines), Laya, von, "
-                    "JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1 "
-                    "and the cloud Jev. The remaining local engines (Kev, "
+                    "JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1, "
+                    "the cloud Jev and the ten OpenRouter-hosted systems. "
+                    "The remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
                     "measured numbers for all 38 systems across twenty-three "
@@ -1619,6 +1731,7 @@ def main() -> None:
         build_nanodiff_tab()
         build_so1_tab()
         build_jev_tab()
+        build_openrouter_tab()
         with gr.Tab("Classification benchmark"):
             build_classification_tab()
         with gr.Tab("Extraction benchmark"):
