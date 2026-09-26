@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 28 systems answer the same 54 texts.",
+      "All 29 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -44,7 +44,8 @@
       "mxbai-rerank-base-v2 recorded 2026-09-25 21:11, 83s, CPU",
       "Certo 421M recorded 2026-09-25 21:30, 48s, CPU",
       "MoJev 0.85B recorded 2026-09-25 21:46, 311s, CPU",
-      "nanodiff 350M recorded 2026-09-25 22:11, 670s, CPU"
+      "nanodiff 350M recorded 2026-09-25 22:11, 670s, CPU",
+      "Kev 4B (OpenRouter) recorded 2026-09-26 12:15, 35s, CPU"
     ]
   },
   "by_language": {
@@ -355,6 +356,17 @@
       "Sinhala": 0.3333,
       "Icelandic": 0.5,
       "Welsh": 0.3333
+    },
+    "Kev 4B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 0.8333
     }
   },
   "by_tier": {
@@ -497,6 +509,11 @@
       "popular": 0.2778,
       "medium": 0.3889,
       "rare": 0.3889
+    },
+    "Kev 4B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
     }
   },
   "latency": {
@@ -527,7 +544,8 @@
     "mxbai-rerank-base-v2": 1.252,
     "Certo 421M": 0.715,
     "MoJev 0.85B": 5.53,
-    "nanodiff 350M": 12.223
+    "nanodiff 350M": 12.223,
+    "Kev 4B (OpenRouter)": 0.652
   },
   "laya_routing": {
     "Spanish": {
@@ -578,7 +596,8 @@
     "mxbai-rerank-base-v2": "Model download and loading excluded; first forward pass included.",
     "Certo 421M": "Model download and loading excluded; first forward pass included.",
     "MoJev 0.85B": "Model download and loading excluded; first forward pass included.",
-    "nanodiff 350M": "Model download and loading excluded; first forward pass included."
+    "nanodiff 350M": "Model download and loading excluded; first forward pass included.",
+    "Kev 4B (OpenRouter)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
   },
   "provenance": {
     "von": {

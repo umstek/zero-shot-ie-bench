@@ -1,9 +1,10 @@
 # zero-shot-ie-bench
 
-Twenty-eight zero-shot systems across eighteen information-extraction and
-classification families — extractor encoders, a purpose-built classifier,
-cross-encoder rerankers, and typed-decision engines (local and cloud) —
-demoed, benchmarked, and cross-compared in one repo with a web UI.
+Thirty-eight zero-shot systems across twenty-three information-extraction
+and classification families — extractor encoders, a purpose-built
+classifier, cross-encoder rerankers, and typed-decision engines (local and
+cloud, the hosted ones behind OpenRouter's decision and rerank endpoints)
+— demoed, benchmarked, and cross-compared in one repo with a web UI.
 
 | System | Kind | Size | License / cost |
 |---|---|---|---|
@@ -26,6 +27,13 @@ demoed, benchmarked, and cross-compared in one repo with a web UI.
 | [MoJev](https://huggingface.co/MoLeMo-Lab/mojev) 0.85B (`engines/mojev_engine/`, adapted) | local decision engine (packed one-pass candidate scoring, Qwen3.5 + fla) | 0.85B | engine MIT; checkpoint card MIT (Qwen base-model license on the encoder weights) |
 | [nanodiff 350M](https://huggingface.co/pngwn/nanodiff-350m-typed-decisions-lam1) (`engines/nanodiff_engine/`, vendored) | local decision model (bidirectional diffusion LM — the only non-autoregressive system here) | 350M | MIT, free |
 | [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | paid API |
+| [Kev 4B](https://openrouter.ai/jaredpalmer/kev-4b) (`jaredpalmer/kev-4b` via OpenRouter) | cloud decision engine (same System One contract as local Kev, hosted) | 4B | paid API † |
+| [Span-01](https://openrouter.ai/respan/span-01) / [Span-01 Lite](https://openrouter.ai/respan/span-01-lite) (`respan/span-01*`) | cloud behavior scorer (one noul probability per label, argmax = decision) | closed | paid API / free tier † |
+| [Qwen3-Reranker 8B](https://openrouter.ai/qwen/qwen3-reranker-8b) · [Voyage rerank-2.5](https://openrouter.ai/voyageai/rerank-2.5) (+lite) · [Nemotron Rerank VL 1B](https://openrouter.ai/nvidia/llama-nemotron-rerank-vl-1b-v2:free) · [Cohere Rerank](https://openrouter.ai/cohere/rerank-4-pro) (4 Pro / 4 Fast / v3.5), all via OpenRouter | cloud rerankers (same (instruction, label) argmax mapping as the local ones) | 8B / closed / 1.7B / closed | paid API † (Nemotron free) |
+
+† Non-ZDR endpoints: these providers may retain request data (OpenRouter's
+account privacy settings gate this — the account used here allows them).
+Every local system in the repo keeps text on the machine.
 
 The GLiNER lineage forked: Urchade Zaratiana (original GLiNER author,
 ex-Knowledgator) is on the GLiNER2 paper with Fastino; Knowledgator kept the
@@ -51,11 +59,13 @@ system here). Four different animals:
 - **Classifiers** (GLiClass): zero-shot text→label scores with every label
   answered in one forward pass.
 - **Cross-encoder rerankers** (mxbai-rerank-base-v2, bge-reranker-v2-m3,
-  GTE-rerank-ModernBERT-base): relevance scores for (instruction, label)
-  pairs — one pair per label, argmax = decision. No NER, no generation; a
-  zero-shot classifier built out of a reranker.
+  GTE-rerank-ModernBERT-base locally; Qwen3, Voyage 2.5, NVIDIA Nemotron VL
+  and Cohere Rerank via OpenRouter †): relevance scores for (instruction,
+  label) pairs — one pair per label, argmax = decision. No NER, no
+  generation; a zero-shot classifier built out of a reranker.
 - **Decision engines** (Laya, von, so1, Kev, AgentJev, decider, OpenThai,
-  Verdict, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, Jev): you ask
+  Verdict, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, Jev; hosted:
+  Kev 4B and the Span-01 behavior scorer via OpenRouter †): you ask
   typed questions (`choice`, `score`, `noul`) over a JSON state; all
   questions in one call are answered together (one forward pass / one
   request). This benchmark exercises Verdict's `choice` questions only;
@@ -130,7 +140,7 @@ Honest caveats:
   the combined multi-task call where large succeeded; base embeddings are
   768-d vs large 1024-d.
 
-## Mixed-pool spectrum benchmark (all 28 systems)
+## Mixed-pool spectrum benchmark (all 38 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -230,6 +240,23 @@ negative datapoint is nanodiff: a diffusion LM at 350M is chance-level
 option probabilities) — JevBench's Intelligence-0 verdict confirmed on
 our pools.
 
+The OpenRouter wave adds the hosting axis: the Kev family benched locally
+at 0.8B is also served as `jaredpalmer/kev-4b` behind OpenRouter's
+`/systemone` router (TypeSafe wire format; SiliconFlow endpoint,
+$0.042/M input). Hosted kev-4b ties GLiNER2.5-Decide for the best
+non-Jev mixed-pool score (85.4%) and takes second place overall on the
+multilingual suite (98.1% — Jev 100%, next local 89%). The same wave
+wires seven OpenRouter rerankers (Qwen3-Reranker 8B, Voyage rerank-2.5
+and -lite, NVIDIA Nemotron Rerank VL 1B, Cohere Rerank 4 Pro / 4 Fast /
+v3.5) and the Respan Span-01 behavior scorer with the same decision-engine
+mappings †; their rows land as the benchmark account's OpenRouter privacy
+settings stop enforcing ZDR-only providers (every rerank and Span
+endpoint is non-ZDR; kev's SiliconFlow endpoint is ZDR, which is why it
+runs). Also on OpenRouter but deliberately not benched: `typesafe/jev-1.13`
+(RBAC-gated there, and Jev is already measured through TypeSafe's own
+API) and `typesafe/jev-router` (a chat router, not a typed-decision
+endpoint).
+
 The web UI renders these as interactive charts; the same charts, as
 images (regenerate after re-running the benchmarks with
 `python make_chart_images.py`):
@@ -258,11 +285,12 @@ Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish, Ukrainian ·
 Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified by blind
 back-translation through an independent model instance (it caught 8 errors,
 including a sentiment-flipping Sinhala word) and the full table is in the
-PR for native-speaker review. All 28 systems answer the same 54 texts.
+PR for native-speaker review. All 38 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
 | Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
+| Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
 | decider 0.8B (local) | 100% | 100% | 50% | 83% |
 | OpenThai 0.8B (local) | 100% | 100% | 50% | 83% |
@@ -450,7 +478,7 @@ file in the repo root (gitignored) — see `engines/jev_client.py`; Jev is a pai
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (28 systems; von, JevK5-Lite,
+                                         # (38 systems; von, JevK5-Lite,
                                          # LFM2.5-RLCD 350M and MoJev 0.85B:
                                          # same command under
                                          # .venv-von/Scripts/python)
@@ -458,7 +486,7 @@ file in the repo root (gitignored) — see `engines/jev_client.py`; Jev is a pai
 # imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 28 systems →
+                                         # 9 languages, all 38 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
@@ -591,11 +619,12 @@ in the tables above now. The remaining trial results:
 | `engines/von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
+| `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Span-01, seven rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
 | `engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 28 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 38 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
