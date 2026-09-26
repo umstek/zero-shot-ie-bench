@@ -15,7 +15,7 @@ import os
 import pandas as pd
 
 import app
-from app import (COST_UNREPORTED, accuracy_heatmap, cost_scatter,
+from app import (COST_UNREPORTED, accuracy_heatmap, cost_bars, cost_scatter,
                  hbar_chart, hbar_chart_labeled, spectrum_line,
                  tradeoff_scatter)
 
@@ -67,6 +67,9 @@ def spectrum_charts(bench):
         charts["cls_cost"] = cost_scatter(
             cost_summary,
             "Cost vs accuracy, hosted systems — up and left is better")
+        charts["cls_cost_bars"] = cost_bars(
+            cost_summary,
+            "Measured cost per question, hosted systems (ranked)")
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []

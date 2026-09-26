@@ -361,6 +361,45 @@ def cost_scatter(df: pd.DataFrame, title: str):
         width=_COST_W, height=_COST_H)
 
 
+def cost_bars(df: pd.DataFrame, title: str):
+    """Measured cost per classification question, ranked cheapest-first.
+    Log axis; free tiers that measured $0 pin to the same floor the
+    scatter uses and print "$0 (free tier)", paid tiers print scientific
+    notation. Jev never appears — its provider reports tokens but no
+    cost (COST_UNREPORTED)."""
+    floor = 1e-7
+    plot = df.copy()
+    vals = plot["$ per question"].clip(lower=floor)
+    plot = plot.assign(_v=vals, _floor=floor)
+    plot["_text"] = [
+        "$0 (free tier)" if v <= floor * 1.0001
+        else f"${v:.1e}".replace("e-0", "e-").replace("e+0", "e+")
+        for v in vals]
+    order = plot.sort_values("_v")["System"].tolist()
+    xscale = alt.Scale(type="log", domain=[floor, float(vals.max()) * 3])
+    base = (
+        alt.Chart(plot, title=title)
+        .mark_bar()
+        .encode(
+            y=alt.Y("System:N", sort=order, title=None,
+                    axis=alt.Axis(labelFontSize=12)),
+            x=alt.X("_v:Q", scale=xscale,
+                    title="Measured cost per question, $ (log)",
+                    axis=alt.Axis(format=".0e")),
+            x2=alt.X2("_floor:Q"),
+            tooltip=[alt.Tooltip("System:N"), alt.Tooltip("_text:N")],
+        )
+    )
+    labels = (
+        alt.Chart(plot)
+        .mark_text(align="left", dx=3, fontSize=11)
+        .encode(y=alt.Y("System:N", sort=order, title=None),
+                x=alt.X("_v:Q"), text="_text:N")
+    )
+    return (base + labels).properties(
+        width=640, height=max(180, 26 * len(order) + 50))
+
+
 def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
     """Accuracy across the measured difficulty range, one line per system.
     Lines also carry per-system dash patterns: systems that agree on a
@@ -492,6 +531,9 @@ def build_classification_tab():
             gr.Plot(cost_scatter(
                 cost_summary,
                 "Cost vs accuracy, hosted systems — up and left is better"))
+            gr.Plot(cost_bars(
+                cost_summary,
+                "Measured cost per question, hosted systems (ranked)"))
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []
