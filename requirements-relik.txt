@@ -1,0 +1,11 @@
+# relik 1.0.7 pins torch==2.3.1 and transformers[sentencepiece]>=4.41,<4.42
+# itself (numpy<2 comes with that torch), so this file stays one line; the
+# faiss extra adds faiss-cpu==1.8.0 per the documented install (the small
+# checkpoint's relation index actually loads as an in-memory torch tensor,
+# but keep the extra to match upstream docs). Python 3.11.
+relik[faiss]==1.0.7
+# NOTE: `import relik` crashes on Windows — relik/retriever/indexers/
+# document.py:11 runs csv.field_size_limit(sys.maxsize) and Windows' C long
+# is 32-bit (SapienzaNLP/relik#39, also #14/#15). The workaround lives in
+# engines/relik_client.py (a csv shim installed before `import relik`);
+# do not patch site-packages.
