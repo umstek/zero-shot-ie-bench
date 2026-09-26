@@ -39,7 +39,7 @@ in its instructions); it caught 8 errors (2 sentiment-flipping) which were
 fixed and re-verified. The full sentence table is in the PR description
 for human (native-speaker) review, Sinhala especially.
 
-Output: bench_multilingual_results.json (rendered by the web UI's
+Output: results/bench_multilingual_results.json (rendered by the web UI's
 Multilingual benchmark tab).
 """
 
@@ -150,7 +150,8 @@ TIERS = {
     "Sinhala": "rare", "Icelandic": "rare", "Welsh": "rare",
 }
 
-RESULTS_FILE = "bench_multilingual_results.json"
+RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "results", "bench_multilingual_results.json")
 
 GLINER = {
     "GLiNER2.5-small": "fastino/gliner2.5-small-v1",

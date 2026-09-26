@@ -35,7 +35,7 @@ Verdict 151M runs in-process from the Verdict-open-jev checkout
     C:/venvs/agent-jev/Scripts/python bench_spectrum.py \
         --system "Verdict 151M (local)"
 
-Output: bench_spectrum_results.json
+Output: results/bench_spectrum_results.json
 """
 
 from __future__ import annotations
@@ -50,7 +50,8 @@ import time
 from bench import NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, spans_of
 from bench_graded import NER, SENTIMENT, TOPIC
 
-RESULTS_FILE = "bench_spectrum_results.json"
+RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "results", "bench_spectrum_results.json")
 
 # fixed question order: sentiment pool then topic pool then NER pool
 CLS_QUESTIONS = (

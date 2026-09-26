@@ -65,7 +65,7 @@ system here). Four different animals:
 
 Measured on CPU, zero-shot, identical label sets and descriptions,
 out-of-the-box defaults. Full detail and per-item misses in
-[`bench_results.json`](bench_results.json); methodology notes in `bench.py`.
+[`results/bench_results.json`](results/bench_results.json); methodology notes in `bench.py`.
 
 Every case runs 5 times; accuracy below is from the first run, and the
 determinism section shows whether repeats changed anything (spoiler: no).
@@ -138,7 +138,7 @@ varying difficulty); the six extractors also answer 18 NER questions.
 After all systems have run, each question's difficulty is **measured** as
 the fraction of answering systems that got it wrong (continuous 0–1); the
 web UI plots each system's accuracy along that spectrum, and per-question
-predictions live in `bench_spectrum_results.json`.
+predictions live in `results/bench_spectrum_results.json`.
 
 Classification accuracy on the mixed pool (48 questions), NER scored as
 exact span-set match (18 questions):
@@ -447,9 +447,9 @@ file in the repo root (gitignored) — see `engines/jev_client.py`; Jev is a pai
                                          # scoring (transformers-5 venv)
 
 .venv/Scripts/python bench.py            # flat suite, 5 runs per case
-                                         # (--repeats N) → bench_results.json
+                                         # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
-                                         # system → bench_spectrum_results.json
+                                         # system → results/bench_spectrum_results.json
                                          # (28 systems; von, JevK5-Lite,
                                          # LFM2.5-RLCD 350M and MoJev 0.85B:
                                          # same command under
@@ -459,7 +459,7 @@ file in the repo root (gitignored) — see `engines/jev_client.py`; Jev is a pai
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
                                          # 9 languages, all 28 systems →
-                                         # bench_multilingual_results.json
+                                         # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
@@ -471,7 +471,7 @@ sizes), Rerankers (all three checkpoints, in-process pair scoring), Laya
 MoJev, nanodiff, so1 and Jev (cloud) —
 plus three benchmark tabs (**Classification benchmark**,
 **Extraction benchmark**, **Multilingual benchmark**; tables and charts
-from the `bench_*_results.json` files) and a **Compare** tab (feature
+from the `results/bench_*_results.json` files) and a **Compare** tab (feature
 matrix). The remaining local engines (Kev, AgentJev, decider, OpenThai,
 Verdict) run as separate servers or venvs and are covered in the
 benchmark and compare tabs. Benchmark charts are altair-based: sorted
@@ -596,7 +596,7 @@ in the tables above now. The remaining trial results:
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
 | `bench_multilingual.py` | 9-language zero-shot suite, all 28 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
-| `bench_*_results.json` | latest results, rendered by the web UI |
+| `results/bench_*_results.json` | latest results, rendered by the web UI |
 
 ## License
 

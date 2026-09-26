@@ -31,7 +31,7 @@ SAMPLE_TEXT = (
     "Alice works for Acme in Paris."
 )
 BENCH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          "bench_results.json")
+                          "results", "bench_results.json")
 
 
 def parse_labels(csv: str) -> list[str]:
@@ -384,7 +384,7 @@ def build_classification_tab():
 
     gr.Markdown("#### Determinism\nThe seven flat-suite systems were "
                 "measured 5x in `bench.py`: **100% output-stable** on "
-                "every repeat. Details: bench_results.json.")
+                "every repeat. Details: results/bench_results.json.")
 
 
 # ----------------------------------------------------- extraction bench tab
