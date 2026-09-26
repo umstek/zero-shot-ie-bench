@@ -111,7 +111,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 | System | Classification | s/question | NER exact | s/question |
 |---|---|---|---|---|
-| Jev (cloud) | **93.8%** | 0.037 | n/a | |
+| Jev (cloud) | **93.8%** | 0.018 | n/a | |
 | qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a | |
 | GLiNER2.5-Decide | 85.4% | 0.412 | 61% | 0.476 |
 | Kev 4B (OpenRouter) † | 85.4% | 0.079 | n/a | |
@@ -161,7 +161,8 @@ Takeaways:
   gliclass-edge at 16 ms/question; most robust extractor:
   GLiNER2.5-multi.
 - Hosted kev-4b ties Decide at 85.4% and is 2nd overall multilingual
-  (98.1%); Span-01 matches it on both (85.4% / 98%); the cheaper hosted
+  (98%, one Welsh text short of perfect); Span-01 matches it on both
+  (85.4% / 98%); the cheaper hosted
   tiers fade fast (voyage-2.5 79%/74%, Cohere 4 Fast 71%/56%, v3.5
   67%/65%), and Nemotron VL is the one clear miss — a vision reranker
   scored on text-only pairs (35%/41%).
@@ -250,6 +251,7 @@ systems answer the same 54 texts.
 |---|---|---|---|---|
 | Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
 | Span-01 † | 100% | 100% | 94% | 98% |
+| Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
 | qwen3-reranker-8b (OpenRouter) † | 100% | 100% | 89% | 96% |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
 | Span-01 Lite † | 100% | 100% | 61% | 87% |

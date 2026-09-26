@@ -507,16 +507,25 @@ def build_classification_tab():
               if isinstance(v.get("usage"), dict)
               and v["usage"].get("paid_requests")}
     if hosted:
-        cost_rows = [[s,
-                      "not reported" if s in COST_UNREPORTED
-                      else f"${v['usage']['cost_usd']:.4f}",
-                      v["usage"]["paid_requests"],
-                      v["usage"].get("input_tokens", 0)]
-                     for s, v in hosted.items()]
+        cost_rows = []
+        for s, v in hosted.items():
+            usage = v["usage"]
+            cost = usage["cost_usd"]
+            cost_cell = ("not reported" if s in COST_UNREPORTED
+                         or usage.get("cost_reported") is False
+                         else f"${cost:.6f}" if cost < 0.01
+                         else f"${cost:.4f}")
+            # absent token fields read "not reported", not 0 (stored
+            # results from before the flags default to shown)
+            tokens_cell = ("not reported"
+                           if usage.get("input_tokens_reported") is False
+                           else str(usage.get("input_tokens", 0)))
+            cost_rows.append([s, cost_cell, usage["paid_requests"],
+                              tokens_cell])
         gr.DataFrame(cost_rows,
                      headers=["System", "Measured cost, whole run",
                               "Paid requests", "Input tokens"],
-                     datatype=["str", "str", "number", "number"],
+                     datatype=["str", "str", "number", "str"],
                      label="Measured provider accounting for the hosted "
                            "systems (usage blocks in API responses; Jev's "
                            "provider reports tokens but no cost)")

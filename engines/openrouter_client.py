@@ -55,24 +55,40 @@ def load_openrouter_key() -> str:
 
 class UsageTracker:
     """Accumulates provider usage rows (cost, tokens, request count) across
-    a benchmark run, so per-system cost is measured, not reconstructed."""
+    a benchmark run, so per-system cost is measured, not reconstructed.
+    Absent fields stay distinguishable from measured zeros: the rerank
+    endpoint's documented usage block carries search_units/total_tokens,
+    with cost and input_tokens optional, so each is only accumulated
+    (and flagged cost_reported / input_tokens_reported) when the
+    provider's response actually contained it."""
 
     def __init__(self):
         self.requests = 0
         self.cost = 0.0
         self.input_tokens = 0
+        self.total_tokens = 0
+        self.cost_reported = False
+        self.input_tokens_reported = False
 
     def add(self, usage) -> None:
         if not isinstance(usage, dict):
             return
         self.requests += 1
-        self.cost += float(usage.get("cost") or 0)
-        self.input_tokens += int(usage.get("input_tokens") or 0)
+        if usage.get("cost") is not None:
+            self.cost += float(usage["cost"])
+            self.cost_reported = True
+        if usage.get("input_tokens") is not None:
+            self.input_tokens += int(usage["input_tokens"])
+            self.input_tokens_reported = True
+        self.total_tokens += int(usage.get("total_tokens") or 0)
 
     def as_dict(self) -> dict:
         return {"paid_requests": self.requests,
                 "cost_usd": round(self.cost, 6),
-                "input_tokens": self.input_tokens}
+                "input_tokens": self.input_tokens,
+                "total_tokens": self.total_tokens,
+                "cost_reported": self.cost_reported,
+                "input_tokens_reported": self.input_tokens_reported}
 
 
 def systemone(model: str, tracker: UsageTracker | None = None):
