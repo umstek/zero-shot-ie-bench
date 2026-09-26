@@ -13,11 +13,11 @@ datapoint.
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    .venv/Scripts/python nanodiff_demo.py
+    .venv/Scripts/python demos/nanodiff_demo.py
 
 Web-UI runner (the app's nanodiff tab spawns this like von_demo.py and
 talks JSON over stdin/stdout):
-    .venv/Scripts/python nanodiff_demo.py --serve
+    .venv/Scripts/python demos/nanodiff_demo.py --serve
     stdin:  {"texts": [str, ...], "task": str, "labels": [str, ...]}
     stdout: {"results": [{"choice": str | None,
                           "probabilities": {label: float}}, ...]}
@@ -25,6 +25,10 @@ talks JSON over stdin/stdout):
 """
 
 from __future__ import annotations
+
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 
 import json
 import sys
@@ -146,8 +150,8 @@ def tour() -> None:
     show(row["probabilities"])
 
     print("\nDone. Same texts through the autoregressive decision engines:  "
-          ".venv/Scripts/python certo_demo.py / "
-          ".venv-von/Scripts/python mojev_demo.py\n")
+          ".venv/Scripts/python demos/certo_demo.py / "
+          ".venv-von/Scripts/python demos/mojev_demo.py\n")
 
 
 def main() -> None:

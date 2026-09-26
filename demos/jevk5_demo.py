@@ -10,11 +10,11 @@ transformers 5, so it lives in .venv-von, not the main venv.
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    .venv-von/Scripts/python jevk5_demo.py
+    .venv-von/Scripts/python demos/jevk5_demo.py
 
 Web-UI runner (the app's JevK5-Lite tab spawns this like von_demo.py and
 talks JSON over stdin/stdout):
-    .venv-von/Scripts/python jevk5_demo.py --serve
+    .venv-von/Scripts/python demos/jevk5_demo.py --serve
     stdin:  {"texts": [str, ...], "task": str, "labels": [str, ...]}
     stdout: {"results": [{"choice": str | None,
                           "probabilities": {label: float},
@@ -127,8 +127,9 @@ def tour() -> None:
     banner("3. Raw answer shape (softmax within a single-label head)")
     show(lite.classify(SHARED_TEXTS[0], {"sentiment": SENTIMENT_LABELS}))
 
-    print("\nDone. Same texts through Jev/Laya/von:  python demo_jev.py / "
-          "demo_laya.py / .venv-von/Scripts/python von_demo.py\n")
+    print("\nDone. Same texts through Jev/Laya/von:  "
+          "python demos/demo_jev.py / demos/demo_laya.py / "
+          ".venv-von/Scripts/python demos/von_demo.py\n")
 
 
 def main() -> None:

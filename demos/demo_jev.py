@@ -8,10 +8,14 @@ Three question primitives, one request:
 Everything is batched: N texts cost one request, not N.
 
 Run:
-    python demo_jev.py      # 2 live API requests, needs TYPESAFE_API_KEY
+    python demos/demo_jev.py      # 2 live API requests, needs TYPESAFE_API_KEY
 """
 
 from __future__ import annotations
+
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 
 import json
 import sys

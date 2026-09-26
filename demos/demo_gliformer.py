@@ -13,8 +13,8 @@ Model: https://huggingface.co/knowledgator/gliformer-large-v1
 Docs:   https://github.com/Knowledgator/GLiFormer
 
 Run:
-    python demo_gliformer.py                 # large (575.6M, English)
-    python demo_gliformer.py --model base    # base checkpoint
+    python demos/demo_gliformer.py                 # large (575.6M, English)
+    python demos/demo_gliformer.py --model base    # base checkpoint
 """
 
 from __future__ import annotations
@@ -219,7 +219,7 @@ def main() -> None:
         except Exception as exc:  # keep the tour going if one API drifts
             print(f"  [skipped] {section.__name__}: {type(exc).__name__}: {exc}")
 
-    print("\nDone. Compare with GLiNER 2.5:  python demo.py\n")
+    print("\nDone. Compare with GLiNER 2.5:  python demos/demo.py\n")
 
 
 if __name__ == "__main__":

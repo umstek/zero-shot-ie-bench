@@ -421,29 +421,29 @@ file in the repo root (gitignored) — see `engines/jev_client.py`; Jev is a pai
 ## Run
 
 ```bash
-.venv/Scripts/python demo.py             # GLiNER 2.5 tour: entities,
+.venv/Scripts/python demos/demo.py       # GLiNER 2.5 tour: entities,
                                          # classification, relations, JointIE,
                                          # span attributes, records — ends
                                          # with the decision-tuned sibling
                                          # GLiNER2.5-Decide (--model decide
                                          # tours only that checkpoint)
-.venv/Scripts/python demo_gliformer.py   # GLiFormer tour + embeddings
+.venv/Scripts/python demos/demo_gliformer.py   # GLiFormer tour + embeddings
                                           # (--model base or large)
-.venv/Scripts/python demo_laya.py        # Laya tour + multilingual Router
-.venv/Scripts/python demo_jev.py         # Jev tour (2 paid API requests)
-.venv-von/Scripts/python jevk5_demo.py   # JevK5-Lite tour (label-head
+.venv/Scripts/python demos/demo_laya.py        # Laya tour + multilingual Router
+.venv/Scripts/python demos/demo_jev.py         # Jev tour (2 paid API requests)
+.venv-von/Scripts/python demos/jevk5_demo.py   # JevK5-Lite tour (label-head
                                          # encoder; transformers-5 venv)
-.venv-von/Scripts/python lfm_rlcd_demo.py # LFM2.5-RLCD constrained-decoding
+.venv-von/Scripts/python demos/lfm_rlcd_demo.py # LFM2.5-RLCD constrained-decoding
                                           # tour (vendored engines/rlcd_engine/)
-.venv/Scripts/python reranker_demo.py    # three cross-encoder rerankers as
+.venv/Scripts/python demos/reranker_demo.py    # three cross-encoder rerankers as
                                          # decision engines: pair scores +
                                          # argmax (sentence-transformers)
-.venv/Scripts/python certo_demo.py       # Certo 421M calibrated decide()
+.venv/Scripts/python demos/certo_demo.py       # Certo 421M calibrated decide()
                                          # tour (vendored engines/certo_engine/)
-.venv/Scripts/python nanodiff_demo.py    # nanodiff 350M diffusion-LM tour
+.venv/Scripts/python demos/nanodiff_demo.py    # nanodiff 350M diffusion-LM tour
                                          # (~10 s/question; vendored
                                          # engines/nanodiff_engine/)
-.venv-von/Scripts/python mojev_demo.py   # MoJev 0.85B packed one-pass
+.venv-von/Scripts/python demos/mojev_demo.py   # MoJev 0.85B packed one-pass
                                          # scoring (transformers-5 venv)
 
 .venv/Scripts/python bench.py            # flat suite, 5 runs per case
@@ -477,11 +477,11 @@ Verdict) run as separate servers or venvs and are covered in the
 benchmark and compare tabs. Benchmark charts are altair-based: sorted
 bars, a speed-accuracy scatter, accuracy-vs-difficulty lines and a
 system × language heatmap. von, JevK5-Lite, LFM2.5-RLCD and MoJev run in
-their own venv (`.venv-von`): the von tab spawns `von_demo.py`, the
-JevK5-Lite, LFM2.5-RLCD and MoJev tabs spawn `jevk5_demo.py` /
-`lfm_rlcd_demo.py --serve` / `mojev_demo.py --serve`, each loading its
+their own venv (`.venv-von`): the von tab spawns `demos/von_demo.py`, the
+JevK5-Lite, LFM2.5-RLCD and MoJev tabs spawn `demos/jevk5_demo.py` /
+`demos/lfm_rlcd_demo.py --serve` / `demos/mojev_demo.py --serve`, each loading its
 model once per click in a single `.venv-von` process. The nanodiff tab
-spawns `nanodiff_demo.py --serve` under the main venv python for the same
+spawns `demos/nanodiff_demo.py --serve` under the main venv python for the same
 one-process-per-click pattern. von's shared loader (`engines/von_client.py`) pins
 the upstream SDK and model revision and requires the complete
 `option_marker.pt` state dict. Missing or incompatible weights fail
@@ -579,15 +579,15 @@ in the tables above now. The remaining trial results:
 
 | File | What it is |
 |---|---|
-| `demo.py` / `demo_gliformer.py` / `demo_laya.py` / `demo_jev.py` | scripted tours, one per system, shared sample texts |
-| `jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `lfm_rlcd_demo.py` | LFM2.5-RLCD tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
-| `certo_demo.py` | Certo 421M calibrated `decide()` tour (vendored `engines/certo_engine/`, main venv) |
-| `mojev_demo.py` | MoJev 0.85B tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `nanodiff_demo.py` | nanodiff 350M diffusion-LM tour + one-shot runner (`--serve`) in the main venv, spawned by its web-UI tab |
+| `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
+| `demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `demos/lfm_rlcd_demo.py` | LFM2.5-RLCD tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
+| `demos/certo_demo.py` | Certo 421M calibrated `decide()` tour (vendored `engines/certo_engine/`, main venv) |
+| `demos/mojev_demo.py` | MoJev 0.85B tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `demos/nanodiff_demo.py` | nanodiff 350M diffusion-LM tour + one-shot runner (`--serve`) in the main venv, spawned by its web-UI tab |
 | `app.py` | Gradio web UI: live tab per family + benchmark + compare |
-| `von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
+| `demos/von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
 | `engines/von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |

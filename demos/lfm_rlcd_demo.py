@@ -12,11 +12,11 @@ lives in .venv-von, not the main venv.
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    .venv-von/Scripts/python lfm_rlcd_demo.py
+    .venv-von/Scripts/python demos/lfm_rlcd_demo.py
 
 Web-UI runner (the app's LFM2.5-RLCD tab spawns this like von_demo.py and
 talks JSON over stdin/stdout):
-    .venv-von/Scripts/python lfm_rlcd_demo.py --serve
+    .venv-von/Scripts/python demos/lfm_rlcd_demo.py --serve
     stdin:  {"texts": [str, ...], "task": str, "labels": [str, ...]}
     stdout: {"results": [{"choice": str | None,
                           "log_likelihoods": {value: float}}, ...]}
@@ -24,6 +24,10 @@ talks JSON over stdin/stdout):
 """
 
 from __future__ import annotations
+
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 
 import json
 import sys
@@ -152,8 +156,9 @@ def tour() -> None:
         res = timed(engine.constrained, text, schema)
         print(f'  {res["text"]:<58} "{text[:44]}"')
 
-    print("\nDone. Same texts through Jev/Laya/von:  python demo_jev.py / "
-          "demo_laya.py / .venv-von/Scripts/python von_demo.py\n")
+    print("\nDone. Same texts through Jev/Laya/von:  "
+          "python demos/demo_jev.py / demos/demo_laya.py / "
+          ".venv-von/Scripts/python demos/von_demo.py\n")
 
 
 def main() -> None:

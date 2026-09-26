@@ -916,7 +916,7 @@ def build_von_tab():
                     "396M ModernBERT with its trained option-marker head, "
                     "Apache 2.0. It needs transformers 5, "
                     "so the app runs it in a separate venv (`.venv-von`): "
-                    "each click spawns `von_demo.py`, which loads the model "
+                    "each click spawns `demos/von_demo.py`, which loads the model "
                     "once and answers every line in that single process. "
                     "Install `requirements-von.txt` in that environment; "
                     "first use downloads the complete trained checkpoint.")
@@ -945,7 +945,7 @@ def build_von_tab():
             if not texts or not choices:
                 return {"error": "provide text lines and choices"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "von_demo.py")
+                os.path.abspath(__file__)), "demos", "von_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper],
@@ -976,7 +976,7 @@ def build_jevk5_tab():
                     "jevk5 project: one forward pass scores every label "
                     "of every head with calibrated probabilities. It "
                     "needs transformers 5.17, so the app runs it in "
-                    "`.venv-von`: each click spawns `jevk5_demo.py "
+                    "`.venv-von`: each click spawns `demos/jevk5_demo.py "
                     "--serve`, which loads the model once and answers "
                     "every line in that single process (install "
                     "`jevk5[lite]` + `jsonschema` there — see README).")
@@ -1003,7 +1003,7 @@ def build_jevk5_tab():
                 return {"error": "provide at least two distinct labels "
                                  "(jevk5 rejects a label set of one)"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "jevk5_demo.py")
+                os.path.abspath(__file__)), "demos", "jevk5_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper, "--serve"],
@@ -1036,7 +1036,7 @@ def build_lfm_tab():
                     "pass and assembles the JSON from the argmax "
                     "likelihoods. It needs transformers 5.17 + "
                     "`jsonschema`, so the app runs it in `.venv-von`: "
-                    "each click spawns `lfm_rlcd_demo.py --serve`, which "
+                    "each click spawns `demos/lfm_rlcd_demo.py --serve`, which "
                     "loads the model once and answers every line in that "
                     "single process (see README).")
         lfm_text = gr.Textbox(
@@ -1066,7 +1066,7 @@ def build_lfm_tab():
                 return {"error": "at most 12 values (each is a separate "
                                  "constrained-decoding branch)"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "lfm_rlcd_demo.py")
+                os.path.abspath(__file__)), "demos", "lfm_rlcd_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper, "--serve"],
@@ -1226,7 +1226,7 @@ def build_mojev_tab():
                     "forward pass scores all candidates. Its scorer class "
                     "loads via trust_remote_code and needs transformers "
                     "5.17, so the app runs it in `.venv-von`: each click "
-                    "spawns `mojev_demo.py --serve`, which loads the model "
+                    "spawns `demos/mojev_demo.py --serve`, which loads the model "
                     "once and answers every line in that single process "
                     "(see README).")
         mj_text = gr.Textbox(
@@ -1251,7 +1251,7 @@ def build_mojev_tab():
             if len(set(labels)) < 2:
                 return {"error": "provide at least two distinct candidates"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "mojev_demo.py")
+                os.path.abspath(__file__)), "demos", "mojev_demo.py")
             try:
                 proc = subprocess.run(
                     [VON_PY, helper, "--serve"],
@@ -1286,7 +1286,7 @@ def build_nanodiff_tab():
                     "bidirectional forward scores every option (vendored "
                     "`engines/nanodiff_engine/`, MIT) — the only non-autoregressive "
                     "system here. Runs in the main venv (tiktoken); the tab "
-                    "spawns `nanodiff_demo.py --serve`, which loads the "
+                    "spawns `demos/nanodiff_demo.py --serve`, which loads the "
                     "checkpoint once per click. Slow on CPU (~10 "
                     "s/question) — the diffusion datapoint, chance-level "
                     "at 350M.")
@@ -1316,7 +1316,7 @@ def build_nanodiff_tab():
                 return {"error": "at most 10 options (option-letter token "
                                  "ids A-J in the released format)"}
             helper = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), "nanodiff_demo.py")
+                os.path.abspath(__file__)), "demos", "nanodiff_demo.py")
             try:
                 proc = subprocess.run(
                     [MAIN_PY, helper, "--serve"],

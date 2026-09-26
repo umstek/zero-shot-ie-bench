@@ -8,7 +8,7 @@ import unittest
 
 class VonPipeTests(unittest.TestCase):
     def test_non_ascii_choices_round_trip_through_windows_code_page(self):
-        helper = Path(__file__).resolve().parents[1] / "von_demo.py"
+        helper = Path(__file__).resolve().parents[1] / "demos" / "von_demo.py"
         script = """
 import runpy, sys, types
 def decide(**kw):
