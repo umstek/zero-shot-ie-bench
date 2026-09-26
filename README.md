@@ -244,15 +244,19 @@ The OpenRouter wave adds the hosting axis: the Kev family benched locally
 at 0.8B is also served as `jaredpalmer/kev-4b` behind OpenRouter's
 `/systemone` router (TypeSafe wire format; SiliconFlow endpoint,
 $0.042/M input). Hosted kev-4b ties GLiNER2.5-Decide for the best
-non-Jev mixed-pool score (85.4%) and takes second place overall on the
-multilingual suite (98.1% — Jev 100%, next local 89%). The same wave
-wires seven OpenRouter rerankers (Qwen3-Reranker 8B, Voyage rerank-2.5
-and -lite, NVIDIA Nemotron Rerank VL 1B, Cohere Rerank 4 Pro / 4 Fast /
-v3.5) and the Respan Span-01 behavior scorer with the same decision-engine
-mappings †; their rows land as the benchmark account's OpenRouter privacy
-settings stop enforcing ZDR-only providers (every rerank and Span
-endpoint is non-ZDR; kev's SiliconFlow endpoint is ZDR, which is why it
-runs). Also on OpenRouter but deliberately not benched: `typesafe/jev-1.13`
+non-Jev decision-engine mixed-pool score (85.4%) and takes second place
+overall on the multilingual suite (98.1% — Jev 100%, next local 89%).
+The wave's headline, though, is **qwen3-reranker-8b at 87.5%** — the
+best non-Jev mixed-pool score of all 38 systems, one more datapoint for
+rerankers doubling as decision engines (Qwen serves it free). The Respan
+Span-01 behavior scorer lands 85.4% on the mixed pool and 98%
+multilingual (tied with kev-4b; its Lite tier drops to 79% / 87%), and
+Cohere's Rerank 4 Pro joins the 85.4% mixed-pool club with 83%
+multilingual. The cheaper hosted tiers fade fast: voyage rerank-2.5
+79%/74% (lite 65%/65%), Cohere 4 Fast 71%/56%, v3.5 67%/65%. The one
+clear miss is NVIDIA's Nemotron Rerank VL 1B — a vision reranker scored
+on text-only pairs, 35%/41%. All hosted rows are non-ZDR †. Also on
+OpenRouter but deliberately not benched: `typesafe/jev-1.13`
 (RBAC-gated there, and Jev is already measured through TypeSafe's own
 API) and `typesafe/jev-router` (a chat router, not a typed-decision
 endpoint).
@@ -290,28 +294,36 @@ PR for native-speaker review. All 38 systems answer the same 54 texts.
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
 | Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
-| Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
+| Span-01 † | 100% | 100% | 94% | 98% |
+| qwen3-reranker-8b (OpenRouter) † | 100% | 100% | 83% | 94% |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
+| Span-01 Lite † | 100% | 100% | 61% | 87% |
 | decider 0.8B (local) | 100% | 100% | 50% | 83% |
 | OpenThai 0.8B (local) | 100% | 100% | 50% | 83% |
 | MoJev 0.85B | 100% | 100% | 50% | 83% |
+| cohere-rerank-4-pro (OpenRouter) † | 100% | 89% | 61% | 83% |
 | gliclass-large | 100% | 89% | 56% | 81% |
 | Kev 0.8B (local) | 94% | 89% | 50% | 78% |
 | JevK5-Lite | 100% | 89% | 44% | 78% |
 | Laya Router (mmBERT) | 89% | 94% | 44% | 76% |
+| voyage-rerank-2.5 (OpenRouter) † | 83% | 78% | 61% | 74% |
 | gliclass-base | 94% | 67% | 39% | 67% |
 | bge-reranker-v2-m3 | 67% | 67% | 67% | 67% |
+| cohere-rerank-v3.5 (OpenRouter) † | 67% | 67% | 67% | 65% |
+| voyage-rerank-2.5-lite (OpenRouter) † | 94% | 61% | 39% | 65% |
 | GLiNER2.5-Decide | 89% | 83% | 33% | 69% |
 | GLiFormer-large | 94% | 61% | 33% | 63% |
 | AgentJev 0.6B (local) | 83% | 83% | 22% | 63% |
 | Laya typed-decisions | 100% | 44% | 33% | 59% |
 | GLiNER2.5-base | 89% | 50% | 28% | 56% |
+| cohere-rerank-4-fast (OpenRouter) † | 72% | 61% | 33% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
 | LFM2.5-RLCD 350M | 78% | 67% | 11% | 52% |
 | von-1.0 (option-marker) | 72% | 33% | 39% | 48% |
 | mxbai-rerank-base-v2 | 56% | 50% | 39% | 48% |
 | GTE-rerank-ModernBERT-base | 61% | 33% | 39% | 44% |
 | gliclass-modern-base | 44% | 33% | 39% | 39% |
+| nemotron-rerank-vl-1b (OpenRouter) † | 50% | 33% | 39% | 41% |
 | so1 + Qwen2.5-0.5B | 39% | 39% | 33% | 37% |
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
 | nanodiff 350M | 28% | 39% | 39% | 35% |
