@@ -1,11 +1,11 @@
-"""Interactive demo + benchmarks for thirty-eight zero-shot IE/classification
+"""Interactive demo + benchmarks for forty zero-shot IE/classification
 systems across twenty-three families. Live tabs: GLiNER 2.5 (with the
-decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiClass,
-Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, so1,
-Jev (cloud) and OpenRouter (hosted); benchmark tabs hold the measured
-numbers for the thirty-eight benchmarked systems (GLiREL is demoed but
-not yet benchmarked), the OpenRouter-hosted systems (Kev 4B, Span-01,
-seven rerankers) included.
+decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
+GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
+nanodiff, so1, Jev (cloud) and OpenRouter (hosted); benchmark tabs hold
+the measured numbers for the thirty-eight benchmarked systems (GLiREL
+and GLiNER-relex are demoed but not yet benchmarked), the
+OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -1071,6 +1071,170 @@ def build_glirel_tab():
                             [rl_text, rl_labels, rl_threshold], rl_json)
 
 
+# ----------------------------------------------------- GLiNER-relex tab
+# Knowledgator's joint NER + relation extractor: spans and (head, tail)
+# scores come out of ONE pass (no external entity model, unlike GLiREL);
+# the spec's optional head/tail entity-type constraints apply post-hoc.
+GLINER_RELEX_MODEL = "knowledgator/gliner-relex-multi-v1.0"
+GLINER_RELEX_SPEC_DEFAULT = """[
+ {"name": "works for", "head": "person", "tail": "company"},
+ {"name": "ceo of", "head": "person", "tail": "company"},
+ {"name": "produced by", "head": "product", "tail": "company"},
+ {"name": "headquartered in", "head": "company", "tail": "location"}
+]"""
+_GLINER_RELEX_MODELS: dict[str, object] = {}
+_GLINER_RELEX_LOCK = threading.Lock()
+
+
+def get_gliner_relex_model():
+    """Lazy loader: the ~319M checkpoint (~1.3 GB) downloads and loads on
+    the first click, so startup only preloads GLiNER + GLiFormer."""
+    with _GLINER_RELEX_LOCK:
+        if GLINER_RELEX_MODEL not in _GLINER_RELEX_MODELS:
+            from gliner import GLiNER
+
+            _GLINER_RELEX_MODELS[GLINER_RELEX_MODEL] = GLiNER.from_pretrained(
+                GLINER_RELEX_MODEL)
+        return _GLINER_RELEX_MODELS[GLINER_RELEX_MODEL]
+
+
+def parse_relation_specs(specs_json: str):
+    """Parse the relation spec textbox (JSON list of {"name", "head"?,
+    "tail"?} dicts or plain strings) -> ((names, constraints), error)."""
+    try:
+        specs = json.loads(specs_json)
+    except json.JSONDecodeError as exc:
+        return None, f"relation spec is not valid JSON: {exc}"
+    if isinstance(specs, dict):
+        specs = [specs]
+    if not isinstance(specs, list):
+        return None, "relation spec must be a JSON list of dicts or strings"
+    names, constraints = [], {}
+    for i, spec in enumerate(specs, 1):
+        if isinstance(spec, str):
+            spec = {"name": spec}
+        if not isinstance(spec, dict) or not str(spec.get("name", "")).strip():
+            return None, f"relation {i}: expected a non-empty 'name'"
+        name = str(spec["name"]).strip()
+        names.append(name)
+        head, tail = spec.get("head"), spec.get("tail")
+        if head or tail:
+            constraints[name] = (head or None, tail or None)
+    if not names:
+        return None, "provide at least one relation"
+    return (names, constraints), None
+
+
+def build_gliner_relex_tab():
+    import gradio as gr
+
+    with gr.Tab("GLiNER-relex"):
+        gr.Markdown("### GLiNER-relex (~319M, local, CPU) — zero-shot joint "
+                    "NER + relation extraction (Apache 2.0)\n"
+                    "Knowledgator's multilingual gliner-line relex model: "
+                    "one pass predicts entity spans and scores every "
+                    "(head, tail) pair against free-text relation labels "
+                    "— no separate entity model needed (unlike GLiREL). "
+                    "Relations are specified as JSON dicts; optional "
+                    "head/tail entity-type constraints are applied "
+                    "post-hoc. Loads on first click (~1.3 GB download).")
+        with gr.Tab("Entities"):
+            with gr.Row():
+                gre_text = gr.Textbox(label="Text", value=SAMPLE_TEXT, lines=5)
+                gre_labels = gr.Textbox(
+                    label="Entity labels (comma-separated)",
+                    value="company, person, product, location")
+            gre_threshold = gr.Slider(minimum=0.0, maximum=1.0, value=0.4,
+                                      step=0.05, label="Entity threshold")
+            gre_button = gr.Button("Extract entities", variant="primary")
+            gre_highlight = gr.HighlightedText(label="Highlights",
+                                               show_legend=True)
+            gre_json = gr.JSON(label="Entities (char offsets + scores)")
+
+            def run_entities(text, labels_csv, threshold):
+                labels = parse_labels(labels_csv)
+                if not text or not labels:
+                    return [], {"error": "provide text and entity labels"}
+                try:
+                    result = get_gliner_relex_model().inference(
+                        texts=[text], labels=labels, relations=[],
+                        threshold=threshold, return_relations=False)
+                except Exception as exc:
+                    return [], {"error": str(exc)}
+                spans = [(ent["start"], ent["end"], ent["label"])
+                         for ent in result[0]]
+                return tile_highlights(text, spans), result[0]
+
+            gre_button.click(run_entities,
+                             [gre_text, gre_labels, gre_threshold],
+                             [gre_highlight, gre_json])
+
+        with gr.Tab("Relations"):
+            with gr.Row():
+                grr_text = gr.Textbox(label="Text", value=SAMPLE_TEXT, lines=5)
+                grr_labels = gr.Textbox(
+                    label="Entity labels (comma-separated)",
+                    value="company, person, product, location")
+            grr_specs = gr.Textbox(
+                label="Relations (JSON list; head/tail optionally constrain "
+                      "the entity types, applied post-hoc)",
+                value=GLINER_RELEX_SPEC_DEFAULT, lines=6)
+            with gr.Row():
+                grr_threshold = gr.Slider(minimum=0.0, maximum=1.0, value=0.4,
+                                          step=0.05,
+                                          label="Entity threshold")
+                grr_rel_threshold = gr.Slider(minimum=0.0, maximum=1.0,
+                                              value=0.7, step=0.05,
+                                              label="Relation threshold "
+                                                    "(card suggests 0.7-0.9)")
+            grr_button = gr.Button("Extract relations", variant="primary")
+            grr_json = gr.JSON(label="Relations (sorted by score)")
+
+            def run_relations(text, labels_csv, specs_json, entity_threshold,
+                              relation_threshold):
+                labels = parse_labels(labels_csv)
+                if not text or not labels:
+                    return {"error": "provide text and entity labels"}
+                parsed, error = parse_relation_specs(specs_json)
+                if error:
+                    return {"error": error}
+                names, constraints = parsed
+                try:
+                    _, relations = get_gliner_relex_model().inference(
+                        texts=[text], labels=labels, relations=names,
+                        threshold=entity_threshold,
+                        relation_threshold=relation_threshold, flat_ner=False)
+                except Exception as exc:
+                    return {"error": str(exc)}
+                rows = sorted(({"relation": rel["relation"],
+                                "head": rel["head"]["text"],
+                                "head_type": rel["head"]["type"],
+                                "tail": rel["tail"]["text"],
+                                "tail_type": rel["tail"]["type"],
+                                "score": round(rel["score"], 3)}
+                               for rel in relations[0]),
+                              key=lambda r: r["score"], reverse=True)
+
+                def type_ok(row):
+                    head_c, tail_c = constraints.get(row["relation"],
+                                                     (None, None))
+                    return ((head_c is None or row["head_type"] == head_c)
+                            and (tail_c is None
+                                 or row["tail_type"] == tail_c))
+
+                kept = [row for row in rows if type_ok(row)]
+                dropped = [row for row in rows if not type_ok(row)]
+                if dropped:
+                    return {"kept": kept,
+                            "dropped_by_constraints": dropped}
+                return kept or {"note": "no relation scored above the "
+                                        "threshold"}
+
+            grr_button.click(run_relations,
+                             [grr_text, grr_labels, grr_specs,
+                              grr_threshold, grr_rel_threshold], grr_json)
+
+
 def build_jev_tab():
     import gradio as gr
 
@@ -1825,7 +1989,8 @@ def main() -> None:
         gr.Markdown("# Zero-shot information extraction & classification\n"
                     "Live tabs for the in-process and spawnable systems: "
                     "GLiNER 2.5 (with the decision-tuned GLiNER2.5-Decide "
-                    "sibling), GLiFormer, GLiREL, GLiClass, Rerankers "
+                    "sibling), GLiFormer, GLiREL, GLiNER-relex, GLiClass, "
+                    "Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
                     "so1, the cloud Jev and the ten OpenRouter-hosted "
@@ -1837,6 +2002,7 @@ def main() -> None:
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
         build_glirel_tab()
+        build_gliner_relex_tab()
         build_gliclass_tab()
         build_reranker_tab()
         build_laya_tab()

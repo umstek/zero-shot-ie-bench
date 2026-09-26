@@ -1,6 +1,10 @@
 gliner2[local]>=2.0.0
 gliformer>=0.1.2
 glirel>=1.2.1
+# gliner is already gliformer's dependency; the floor is the version the
+# relex checkpoint (knowledgator/gliner-relex-multi-v1.0, relations=
+# inference) was validated on
+gliner>=0.2.29
 laya>=0.3.4
 gliclass==0.1.20
 # Install with uv's --overrides overrides.txt (see README).
