@@ -17,7 +17,7 @@ import json
 import sys
 import time
 
-from jev_client import JevClient, choice, noul, score
+from engines.jev_client import JevClient, choice, noul, score
 
 
 def banner(title: str) -> None:

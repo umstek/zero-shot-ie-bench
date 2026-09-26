@@ -17,7 +17,7 @@ import sys
 def main() -> None:
     payload = json.loads(sys.stdin.read())
     try:
-        from von_client import load_von_decider
+        from engines.von_client import load_von_decider
 
         decide = load_von_decider()
         results = []

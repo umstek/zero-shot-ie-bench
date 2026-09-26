@@ -2,7 +2,7 @@
 
 notnotsamuel/LFM2.5-350M-RLCD keeps the LiquidAI/LFM2.5-350M weights and
 adds RLCD training; inference runs through its constrained-decoding engine,
-vendored in this repo as rlcd_engine/ (engine code MIT; the LFM weights are
+vendored in this repo as engines/rlcd_engine/ (engine code MIT; the LFM weights are
 under the LFM Open License v1.0). The engine prefills the context once,
 branches the attention/convolution state across every field's candidate
 values, scores all branches in one batched pass, and assembles the JSON
@@ -57,7 +57,7 @@ def timed(fn, *args, **kwargs):
 
 
 def load_engine():
-    from rlcd_engine.engine import Engine
+    from engines.rlcd_engine.engine import Engine
 
     t0 = time.perf_counter()
     engine = Engine(device="cpu", dtype="float32")

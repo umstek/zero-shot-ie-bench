@@ -5,7 +5,7 @@ import types
 import unittest
 from unittest.mock import Mock, patch
 
-from von_client import MODEL_REVISION, load_von_decider
+from engines.von_client import MODEL_REVISION, load_von_decider
 
 
 class VonLoadingTests(unittest.TestCase):

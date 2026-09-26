@@ -10,7 +10,7 @@ to https://api.typesafe.ai/v1/systemone with a Bearer key. Questions:
 Answers come back as {"answers": {name: {...}}, "usage": {...}}.
 
 API key: set the TYPESAFE_API_KEY environment variable, or put
-`TYPESAFE_API_KEY=...` in a `.env` file next to this module (gitignored).
+`TYPESAFE_API_KEY=...` in a `.env` file in the repo root (gitignored).
 Jev is a paid API; each `ask()` call is a request.
 
 No third-party deps on purpose: urllib only.
@@ -34,7 +34,9 @@ def load_api_key() -> str:
     env = os.environ.get("TYPESAFE_API_KEY")
     if env:
         return env.strip()
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    # .env lives in the repo root, one level above engines/
+    env_path = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), ".env")
     try:
         with open(env_path, encoding="utf-8") as fh:
             for line in fh:
@@ -70,7 +72,7 @@ class JevClient:
             if not self.api_key:
                 raise RuntimeError(
                     "No TYPESAFE_API_KEY found. Set the environment variable "
-                    "or create a .env file next to jev_client.py with "
+                    "or create a .env file in the repo root with "
                     "TYPESAFE_API_KEY=... (see README)."
                 )
 

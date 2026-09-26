@@ -21,10 +21,10 @@ demoed, benchmarked, and cross-compared in one repo with a web UI.
 | [OpenThai-SystemOne](https://huggingface.co/iapp-technology/OpenThai-SystemOne) (`openthai-systemone`) | local decision engine (Thai/English, System One contract) | 0.8B | Apache 2.0 package; weights gated on HF |
 | [Verdict](https://huggingface.co/heman10x/rlcd-modernbert-151m) | local decision encoder (ModernBERT + abstention head) | 151M | Apache 2.0, free |
 | [JevK5-Lite](https://huggingface.co/alibiserikbay/JevK5-Lite) (`jevk5` runtime) | local decision classifier (label-head encoder, one pass) | 437M | Apache 2.0, free |
-| [LFM2.5-RLCD](https://huggingface.co/notnotsamuel/LFM2.5-350M-RLCD) (`rlcd_engine/`, vendored) | local decision engine (constrained decoding over LFM2.5) | 350M | engine MIT; weights LFM Open License v1.0 |
-| [Certo 421M](https://huggingface.co/altslate/certo-decision-model) (`certo_engine/`, vendored) | local decision model (calibrated per-option score head over ModernBERT-large, no generation) | 421M | MIT (engine + weights), free |
-| [MoJev](https://huggingface.co/MoLeMo-Lab/mojev) 0.85B (`mojev_engine/`, adapted) | local decision engine (packed one-pass candidate scoring, Qwen3.5 + fla) | 0.85B | engine MIT; checkpoint card MIT (Qwen base-model license on the encoder weights) |
-| [nanodiff 350M](https://huggingface.co/pngwn/nanodiff-350m-typed-decisions-lam1) (`nanodiff_engine/`, vendored) | local decision model (bidirectional diffusion LM — the only non-autoregressive system here) | 350M | MIT, free |
+| [LFM2.5-RLCD](https://huggingface.co/notnotsamuel/LFM2.5-350M-RLCD) (`engines/rlcd_engine/`, vendored) | local decision engine (constrained decoding over LFM2.5) | 350M | engine MIT; weights LFM Open License v1.0 |
+| [Certo 421M](https://huggingface.co/altslate/certo-decision-model) (`engines/certo_engine/`, vendored) | local decision model (calibrated per-option score head over ModernBERT-large, no generation) | 421M | MIT (engine + weights), free |
+| [MoJev](https://huggingface.co/MoLeMo-Lab/mojev) 0.85B (`engines/mojev_engine/`, adapted) | local decision engine (packed one-pass candidate scoring, Qwen3.5 + fla) | 0.85B | engine MIT; checkpoint card MIT (Qwen base-model license on the encoder weights) |
+| [nanodiff 350M](https://huggingface.co/pngwn/nanodiff-350m-typed-decisions-lam1) (`engines/nanodiff_engine/`, vendored) | local decision model (bidirectional diffusion LM — the only non-autoregressive system here) | 350M | MIT, free |
 | [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | paid API |
 
 The GLiNER lineage forked: Urchade Zaratiana (original GLiNER author,
@@ -395,12 +395,12 @@ OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne \
 # agent-jev venv python.
 # JevK5-Lite, LFM2.5-RLCD 350M and MoJev 0.85B also run in .venv-von
 # (transformers 5.17 is already pinned there): the jevk5 lite runtime plus
-# jsonschema. The LFM engine itself is vendored in rlcd_engine/ (engine
+# jsonschema. The LFM engine itself is vendored in engines/rlcd_engine/ (engine
 # code MIT; the LiquidAI/LFM2.5-350M weights it loads are under the LFM
 # Open License v1.0). MoJev is a 0.85B Qwen3.5 + fla packed one-pass scorer
 # whose scorer class loads from the checkpoint via trust_remote_code; its
-# request path is adapted in mojev_engine/ (MIT). Certo (certo_engine/,
-# vendored from the certo repo, MIT) and nanodiff (nanodiff_engine/,
+# request path is adapted in engines/mojev_engine/ (MIT). Certo (engines/certo_engine/,
+# vendored from the certo repo, MIT) and nanodiff (engines/nanodiff_engine/,
 # vendored from BY571/nanoDiff + the pngwn release, MIT) run in the main
 # venv — nothing extra to install beyond sentence-transformers above:
 uv pip install --python .venv-von/Scripts/python.exe "jevk5[lite]==0.3.1" jsonschema
@@ -416,7 +416,7 @@ Notes: `protobuf` and `sentencepiece` are included explicitly because
 `gliner2[local]` does not pull them in and the DeBERTa tokenizer needs them.
 Model checkpoints (~0.3–2.3 GB each) download from Hugging Face on first
 run. For Jev only: set `TYPESAFE_API_KEY` in the environment or a `.env`
-file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
+file in the repo root (gitignored) — see `engines/jev_client.py`; Jev is a paid API.
 
 ## Run
 
@@ -434,15 +434,15 @@ file in the repo root (gitignored) — see `jev_client.py`; Jev is a paid API.
 .venv-von/Scripts/python jevk5_demo.py   # JevK5-Lite tour (label-head
                                          # encoder; transformers-5 venv)
 .venv-von/Scripts/python lfm_rlcd_demo.py # LFM2.5-RLCD constrained-decoding
-                                          # tour (vendored rlcd_engine/)
+                                          # tour (vendored engines/rlcd_engine/)
 .venv/Scripts/python reranker_demo.py    # three cross-encoder rerankers as
                                          # decision engines: pair scores +
                                          # argmax (sentence-transformers)
 .venv/Scripts/python certo_demo.py       # Certo 421M calibrated decide()
-                                         # tour (vendored certo_engine/)
+                                         # tour (vendored engines/certo_engine/)
 .venv/Scripts/python nanodiff_demo.py    # nanodiff 350M diffusion-LM tour
                                          # (~10 s/question; vendored
-                                         # nanodiff_engine/)
+                                         # engines/nanodiff_engine/)
 .venv-von/Scripts/python mojev_demo.py   # MoJev 0.85B packed one-pass
                                          # scoring (transformers-5 venv)
 
@@ -482,7 +482,7 @@ JevK5-Lite, LFM2.5-RLCD and MoJev tabs spawn `jevk5_demo.py` /
 `lfm_rlcd_demo.py --serve` / `mojev_demo.py --serve`, each loading its
 model once per click in a single `.venv-von` process. The nanodiff tab
 spawns `nanodiff_demo.py --serve` under the main venv python for the same
-one-process-per-click pattern. von's shared loader (`von_client.py`) pins
+one-process-per-click pattern. von's shared loader (`engines/von_client.py`) pins
 the upstream SDK and model revision and requires the complete
 `option_marker.pt` state dict. Missing or incompatible weights fail
 before inference; there is no random-head fallback. First use downloads
@@ -514,13 +514,13 @@ extra Laya checkpoints noted below):
 | `iapp/OpenThai-SystemOne` | 0.8B | Qwen3.5 Gated DeltaNet hybrid + 256-way slot head, Thai/English — benchmarked (weights gated on HF) |
 | `heman10x/rlcd-modernbert-151m` | 151M | ModernBERT-base decision head with trained abstention ("Verdict") — benchmarked |
 | `alibiserikbay/JevK5-Lite` | 437M | lite build of JevK5 (JevBench #3): label-head DeBERTa-v3-large encoder, `jevk5` package — benchmarked |
-| `notnotsamuel/LFM2.5-350M-RLCD` | 350M | LFM2.5 backbone + RLCD training; vendored constrained-decoding engine (`rlcd_engine/`) — benchmarked |
+| `notnotsamuel/LFM2.5-350M-RLCD` | 350M | LFM2.5 backbone + RLCD training; vendored constrained-decoding engine (`engines/rlcd_engine/`) — benchmarked |
 | `mixedbread-ai/mxbai-rerank-base-v2` | 494M | cross-encoder reranker, (instruction, label) pair scoring — benchmarked as a decision engine |
 | `BAAI/bge-reranker-v2-m3` | 568M | XLM-RoBERTa-large cross-encoder, multilingual — benchmarked; best reranker here (72.9%) |
 | `Alibaba-NLP/gte-reranker-modernbert-base` | 150M | ModernBERT-base cross-encoder — benchmarked |
-| `altslate/certo-decision-model` | 421M | ModernBERT-large + calibrated per-option score head; vendored engine (`certo_engine/`) — benchmarked |
-| `MoLeMo-Lab/mojev` | 0.85B | Qwen3.5 + fla packed one-pass scorer, loads via trust_remote_code; adapted engine (`mojev_engine/`) — benchmarked |
-| `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (BY571/nanoDiff architecture); vendored engine (`nanodiff_engine/`) — benchmarked |
+| `altslate/certo-decision-model` | 421M | ModernBERT-large + calibrated per-option score head; vendored engine (`engines/certo_engine/`) — benchmarked |
+| `MoLeMo-Lab/mojev` | 0.85B | Qwen3.5 + fla packed one-pass scorer, loads via trust_remote_code; adapted engine (`engines/mojev_engine/`) — benchmarked |
+| `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (BY571/nanoDiff architecture); vendored engine (`engines/nanodiff_engine/`) — benchmarked |
 | `akhilaaa3/Jev-Omni` | 12B | multimodal (text/image/audio/video) Gemma 4 fine-tune, own API — not run: needs a CUDA GPU and ~50 GB fp32 weights |
 | `fastino/gliner2-{base,large,multi}-v1` | — | older span-architecture line, different loader — not run |
 | `gliner-community/gliner_*-v2.5` | — | classic `gliner` package line — not run |
@@ -583,14 +583,14 @@ in the tables above now. The remaining trial results:
 | `jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `lfm_rlcd_demo.py` | LFM2.5-RLCD tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
-| `certo_demo.py` | Certo 421M calibrated `decide()` tour (vendored `certo_engine/`, main venv) |
+| `certo_demo.py` | Certo 421M calibrated `decide()` tour (vendored `engines/certo_engine/`, main venv) |
 | `mojev_demo.py` | MoJev 0.85B tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `nanodiff_demo.py` | nanodiff 350M diffusion-LM tour + one-shot runner (`--serve`) in the main venv, spawned by its web-UI tab |
 | `app.py` | Gradio web UI: live tab per family + benchmark + compare |
 | `von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
-| `von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
-| `jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
-| `agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
+| `engines/von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
+| `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
+| `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
@@ -602,6 +602,6 @@ in the tables above now. The remaining trial results:
 
 MIT — see [LICENSE](LICENSE). Model licenses belong to their authors
 (Apache 2.0 for the open model families; so1's library is MIT; the
-vendored `certo_engine/`, `mojev_engine/` and `nanodiff_engine/` are MIT;
+vendored `engines/certo_engine/`, `engines/mojev_engine/` and `engines/nanodiff_engine/` are MIT;
 the LiquidAI/LFM2.5-350M weights behind LFM2.5-RLCD are under the LFM Open
 License v1.0); Jev access is subject to TypeSafe AI's terms.

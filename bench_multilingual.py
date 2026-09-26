@@ -206,11 +206,11 @@ def make_classifier(name: str):
             out = model.classify(text, labels, threshold=0.5)
             return out[0]["class_name"] if out else None
     elif name == "Certo 421M":
-        # calibrated non-generative decision model (vendored certo_engine/):
+        # calibrated non-generative decision model (vendored engines/certo_engine/):
         # score each label description against the state in one forward pass
         from huggingface_hub import snapshot_download
 
-        from certo_engine import DecisionModel
+        from engines.certo_engine import DecisionModel
 
         model = DecisionModel.load(
             snapshot_download("altslate/certo-decision-model"), device="cpu")
@@ -253,7 +253,7 @@ def make_decider(name: str):
     for JevK5-Lite (same per-text call shape)."""
     labels = list(SENTIMENT_LABELS)
     if name == "von":
-        from von_client import load_von_decider
+        from engines.von_client import load_von_decider
 
         decide = load_von_decider()
 
@@ -274,9 +274,9 @@ def make_decider(name: str):
             out = lite.classify(text, {"task": labels})
             return out["task"]["labels"][0] if out["task"]["labels"] else None
     elif name == "LFM2.5-RLCD 350M":
-        # in-process constrained-decision engine (vendored rlcd_engine/),
+        # in-process constrained-decision engine (vendored engines/rlcd_engine/),
         # run under the .venv-von python (transformers 5.17 + jsonschema)
-        from rlcd_engine.engine import Engine
+        from engines.rlcd_engine.engine import Engine
 
         engine = Engine(device="cpu", dtype="float32")
         schema = {"type": "object",
@@ -296,9 +296,9 @@ def make_decider(name: str):
                 return None
     elif name == "MoJev 0.85B":
         # in-process packed one-pass decision scorer (vendored
-        # mojev_engine/), run under the .venv-von python (transformers 5.17
+        # engines/mojev_engine/), run under the .venv-von python (transformers 5.17
         # for the Qwen3.5 encoder)
-        from mojev_engine import load_engine
+        from engines.mojev_engine import load_engine
 
         score, _ = load_engine("cpu")
 
@@ -308,10 +308,10 @@ def make_decider(name: str):
                             labels)
             return pred
     elif name == "nanodiff 350M":
-        # diffusion-LM decision model: nanodiff_engine vendors the NanoDiff
+        # diffusion-LM decision model: engines/nanodiff_engine vendors the NanoDiff
         # class (BY571/nanoDiff); runs in the MAIN venv (tiktoken),
         # slow (~10 s/text)
-        from nanodiff_engine.runner import QUESTION, load_model, predict
+        from engines.nanodiff_engine.runner import QUESTION, load_model, predict
 
         model, _ = load_model("cpu")
 
@@ -334,7 +334,7 @@ def make_decider(name: str):
 def run_laya_router(texts, lang_of):
     from laya import Router
 
-    from jev_client import choice
+    from engines.jev_client import choice
 
     router = Router(device="cpu")
     question = choice(
@@ -363,7 +363,7 @@ def run_laya_typed(texts):
     """Single English-only typed-decisions checkpoint, no routing."""
     import laya
 
-    from jev_client import choice
+    from engines.jev_client import choice
 
     agent = laya.load("convaiinnovations/laya-typed-decisions")
     question = choice(
@@ -380,7 +380,7 @@ def run_laya_typed(texts):
 
 
 def run_jev(texts):
-    from jev_client import JevClient, choice
+    from engines.jev_client import JevClient, choice
 
     client = JevClient()
     questions = {
@@ -401,7 +401,7 @@ def run_systemone(texts, port: int, model: str):
     """Local System One server (Kev/decider/OpenThai), one request per text
     so latency is comparable with the other local models. String
     instructions — the shape these servers and Laya both expect."""
-    from jev_client import JevClient, choice
+    from engines.jev_client import JevClient, choice
 
     client = JevClient(base_url=f"http://127.0.0.1:{port}/v1/systemone",
                        model=model)
@@ -448,7 +448,7 @@ def run_verdict(texts):
 def run_agentjev(texts):
     """AgentJev-0.6B: own loopback contract (port 8149), one request per
     text, fixed per-label option descriptions (no per-question leakage)."""
-    from agentjev_client import ask
+    from engines.agentjev_client import ask
 
     options = {label: f"The text expresses {label} sentiment"
                for label in SENTIMENT_LABELS}
@@ -559,7 +559,7 @@ def main() -> None:
            "load first - timed latencies are warmed." if warmed
            else "first forward pass included."))
     if name == "von":
-        from von_client import provenance
+        from engines.von_client import provenance
 
         out.setdefault("provenance", {})[name] = provenance()
     if laya_routes:

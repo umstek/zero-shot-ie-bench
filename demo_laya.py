@@ -15,7 +15,7 @@ import json
 import sys
 import time
 
-from jev_client import choice, noul, score  # same question dict shape
+from engines.jev_client import choice, noul, score  # same question dict shape
 
 
 def banner(title: str) -> None:

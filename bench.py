@@ -250,7 +250,7 @@ def run_laya(cls_tasks, repeats: int):
     its native batched mode, symmetric with Jev's batching."""
     import laya
 
-    from jev_client import choice
+    from engines.jev_client import choice
 
     agent = laya.load("convaiinnovations/laya")
     results = {}
@@ -281,7 +281,7 @@ def run_laya(cls_tasks, repeats: int):
 
 
 def run_jev(cls_tasks, repeats: int):
-    from jev_client import JevClient
+    from engines.jev_client import JevClient
 
     client = JevClient()
     results = {}

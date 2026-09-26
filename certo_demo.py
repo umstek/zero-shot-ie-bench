@@ -4,7 +4,7 @@ altslate/certo-decision-model (421M) is a calibrated non-generative decision
 model: a ModernBERT-large backbone with a per-option query/scoring head that
 encodes the state once and scores every runtime option from its own text
 description in one forward pass - no text generation, nothing to parse.
-Inference goes through the vendored certo_engine/ (MIT; card documents no
+Inference goes through the vendored engines/certo_engine/ (MIT; card documents no
 PyPI package), so only huggingface_hub + transformers are needed.
 
 Sample texts are shared with the other demos so outputs compare directly.
@@ -69,7 +69,7 @@ def main() -> None:
 
     from huggingface_hub import snapshot_download
 
-    from certo_engine import DecisionModel
+    from engines.certo_engine import DecisionModel
 
     print("Loading altslate/certo-decision-model (421M; first run downloads "
           "the checkpoint)...")
