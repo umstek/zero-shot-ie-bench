@@ -35,6 +35,12 @@ Verdict 151M runs in-process from the Verdict-open-jev checkout
     C:/venvs/agent-jev/Scripts/python bench_spectrum.py \
         --system "Verdict 151M (local)"
 
+Ollaya systems need the local Ollaya daemon (TypeSafe System One contract
+on :11435; install from https://ollaya.dev/download, then `ollaya serve`
+and once `ollaya pull <tag>` per model — see engines/ollaya_client.py):
+    python bench_spectrum.py --system "nli deberta-v3-large (Ollaya)"
+    python bench_spectrum.py --system "winnow e4b (Ollaya)"
+
 OpenRouter-hosted systems need OPENROUTER_API_KEY in .env; their providers
 are not ZDR - they may retain request data:
     python bench_spectrum.py --system "Kev 4B (OpenRouter)"
@@ -55,6 +61,7 @@ import time
 
 from bench import NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, spans_of
 from bench_graded import NER, SENTIMENT, TOPIC
+from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
 RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             "results", "bench_spectrum_results.json")
@@ -109,6 +116,10 @@ OPENROUTER_RERANKERS = {
     "cohere-rerank-4-fast (OpenRouter)": "cohere/rerank-4-fast",
     "cohere-rerank-v3.5 (OpenRouter)": "cohere/rerank-v3.5",
 }
+# served by the local Ollaya daemon over the same System One contract
+# (engines/ollaya_client.py): MoritzLaurer NLI classifiers, vLLM Semantic
+# Router "decision", the full JevK5 4B GGUF and Winnow E4B GGUF
+OLLAYA = OLLAYA_MODELS
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
@@ -116,7 +127,8 @@ ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
                   "Verdict 151M (local)", "von", "JevK5-Lite",
-                  "LFM2.5-RLCD 350M", "so1 (Qwen2.5-0.5B)"])
+                  "LFM2.5-RLCD 350M", "so1 (Qwen2.5-0.5B)"]
+               + list(OLLAYA))
 
 # local servers speaking the System One wire format: one JevClient pattern,
 # different ports. decider and OpenThai lazy-load their weights on the first
@@ -161,7 +173,9 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
     The locals serve the same wire format as Jev on their own ports and get
     string instructions — the shape Laya and Kev both expect; AgentJev has
     its own /api/evaluate contract (port 8149) with label descriptions as
-    option semantics."""
+    option semantics. (Ollaya systems do NOT batch here: their decision
+    layers build the premise from the state, so each text is its own
+    request - see the dedicated branch in main().)"""
     INSTR = {
         "sentiment": 'What is the overall sentiment of this text: "{text}"',
         "topic": 'Which topic category does this text belong to: "{text}"',
@@ -439,6 +453,34 @@ def main() -> None:
             cls_lat.append(time.perf_counter() - t1)
             # abstaining answers nothing: wrong against any gold label
             cls_preds.append(None if res.is_abstention else res.selected_id)
+    elif name in OLLAYA:
+        # Ollaya-served decision models (local daemon on :11435, System One
+        # contract): one request per question, and the state IS the text -
+        # these models' decision layers build their premise from the state,
+        # so embedding the text in the instructions (the shape the kev
+        # servers take) silently drops it for some of them. Criteria carry
+        # the label descriptions these models score (bare-label criteria
+        # measurably hurt the NLI pair encoder). Classification only - no
+        # span extraction, so no NER answers.
+        from engines.jev_client import choice
+        from engines.ollaya_client import systemone
+
+        client = systemone(OLLAYA[name])
+        # pay the first-request model load (winnow:e4b pulls 8 GB into
+        # memory) before the timed section, like the other local servers
+        client.ask("good", {"w": choice(
+            "What is the sentiment of this text?",
+            dict(SENTIMENT_LABELS))}, timeout=600)
+        QUESTION = {"sentiment": "What is the overall sentiment of this text?",
+                    "topic": "Which topic category does this text belong to?"}
+        for q in CLS_QUESTIONS:
+            labels = dict(SENTIMENT_LABELS if q["task"] == "sentiment"
+                          else TOPIC_LABELS)
+            t1 = time.perf_counter()
+            out = client.ask(q["text"], {"q": choice(QUESTION[q["task"]],
+                                                     labels)}, timeout=600)
+            cls_lat.append(time.perf_counter() - t1)
+            cls_preds.append(out["answers"]["q"].get("choice"))
     elif name == "von":
         from engines.von_client import load_von_decider
 
@@ -553,9 +595,11 @@ def main() -> None:
                          "branch in main()")
 
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
-    # only the local System One servers get the untimed warm-up ask; the
-    # hosted or-kev endpoint is stateless, so every request is timed
-    warmed = (name.startswith(("Kev", "decider", "OpenThai"))
+    # only the local System One servers (and Ollaya's first-request model
+    # load) get the untimed warm-up ask; the hosted or-kev endpoint is
+    # stateless, so every request is timed
+    warmed = ((name.startswith(("Kev", "decider", "OpenThai"))
+               or name in OLLAYA)
               and name != "Kev 4B (OpenRouter)")
     entry = {
         "recorded": time.strftime("%Y-%m-%d %H:%M"),
