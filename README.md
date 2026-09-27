@@ -166,7 +166,6 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | GLiFormer-base | 66.7% | 0.139 | 56% | 0.145 |
 | gliclass-edge | 66.7% | **0.016** | n/a | |
 | gliclass-modern-base | 66.7% | 0.051 | n/a | |
-| cohere-rerank-v3.5 (OpenRouter) † | 66.7% | 0.500 | n/a | |
 | voyage-rerank-2.5-lite (OpenRouter) † | 64.6% | 0.358 | n/a | |
 | GTE-rerank-ModernBERT-base | 60.4% | 0.183 | n/a | |
 | LFM2.5-RLCD 350M | 56.2% | 0.469 | n/a | |
@@ -454,7 +453,8 @@ uv pip install --python .venv-von/Scripts/python.exe "jevk5[lite]==0.3.1" jsonsc
 # user-level install; Apache-2.0 runtime, no Python deps). Install the CLI,
 # pull each model once (~16 GB total, weights come pinned from their
 # authors' HF repos), and keep the server running while benchmarking:
-powershell -NoProfile -Command "irm https://ollaya.dev/install.ps1 | iex"
+powershell -NoProfile -Command "irm https://ollaya.dev/install.ps1 | iex"   # Windows
+curl -fsSL https://ollaya.dev/install.sh | sh   # Linux/macOS
 ollaya pull nli && ollaya pull nli:modernbert-large && ollaya pull decision
 ollaya pull jevk5 && ollaya pull winnow:e4b
 ollaya serve   # TypeSafe-compatible /v1/systemone on 127.0.0.1:11435
