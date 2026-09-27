@@ -10,7 +10,7 @@ plot accuracy along the difficulty spectrum.
 
 Run from the MAIN venv for most systems, from .venv-von for von,
 JevK5-Lite, LFM2.5-RLCD 350M, MoJev 0.85B, the Lumma-Fev family and
-Julia 1 (whose runtime reads JULIA_CPU_THREADS before Python starts):
+Julia 1:
     python bench_spectrum.py --system GLiNER2.5-base
     ...
     .venv-von/Scripts/python bench_spectrum.py --system von
@@ -20,7 +20,7 @@ Julia 1 (whose runtime reads JULIA_CPU_THREADS before Python starts):
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.15B"
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.6B"
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 4B"
-    JULIA_CPU_THREADS=16 .venv-von/Scripts/python bench_spectrum.py \
+    .venv-von/Scripts/python bench_spectrum.py \
         --system "Julia 1 144M"
 
 Kev 0.8B needs its local server running first (System One contract):

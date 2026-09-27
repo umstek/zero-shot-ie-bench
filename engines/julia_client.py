@@ -17,9 +17,11 @@ while .venv-von keeps 5.17.0. The one real drift is handled here:
   same removed API (those tests exercise the specialized forward
   directly) or the Bend native backends, whose .so needs a Linux build.
 
-The runtime reads JULIA_CPU_THREADS (torch.set_num_threads, default 4)
-when the engine loads, so set it before Python starts - the web-UI tab
-passes JULIA_CPU_THREADS=16 to the process it spawns.
+Upstream only reads JULIA_CPU_THREADS on its CUDA engine path - the CPU
+FastEngine this snapshot runs never calls torch.set_num_threads - so
+load_engine() applies it itself before load_model(): 16 torch threads by
+default (torch's own default on this 16-core bench machine), and
+JULIA_CPU_THREADS overrides when set.
 """
 
 import os
@@ -42,6 +44,12 @@ def load_engine(device: str = "cpu", **kwargs):
     strict_encoding=True and head_length=512 follow the model card; the
     remaining defaults are the runtime's (max_length resolves to the
     encoder's 8192-token context)."""
+    import torch
+
+    # upstream reads JULIA_CPU_THREADS only on its CUDA engine path, so
+    # the CPU loader applies it here (see the module docstring)
+    torch.set_num_threads(int(os.environ.get("JULIA_CPU_THREADS", "16")))
+
     import julia.router.encoder as _julia_encoder
 
     _julia_encoder.specialize_decision_encoder = lambda model: False

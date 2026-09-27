@@ -2121,10 +2121,9 @@ def build_julia_tab():
                     "come back as full softmax probabilities — no "
                     "generation. Apache 2.0, 144.3M params. It runs from "
                     "the local `../Julia-1` snapshot in `.venv-von`: each "
-                    "click spawns `demos/julia_demo.py --serve` with "
-                    "`JULIA_CPU_THREADS=16`, which loads the weights once "
-                    "and answers every line in that single process (see "
-                    "README).")
+                    "click spawns `demos/julia_demo.py --serve`, which "
+                    "loads the weights once and answers every line in "
+                    "that single process (see README).")
         jt_text = gr.Textbox(
             label="Texts (one per line)",
             value="The food was cold and the waiter was rude.\n"
@@ -2149,14 +2148,11 @@ def build_julia_tab():
             helper = os.path.join(os.path.dirname(
                 os.path.abspath(__file__)), "demos", "julia_demo.py")
             try:
-                # JULIA_CPU_THREADS must be set before Python starts, so
-                # the subprocess gets it in its environment
                 proc = subprocess.run(
                     [VON_PY, helper, "--serve"],
                     input=json.dumps({"texts": texts, "task": task,
                                       "labels": labels}),
-                    capture_output=True, text=True, timeout=600,
-                    env={**os.environ, "JULIA_CPU_THREADS": "16"})
+                    capture_output=True, text=True, timeout=600)
                 payload = json.loads(proc.stdout)
             except Exception as exc:
                 return {"error": str(exc)}

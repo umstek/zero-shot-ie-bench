@@ -19,7 +19,7 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.6B"
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 4B"
-    JULIA_CPU_THREADS=16 .venv-von/Scripts/python bench_multilingual.py \
+    .venv-von/Scripts/python bench_multilingual.py \
         --system "Julia 1 144M"
 
 Jev is a paid API: it runs all 54 texts as one batched request.

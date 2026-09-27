@@ -11,18 +11,18 @@ snapshot lives at ../Julia-1 (JULIA_HOME overrides) and is installed
 --no-deps into .venv-von because its pyproject pins transformers <5.1
 (engines/julia_client.py handles the 5.17 drift).
 
-The runtime reads JULIA_CPU_THREADS (torch CPU threads, default 4) when
-the engine loads, so set it BEFORE Python starts:
-    JULIA_CPU_THREADS=16 .venv-von/Scripts/python demos/julia_demo.py
+The engine runs 16 torch CPU threads by default (JULIA_CPU_THREADS
+overrides; engines/julia_client.py applies it at load):
+    .venv-von/Scripts/python demos/julia_demo.py
 
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
-    JULIA_CPU_THREADS=16 .venv-von/Scripts/python demos/julia_demo.py
+    .venv-von/Scripts/python demos/julia_demo.py
 
 Web-UI runner (the app's Julia tab spawns this and talks JSON over
 stdin/stdout):
-    JULIA_CPU_THREADS=16 .venv-von/Scripts/python demos/julia_demo.py --serve
+    .venv-von/Scripts/python demos/julia_demo.py --serve
     stdin:  {"texts": [str, ...], "task": str, "labels": [str, ...]}
     stdout: {"results": [{"choice": str | None,
                           "probabilities": {label: float},

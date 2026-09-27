@@ -465,9 +465,7 @@ uv pip install --python .venv-von/Scripts/python.exe lumma-fev
 # one drift is handled in engines/julia_client.py):
 git clone https://huggingface.co/SupersonicLabs/Julia-1 ../Julia-1
 uv pip install --python .venv-von/Scripts/python.exe --no-deps -e ../Julia-1
-# its runtime reads JULIA_CPU_THREADS (torch CPU threads, default 4)
-# when the engine loads, so it must be set before Python starts; the
-# commands below use 16 on this 16-core box
+# the engine runs 16 torch CPU threads by default; JULIA_CPU_THREADS overrides
 # the five Ollaya systems run on Ollaya's own daemon (Windows/macOS/Linux,
 # user-level install; Apache-2.0 runtime, no Python deps). Install the CLI,
 # pull each model once (~16 GB total, weights come pinned from their
@@ -531,12 +529,11 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
                                          # noul and a score question at once
                                          # (--model 0.6b or 4b picks a bigger
                                          # checkpoint; transformers-5 venv)
-JULIA_CPU_THREADS=16 .venv-von/Scripts/python demos/julia_demo.py
+.venv-von/Scripts/python demos/julia_demo.py
                                          # Julia 1 typed-decision tour: one
                                          # predict() answers a choice, a noul
                                          # and a score question in one batch
-                                         # (transformers-5 venv; the env var
-                                         # must be set before Python starts)
+                                         # (transformers-5 venv)
 .venv/Scripts/python demos/ollaya_demo.py      # tour of the five Ollaya-
                                          # served models (needs `ollaya
                                          # serve`; --models=nli,decision
@@ -559,7 +556,7 @@ C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (loca
                                          # (same interpreter rules)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
                                          # (also "Lumma-fev 0.6B" / "Lumma-fev 4B")
-JULIA_CPU_THREADS=16 .venv-von/Scripts/python bench_multilingual.py \
+.venv-von/Scripts/python bench_multilingual.py \
     --system "Julia 1 144M"
 # the five Ollaya systems speak plain HTTP to the local daemon, so the
 # main venv runs them too (`ollaya serve` must be up, models pulled):
@@ -571,9 +568,8 @@ JULIA_CPU_THREADS=16 .venv-von/Scripts/python bench_multilingual.py \
 .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.15B"
 .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.6B"
 .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 4B"
-# Julia 1 runs in-process from .venv-von (JULIA_CPU_THREADS set before
-# Python starts; see the setup block):
-JULIA_CPU_THREADS=16 .venv-von/Scripts/python bench_spectrum.py --system "Julia 1 144M"
+# Julia 1 runs in-process from .venv-von (see the setup block):
+.venv-von/Scripts/python bench_spectrum.py --system "Julia 1 144M"
 .venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
 ```
 
