@@ -695,7 +695,7 @@ Blocked by hardware or runtime:
 | Ollaya `kev:7.9b` | the same fp32 rule puts the 7.9B at ~30 GB of weights; kev-0.8b local + kev-4b hosted already cover the family |
 | `fastino/gliner2-{base,large,multi}-v1` | older span-architecture GLiNER 2 line, different loader |
 | `gliner-community/gliner_*-v2.5` | classic `gliner` line (LUKE-descended); a one-off CPU trial of `gliner_large-v2.5` scored 56.2% classification / 67% NER at ~0.4 s/question — dominated by GLiNER2.5-base, so not added |
-| [TypeLLM](https://github.com/TypeLLM/TypeLLM) | type-safe generation harness; documented Qwen3.8-27B setup uses a Linux SGLang GPU server. Self-reports 195/231 JevBench items (228/231 with thinking mode) |
+| [TypeLLM](https://github.com/TypeLLM/TypeLLM) | type-safe generation harness, now Apache 2.0 and pip-installable (`typellm` client) — but still no CPU path here: the documented setup serves Qwen3.8-27B through a Linux SGLang GPU server. Self-reports 195/231 JevBench items (228/231 with thinking mode) — [JevBench results](https://github.com/TypeLLM/TypeLLM/blob/main/evals/jevbench/README.md) |
 
 Not a typed-decision engine, so out of scope for the Jev-activity
 comparison (the one other model on Ollaya's list we checked):
