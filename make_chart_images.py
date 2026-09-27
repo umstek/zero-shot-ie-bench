@@ -23,6 +23,17 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                    "docs", "charts")
 
 
+def save_chart(chart, path):
+    """PNG export at scale=2 via vl-convert directly: altair 6's
+    Chart.save() silently ignores the scale kwarg (renders at 1x), which
+    left every chart at half its designed resolution with unreadable
+    fonts."""
+    import vl_convert as vlc
+
+    with open(path, "wb") as fh:
+        fh.write(vlc.vegalite_to_png(chart.to_dict(), scale=2))
+
+
 def load(path):
     with open(path, encoding="utf-8") as fh:
         data = json.load(fh)
@@ -155,7 +166,7 @@ def main():
                           "bench_multilingual_results.json"))))
     for name, chart in charts.items():
         path = os.path.join(OUT, f"{name}.png")
-        chart.save(path, scale=2)
+        save_chart(chart, path)
         print(f"wrote {path}")
 
 
