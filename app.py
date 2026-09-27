@@ -793,8 +793,8 @@ GLiClass = edge/modern-base/base/large · Lumma = 0.15B/0.6B/4B ·
 Intern-Decision = 0.8B/2B/4B —
 per-size scores live in the benchmark tabs. The four Ollaya families
 run on the local Ollaya daemon (`ollaya serve`, System One contract
-on :11435); Lumma, Julia and Intern-Decision run in-process from
-`.venv-von`.
+on :11435); Lumma, Julia and Intern-Decision spawn one-shot
+`demos/*_demo.py --serve` runners under `.venv-von`.
 
 | | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) | Lumma | Julia | Intern-Decision |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|

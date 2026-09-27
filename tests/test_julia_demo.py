@@ -186,6 +186,17 @@ class ServeTests(unittest.TestCase):
         self.assertTrue(payload["error"].startswith("ValueError:"),
                         payload["error"])
 
+    def test_serve_reports_malformed_stdin_as_the_error_json(self):
+        # stdin is decoded inside the try: malformed input follows the
+        # documented error-JSON path instead of crashing with a traceback
+        stdout = io.StringIO()
+        with patch.object(sys, "stdin", io.StringIO("not json")), \
+                contextlib.redirect_stdout(stdout):
+            julia_demo.serve()
+        payload = json.loads(stdout.getvalue())
+        self.assertTrue(payload["error"].startswith("JSONDecodeError:"),
+                        payload["error"])
+
 
 class RegistryTests(unittest.TestCase):
     def test_julia_is_registered_in_both_benchmarks(self):

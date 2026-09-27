@@ -163,8 +163,8 @@ def parse_serve_payload(payload: dict) -> tuple[list[str], str, list[str], str]:
 
 # ------------------------------------------------------------------ runner
 def serve() -> None:
-    payload = json.loads(sys.stdin.read())
     try:
+        payload = json.loads(sys.stdin.read())
         texts, task, labels, _ = parse_serve_payload(payload)
         engine = load(payload.get("model"))
         criteria = describe_labels(labels, task)
