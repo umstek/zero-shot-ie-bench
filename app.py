@@ -2,10 +2,11 @@
 systems across twenty-six families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
-nanodiff, so1, Jev (cloud), OpenRouter (hosted) and the Ollaya local daemon;
-benchmark tabs hold the measured numbers for the forty-three benchmarked
-systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet benchmarked),
-the OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
+nanodiff, Lumma, so1, Jev (cloud), OpenRouter (hosted) and the Ollaya local
+daemon; benchmark tabs hold the measured numbers for the forty-three
+benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
+benchmarked), the OpenRouter-hosted systems (Kev 4B, Span-01, seven
+rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -2046,6 +2047,67 @@ def build_nanodiff_tab():
         nd_button.click(run_nanodiff, [nd_text, nd_labels, nd_task], nd_out)
 
 
+# ------------------------------------------------------------- Lumma tab
+def build_lumma_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("Lumma (local)"):
+        gr.Markdown("### Lumma-Fev — FrontiersMind typed-decision models\n"
+                    "Causal transformers, prefill-only: every question is "
+                    "scored on its own row over the state and a pointer "
+                    "head reads one probability per option — all questions "
+                    "of a request in one forward pass, no generation. "
+                    "Apache 2.0. It needs transformers >=5.4,<6, so the "
+                    "app runs it in `.venv-von`: each click spawns "
+                    "`demos/lumma_demo.py --serve`, which loads the "
+                    "checkpoint once and answers every line in that "
+                    "single process (see README).")
+        lm_model = gr.Dropdown(choices=["0.15B", "0.6B", "4B"],
+                               value="0.15B", label="Checkpoint")
+        lm_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        lm_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        lm_task = gr.Textbox(label="Task word (phrases the question)",
+                             value="sentiment")
+        lm_button = gr.Button("Decide", variant="primary")
+        lm_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_lumma(checkpoint, texts_block, labels_csv, task):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "lumma_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"texts": texts, "task": task,
+                                      "labels": labels,
+                                      "model": checkpoint.lower()}),
+                    capture_output=True, text=True, timeout=600)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        lm_button.click(run_lumma,
+                        [lm_model, lm_text, lm_labels, lm_task], lm_out)
+
+
 # ----------------------------------------------------------------- so1 tab
 _SO1_DECIDER = None
 
@@ -2141,8 +2203,9 @@ def main() -> None:
                     "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
-                    "so1, the cloud Jev, the ten OpenRouter-hosted systems "
-                    "and the five Ollaya-served decision models. The "
+                    "Lumma, so1, the cloud Jev, the ten OpenRouter-hosted "
+                    "systems and the five Ollaya-served decision models. "
+                    "The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
@@ -2162,6 +2225,7 @@ def main() -> None:
         build_certo_tab()
         build_mojev_tab()
         build_nanodiff_tab()
+        build_lumma_tab()
         build_so1_tab()
         build_jev_tab()
         build_ollaya_tab()
