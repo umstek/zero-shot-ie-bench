@@ -126,7 +126,8 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         width=640, height=max(180, 26 * len(order) + 50))
 
 
-_SCATTER_W, _SCATTER_H = 980, 660  # 38 systems; grew from 860x520 (28)
+# 43 systems; grew 860x520 (28) → 980x660 (38) → 1100x720 (43)
+_SCATTER_W, _SCATTER_H = 1100, 720
 
 # providers whose usage block reports tokens but no cost — no measured $
 # figure exists for these, so they stay off the cost chart (Jev/TypeSafe)
@@ -175,9 +176,12 @@ def _scatter_label_layers(df: pd.DataFrame):
     placed = [(x - 6, x + 6, y - 6, y + 6) for x, y, _ in pts]
 
     def collisions(box):
+        # 2 px clearance on both axes: the dy ladder's 16 px pitch on 14 px
+        # boxes makes 2 px the designed row gap, so anything tighter reads
+        # as two names printed through each other
         return sum(1 for b in placed
                    if box[0] - 2 < b[1] and box[1] + 2 > b[0]
-                   and box[2] - 1 < b[3] and box[3] + 1 > b[2])
+                   and box[2] - 2 < b[3] and box[3] + 2 > b[2])
 
     groups: dict[tuple[int, str], list[str]] = {}
     for x, y, name in pts:
@@ -185,24 +189,29 @@ def _scatter_label_layers(df: pd.DataFrame):
         # dy=0 on either side outranks any vertical offset: a label centered
         # on its own marker is the clearest association, especially where two
         # markers stack within ~10 px and an offset label reads as the other
-        # dot's name
-        spots = [(side, x + 11, x + 11 + width, dy)
-                 if side == "right" else (side, x - 11 - width, x - 11, dy)
-                 for dy in (0, -16, 16, -32, 32, -48, 48, -64, 64)
+        # dot's name. Only when the whole dy ladder fails at dx=11 do wider
+        # throws (22, 33 px) come into play — a horizontal nudge beats a
+        # 7-row vertical throw for mid-chart density
+        spots = [(side, x + dx, x + dx + width, dy, dx)
+                 if side == "right" else (side, x - dx - width, x - dx, dy, dx)
+                 for dx in (11, 22, 33)
+                 for dy in (0, -16, 16, -32, 32, -48, 48, -64, 64,
+                            -80, 80, -96, 96)
                  for side in ("right", "left")]
         spots = [s for s in spots
-                 if s[1] >= 2 and s[2] <= _SCATTER_W + 40]
+                 if s[1] >= 2 and s[2] <= _SCATTER_W + 40
+                 and y + s[3] - 8 >= 2]
         chosen = next((s for s in spots
                        if collisions((s[1], s[2], y + s[3] - 8, y + s[3] + 6)) == 0),
                       None)
         if chosen is None:  # never drop a label: take the least-colliding spot
             chosen = min(spots, key=lambda s: collisions(
                 (s[1], s[2], y + s[3] - 8, y + s[3] + 6)))
-        side, x0, x1, dy = chosen
+        side, x0, x1, dy, dx = chosen
         placed.append((x0, x1, y + dy - 8, y + dy + 6))
-        groups.setdefault((dy, side), []).append(name)
-    return [(dy, side, df[df["System"].isin(names)])
-            for (dy, side), names in groups.items()]
+        groups.setdefault((dy, side, dx), []).append(name)
+    return [(dy, side, dx, df[df["System"].isin(names)])
+            for (dy, side, dx), names in groups.items()]
 
 
 def tradeoff_scatter(df: pd.DataFrame, title: str):
@@ -235,11 +244,11 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
     def data_x(px: float) -> float:
         return 10 ** ((px - 43.4) / slope + dmin)
 
-    for dy, side, sub in _scatter_label_layers(df):
+    for dy, side, dx, sub in _scatter_label_layers(df):
         layers.append(
             alt.Chart(sub)
             .mark_text(align="left" if side == "right" else "right",
-                       dx=11 if side == "right" else -11, dy=dy, fontSize=10)
+                       dx=dx if side == "right" else -dx, dy=dy, fontSize=10)
             .encode(x=alt.X("s per question:Q", scale=xscale),
                     y=alt.Y("Accuracy %:Q", scale=yscale),
                     text="System:N"))
@@ -249,7 +258,7 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
             # leader — short horizontal stub, then a vertical riser just
             # outside the marker column — settles the association without
             # crossing a stacked neighbor the way a diagonal would
-            col = 9 if side == "right" else -9
+            col = dx - 2 if side == "right" else -(dx - 2)
             seg_rows = []
             for v, a in zip(sub["s per question"], sub["Accuracy %"]):
                 x0 = 43.4 + (math.log10(v) - dmin) * slope
