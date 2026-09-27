@@ -1,11 +1,13 @@
-"""Interactive demo + benchmarks for forty-six zero-shot IE/classification
-systems across twenty-six families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for fifty-three zero-shot IE/classification
+systems across twenty-nine families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
-nanodiff, so1, Jev (cloud), OpenRouter (hosted) and the Ollaya local daemon;
-benchmark tabs hold the measured numbers for the forty-three benchmarked
-systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet benchmarked),
-the OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
+nanodiff, Lumma, Julia, Intern-Decision, so1, Jev (cloud), OpenRouter
+(hosted) and the Ollaya
+local daemon; benchmark tabs hold the measured numbers for the fifty
+benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
+benchmarked), the OpenRouter-hosted systems (Kev 4B, Span-01, seven
+rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -784,30 +786,33 @@ def build_compare_tab():
     import gradio as gr
 
     gr.Markdown("""
-## Feature comparison — twenty-two families
+## Feature comparison — twenty-five families
 
 GLiNER 2.5 = small/base/multi + decision-tuned Decide checkpoints ·
-GLiClass = edge/modern-base/base/large — per-size scores live in the
-benchmark tabs. The four rightmost families run on the local Ollaya
-daemon (`ollaya serve`, System One contract on :11435).
+GLiClass = edge/modern-base/base/large · Lumma = 0.15B/0.6B/4B ·
+Intern-Decision = 0.8B/2B/4B —
+per-size scores live in the benchmark tabs. The four Ollaya families
+run on the local Ollaya daemon (`ollaya serve`, System One contract
+on :11435); Lumma, Julia and Intern-Decision spawn one-shot
+`demos/*_demo.py --serve` runners under `.venv-von`.
 
-| | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Ability group** | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) | Decision engine (local, NLI entailment) | Decision engine (local, endpoint head) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, GGUF letter-logit LLM) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 |
-| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and still the slowest here (1.4x the next-slowest, winnow e4b) | the pre-decision-model classic: entailment scoring, one premise–hypothesis pair per option | vLLM Semantic Router Decision 1.0; 17.49 on Decision Index 0.2 | the full JevBench-#3 build on llama.cpp; first local 100% multilingual here | Gemma 4 E4B fine-tune; 0.722 on Ollaya's typed-decisions |
+| | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) | Lumma | Julia | Intern-Decision |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Ability group** | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) | Decision engine (local, NLI entailment) | Decision engine (local, endpoint head) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, one forward over packed questions) | Decision engine (local, encoder + decision head) | Decision engine (local, masked-slot symbol logits) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) | ✅ (all questions one forward) | ✅ (questions independently scored in one batch) | ✅ (per text, all questions one forward — up to 16 questions/request) |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) |
+| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and still the slowest here (1.4x the next-slowest, winnow e4b) | the pre-decision-model classic: entailment scoring, one premise–hypothesis pair per option | vLLM Semantic Router Decision 1.0; 17.49 on Decision Index 0.2 | the full JevBench-#3 build on llama.cpp; first local 100% multilingual here | Gemma 4 E4B fine-tune; 0.722 on Ollaya's typed-decisions | one forward over packed state+question rows, no generation; the 4B leads local multilingual (96.3%) on the reference PyTorch kernels | mmBERT-small encoder + decision head, full softmax over 2–20 described options; rare-tier 56% at 144M and the fastest local decision engine here (0.067 s/q) | Qwen3.5 decision fine-tune — option-symbol logits read at the masked `<decision>` slots of an assistant JSON skeleton, one causal forward answers up to 16 questions; per-checkpoint calibration temperature; fp32 on CPU (bf16 is ~7x slower here) |
 
 Three benchmark tabs follow from this table: **Classification** (every
 system, one mixed pool), **Extraction** (the six span-producing systems)
@@ -2046,6 +2051,190 @@ def build_nanodiff_tab():
         nd_button.click(run_nanodiff, [nd_text, nd_labels, nd_task], nd_out)
 
 
+# ------------------------------------------------------------- Lumma tab
+def build_lumma_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("Lumma (local)"):
+        gr.Markdown("### Lumma-Fev — FrontiersMind typed-decision models\n"
+                    "Causal transformers, prefill-only: every question is "
+                    "scored on its own row over the state and a pointer "
+                    "head reads one probability per option — all questions "
+                    "of a request in one forward pass, no generation. "
+                    "Apache 2.0. It needs transformers >=5.4,<6, so the "
+                    "app runs it in `.venv-von`: each click spawns "
+                    "`demos/lumma_demo.py --serve`, which loads the "
+                    "checkpoint once and answers every line in that "
+                    "single process (see README).")
+        lm_model = gr.Dropdown(choices=["0.15B", "0.6B", "4B"],
+                               value="0.15B", label="Checkpoint")
+        lm_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        lm_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        lm_task = gr.Textbox(label="Task word (phrases the question)",
+                             value="sentiment")
+        lm_button = gr.Button("Decide", variant="primary")
+        lm_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_lumma(checkpoint, texts_block, labels_csv, task):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "lumma_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"texts": texts, "task": task,
+                                      "labels": labels,
+                                      "model": checkpoint.lower()}),
+                    capture_output=True, text=True, timeout=600)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        lm_button.click(run_lumma,
+                        [lm_model, lm_text, lm_labels, lm_task], lm_out)
+
+
+# ------------------------------------------------------------- Julia tab
+def build_julia_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("Julia 1 (local)"):
+        gr.Markdown("### Julia 1 — SupersonicLabs typed-decision model\n"
+                    "mmBERT-small (multilingual ModernBERT) encoder + "
+                    "decision head: a state and typed questions (2–20 "
+                    "described options each) are scored in one batch and "
+                    "come back as full softmax probabilities — no "
+                    "generation. Apache 2.0, 144.3M params. It runs from "
+                    "the local `../Julia-1` snapshot in `.venv-von`: each "
+                    "click spawns `demos/julia_demo.py --serve`, which "
+                    "loads the weights once and answers every line in "
+                    "that single process (see README).")
+        jt_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        jt_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        jt_task = gr.Textbox(label="Task word (phrases the question)",
+                             value="sentiment")
+        jt_button = gr.Button("Decide", variant="primary")
+        jt_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_julia(texts_block, labels_csv, task):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "julia_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"texts": texts, "task": task,
+                                      "labels": labels}),
+                    capture_output=True, text=True, timeout=600)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        jt_button.click(run_julia, [jt_text, jt_labels, jt_task], jt_out)
+
+
+# ---------------------------------------------------- Intern-Decision tab
+def build_intern_decision_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("Intern-Decision (local)"):
+        gr.Markdown("### Intern-Decision — internlm decision LLMs (Qwen3.5 "
+                    "fine-tunes)\n"
+                    "One causal forward pass over the state and an "
+                    "assistant JSON skeleton with masked `<decision>` "
+                    "slots: option-symbol logits are read immediately "
+                    "before each slot and softmaxed per field (up to 62 "
+                    "options, 1–16 questions in one forward), then a "
+                    "per-checkpoint calibration temperature rescales the "
+                    "probabilities — no generation. Apache 2.0, 853M / "
+                    "2.2B / 4.5B params. It runs from the local "
+                    "`C:/src/Intern-Decision-*` snapshots in `.venv-von`: "
+                    "each click spawns `demos/intern_decision_demo.py "
+                    "--serve`, which loads the weights once and answers "
+                    "every line in that single process (see README).")
+        it_model = gr.Dropdown(choices=["0.8B", "2B", "4B"],
+                               value="0.8B", label="Checkpoint")
+        it_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        it_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        it_task = gr.Textbox(label="Task word (phrases the question)",
+                             value="sentiment")
+        it_button = gr.Button("Decide", variant="primary")
+        it_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_intern_decision(checkpoint, texts_block, labels_csv, task):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos",
+                "intern_decision_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"texts": texts, "task": task,
+                                      "labels": labels,
+                                      "model": checkpoint.lower()}),
+                    capture_output=True, text=True, timeout=600)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        it_button.click(run_intern_decision,
+                        [it_model, it_text, it_labels, it_task], it_out)
+
+
 # ----------------------------------------------------------------- so1 tab
 _SO1_DECIDER = None
 
@@ -2141,12 +2330,14 @@ def main() -> None:
                     "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
-                    "so1, the cloud Jev, the ten OpenRouter-hosted systems "
-                    "and the five Ollaya-served decision models. The "
+                    "Lumma, Julia, Intern-Decision, so1, the cloud Jev, "
+                    "the ten "
+                    "OpenRouter-hosted systems and the five Ollaya-served "
+                    "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 43 systems across twenty-six "
+                    "measured numbers for all 50 systems across twenty-nine "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
@@ -2162,6 +2353,9 @@ def main() -> None:
         build_certo_tab()
         build_mojev_tab()
         build_nanodiff_tab()
+        build_lumma_tab()
+        build_julia_tab()
+        build_intern_decision_tab()
         build_so1_tab()
         build_jev_tab()
         build_ollaya_tab()
