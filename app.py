@@ -1,9 +1,9 @@
-"""Interactive demo + benchmarks for forty-six zero-shot IE/classification
-systems across twenty-six families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for fifty zero-shot IE/classification
+systems across twenty-eight families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff, Lumma, Julia, so1, Jev (cloud), OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the forty-three
+local daemon; benchmark tabs hold the measured numbers for the forty-seven
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Span-01, seven
 rerankers) included.
@@ -2266,7 +2266,7 @@ def main() -> None:
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 43 systems across twenty-six "
+                    "measured numbers for all 47 systems across twenty-eight "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)

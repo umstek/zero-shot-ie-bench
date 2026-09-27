@@ -1,7 +1,7 @@
 # zero-shot-ie-bench
 
-Forty-six zero-shot systems (forty-three of them benchmarked) across
-twenty-six information-extraction and classification families —
+Fifty zero-shot systems (forty-seven of them benchmarked) across
+twenty-eight information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints, plus five models served by
@@ -123,7 +123,7 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 43 systems)
+## Mixed-pool spectrum benchmark (all 47 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -167,6 +167,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | mxbai-rerank-base-v2 | 70.8% | 1.338 | n/a | |
 | cohere-rerank-4-fast (OpenRouter) † | 70.8% | 0.371 | n/a | |
 | Laya (local) | 68.8% | 0.143 | n/a | |
+| Lumma-fev 4B | 68.8% | 2.921 | n/a | |
 | cohere-rerank-v3.5 (OpenRouter) † | 66.7% | 0.500 | n/a | |
 | nli modernbert-large (Ollaya) | 66.7% | 0.281 | n/a | |
 | GLiFormer-base | 66.7% | 0.139 | 56% | 0.145 |
@@ -175,16 +176,19 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | voyage-rerank-2.5-lite (OpenRouter) † | 64.6% | 0.358 | n/a | |
 | GTE-rerank-ModernBERT-base | 60.4% | 0.183 | n/a | |
 | LFM2.5-RLCD 350M | 56.2% | 0.469 | n/a | |
+| Lumma-fev 0.15B | 56.2% | 0.256 | n/a | |
+| Lumma-fev 0.6B | 54.2% | 0.587 | n/a | |
 | so1 + Qwen2.5-0.5B | 43.8% | 0.237 | n/a | |
 | Verdict 151M (local) | 39.6% | 0.165 | n/a | |
 | nemotron-rerank-vl-1b (OpenRouter) † | 35.4% | 4.521 | n/a | |
+| Julia 1 144M | 31.2% | 0.067 | n/a | |
 | nanodiff 350M | 25.0% | 11.56 | n/a | |
 | Certo 421M | 22.9% | 1.014 | n/a | |
 
 Takeaways:
 
 - **winnow e4b ties qwen3-reranker-8b at 87.5% — the best non-Jev
-  systems of all 43** — and winnow is local and free (the metered
+  systems of all 47** — and winnow is local and free (the metered
   reranker needs OpenRouter; one more datapoint for rerankers doubling
   as decision engines — bge locally reaches 72.9%, Kev/OpenThai level,
   where the same rerankers sit near zero on JevBench's leaderboard).
@@ -202,6 +206,27 @@ Takeaways:
   modernbert-large at 66.7% — and the pair needs described criteria
   plus text-as-state to get there (see the client's request-shape
   notes).
+- **Lumma-fev 4B is the third local multilingual leader** — 96.3%
+  (100% on seven of nine languages, 83% on Sinhala and Icelandic),
+  behind only jevk5 4B and winnow e4b — while its English mixed-pool
+  sits mid-pack at 68.8%: breadth over depth, from the Qwen3.5-class
+  hybrid backbone. It ran on the reference PyTorch kernels
+  (causal-conv1d / flash-linear-attention not installed, so
+  transformers logs fallback warnings) — the out-of-the-box CPU
+  configuration; the 9b sibling was skipped for weight size (see the
+  family map).
+- The small Lummas are census rows: 0.15B at 56.2% and 0.6B at 54.2%
+  on the pool, 35–37% multilingual — their cards are English-centric
+  (the 0.6B adds ten Indian languages) and the scores read like it.
+- **Julia 1 144M: bottom-quartile English pool (31.2%)** — informal
+  review sentiment sits far from its typed-decisions training domain —
+  but the mmBERT-small backbone shows at 144M where English-only
+  encoders collapse: 56% on the rare tier and 66.7% Sinhala (Verdict:
+  6% rare; GLiNER2.5-small: 28%). It is also the fastest local
+  decision engine measured (0.067 s/question), and its per-language
+  rows ignore the English-distance gradient: French, Chinese and
+  Sinhala all score 67%, while Spanish and Ukrainian — high-resource,
+  close to English — sit at 33%.
 - Hosted kev-4b ties Decide at 85.4% and is 2nd overall multilingual
   (98%, one Welsh text short of perfect); Span-01 matches it on both
   (85.4% / 98%); the cheaper hosted
@@ -210,9 +235,8 @@ Takeaways:
   scored on text-only pairs (35%/41%).
 - von's 79.2% replaces a withdrawn 62.5% row (the PyPI SDK's default
   NLI loader had initialized untrained classifier weights).
-- Verdict is the fastest local decision engine per question but
-  abstains on 22/48 (abstention scores wrong): 73% on what it answers,
-  39.6% overall. so1 works mechanically, but a 0.5B base LLM is not
+- Verdict abstains on 22/48 (abstention scores wrong): 73% on what it
+  answers, 39.6% overall. so1 works mechanically, but a 0.5B base LLM is not
   enough brain — swap in a bigger one.
 - Chance-level negatives kept as census rows: nanodiff 350M (diffusion
   LM, 25.0%, slowest at 11.6 s/question) and Certo 421M (22.9%,
@@ -289,7 +313,7 @@ images (regenerate with `python make_chart_images.py`):
 Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish,
 Ukrainian · Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified
 by blind back-translation through an independent model instance (it
-caught 8 errors, including a sentiment-flipping Sinhala word). All 43
+caught 8 errors, including a sentiment-flipping Sinhala word). All 47
 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
@@ -300,6 +324,7 @@ systems answer the same 54 texts.
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
 | qwen3-reranker-8b (OpenRouter) † | 100% | 100% | 89% | 96% |
+| Lumma-fev 4B | 100% | 100% | 89% | 96% |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
 | decision 0.75B (Ollaya) | 100% | 94% | 72% | 89% |
 | Span-01 Lite † | 100% | 100% | 61% | 87% |
@@ -325,6 +350,7 @@ systems answer the same 54 texts.
 | cohere-rerank-4-fast (OpenRouter) † | 72% | 61% | 33% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
 | LFM2.5-RLCD 350M | 78% | 67% | 11% | 52% |
+| Julia 1 144M | 56% | 44% | 56% | 52% |
 | von-1.0 (option-marker) | 72% | 33% | 39% | 48% |
 | mxbai-rerank-base-v2 | 56% | 50% | 39% | 48% |
 | nli modernbert-large (Ollaya) | 61% | 39% | 39% | 46% |
@@ -332,8 +358,10 @@ systems answer the same 54 texts.
 | gliclass-modern-base | 44% | 33% | 39% | 39% |
 | nemotron-rerank-vl-1b (OpenRouter) † | 50% | 33% | 39% | 41% |
 | so1 + Qwen2.5-0.5B | 39% | 39% | 33% | 37% |
+| Lumma-fev 0.6B | 28% | 39% | 44% | 37% |
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
 | nanodiff 350M | 28% | 39% | 39% | 35% |
+| Lumma-fev 0.15B | 39% | 33% | 33% | 35% |
 | gliclass-edge | 50% | 22% | 22% | 31% |
 | Certo 421M | 28% | 28% | 33% | 30% |
 | Verdict 151M (local) | 50% | 11% | 6% | 22% |
@@ -388,7 +416,7 @@ Highlights:
 | Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score |
 | Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | untested here (card lists English) | untested here (mmBERT-small backbone is multilingual) |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 |
@@ -543,7 +571,7 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (43 systems; von, JevK5-Lite,
+                                         # (47 systems; von, JevK5-Lite,
                                          # LFM2.5-RLCD 350M, MoJev 0.85B,
                                          # Lumma-Fev and Julia 1: same command
                                          # under .venv-von/Scripts/python)
@@ -551,7 +579,7 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
 # imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 43 systems →
+                                         # 9 languages, all 47 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
@@ -739,7 +767,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 43 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 47 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
