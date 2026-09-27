@@ -102,13 +102,16 @@ def load_engine(size=None, device: str = "cpu", dtype: str = "float32"):
 
     runtime = _RUNTIMES.get(home)
     if runtime is None:
-        if home not in sys.path:
-            sys.path.insert(0, home)
+        # Unconditional insert: a FAILED load of one size leaves its home
+        # on sys.path, and a "not already present" guard would let a
+        # retried import of another size resolve THAT snapshot's
+        # inference.py instead. Insertion at index 0 always wins.
+        sys.path.insert(0, home)
         stale = sys.modules.pop("inference", None)  # a sibling snapshot's
         try:
             import inference as runtime  # the snapshot's standalone runtime
         finally:
-            sys.modules.pop("inference", None)  # keep sys.path hygiene:
+            sys.modules.pop("inference", None)  # sys.modules hygiene only
             if stale is not None:  # restore whatever "inference" was
                 sys.modules["inference"] = stale
         _RUNTIMES[home] = runtime

@@ -145,8 +145,8 @@ LUMMA = {
 JULIA = {"Julia 1 144M": julia_client.MODEL_ID}
 # internlm's Intern-Decision typed-decision family, in-process via the
 # runtime shipped inside each HF snapshot (engines/intern_decision_client.py
-# loads the local C:\src\Intern-Decision-* snapshots; display names carry
-# the card param counts so results files line up across benchmarks)
+# loads the local C:\src\Intern-Decision-* snapshots); same names as
+# bench_multilingual.py so results files line up across benchmarks
 INTERN_DECISION = {"Intern-Decision 0.8B": "0.8B",
                    "Intern-Decision 2B": "2B",
                    "Intern-Decision 4B": "4B"}
