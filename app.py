@@ -2164,6 +2164,7 @@ def main() -> None:
         build_nanodiff_tab()
         build_so1_tab()
         build_jev_tab()
+        build_ollaya_tab()
         build_openrouter_tab()
         with gr.Tab("Classification benchmark"):
             build_classification_tab()
