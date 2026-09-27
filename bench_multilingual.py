@@ -19,6 +19,8 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.6B"
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 4B"
+    JULIA_CPU_THREADS=16 .venv-von/Scripts/python bench_multilingual.py \
+        --system "Julia 1 144M"
 
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
@@ -209,6 +211,8 @@ OPENROUTER_RERANKERS = {
 # name -> tag map and the client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
+from engines import julia_client
+
 OLLAYA = OLLAYA_MODELS
 # FrontiersMind's Lumma-Fev typed-decision family, in-process via the
 # lumma-fev package (.venv-von: transformers >=5.4,<6); same names as
@@ -218,6 +222,11 @@ LUMMA = {
     "Lumma-fev 0.6B": "FrontiersMind/Lumma-fev-0.6b",
     "Lumma-fev 4B": "FrontiersMind/Lumma-fev-4b",
 }
+# SupersonicLabs' Julia 1 typed-decision model, in-process via the `julia`
+# package shipped inside its HF repo (engines/julia_client.py loads the
+# local snapshot clone, JULIA_HOME, default ../Julia-1); same names as
+# bench_spectrum.py so results files line up across benchmarks
+JULIA = {"Julia 1 144M": julia_client.MODEL_ID}
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS)
@@ -228,7 +237,7 @@ ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
                   "Verdict 151M (local)"]
-               + list(OLLAYA) + list(LUMMA))
+               + list(OLLAYA) + list(LUMMA) + list(JULIA))
 
 
 def make_classifier(name: str, tracker=None):
@@ -401,6 +410,27 @@ def make_decider(name: str):
                                 f'text: "{text}"',
                 "criteria": dict(SENTIMENT_LABELS)}})
             return out["q"].get("choice")
+    elif name in JULIA:
+        # in-process Julia 1 via the `julia` package shipped inside its HF
+        # repo (engines/julia_client.py loads the ../Julia-1 snapshot under
+        # .venv-von; the transformers 5.17 note lives there). Same request
+        # shape as bench_spectrum.py's probe: bare instructions and the
+        # restated text tie (3/8, identical picks), the house shape stays.
+        engine = julia_client.load_engine()
+        # one untimed predict() pays torch's first-pass init before the
+        # timed loop, like the local servers' warm-up ask
+        engine.predict("good", {"w": {"type": "choice",
+                                      "instructions": "What is the sentiment "
+                                                      "of this text?",
+                                      "criteria": dict(SENTIMENT_LABELS)}})
+
+        def one(text: str):
+            out = engine.predict(text, {"q": {
+                "type": "choice",
+                "instructions": f'What is the overall sentiment of this '
+                                f'text: "{text}"',
+                "criteria": dict(SENTIMENT_LABELS)}})
+            return out["answers"]["q"].get("choice")
     elif name == "nanodiff 350M":
         # diffusion-LM decision model: engines/nanodiff_engine vendors the NanoDiff
         # class (BY571/nanoDiff); runs in the MAIN venv (tiktoken),
@@ -641,7 +671,7 @@ def main() -> None:
         lat = statistics.mean(lat)
     elif (name in ("von", "so1 (Qwen2.5-0.5B)", "JevK5-Lite",
                    "LFM2.5-RLCD 350M", "MoJev 0.85B", "nanodiff 350M")
-          or name in LUMMA):
+          or name in LUMMA or name in JULIA):
         one = make_decider(name)
         preds, lat = [], []
         for text in texts:
@@ -714,11 +744,11 @@ def main() -> None:
     if notes and notes[0].startswith("All "):
         notes[0] = (f"All {len(out['by_language'])} systems answer "
                     "the same 54 texts.")
-    # only the local System One servers, Ollaya's first-request model load
-    # and Lumma's first-pass init get the untimed warm-up; the hosted
-    # or-kev endpoint is stateless, so every request is timed
+    # only the local System One servers, Ollaya's first-request model load,
+    # Lumma's and Julia's first-pass init get the untimed warm-up; the
+    # hosted or-kev endpoint is stateless, so every request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai"))
-               or name in OLLAYA or name in LUMMA)
+               or name in OLLAYA or name in LUMMA or name in JULIA)
               and name != "Kev 4B (OpenRouter)")
     out.setdefault("timing", {})[name] = (
         "Model download and loading excluded; "

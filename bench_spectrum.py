@@ -9,7 +9,8 @@ Per-question predictions are stored (not just aggregates) so the app can
 plot accuracy along the difficulty spectrum.
 
 Run from the MAIN venv for most systems, from .venv-von for von,
-JevK5-Lite, LFM2.5-RLCD 350M, MoJev 0.85B and the Lumma-Fev family:
+JevK5-Lite, LFM2.5-RLCD 350M, MoJev 0.85B, the Lumma-Fev family and
+Julia 1 (whose runtime reads JULIA_CPU_THREADS before Python starts):
     python bench_spectrum.py --system GLiNER2.5-base
     ...
     .venv-von/Scripts/python bench_spectrum.py --system von
@@ -19,6 +20,8 @@ JevK5-Lite, LFM2.5-RLCD 350M, MoJev 0.85B and the Lumma-Fev family:
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.15B"
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.6B"
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 4B"
+    JULIA_CPU_THREADS=16 .venv-von/Scripts/python bench_spectrum.py \
+        --system "Julia 1 144M"
 
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
@@ -64,6 +67,7 @@ import time
 
 from bench import NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, spans_of
 from bench_graded import NER, SENTIMENT, TOPIC
+from engines import julia_client
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
 RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -131,6 +135,11 @@ LUMMA = {
     "Lumma-fev 0.6B": "FrontiersMind/Lumma-fev-0.6b",
     "Lumma-fev 4B": "FrontiersMind/Lumma-fev-4b",
 }
+# SupersonicLabs' Julia 1 typed-decision model, in-process via the `julia`
+# package shipped inside its HF repo (engines/julia_client.py loads the
+# local snapshot clone, JULIA_HOME, default ../Julia-1); the ONNX/WebGPU
+# twin is not benchmarked (redundant here, see README)
+JULIA = {"Julia 1 144M": julia_client.MODEL_ID}
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
@@ -139,7 +148,7 @@ ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
                   "Verdict 151M (local)", "von", "JevK5-Lite",
                   "LFM2.5-RLCD 350M", "so1 (Qwen2.5-0.5B)"]
-               + list(OLLAYA) + list(LUMMA))
+               + list(OLLAYA) + list(LUMMA) + list(JULIA))
 
 # local servers speaking the System One wire format: one JevClient pattern,
 # different ports. decider and OpenThai lazy-load their weights on the first
@@ -606,6 +615,41 @@ def main() -> None:
                 "criteria": labels}})
             cls_lat.append(time.perf_counter() - t1)
             cls_preds.append(out["q"].get("choice"))
+    elif name in JULIA:
+        # in-process Julia 1 via the `julia` package shipped inside its HF
+        # repo (engines/julia_client.py loads the ../Julia-1 snapshot under
+        # .venv-von; the transformers 5.17 note lives there); classification
+        # only - no span extraction, so no NER answers. Request shape
+        # measured on the eight easy-tier sentiment texts, deterministic
+        # across repeats: bare instructions over the state and the text
+        # restated in the instructions BOTH score 3/8 with identical picks
+        # - the shape does not move this model (its noul and domain-matched
+        # choice questions read the state fine; informal review sentiment
+        # is simply far from its typed-decisions training domain). The
+        # house shape (text restated) stays for comparability. Criteria
+        # carry the label descriptions, the options the model scores
+        # (Julia requires nonempty descriptions). One predict() per
+        # question - one predict() scores all its questions in one batch,
+        # but each pool question is one text with one choice here.
+        engine = julia_client.load_engine()
+        # one untimed predict() pays torch's first-pass init (kernel
+        # dispatch, allocator warm-up) before the timed section
+        engine.predict("good", {"w": {"type": "choice",
+                                      "instructions": "What is the sentiment "
+                                                      "of this text?",
+                                      "criteria": dict(SENTIMENT_LABELS)}})
+        INSTR = {"sentiment": 'What is the overall sentiment of this text: "{text}"',
+                 "topic": 'Which topic category does this text belong to: "{text}"'}
+        for q in CLS_QUESTIONS:
+            labels = dict(SENTIMENT_LABELS if q["task"] == "sentiment"
+                          else TOPIC_LABELS)
+            t1 = time.perf_counter()
+            out = engine.predict(q["text"], {"q": {
+                "type": "choice",
+                "instructions": INSTR[q["task"]].format(text=q["text"]),
+                "criteria": labels}})
+            cls_lat.append(time.perf_counter() - t1)
+            cls_preds.append(out["answers"]["q"].get("choice"))
     elif name == "nanodiff 350M":
         # diffusion-LM decision model: engines/nanodiff_engine vendors the NanoDiff
         # class (BY571/nanoDiff) and the pngwn typed-decision format; one
@@ -641,11 +685,11 @@ def main() -> None:
                          "branch in main()")
 
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
-    # only the local System One servers, Ollaya's first-request model load
-    # and Lumma's first-pass init get the untimed warm-up; the hosted
-    # or-kev endpoint is stateless, so every request is timed
+    # only the local System One servers, Ollaya's first-request model load,
+    # Lumma's and Julia's first-pass init get the untimed warm-up; the
+    # hosted or-kev endpoint is stateless, so every request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai"))
-               or name in OLLAYA or name in LUMMA)
+               or name in OLLAYA or name in LUMMA or name in JULIA)
               and name != "Kev 4B (OpenRouter)")
     entry = {
         "recorded": time.strftime("%Y-%m-%d %H:%M"),

@@ -2,8 +2,8 @@
 systems across twenty-six families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
-nanodiff, Lumma, so1, Jev (cloud), OpenRouter (hosted) and the Ollaya local
-daemon; benchmark tabs hold the measured numbers for the forty-three
+nanodiff, Lumma, Julia, so1, Jev (cloud), OpenRouter (hosted) and the Ollaya
+local daemon; benchmark tabs hold the measured numbers for the forty-three
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Span-01, seven
 rerankers) included.
@@ -2108,6 +2108,67 @@ def build_lumma_tab():
                         [lm_model, lm_text, lm_labels, lm_task], lm_out)
 
 
+# ------------------------------------------------------------- Julia tab
+def build_julia_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("Julia 1 (local)"):
+        gr.Markdown("### Julia 1 — SupersonicLabs typed-decision model\n"
+                    "mmBERT-small (multilingual ModernBERT) encoder + "
+                    "decision head: a state and typed questions (2–20 "
+                    "described options each) are scored in one batch and "
+                    "come back as full softmax probabilities — no "
+                    "generation. Apache 2.0, 144.3M params. It runs from "
+                    "the local `../Julia-1` snapshot in `.venv-von`: each "
+                    "click spawns `demos/julia_demo.py --serve` with "
+                    "`JULIA_CPU_THREADS=16`, which loads the weights once "
+                    "and answers every line in that single process (see "
+                    "README).")
+        jt_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        jt_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        jt_task = gr.Textbox(label="Task word (phrases the question)",
+                             value="sentiment")
+        jt_button = gr.Button("Decide", variant="primary")
+        jt_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_julia(texts_block, labels_csv, task):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "julia_demo.py")
+            try:
+                # JULIA_CPU_THREADS must be set before Python starts, so
+                # the subprocess gets it in its environment
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"texts": texts, "task": task,
+                                      "labels": labels}),
+                    capture_output=True, text=True, timeout=600,
+                    env={**os.environ, "JULIA_CPU_THREADS": "16"})
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        jt_button.click(run_julia, [jt_text, jt_labels, jt_task], jt_out)
+
+
 # ----------------------------------------------------------------- so1 tab
 _SO1_DECIDER = None
 
@@ -2203,9 +2264,9 @@ def main() -> None:
                     "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
-                    "Lumma, so1, the cloud Jev, the ten OpenRouter-hosted "
-                    "systems and the five Ollaya-served decision models. "
-                    "The "
+                    "Lumma, Julia, so1, the cloud Jev, the ten "
+                    "OpenRouter-hosted systems and the five Ollaya-served "
+                    "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
@@ -2226,6 +2287,7 @@ def main() -> None:
         build_mojev_tab()
         build_nanodiff_tab()
         build_lumma_tab()
+        build_julia_tab()
         build_so1_tab()
         build_jev_tab()
         build_ollaya_tab()
