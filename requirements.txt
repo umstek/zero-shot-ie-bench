@@ -27,3 +27,4 @@ sentencepiece
 loguru
 gradio>=5.0
 altair>=5,<7
+vl-convert-python>=1.9
