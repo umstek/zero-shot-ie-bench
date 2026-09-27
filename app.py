@@ -1,11 +1,11 @@
-"""Interactive demo + benchmarks for forty-one zero-shot IE/classification
-systems across twenty-three families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for forty-six zero-shot IE/classification
+systems across twenty-six families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
-nanodiff, so1, Jev (cloud) and OpenRouter (hosted); benchmark tabs hold
-the measured numbers for the thirty-eight benchmarked systems (GLiREL,
-GLiNER-relex and ReLiK are demoed but not yet benchmarked), the
-OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
+nanodiff, so1, Jev (cloud), OpenRouter (hosted) and the Ollaya local daemon;
+benchmark tabs hold the measured numbers for the forty-three benchmarked
+systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet benchmarked),
+the OpenRouter-hosted systems (Kev 4B, Span-01, seven rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -126,7 +126,8 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         width=640, height=max(180, 26 * len(order) + 50))
 
 
-_SCATTER_W, _SCATTER_H = 980, 660  # 38 systems; grew from 860x520 (28)
+# 43 systems; grew 860x520 (28) → 980x660 (38) → 1100x720 (43)
+_SCATTER_W, _SCATTER_H = 1100, 720
 
 # providers whose usage block reports tokens but no cost — no measured $
 # figure exists for these, so they stay off the cost chart (Jev/TypeSafe)
@@ -175,9 +176,12 @@ def _scatter_label_layers(df: pd.DataFrame):
     placed = [(x - 6, x + 6, y - 6, y + 6) for x, y, _ in pts]
 
     def collisions(box):
+        # 2 px clearance on both axes: the dy ladder's 16 px pitch on 14 px
+        # boxes makes 2 px the designed row gap, so anything tighter reads
+        # as two names printed through each other
         return sum(1 for b in placed
                    if box[0] - 2 < b[1] and box[1] + 2 > b[0]
-                   and box[2] - 1 < b[3] and box[3] + 1 > b[2])
+                   and box[2] - 2 < b[3] and box[3] + 2 > b[2])
 
     groups: dict[tuple[int, str], list[str]] = {}
     for x, y, name in pts:
@@ -185,24 +189,29 @@ def _scatter_label_layers(df: pd.DataFrame):
         # dy=0 on either side outranks any vertical offset: a label centered
         # on its own marker is the clearest association, especially where two
         # markers stack within ~10 px and an offset label reads as the other
-        # dot's name
-        spots = [(side, x + 11, x + 11 + width, dy)
-                 if side == "right" else (side, x - 11 - width, x - 11, dy)
-                 for dy in (0, -16, 16, -32, 32, -48, 48, -64, 64)
+        # dot's name. Only when the whole dy ladder fails at dx=11 do wider
+        # throws (22, 33 px) come into play — a horizontal nudge beats a
+        # 7-row vertical throw for mid-chart density
+        spots = [(side, x + dx, x + dx + width, dy, dx)
+                 if side == "right" else (side, x - dx - width, x - dx, dy, dx)
+                 for dx in (11, 22, 33)
+                 for dy in (0, -16, 16, -32, 32, -48, 48, -64, 64,
+                            -80, 80, -96, 96)
                  for side in ("right", "left")]
         spots = [s for s in spots
-                 if s[1] >= 2 and s[2] <= _SCATTER_W + 40]
+                 if s[1] >= 2 and s[2] <= _SCATTER_W + 40
+                 and y + s[3] - 8 >= 2]
         chosen = next((s for s in spots
                        if collisions((s[1], s[2], y + s[3] - 8, y + s[3] + 6)) == 0),
                       None)
         if chosen is None:  # never drop a label: take the least-colliding spot
             chosen = min(spots, key=lambda s: collisions(
                 (s[1], s[2], y + s[3] - 8, y + s[3] + 6)))
-        side, x0, x1, dy = chosen
+        side, x0, x1, dy, dx = chosen
         placed.append((x0, x1, y + dy - 8, y + dy + 6))
-        groups.setdefault((dy, side), []).append(name)
-    return [(dy, side, df[df["System"].isin(names)])
-            for (dy, side), names in groups.items()]
+        groups.setdefault((dy, side, dx), []).append(name)
+    return [(dy, side, dx, df[df["System"].isin(names)])
+            for (dy, side, dx), names in groups.items()]
 
 
 def tradeoff_scatter(df: pd.DataFrame, title: str):
@@ -235,11 +244,11 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
     def data_x(px: float) -> float:
         return 10 ** ((px - 43.4) / slope + dmin)
 
-    for dy, side, sub in _scatter_label_layers(df):
+    for dy, side, dx, sub in _scatter_label_layers(df):
         layers.append(
             alt.Chart(sub)
             .mark_text(align="left" if side == "right" else "right",
-                       dx=11 if side == "right" else -11, dy=dy, fontSize=10)
+                       dx=dx if side == "right" else -dx, dy=dy, fontSize=10)
             .encode(x=alt.X("s per question:Q", scale=xscale),
                     y=alt.Y("Accuracy %:Q", scale=yscale),
                     text="System:N"))
@@ -249,7 +258,7 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
             # leader — short horizontal stub, then a vertical riser just
             # outside the marker column — settles the association without
             # crossing a stacked neighbor the way a diagonal would
-            col = 9 if side == "right" else -9
+            col = dx - 2 if side == "right" else -(dx - 2)
             seg_rows = []
             for v, a in zip(sub["s per question"], sub["Accuracy %"]):
                 x0 = 43.4 + (math.log10(v) - dmin) * slope
@@ -775,29 +784,30 @@ def build_compare_tab():
     import gradio as gr
 
     gr.Markdown("""
-## Feature comparison — all eighteen families
+## Feature comparison — twenty-two families
 
 GLiNER 2.5 = small/base/multi + decision-tuned Decide checkpoints ·
 GLiClass = edge/modern-base/base/large — per-size scores live in the
-benchmark tabs.
+benchmark tabs. The four rightmost families run on the local Ollaya
+daemon (`ollaya serve`, System One contract on :11435).
 
-| | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Ability group** | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT |
-| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and 3.4x the next-slowest latency |
+| | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Ability group** | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) | Decision engine (local, NLI entailment) | Decision engine (local, endpoint head) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, GGUF letter-logit LLM) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 |
+| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and still the slowest here (1.4x the next-slowest, winnow e4b) | the pre-decision-model classic: entailment scoring, one premise–hypothesis pair per option | vLLM Semantic Router Decision 1.0; 17.49 on Decision Index 0.2 | the full JevBench-#3 build on llama.cpp; first local 100% multilingual here | Gemma 4 E4B fine-tune; 0.722 on Ollaya's typed-decisions |
 
 Three benchmark tabs follow from this table: **Classification** (every
 system, one mixed pool), **Extraction** (the six span-producing systems)
@@ -1350,6 +1360,85 @@ def build_jev_tab():
             return answers
 
         jev_button.click(run_jev, [jev_text, jev_labels, jev_task], jev_table)
+
+
+# -------------------------------------------------- Ollaya (local) tab
+# The five Ollaya-served systems (same names and tags as bench_spectrum.py;
+# the map lives in engines/ollaya_client.py). Needs the local daemon
+# running (`ollaya serve`, default port 11435) and each model pulled once.
+# Unlike the Jev tab this sends ONE REQUEST PER LINE: the state is the text
+# (Ollaya's decision layers build their premise from the state).
+
+
+def build_ollaya_tab():
+    import gradio as gr
+
+    from engines.ollaya_client import MODELS, systemone
+
+    with gr.Tab("Ollaya (local)"):
+        gr.Markdown(
+            "### Ollaya — open decision models on the local daemon "
+            "(`http://127.0.0.1:11435`)\n"
+            "Same System One contract as the Jev tab, but local and free: "
+            "MoritzLaurer NLI classifiers, vLLM Semantic Router `decision`, "
+            "the full JevK5 4B and Winnow E4B (all pulled from their "
+            "authors' HF repos). Needs `ollaya serve` running and each "
+            "model pulled once (`ollaya pull <tag>` — see README). One "
+            "request per line — the state is the text, and labels with "
+            "descriptions score best.")
+        o_model = gr.Dropdown(choices=list(MODELS),
+                              value="decision 0.75B (Ollaya)",
+                              label="Model")
+        o_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.",
+            lines=5)
+        o_labels = gr.Textbox(
+            label="Labels (comma-separated; optionally label: description)",
+            value="positive: Text expresses a clearly positive attitude, "
+                  "negative: Text expresses a clearly negative attitude, "
+                  "neutral: Factual text without a clear attitude")
+        o_question = gr.Textbox(label="Question (instructions)",
+                                value="What is the overall sentiment of "
+                                      "this text?")
+        o_button = gr.Button("Ask Ollaya (one request per line)",
+                             variant="primary")
+        o_table = gr.JSON(label="Answers (per line: label, confidence, "
+                                "probabilities)")
+
+        def run_ollaya(model_name, texts_block, labels_csv, question):
+            from engines.jev_client import choice
+
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            criteria: dict[str, str | None] = {}
+            for chunk in parse_labels(labels_csv):
+                label, _, desc = chunk.partition(":")
+                criteria[label.strip()] = desc.strip() or None
+            if not texts or not criteria:
+                return {"error": "provide text lines and labels"}
+            try:
+                client = systemone(MODELS[model_name])
+                rows = {}
+                for i, text in enumerate(texts):
+                    payload = client.ask(
+                        text, {"q": choice(question, criteria)},
+                        timeout=600)
+                    answer = payload["answers"]["q"]
+                    rows[f"{i + 1}. {text[:40]}…"] = {
+                        "label": answer.get("choice"),
+                        "confidence": answer.get("confidence"),
+                        "probabilities": answer.get("probabilities"),
+                        "latency_s": payload.get("_latency_s"),
+                    }
+                return rows
+            except Exception as exc:
+                return {"error": str(exc)}
+
+        o_button.click(run_ollaya,
+                       [o_model, o_text, o_labels, o_question], o_table)
 
 
 # -------------------------------------------------- OpenRouter (hosted) tab
@@ -2052,11 +2141,12 @@ def main() -> None:
                     "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
-                    "so1, the cloud Jev and the ten OpenRouter-hosted "
-                    "systems. The remaining local engines (Kev, "
+                    "so1, the cloud Jev, the ten OpenRouter-hosted systems "
+                    "and the five Ollaya-served decision models. The "
+                    "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 38 systems across twenty-three "
+                    "measured numbers for all 43 systems across twenty-six "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
@@ -2074,6 +2164,7 @@ def main() -> None:
         build_nanodiff_tab()
         build_so1_tab()
         build_jev_tab()
+        build_ollaya_tab()
         build_openrouter_tab()
         with gr.Tab("Classification benchmark"):
             build_classification_tab()

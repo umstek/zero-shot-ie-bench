@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 38 systems answer the same 54 texts.",
+      "All 43 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -65,7 +65,13 @@
       "Span-01 recorded 2026-09-26 12:52, 22s, CPU",
       "qwen3-reranker-8b (OpenRouter) recorded 2026-09-26 12:52, 27s, CPU",
       "Span-01 Lite recorded 2026-09-26 12:53, 22s, CPU",
-      "nemotron-rerank-vl-1b (OpenRouter) recorded 2026-09-26 12:57, 240s, CPU"
+      "nemotron-rerank-vl-1b (OpenRouter) recorded 2026-09-26 12:57, 240s, CPU",
+      "nli deberta-v3-large (Ollaya) recorded 2026-09-27 09:03, 22s, CPU",
+      "nli modernbert-large (Ollaya) recorded 2026-09-27 09:04, 23s, CPU",
+      "decision 0.75B (Ollaya) recorded 2026-09-27 09:04, 42s, CPU",
+      "jevk5 4B (Ollaya) recorded 2026-09-27 09:16, 353s, CPU",
+      "winnow e4b (Ollaya) recorded 2026-09-27 09:33, 476s, CPU",
+      "jevk5 4B (Ollaya) recorded 2026-09-27 09:46, 391s, CPU"
     ]
   },
   "by_language": {
@@ -486,6 +492,61 @@
       "Sinhala": 0.3333,
       "Icelandic": 0.5,
       "Welsh": 0.3333
+    },
+    "nli deberta-v3-large (Ollaya)": {
+      "Spanish": 0.8333,
+      "French": 0.8333,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.8333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.3333
+    },
+    "nli modernbert-large (Ollaya)": {
+      "Spanish": 0.5,
+      "French": 0.6667,
+      "Chinese": 0.6667,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.5,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.3333
+    },
+    "decision 0.75B (Ollaya)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.8333,
+      "Icelandic": 0.6667,
+      "Welsh": 0.6667
+    },
+    "jevk5 4B (Ollaya)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "winnow e4b (Ollaya)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 0.8333,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -678,6 +739,31 @@
       "popular": 0.5,
       "medium": 0.3333,
       "rare": 0.3889
+    },
+    "nli deberta-v3-large (Ollaya)": {
+      "popular": 0.8889,
+      "medium": 0.7778,
+      "rare": 0.3889
+    },
+    "nli modernbert-large (Ollaya)": {
+      "popular": 0.6111,
+      "medium": 0.3889,
+      "rare": 0.3889
+    },
+    "decision 0.75B (Ollaya)": {
+      "popular": 1.0,
+      "medium": 0.9444,
+      "rare": 0.7222
+    },
+    "jevk5 4B (Ollaya)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "winnow e4b (Ollaya)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
     }
   },
   "latency": {
@@ -718,7 +804,12 @@
     "cohere-rerank-4-pro (OpenRouter)": 0.413,
     "cohere-rerank-4-fast (OpenRouter)": 0.371,
     "cohere-rerank-v3.5 (OpenRouter)": 0.411,
-    "nemotron-rerank-vl-1b (OpenRouter)": 4.446
+    "nemotron-rerank-vl-1b (OpenRouter)": 4.446,
+    "nli deberta-v3-large (Ollaya)": 0.405,
+    "nli modernbert-large (Ollaya)": 0.42,
+    "decision 0.75B (Ollaya)": 0.769,
+    "jevk5 4B (Ollaya)": 7.131,
+    "winnow e4b (Ollaya)": 8.689
   },
   "laya_routing": {
     "Spanish": {
@@ -780,7 +871,12 @@
     "cohere-rerank-4-fast (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "cohere-rerank-v3.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "nemotron-rerank-vl-1b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "Jev": "Model download and loading excluded; first forward pass included."
+    "Jev": "Model download and loading excluded; first forward pass included.",
+    "nli deberta-v3-large (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "nli modernbert-large (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "decision 0.75B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "jevk5 4B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "winnow e4b (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
   },
   "provenance": {
     "von": {

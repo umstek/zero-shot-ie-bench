@@ -39,6 +39,11 @@ are not ZDR - they may retain request data:
     python bench_multilingual.py --system "Span-01 Lite"
     python bench_multilingual.py --system "cohere-rerank-v3.5 (OpenRouter)"
 
+Ollaya systems need the local Ollaya daemon (System One contract on :11435;
+`ollaya serve` after installing from https://ollaya.dev/download):
+    python bench_multilingual.py --system "nli deberta-v3-large (Ollaya)"
+    python bench_multilingual.py --system "winnow e4b (Ollaya)"
+
 Ground-truth verification: sentences were blind-translated back to English
 by one independent cold-context model instance (separate agent, no labels
 in its instructions); it caught 8 errors (2 sentiment-flipping) which were
@@ -197,6 +202,11 @@ OPENROUTER_RERANKERS = {
     "cohere-rerank-4-fast (OpenRouter)": "cohere/rerank-4-fast",
     "cohere-rerank-v3.5 (OpenRouter)": "cohere/rerank-v3.5",
 }
+# served by the local Ollaya daemon (engines/ollaya_client.py holds the
+# name -> tag map and the client)
+from engines.ollaya_client import MODELS as OLLAYA_MODELS
+
+OLLAYA = OLLAYA_MODELS
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS)
@@ -206,7 +216,8 @@ ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                   "so1 (Qwen2.5-0.5B)", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                  "Verdict 151M (local)"])
+                  "Verdict 151M (local)"]
+               + list(OLLAYA))
 
 
 def make_classifier(name: str, tracker=None):
@@ -492,6 +503,33 @@ def run_systemone(texts, port: int, model: str):
     return preds, statistics.mean(lat)
 
 
+def run_ollaya(texts, tag: str):
+    """Ollaya-served decision model (local daemon on :11435, same System
+    One contract as run_systemone), one request per text - and the state IS
+    the text: these models' decision layers build their premise from the
+    state, so embedding the text in the instructions (the shape the kev
+    servers take) silently drops it for some of them. Criteria carry label
+    descriptions - the option descriptions are what these models score
+    (bare-label criteria measurably hurt the NLI pair encoder)."""
+    from engines.jev_client import choice
+    from engines.ollaya_client import systemone
+
+    client = systemone(tag)
+    # pay the first-request model load (winnow:e4b pulls 8 GB into memory)
+    # before the timed loop, like the other local servers
+    client.ask("good", {"w": choice("What is the sentiment of this text?",
+                                    dict(SENTIMENT_LABELS))}, timeout=600)
+    preds, lat = [], []
+    for text in texts:
+        question = choice("What is the overall sentiment of this text?",
+                          dict(SENTIMENT_LABELS))
+        t0 = time.perf_counter()
+        out = client.ask(text, {"q": question}, timeout=600)
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
 def run_verdict(texts):
     """Verdict 151M: in-process rlcd DecisionEngine (Verdict-open-jev
     checkout, agent-jev venv); abstention counts as no prediction."""
@@ -600,6 +638,8 @@ def main() -> None:
 
         tracker = UsageTracker()
         preds, lat = run_jev(texts, tracker)
+    elif name in OLLAYA:
+        preds, lat = run_ollaya(texts, OLLAYA[name])
     else:
         # a new ALL_SYSTEMS entry without a dispatch branch must never
         # fall through to the paid Jev API
@@ -639,9 +679,11 @@ def main() -> None:
     if notes and notes[0].startswith("All "):
         notes[0] = (f"All {len(out['by_language'])} systems answer "
                     "the same 54 texts.")
-    # only the local System One servers get the untimed warm-up ask; the
-    # hosted or-kev endpoint is stateless, so every request is timed
-    warmed = (name.startswith(("Kev", "decider", "OpenThai"))
+    # only the local System One servers (and Ollaya's first-request model
+    # load) get the untimed warm-up ask; the hosted or-kev endpoint is
+    # stateless, so every request is timed
+    warmed = ((name.startswith(("Kev", "decider", "OpenThai"))
+               or name in OLLAYA)
               and name != "Kev 4B (OpenRouter)")
     out.setdefault("timing", {})[name] = (
         "Model download and loading excluded; "
