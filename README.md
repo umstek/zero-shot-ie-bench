@@ -337,12 +337,12 @@ systems answer the same 54 texts.
 | JevK5-Lite | 100% | 89% | 44% | 78% |
 | Laya Router (mmBERT) | 89% | 94% | 44% | 76% |
 | voyage-rerank-2.5 (OpenRouter) † | 83% | 78% | 61% | 74% |
+| nli deberta-v3-large (Ollaya) | 89% | 78% | 39% | 69% |
+| GLiNER2.5-Decide | 89% | 83% | 33% | 69% |
 | gliclass-base | 94% | 67% | 39% | 67% |
 | bge-reranker-v2-m3 | 67% | 67% | 67% | 67% |
 | cohere-rerank-v3.5 (OpenRouter) † | 67% | 67% | 67% | 65% |
 | voyage-rerank-2.5-lite (OpenRouter) † | 94% | 61% | 39% | 65% |
-| nli deberta-v3-large (Ollaya) | 89% | 78% | 39% | 69% |
-| GLiNER2.5-Decide | 89% | 83% | 33% | 69% |
 | GLiFormer-large | 94% | 61% | 33% | 63% |
 | AgentJev 0.6B (local) | 83% | 83% | 22% | 63% |
 | Laya typed-decisions | 100% | 44% | 33% | 59% |
@@ -355,8 +355,8 @@ systems answer the same 54 texts.
 | mxbai-rerank-base-v2 | 56% | 50% | 39% | 48% |
 | nli modernbert-large (Ollaya) | 61% | 39% | 39% | 46% |
 | GTE-rerank-ModernBERT-base | 61% | 33% | 39% | 44% |
-| gliclass-modern-base | 44% | 33% | 39% | 39% |
 | nemotron-rerank-vl-1b (OpenRouter) † | 50% | 33% | 39% | 41% |
+| gliclass-modern-base | 44% | 33% | 39% | 39% |
 | so1 + Qwen2.5-0.5B | 39% | 39% | 33% | 37% |
 | Lumma-fev 0.6B | 28% | 39% | 44% | 37% |
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
