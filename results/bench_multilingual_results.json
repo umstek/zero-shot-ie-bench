@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 47 systems answer the same 54 texts.",
+      "All 50 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -75,7 +75,10 @@
       "Julia 1 144M recorded 2026-09-27 21:12, 13s, CPU",
       "Lumma-fev 0.15B recorded 2026-09-27 21:13, 28s, CPU",
       "Lumma-fev 0.6B recorded 2026-09-27 21:15, 58s, CPU",
-      "Lumma-fev 4B recorded 2026-09-27 21:21, 226s, CPU"
+      "Lumma-fev 4B recorded 2026-09-27 21:21, 226s, CPU",
+      "Intern-Decision 0.8B recorded 2026-09-27 22:51, 102s, CPU",
+      "Intern-Decision 2B recorded 2026-09-27 22:57, 180s, CPU",
+      "Intern-Decision 4B recorded 2026-09-27 23:12, 488s, CPU"
     ]
   },
   "by_language": {
@@ -595,6 +598,39 @@
       "Sinhala": 0.8333,
       "Icelandic": 0.8333,
       "Welsh": 1.0
+    },
+    "Intern-Decision 0.8B": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 0.6667,
+      "Welsh": 0.6667
+    },
+    "Intern-Decision 2B": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 0.8333
+    },
+    "Intern-Decision 4B": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.8333,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -832,6 +868,21 @@
       "popular": 1.0,
       "medium": 1.0,
       "rare": 0.8889
+    },
+    "Intern-Decision 0.8B": {
+      "popular": 0.9444,
+      "medium": 0.9444,
+      "rare": 0.7778
+    },
+    "Intern-Decision 2B": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.7222
+    },
+    "Intern-Decision 4B": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
     }
   },
   "latency": {
@@ -881,7 +932,10 @@
     "Julia 1 144M": 0.064,
     "Lumma-fev 0.15B": 0.309,
     "Lumma-fev 0.6B": 0.772,
-    "Lumma-fev 4B": 3.654
+    "Lumma-fev 4B": 3.654,
+    "Intern-Decision 0.8B": 1.657,
+    "Intern-Decision 2B": 3.012,
+    "Intern-Decision 4B": 8.373
   },
   "laya_routing": {
     "Spanish": {
@@ -952,7 +1006,10 @@
     "Julia 1 144M": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Lumma-fev 0.15B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Lumma-fev 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Lumma-fev 4B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
+    "Lumma-fev 4B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Intern-Decision 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Intern-Decision 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Intern-Decision 4B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
   },
   "provenance": {
     "von": {

@@ -1,7 +1,7 @@
 # zero-shot-ie-bench
 
-Fifty zero-shot systems (forty-seven of them benchmarked) across
-twenty-eight information-extraction and classification families —
+Fifty-three zero-shot systems (fifty of them benchmarked) across
+twenty-nine information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints, plus five models served by
@@ -129,7 +129,7 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 47 systems)
+## Mixed-pool spectrum benchmark (all 50 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -150,6 +150,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | Kev 4B (OpenRouter) † | 85.4% | 0.079 | n/a | |
 | Span-01 † | 85.4% | 0.440 | n/a | |
 | jevk5 4B (Ollaya) | 85.4% | 7.299 | n/a | |
+| Intern-Decision 4B | 85.4% | 8.0 | n/a | |
 | GLiNER2.5-base | 83.3% | 0.111 | 61% | 0.135 |
 | decider 0.8B (local) | 83.3% | 2.144 | n/a | |
 | cohere-rerank-4-pro (OpenRouter) † | 83.3% | 0.418 | n/a | |
@@ -158,12 +159,14 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | decision 0.75B (Ollaya) | 81.2% | 0.817 | n/a | |
 | gliclass-large | 81.2% | 0.411 | n/a | |
 | JevK5-Lite | 81.2% | 0.392 | n/a | |
+| Intern-Decision 2B | 81.2% | 3.166 | n/a | |
 | GLiNER2.5-multi | 79.2% | 0.152 | **67%** | 0.180 |
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
 | von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
 | AgentJev 0.6B (local) | 79.2% | 0.646 | n/a | |
 | Span-01 Lite † | 79.2% | 0.440 | n/a | |
 | voyage-rerank-2.5 (OpenRouter) † | 79.2% | 0.373 | n/a | |
+| Intern-Decision 0.8B | 77.1% | 1.585 | n/a | |
 | Kev 0.8B (local) | 72.9% | 0.587 | n/a | |
 | bge-reranker-v2-m3 | 72.9% | 0.339 | n/a | |
 | MoJev 0.85B | 72.9% | 3.375 | n/a | |
@@ -194,7 +197,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 Takeaways:
 
 - **winnow e4b ties qwen3-reranker-8b at 87.5% — the best non-Jev
-  systems of all 47** — and winnow is local and free (the metered
+  systems of all 50** — and winnow is local and free (the metered
   reranker needs OpenRouter; one more datapoint for rerankers doubling
   as decision engines — bge locally reaches 72.9%, Kev/OpenThai level,
   where the same rerankers sit near zero on JevBench's leaderboard).
@@ -233,6 +236,23 @@ Takeaways:
   rows ignore the English-distance gradient: French, Chinese and
   Sinhala all score 67%, while Spanish and Ukrainian — high-resource,
   close to English — sit at 33%.
+- **Intern-Decision 4B is the strongest all-round local addition since
+  jevk5: it joins both the 85.4% mixed-pool tie** (GLiNER2.5-Decide,
+  hosted Kev 4B, Span-01, jevk5 4B) **and the 98% multilingual club**
+  (winnow e4b, Span-01, hosted Kev 4B) — 98.1% multilingual, perfect on
+  Icelandic and Welsh with 83.3% Sinhala, the Qwen3.5-backbone breadth
+  jevk5 and winnow showed.
+- The family scales with size on the pool: 0.8B 77.1% at 1.585
+  s/question, 2B 81.2% at 3.166, 4B 85.4% at 8.0 — fp32 CPU forwards
+  (the bf16 forward measured ~7× slower with identical predictions, so
+  bfloat16 buys nothing on this CPU), on the reference PyTorch kernels
+  like Lumma (causal-conv1d / flash-linear-attention not installed, so
+  transformers logs fallback warnings) — the out-of-the-box CPU
+  configuration.
+- **The Intern-Decision 0.8B multilingual row matches the 0.75B
+  `decision`'s tier** — 88.9% overall at 100% Sinhala (Icelandic and
+  Welsh 66.7%) — while the 2B sits between the two at 90.7% (72% rare
+  tier, 66.7% Sinhala).
 - Hosted kev-4b ties Decide at 85.4% and is 2nd overall multilingual
   (98%, one Welsh text short of perfect); Span-01 matches it on both
   (85.4% / 98%); the cheaper hosted
@@ -319,7 +339,7 @@ images (regenerate with `python make_chart_images.py`):
 Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish,
 Ukrainian · Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified
 by blind back-translation through an independent model instance (it
-caught 8 errors, including a sentiment-flipping Sinhala word). All 47
+caught 8 errors, including a sentiment-flipping Sinhala word). All 50
 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
@@ -329,10 +349,13 @@ systems answer the same 54 texts.
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
+| Intern-Decision 4B | 100% | 100% | 94% | 98% |
 | qwen3-reranker-8b (OpenRouter) † | 100% | 100% | 89% | 96% |
 | Lumma-fev 4B | 100% | 100% | 89% | 96% |
+| Intern-Decision 2B | 100% | 100% | 72% | 91% |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
 | decision 0.75B (Ollaya) | 100% | 94% | 72% | 89% |
+| Intern-Decision 0.8B | 94% | 94% | 78% | 89% |
 | Span-01 Lite † | 100% | 100% | 61% | 87% |
 | decider 0.8B (local) | 100% | 100% | 50% | 83% |
 | OpenThai 0.8B (local) | 100% | 100% | 50% | 83% |
@@ -422,7 +445,7 @@ Highlights:
 | Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
 | Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | untested here |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) |
@@ -595,7 +618,7 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (47 systems; von, JevK5-Lite,
+                                         # (50 systems; von, JevK5-Lite,
                                          # LFM2.5-RLCD 350M, MoJev 0.85B,
                                          # Lumma-Fev, Julia 1 and
                                          # Intern-Decision: same command
@@ -604,7 +627,7 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
 # imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 47 systems →
+                                         # 9 languages, all 50 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
@@ -805,7 +828,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 47 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 50 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
