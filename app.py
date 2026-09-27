@@ -1352,6 +1352,85 @@ def build_jev_tab():
         jev_button.click(run_jev, [jev_text, jev_labels, jev_task], jev_table)
 
 
+# -------------------------------------------------- Ollaya (local) tab
+# The five Ollaya-served systems (same names and tags as bench_spectrum.py;
+# the map lives in engines/ollaya_client.py). Needs the local daemon
+# running (`ollaya serve`, default port 11435) and each model pulled once.
+# Unlike the Jev tab this sends ONE REQUEST PER LINE: the state is the text
+# (Ollaya's decision layers build their premise from the state).
+
+
+def build_ollaya_tab():
+    import gradio as gr
+
+    from engines.ollaya_client import MODELS, systemone
+
+    with gr.Tab("Ollaya (local)"):
+        gr.Markdown(
+            "### Ollaya — open decision models on the local daemon "
+            "(`http://127.0.0.1:11435`)\n"
+            "Same System One contract as the Jev tab, but local and free: "
+            "MoritzLaurer NLI classifiers, vLLM Semantic Router `decision`, "
+            "the full JevK5 4B and Winnow E4B (all pulled from their "
+            "authors' HF repos). Needs `ollaya serve` running and each "
+            "model pulled once (`ollaya pull <tag>` — see README). One "
+            "request per line — the state is the text, and labels with "
+            "descriptions score best.")
+        o_model = gr.Dropdown(choices=list(MODELS),
+                              value="decision 0.75B (Ollaya)",
+                              label="Model")
+        o_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.",
+            lines=5)
+        o_labels = gr.Textbox(
+            label="Labels (comma-separated; optionally label: description)",
+            value="positive: Text expresses a clearly positive attitude, "
+                  "negative: Text expresses a clearly negative attitude, "
+                  "neutral: Factual text without a clear attitude")
+        o_question = gr.Textbox(label="Question (instructions)",
+                                value="What is the overall sentiment of "
+                                      "this text?")
+        o_button = gr.Button("Ask Ollaya (one request per line)",
+                             variant="primary")
+        o_table = gr.JSON(label="Answers (per line: label, confidence, "
+                                "probabilities)")
+
+        def run_ollaya(model_name, texts_block, labels_csv, question):
+            from engines.jev_client import choice
+
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            criteria: dict[str, str | None] = {}
+            for chunk in parse_labels(labels_csv):
+                label, _, desc = chunk.partition(":")
+                criteria[label.strip()] = desc.strip() or None
+            if not texts or not criteria:
+                return {"error": "provide text lines and labels"}
+            try:
+                client = systemone(MODELS[model_name])
+                rows = {}
+                for i, text in enumerate(texts):
+                    payload = client.ask(
+                        text, {"q": choice(question, criteria)},
+                        timeout=600)
+                    answer = payload["answers"]["q"]
+                    rows[f"{i + 1}. {text[:40]}…"] = {
+                        "label": answer.get("choice"),
+                        "confidence": answer.get("confidence"),
+                        "probabilities": answer.get("probabilities"),
+                        "latency_s": payload.get("_latency_s"),
+                    }
+                return rows
+            except Exception as exc:
+                return {"error": str(exc)}
+
+        o_button.click(run_ollaya,
+                       [o_model, o_text, o_labels, o_question], o_table)
+
+
 # -------------------------------------------------- OpenRouter (hosted) tab
 # The ten OpenRouter-hosted systems (same names and model ids as
 # bench_spectrum.py): three System One decision engines — Kev answers one
@@ -2052,11 +2131,12 @@ def main() -> None:
                     "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
-                    "so1, the cloud Jev and the ten OpenRouter-hosted "
-                    "systems. The remaining local engines (Kev, "
+                    "so1, the cloud Jev, the ten OpenRouter-hosted systems "
+                    "and the five Ollaya-served decision models. The "
+                    "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 38 systems across twenty-three "
+                    "measured numbers for all 43 systems across twenty-eight "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
