@@ -40,8 +40,8 @@ class ClientTests(unittest.TestCase):
 
             os.environ.pop("OLLAYA_BASE_URL", None)
             client = systemone("nli")
+            self.assertEqual(client.base_url, base_url())
         self.assertEqual(client.model, "nli")
-        self.assertEqual(client.base_url, base_url())
         # a local server never sees an authorization header
         self.assertEqual(client.api_key, "")
 
