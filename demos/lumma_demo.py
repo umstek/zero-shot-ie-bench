@@ -68,6 +68,19 @@ SENTIMENT = {
     "neutral": "Factual text without a clear attitude",
 }
 
+# described criteria for the serve path - same wording as bench.py's
+# SENTIMENT_LABELS/TOPIC_LABELS (and the julia demo), because bare-label
+# criteria measurably hurt these scorers (the Ollaya finding)
+CRITERIA = {
+    "positive": "Text expresses a clearly positive attitude",
+    "negative": "Text expresses a clearly negative attitude",
+    "neutral": "Factual or mixed text without a clear attitude",
+    "technology": "Software, hardware, AI, gadgets, engineering",
+    "business": "Companies, markets, revenue, deals, management",
+    "sports": "Athletes, matches, teams, tournaments",
+    "politics": "Government, elections, policy, legislation",
+}
+
 
 def banner(title: str) -> None:
     line = "=" * 74
@@ -99,6 +112,14 @@ def resolve_model_id(value=None) -> str:
             return canonical
     raise ValueError(f"unknown Lumma checkpoint {value!r}; known: "
                      f"{', '.join(MODEL_IDS)} or the HF id")
+
+
+def describe_labels(labels) -> dict:
+    """criteria dict for the serve path: the bench description for each
+    known sentiment/topic label (bare-label criteria measurably hurt
+    these scorers, per the Ollaya finding), bare (None) for unknown
+    labels."""
+    return {label: CRITERIA.get(label) for label in labels}
 
 
 def choice_question(instructions: str, criteria: dict) -> dict:
@@ -172,7 +193,7 @@ def serve() -> None:
     try:
         texts, task, labels, _ = parse_serve_payload(payload)
         model = load(payload.get("model"))
-        criteria = {label: None for label in labels}
+        criteria = describe_labels(labels)
         results = [decide_one(model, text, task, criteria)
                    for text in texts]
         # ASCII-escaped JSON survives Windows pipes using legacy code pages.

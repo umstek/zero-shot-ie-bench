@@ -87,6 +87,24 @@ class QuestionTests(unittest.TestCase):
             'Which urgency category does this text belong to: "now"')
 
 
+class DescribeLabelsTests(unittest.TestCase):
+    def test_known_labels_get_the_bench_descriptions(self):
+        self.assertEqual(
+            lumma_demo.describe_labels(
+                ["positive", "neutral", "technology"]),
+            {"positive": "Text expresses a clearly positive attitude",
+             "neutral": "Factual or mixed text without a clear attitude",
+             "technology": "Software, hardware, AI, gadgets, engineering"})
+
+    def test_unknown_labels_stay_bare(self):
+        # no house description for arbitrary labels: None keeps the bare
+        # name as the option
+        self.assertEqual(
+            lumma_demo.describe_labels(["mood", "positive"]),
+            {"mood": None,
+             "positive": "Text expresses a clearly positive attitude"})
+
+
 class _StubModel:
     """Records decide() requests, answers every question alike."""
 
@@ -179,6 +197,19 @@ class ServeTests(unittest.TestCase):
                          ["positive", "positive"])
         # one model load per click, one decide() per text
         self.assertEqual(len(stub.calls), 2)
+
+    def test_serve_sends_described_criteria_with_unknown_bare(self):
+        # the bench/tour shape: described criteria for the known labels
+        # (bare labels measurably hurt these scorers), bare for unknown
+        payload, stub = self.run_serve(
+            {"texts": ["a"], "task": "sentiment",
+             "labels": ["positive", "mood"]})
+        self.assertNotIn("error", payload)
+        _, questions = stub.calls[0]
+        self.assertEqual(
+            questions["q"]["criteria"],
+            {"positive": "Text expresses a clearly positive attitude",
+             "mood": None})
 
     def test_serve_maps_errors_to_the_error_json(self):
         payload, _ = self.run_serve({"texts": [], "task": "sentiment",
