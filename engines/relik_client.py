@@ -90,7 +90,12 @@ def _tolerate_index_kwargs() -> None:
     def _init_tolerant_of_loader_kwargs(self, *args, **kwargs):
         if "documents" in kwargs:
             documents = kwargs["documents"]
-            if not isinstance(documents, (list, DocumentStore)):
+            # listify ONLY config-like iterables - None, a path string
+            # or bytes must reach relik's own handling untouched
+            if (documents is not None
+                    and not isinstance(documents, (list, str, bytes,
+                                                   DocumentStore))
+                    and hasattr(documents, "__iter__")):
                 documents = list(documents)  # hydra hands over a ListConfig
             if (isinstance(documents, list) and documents
                     and all(isinstance(d, str) for d in documents)):

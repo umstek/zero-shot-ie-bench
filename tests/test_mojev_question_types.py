@@ -122,6 +122,21 @@ class OptionTextsTests(unittest.TestCase):
                     option_texts(name, question)
 
 
+    def test_noul_rejects_identical_false_true_texts(self):
+        question = {"type": "noul",
+                    "criteria": {"false": "x", "true": "x"}}
+        with self.assertRaisesRegex(ValueError, "must differ"):
+            option_texts("refund", question)
+
+    def test_choice_rejects_duplicate_rendered_candidates(self):
+        # "x: y" (bare key) renders to the same text as "x" described
+        # as "y" - the model cannot tell the candidates apart
+        question = {"type": "choice",
+                    "criteria": {"x: y": None, "x": "y"}}
+        with self.assertRaisesRegex(ValueError, "distinct"):
+            option_texts("team", question)
+
+
 class BuildAnswerTests(unittest.TestCase):
     def test_noul_reads_the_yes_probability(self):
         answer = build_answer("refund", {"type": "noul"}, "noul",

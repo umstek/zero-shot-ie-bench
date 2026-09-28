@@ -121,16 +121,19 @@ class ProvenanceTests(unittest.TestCase):
 
 class MissingRelikTests(unittest.TestCase):
     def test_missing_relik_names_the_requirements_file(self):
-        saved = {k: v for k, v in sys.modules.items()
-                 if k == "relik" or k.startswith("relik.")}
-        for name in list(saved):
-            del sys.modules[name]
+        saved = sys.modules.get("relik")
+        # None in sys.modules forces the ImportError even where relik IS
+        # installed (e.g. a suite run inside .venv-relik)
+        sys.modules["relik"] = None
         try:
             with self.assertRaises(RuntimeError) as ctx:
                 relik_client.load_relik()
             self.assertIn("requirements-relik.txt", str(ctx.exception))
         finally:
-            sys.modules.update(saved)
+            if saved is None:
+                del sys.modules["relik"]
+            else:
+                sys.modules["relik"] = saved
 
 
 class LoaderFixTests(unittest.TestCase):

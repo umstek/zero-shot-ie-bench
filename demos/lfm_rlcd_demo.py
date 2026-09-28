@@ -170,7 +170,7 @@ def tour() -> None:
     print(f"  generated ({res_ar['generated_tokens']} tokens): "
           f"{res_ar['text']!r}")
     print(f"  hit_token_limit={res_ar['hit_token_limit']}  (the card's "
-          "baseline: same weights, tokens sampled one at a time;")
+          "baseline: same weights, tokens generated one at a time;")
     print("   the constrained path above guarantees the JSON and scores "
           "every field in 2 forward calls)")
 

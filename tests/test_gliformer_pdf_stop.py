@@ -30,11 +30,21 @@ class SamplePdfTests(unittest.TestCase):
         cls.path = demo.build_sample_pdf(cls.directory)
 
     def test_rebuild_is_byte_identical(self):
+        with open(self.path, "rb") as fh:  # the FIRST build's bytes
+            original = fh.read()
         again = self.demo.build_sample_pdf(self.directory)
-        with open(self.path, "rb") as fh:
-            first = fh.read()
         with open(again, "rb") as fh:
-            self.assertEqual(first, fh.read())
+            rebuilt = fh.read()
+        # pymupdf writes a fresh random /ID into the trailer on every
+        # save, so strict byte equality is impossible; everything else
+        # must be identical
+        import re
+
+        def normalize(blob):
+            return re.sub(rb"/ID\[<[0-9A-Fa-f]+>\s*<[0-9A-Fa-f]+>\]",
+                          b"/ID[X]", blob)
+
+        self.assertEqual(normalize(original), normalize(rebuilt))
 
     def test_two_pages_with_expected_text(self):
         import pymupdf

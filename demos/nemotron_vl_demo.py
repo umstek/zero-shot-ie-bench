@@ -85,8 +85,10 @@ def main() -> None:
     banner(f"1. {MODEL} - three PIL-drawn page SCREENSHOTS as documents")
     print("  (documents carry base64 data-URI images; the text path the "
           "benches used never sends these)")
-    documents = [{"image": page_image(text), "text": f"page {name}"}
-                 for name, text in PAGES]
+    # neutral ids only: the page names below must stay out of the
+    # text field, or the ranking proves text matching, not image reading
+    documents = [{"image": page_image(text), "text": f"page {i + 1}"}
+                 for i, (_, text) in enumerate(PAGES)]
     rows = rerank(MODEL, QUERY, documents)
     show_ranking(rows, "image")
 

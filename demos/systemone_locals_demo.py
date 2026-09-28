@@ -172,6 +172,9 @@ def parse_serve_payload(payload: dict):
                          "low to high")
     if not noul_text:
         raise ValueError("noul needs a 'noul_instructions'")
+    if system == "agentjev" and score_text == noul_text:
+        raise ValueError("agentjev needs distinct 'score_instructions' "
+                         "and 'noul_instructions' (they are the row ids)")
     if system == "agentjev":
         return system, state, agentjev_rows(score_text, levels, noul_text)
     return system, state, systemone_rows(score_text, levels, noul_text)

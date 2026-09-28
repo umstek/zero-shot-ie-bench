@@ -182,6 +182,20 @@ class ServeParseTests(unittest.TestCase):
             self.assertIn(fragment, str(ctx.exception))
 
 
+    def test_agentjev_rejects_identical_score_and_noul_texts(self):
+        # identical texts would collide as agentjev row ids and silently
+        # drop the score answer; kev/decider key their rows themselves
+        payload = {"system": "agentjev", "state": "a ticket",
+                   "score_instructions": "How urgent?",
+                   "levels": ["low", "high"],
+                   "noul_instructions": "How urgent?"}
+        with self.assertRaisesRegex(ValueError, "distinct"):
+            demo.parse_serve_payload(payload)
+        payload["system"] = "kev"
+        _, _, questions = demo.parse_serve_payload(payload)
+        self.assertEqual(set(questions), {"urgency", "refund"})
+
+
 class ServeTests(unittest.TestCase):
     def test_serve_turns_a_bad_payload_into_error_json(self):
         with patch("sys.stdin", io.StringIO("{}")), \

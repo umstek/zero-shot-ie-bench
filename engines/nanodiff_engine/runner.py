@@ -37,6 +37,9 @@ def load_model(device):
 
 @torch.no_grad()
 def predict(model, state, question, options, device):
+    if not 1 <= len(options) <= len(LETTERS):
+        raise ValueError(f"a question needs 1..{len(LETTERS)} options "
+                         "(single-token answer letters A-J)")
     # budget the state so the fully assembled prompt fits PROMPT_LEN;
     # encode_example hard-rejects longer prompts (the release's eval path
     # never sees them, a long user state in the demo/app would)
@@ -73,8 +76,9 @@ def predict_multi(model, state, questions, device):
     letter slots, each slot's softmax restricted to that question's
     option letters). questions: [(question, options), ...]; returns one
     (pick, {option: prob}) pair per question, in order."""
-    if any(len(options) > len(LETTERS) for _, options in questions):
-        raise ValueError(f"at most {len(LETTERS)} options per question "
+    if any(not 1 <= len(options) <= len(LETTERS)
+           for _, options in questions):
+        raise ValueError(f"each question needs 1..{len(LETTERS)} options "
                          "(single-token answer letters A-J)")
     budget = PROMPT_LEN - n_tokens(build_multi_prompt("", questions))
     state = truncate_tokens(state, max(0, budget))

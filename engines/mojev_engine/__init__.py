@@ -48,13 +48,21 @@ def option_texts(name: str, question: dict) -> tuple[list[str], str]:
                              f"{type(criteria).__name__}")
         no = criteria.get("false") or "no"
         yes = criteria.get("true") or "yes"
-        return [_render(no), _render(yes)], kind
+        options = [_render(no), _render(yes)]
+        if options[0] == options[1]:
+            raise ValueError(f"{name}: noul 'false' and 'true' texts "
+                             "must differ")
+        return options, kind
     if kind == "choice":
         if not isinstance(criteria, dict) or not criteria:
             raise ValueError(f"{name}: choice criteria must be a non-empty "
                              "dict of label -> description-or-None")
-        return [key if value in (None, "") else f"{key}: {_render(value)}"
-                for key, value in criteria.items()], kind
+        options = [key if value in (None, "") else f"{key}: {_render(value)}"
+                   for key, value in criteria.items()]
+        if len(set(options)) != len(options):
+            raise ValueError(f"{name}: choice candidates must be "
+                             "distinct after rendering")
+        return options, kind
     if not isinstance(criteria, list) or not criteria:
         raise ValueError(f"{name}: score criteria must be a non-empty list "
                          "of ordered level descriptions")

@@ -17,11 +17,15 @@ import demos.demo as demo
 
 class ImportTests(unittest.TestCase):
     def test_import_pulls_no_heavy_dependencies(self):
-        # the delta matters: another test (or venv) may already hold torch
+        # the delta matters: another test (or venv) may already hold torch.
+        # The module-scope import above cached demos.demo, so pop it and
+        # measure a FRESH import, not a cache hit
         before = set(sys.modules)
+        sys.modules.pop("demos.demo", None)
         import importlib
 
         module = importlib.import_module("demos.demo")
+        self.assertIsNot(module, demo)
         added = set(sys.modules) - before
         self.assertNotIn("gliner2", added)
         self.assertNotIn("torch", added)
@@ -51,18 +55,30 @@ class DecideRegistryTests(unittest.TestCase):
         self.assertEqual(demo.DECIDE_MODEL_ID, demo.MODELS["decide"])
         self.assertEqual(demo.DECIDE_MODEL_ID, "fastino/GLiNER2.5-Decide")
 
-    def test_decide_sibling_skips_itself_when_the_tour_already_runs_it(self):
-        # section 7 must not reload Decide when --model decide chose it
+    def test_decide_sibling_runs_the_rubric_when_the_tour_already_runs_it(self):
+        # under --model decide section 7 must not RELOAD Decide, but the
+        # score rubric (new in section 7) still has to run on the
+        # already-loaded model
         import contextlib
         import io
+
+        calls = []
+
+        class LoadedDecide:
+            def classify_text(self, text, labels, include_confidence=False):
+                calls.append((labels, include_confidence))
+                return {"rating": "7"}
 
         saved = demo.MODEL_ID
         demo.MODEL_ID = demo.DECIDE_MODEL_ID
         try:
             with contextlib.redirect_stdout(io.StringIO()):
-                self.assertIsNone(demo.decide_sibling(model=None))
+                self.assertIsNone(
+                    demo.decide_sibling(model=LoadedDecide()))
         finally:
             demo.MODEL_ID = saved
+        self.assertEqual(calls,
+                         [({"rating": demo.rubric_levels(0, 10)}, True)])
 
 
 if __name__ == "__main__":
