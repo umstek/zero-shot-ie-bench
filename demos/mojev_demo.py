@@ -27,6 +27,16 @@ talks JSON over stdin/stdout):
                           "probabilities": {label: float},
                           "confidence": float}, ...]}
             or {"error": "Type: message"}
+
+Typed-questions runner (mode "typed": k System One-style questions about
+one state, ONE packed forward — stop 6 of the tour as a service):
+    stdin:  {"mode": "typed", "state": str,
+             "questions": {name: {"type": "choice" | "noul" | "score",
+                                  "instructions": str,
+                                  "criteria": ...}}}
+    stdout: {"answers": {name: {...}}, "usage": {"input_tokens": int,
+                                                 "output_tokens": 0}}
+            or {"error": "Type: message"}
 """
 
 from __future__ import annotations
@@ -118,9 +128,42 @@ def one_forward_each(score, state: str, questions: dict) -> None:
 
 
 # ------------------------------------------------------------------ runner
+def parse_typed_payload(payload: dict) -> tuple[str, dict]:
+    """--serve typed mode: {"state", "questions": {name: {"type",
+    "instructions", "criteria"}}} -> the (state, questions) pair
+    answer_typed takes, with the problem named on bad shapes (criteria
+    shapes are validated downstream by option_texts)."""
+    state = payload.get("state")
+    if not isinstance(state, str) or not state.strip():
+        raise ValueError("'state' must be a non-empty string")
+    questions = payload.get("questions")
+    if not isinstance(questions, dict) or not questions:
+        raise ValueError("'questions' must be a non-empty dict of typed "
+                         "questions")
+    for name, question in questions.items():
+        if not isinstance(question, dict) or question.get("type") not in (
+                "choice", "noul", "score"):
+            raise ValueError(f"question {name!r}: 'type' must be 'choice', "
+                             "'noul' or 'score'")
+        if not isinstance(question.get("instructions", ""), str):
+            raise ValueError(f"question {name!r}: 'instructions' must be "
+                             "a string")
+    return state, questions
+
+
 def serve() -> None:
     payload = json.loads(sys.stdin.read())
     try:
+        if payload.get("mode") == "typed":
+            state, questions = parse_typed_payload(payload)
+            from engines.mojev_engine import load_typed_engine
+
+            _, answer_typed, _ = load_typed_engine("cpu")
+            answers, usage = answer_typed(state, questions)
+            # ASCII-escaped JSON survives Windows pipes using legacy code pages.
+            print(json.dumps({"answers": answers, "usage": usage}))
+            return
+
         from engines.mojev_engine import load_engine
 
         score, _ = load_engine("cpu")

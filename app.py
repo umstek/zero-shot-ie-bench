@@ -804,9 +804,9 @@ on :11435); Lumma, Julia and Intern-Decision spawn one-shot
 | All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) | ✅ (all questions one forward) | ✅ (questions independently scored in one batch) | ✅ (per text, all questions one forward — up to 16 questions/request) |
 | Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema (3 fields + AR baseline demoed) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ enum rubric (demoed) | ❌ | ✅ score (demoed) | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean (demoed) | ❌ | ✅ noul (demoed) | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -2066,6 +2066,74 @@ def build_mojev_tab():
                     in enumerate(zip(texts, payload["results"]))}
 
         mj_button.click(run_mojev, [mj_text, mj_labels, mj_task], mj_out)
+
+        gr.Markdown("#### Typed questions — choice + noul + score in ONE packed forward")
+        mj_t_state = gr.Textbox(
+            label="State (one text, asked everything)",
+            value="I was charged twice for my subscription this month "
+                  "and want a refund.", lines=3)
+        with gr.Row():
+            mj_t_choice = gr.Textbox(
+                label="Choice labels (comma-separated)",
+                value="billing, technical, account")
+            mj_t_noul = gr.Textbox(
+                label="Noul proposition (yes/no)",
+                value="Does the customer request a refund?")
+        mj_t_score = gr.Textbox(
+            label="Score rubric (one level per line, low to high)",
+            value="low: routine request, handle in the normal queue\n"
+                  "medium: annoying but nothing is broken, this week\n"
+                  "high: customer blocked or money at risk, today\n"
+                  "urgent: churn or legal risk, drop everything", lines=4)
+        mj_t_button = gr.Button("Answer all three (one forward)",
+                                variant="primary")
+        mj_t_out = gr.JSON(label="answers + usage (input tokens)")
+
+        def run_mojev_typed(state, choice_csv, noul_text, rubric_block):
+            labels = parse_labels(choice_csv)
+            levels = [line.strip() for line in rubric_block.splitlines()
+                      if line.strip()]
+            if not state.strip():
+                return {"error": "provide a state"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct choice labels"}
+            if not noul_text.strip():
+                return {"error": "provide a noul proposition"}
+            if len(levels) < 2:
+                return {"error": "provide at least two rubric levels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "mojev_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"mode": "typed", "state": state,
+                                      "questions": {
+                                          "team": {
+                                              "type": "choice",
+                                              "instructions":
+                                                  "Which team handles this?",
+                                              "criteria":
+                                                  {label: None
+                                                   for label in labels}},
+                                          "refund": {
+                                              "type": "noul",
+                                              "instructions": noul_text},
+                                          "urgency": {
+                                              "type": "score",
+                                              "instructions":
+                                                  "How urgent is this?",
+                                              "criteria": levels}}}),
+                    capture_output=True, text=True, timeout=300)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return payload
+
+        mj_t_button.click(run_mojev_typed,
+                          [mj_t_state, mj_t_choice, mj_t_noul, mj_t_score],
+                          mj_t_out)
 
 
 # ----------------------------------------------------------- nanodiff tab

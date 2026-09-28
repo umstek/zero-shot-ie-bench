@@ -223,5 +223,47 @@ class TourQuestionsTests(unittest.TestCase):
                          demo.URGENCY_RUBRIC)
 
 
+class ParseTypedPayloadTests(unittest.TestCase):
+    """--serve mode 'typed': the payload gate in front of answer_typed."""
+
+    def _ok(self):
+        return {"mode": "typed", "state": "charged twice",
+                "questions": {"refund": {"type": "noul",
+                                         "instructions": "refund?"}}}
+
+    def test_good_payload_passes_through(self):
+        state, questions = demo.parse_typed_payload(self._ok())
+        self.assertEqual(state, "charged twice")
+        self.assertEqual(questions, self._ok()["questions"])
+
+    def test_missing_or_blank_state_is_named(self):
+        for bad in ({}, {"state": "  "},
+                    {"state": 7, "questions": self._ok()["questions"]}):
+            with self.assertRaises(ValueError) as ctx:
+                demo.parse_typed_payload(bad)
+            self.assertIn("state", str(ctx.exception))
+
+    def test_bad_questions_container_is_named(self):
+        payload = {"state": "s", "questions": []}
+        with self.assertRaises(ValueError) as ctx:
+            demo.parse_typed_payload(payload)
+        self.assertIn("questions", str(ctx.exception))
+
+    def test_unknown_type_names_the_question(self):
+        payload = self._ok()
+        payload["questions"]["bad"] = {"type": "tuple", "instructions": "x"}
+        with self.assertRaises(ValueError) as ctx:
+            demo.parse_typed_payload(payload)
+        self.assertIn("'bad'", str(ctx.exception))
+        self.assertIn("choice", str(ctx.exception))
+
+    def test_non_string_instructions_is_named(self):
+        payload = self._ok()
+        payload["questions"]["refund"]["instructions"] = 5
+        with self.assertRaises(ValueError) as ctx:
+            demo.parse_typed_payload(payload)
+        self.assertIn("instructions", str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
