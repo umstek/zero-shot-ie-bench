@@ -59,7 +59,9 @@ GLiFormer: spans/entities/relations/records, plus GLiREL: zero-shot
 relations over entity pairs it is handed, GLiNER-relex: joint NER +
 relations in one pass, and ReLiK: retriever-reader relations over a
 closed Wikidata-property vocabulary — no free-text labels, every
-prediction is a real Wikidata property), **classifiers** (GLiClass:
+prediction is a real Wikidata property; its demoed NER+relation
+sibling types spans from a fixed 10-type Wikipedia set),
+**classifiers** (GLiClass:
 all labels in one forward pass), **cross-encoder rerankers** as decision
 engines (score one (instruction, label) pair per label, argmax — local
 trio + seven hosted), and **typed-decision engines** (ask `choice` /
@@ -585,6 +587,7 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
 .venv-relik/Scripts/python demos/demo_relik.py  # ReLiK retriever-reader
                                          # relations (closed Wikidata
                                          # vocabulary; Python 3.11 venv)
+                                         # + typed NER+relation sibling (stop 5)
 .venv/Scripts/python demos/demo_laya.py        # Laya tour + multilingual Router
 .venv/Scripts/python demos/demo_jev.py         # Jev tour (2 paid API requests)
 .venv-von/Scripts/python demos/jevk5_demo.py   # JevK5-Lite tour (label-head
@@ -882,7 +885,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `demos/von_demo.py` | von tour (shared-text choice, then a judge and a rate stop on one shared sample) + one-shot runner (`--serve`, choice and judge_rate modes) inside `.venv-von`, spawned by both von tab sections |
 | `engines/von_client.py` | pinned, complete option-marker checkpoint loader (decide/judge/rate wrappers over evaluate_choice/evaluate_noul/evaluate_score) shared by demo, tab and benchmarks |
 | `demos/relik_demo.py` | one-shot ReLiK runner inside `.venv-relik`, spawned by the ReLiK tab |
-| `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK retriever-reader pipeline |
+| `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK pipeline, parametrized so the tour can load the joint NER+relation sibling (two relik 1.0.7 load fixes; the benched default is forwarded verbatim) |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
 | `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Span-01, seven rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
