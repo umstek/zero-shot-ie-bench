@@ -160,8 +160,12 @@ def ner_sibling(_relik) -> None:
         out = timed(ner, text)
         if isinstance(out, list):
             out = out[0]
+        if not out.spans:
+            print("  spans: (none)")
         for s in out.spans:
             print(f"  {s.text!r:<22} {s.label}")
+        if not out.triplets:
+            print("  (no triplets predicted)")
         for t in out.triplets:
             print(f"  ({t.subject.text}:{t.subject.label}) -[{t.label}]-> "
                   f"({t.object.text}:{t.object.label})  "

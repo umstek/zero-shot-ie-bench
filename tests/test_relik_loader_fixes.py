@@ -22,8 +22,8 @@ from engines import relik_client
 
 class FakeListConfig:
     """omegaconf.ListConfig stand-in as hydra delivers it: iterable,
-    but not a list subclass (attribute access on it raises in real
-    omegaconf, which is what trips relik 1.0.7's DocumentStore)."""
+    but not a list subclass - the part of the real class the wrapper's
+    normalization actually exercises."""
 
     def __init__(self, items):
         self._items = list(items)
@@ -37,7 +37,8 @@ def install_fake_relik(calls):
     the two relik 1.0.7 defects the client fixes: GoldenSillyRetriever
     subclasses an nn.Module but skips super().__init__(), and
     BaseDocumentIndex rejects the use_faiss/precision kwargs its own
-    loader injects. Returns (silly, index, Document, DocumentStore)."""
+    loader injects. Returns (silly, index, Document, DocumentStore,
+    saved) - saved restores sys.modules on cleanup."""
     import torch.nn as nn
 
     class Relik:
