@@ -639,6 +639,11 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # tower + projector ship in every
                                          # snapshot (~3.4 s vs ~1.3 s
                                          # text-only on the 0.8B here)
+.venv-von/Scripts/python demos/von_demo.py --tour
+                                         # von tour: shared-text choice, then
+                                         # judge + rate on one shared sample
+                                         # (serve stays the no-flag default
+                                         # both von tab sections spawn)
 .venv/Scripts/python demos/ollaya_demo.py      # tour of the five Ollaya-
                                          # served models (needs `ollaya
                                          # serve`; --models=nli,decision

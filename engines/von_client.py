@@ -49,9 +49,8 @@ def load_von_decider(backend=None):
     """Download and strictly load all weights before returning decide(),
     a thin wrapper over the SDK's evaluate_choice (choices is the
     {label: description-or-null} criteria dict)."""
-    from von.types import Choice
-
     backend = backend if backend is not None else load_von_backend()
+    from von.types import Choice
 
     def decide(*, state, choices, instructions):
         return backend.evaluate_choice(
@@ -66,9 +65,8 @@ def load_von_judge(backend=None):
     returning judge(state=..., instructions=...), a thin wrapper over the
     SDK's evaluate_noul. The answer's `noul` is P(condition true) —
     0.0-1.0, no separate argmax pick."""
-    from von.types import Noul
-
     backend = backend if backend is not None else load_von_backend()
+    from von.types import Noul
 
     def judge(*, state, instructions):
         return backend.evaluate_noul(
@@ -85,9 +83,8 @@ def load_von_rate(backend=None):
     level list (lowest to highest, str or {what, examples} dicts); the
     answer's `score` is the probability-weighted expectation over the
     levels and `probabilities` is keyed by level index."""
-    from von.types import Score
-
     backend = backend if backend is not None else load_von_backend()
+    from von.types import Score
 
     def rate(*, state, rubric, instructions):
         return backend.evaluate_score(

@@ -73,6 +73,9 @@ def predict_multi(model, state, questions, device):
     letter slots, each slot's softmax restricted to that question's
     option letters). questions: [(question, options), ...]; returns one
     (pick, {option: prob}) pair per question, in order."""
+    if any(len(options) > len(LETTERS) for _, options in questions):
+        raise ValueError(f"at most {len(LETTERS)} options per question "
+                         "(single-token answer letters A-J)")
     budget = PROMPT_LEN - n_tokens(build_multi_prompt("", questions))
     state = truncate_tokens(state, max(0, budget))
     prompt_str = build_multi_prompt(state, questions)

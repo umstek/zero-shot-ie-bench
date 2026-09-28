@@ -188,11 +188,13 @@ SAMPLE_STATES = {
 }
 
 
-def sample_request(name: str) -> dict:
+def sample_request(name: str, samples: dict[str, str] | None = None) -> dict:
     """predict() request for one sample image: the image path, a short
-    state line and its three typed questions."""
+    state line and its three typed questions. Pass the paths dict when
+    asking for several samples (the tour builds them all once)."""
+    samples = samples if samples is not None else build_samples()
     return {"state": SAMPLE_STATES[name],
-            "images": [build_samples()[name]],
+            "images": [samples[name]],
             "questions": SAMPLE_QUESTIONS[name]}
 
 
@@ -224,9 +226,13 @@ def build_question(question_type: str, instructions: str, criteria):
 def parse_serve_payload(payload: dict) -> tuple[list[str], str, dict]:
     """stdin payload -> (image paths, state, predict() request dict
     minus images/state). ValueError names the problem."""
+    images = payload.get("images")
+    if images is not None and not isinstance(images, list):
+        raise ValueError("'images' must be a list of file paths (use "
+                         "'image' for a single path)")
     images = [str(p).strip() for p in
               ([payload.get("image")] if payload.get("image")
-               else payload.get("images", [])) if str(p).strip()]
+               else images or []) if str(p).strip()]
     if not images:
         raise ValueError("payload needs an 'image' path or an 'images' "
                          "list (1-8 local image files)")
@@ -271,10 +277,11 @@ def tour(model_key=None) -> None:
           f"projector from {size_home(size)})...")
     engine = load(size)
 
+    samples = build_samples()
     for name in ("ticket", "receipt", "chart"):
         banner(f"{name.capitalize()} - one image, three typed questions, "
                "one predict()")
-        request = sample_request(name)
+        request = sample_request(name, samples)
         print(f"  image: {request['images'][0]}")
         answers = timed(engine.predict, request)
         for field, answer in answers["answers"].items():
@@ -282,7 +289,7 @@ def tour(model_key=None) -> None:
                 print(f"  {field:<8} -> {answer['choice']} "
                       f"(confidence {answer['confidence']:.2f})")
             elif answer["type"] == "noul":
-                print(f" {field:<8} -> yes-probability "
+                print(f"  {field:<8} -> yes-probability "
                       f"{answer['noul']:.2f}")
             else:
                 print(f"  {field:<8} -> score {answer['score']:.2f} "

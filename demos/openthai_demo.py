@@ -77,7 +77,7 @@ def connect():
     """JevClient pointed at the local OpenThai server; the warm-up ask
     pays the lazy weight load (minutes when cold) inside a 600 s
     timeout, exactly like the bench branch."""
-    client = JevClient(base_url=OPENTHAI_URL, model="openthai-latest")
+    client = JevClient(base_url=OPENTHAI_URL, model="openthai-systemone")
     t0 = time.perf_counter()
     client.ask({"task": "warmup"},
                {"w": choice('Sentiment of "good"?',
