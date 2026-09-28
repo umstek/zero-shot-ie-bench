@@ -137,7 +137,7 @@ def tour() -> None:
         print(f"  {str(row['choice']):<8} {text}")
 
     # ---------------------------------------------------------------- 3
-    banner("3. Two fields in one call - string enum + boolean")
+    banner("3. Three fields in one call - two string enums + boolean")
     schema = {
         "type": "object",
         "properties": {
@@ -147,14 +147,32 @@ def tour() -> None:
             "is_opinion": {"type": "boolean",
                            "description": "True if the text states a "
                                           "personal opinion"},
+            "urgency": {"type": "string",
+                        "description": "How urgently the author wants a "
+                                       "response",
+                        "enum": ["low", "medium", "high"]},
         },
-        "required": ["sentiment", "is_opinion"],
+        "required": ["sentiment", "is_opinion", "urgency"],
         "additionalProperties": False,
     }
     for text in ("The food was cold and the waiter was rude.",
                  "Water boils at 100 degrees Celsius at sea level."):
         res = timed(engine.constrained, text, schema)
         print(f'  {res["text"]:<58} "{text[:44]}"')
+    print(f"  ({res['branches']} branches - every field's candidates - "
+          f"still {res['forward_calls']} forward calls)")
+
+    # ---------------------------------------------------------------- 4
+    banner("4. The autoregressive path - same schema, free generation")
+    text = "This laptop has amazing performance but terrible battery life!"
+    print(f'  text: "{text}"')
+    res_ar = timed(engine.autoregressive, text, schema)
+    print(f"  generated ({res_ar['generated_tokens']} tokens): "
+          f"{res_ar['text']!r}")
+    print(f"  hit_token_limit={res_ar['hit_token_limit']}  (the card's "
+          "baseline: same weights, tokens sampled one at a time;")
+    print("   the constrained path above guarantees the JSON and scores "
+          "every field in 2 forward calls)")
 
     print("\nDone. Same texts through Jev/Laya/von:  "
           "python demos/demo_jev.py / demos/demo_laya.py / "
