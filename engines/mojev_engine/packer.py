@@ -1,8 +1,10 @@
 # Minimal text-only inference packing for MoLeMo-Lab/mojev, adapted from the
 # mojev GitHub runtime (github.com/MoLeMo-Lab/mojev): the request path of
 # serve.py Engine.answer (schema Field.prompt + candidate sorting), the
-# single-field text-only branch of full.py packed_collate, and the softmax
-# readout. Revision a74d58cd19ec573e83e8e27f9fecd837b8d830fb (2026-09-24).
+# text-only branch of full.py packed_collate (pack_batch: one field, the
+# benchmark path; pack_fields: k fields over one state in one row), and the
+# softmax readout. Revision a74d58cd19ec573e83e8e27f9fecd837b8d830fb
+# (2026-09-24; still upstream master as of 2026-09-28).
 # MIT licensed (package LICENSE; the model card repeats "Code is MIT
 # licensed"). Checkpoint: huggingface.co/MoLeMo-Lab/mojev, revision
 # 0c8695b6252f4205907433d4e196a94f032e60c3 (card license tag: mit; the Qwen
@@ -79,6 +81,69 @@ def pack_batch(tokenizer, context: str, prompt: str, options: list[str],
         if end > start:
             option_span[0, 0, i, start:end] = 1.0
             option_mask[0, 0, i] = True
+    return {"packed_ids": packed, "packed_mask": packed_mask,
+            "context_span": context_span, "field_span": field_span,
+            "option_span": option_span, "option_mask": option_mask}
+
+
+def pack_fields(tokenizer, context: str,
+                fields: list[tuple[str, list[str]]], context_tokens: int,
+                field_tokens_max: int = DEFAULT_FIELD_TOKENS_MAX) -> dict:
+    """k choice fields over one state in ONE packed row, mirroring the
+    text-only branch of full.py packed_collate for a batch of one:
+    [context][field 0 prompt][its options]...[field k-1 prompt][its
+    options].... fields are (prompt, options) pairs, prompts already built
+    with field_prompt. The ragged option axis is padded to the widest menu
+    and option_mask stays False on the padding, which keeps it out of every
+    softmax (the model masks those logit columns to -inf)."""
+    if not fields:
+        raise ValueError("at least one field is required")
+    pad = tokenizer.pad_token_id
+    if pad is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        pad = tokenizer.pad_token_id
+    ctx = tokenizer([context], truncation=True,
+                    max_length=context_tokens)["input_ids"][0]
+    # Field prompts are tokenised once, options all at once; the flat option
+    # list is consumed in order, exactly like upstream's cursor over `flat`.
+    prompts = tokenizer([prompt for prompt, _ in fields], truncation=True,
+                        max_length=field_tokens_max)["input_ids"]
+    menus = [list(options) for _, options in fields]
+    pieces = tokenizer([option for menu in menus for option in menu],
+                       truncation=False)["input_ids"]
+
+    tokens = list(ctx)
+    field_spans = []  # (field index, start, end)
+    opt_spans = []    # (field index, column, start, end)
+    cursor = 0
+    for index, (prompt, menu) in enumerate(zip(prompts, menus)):
+        field_spans.append((index, len(tokens), len(tokens) + len(prompt)))
+        tokens.extend(prompt)
+        for column in range(len(menu)):
+            piece = pieces[cursor]
+            cursor += 1
+            opt_spans.append((index, column, len(tokens),
+                              len(tokens) + len(piece)))
+            tokens.extend(piece)
+    total = len(tokens)
+    width = max(len(menu) for menu in menus)
+
+    packed = torch.full((1, total), pad, dtype=torch.long)
+    packed[0, :len(tokens)] = torch.tensor(tokens)
+    packed_mask = torch.zeros(1, total, dtype=torch.bool)
+    packed_mask[0, :len(tokens)] = True
+    context_span = torch.zeros(1, total)
+    context_span[0, :len(ctx)] = 1.0
+    field_span = torch.zeros(1, len(fields), total)
+    option_span = torch.zeros(1, len(fields), width, total)
+    option_mask = torch.zeros(1, len(fields), width, dtype=torch.bool)
+    for index, start, end in field_spans:
+        if end > start:
+            field_span[0, index, start:end] = 1.0
+    for index, column, start, end in opt_spans:
+        if end > start:
+            option_span[0, index, column, start:end] = 1.0
+            option_mask[0, index, column] = True
     return {"packed_ids": packed, "packed_mask": packed_mask,
             "context_span": context_span, "field_span": field_span,
             "option_span": option_span, "option_mask": option_mask}

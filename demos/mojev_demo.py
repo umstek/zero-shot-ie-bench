@@ -12,6 +12,12 @@ Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
     .venv-von/Scripts/python demos/mojev_demo.py
+    Stops 1-3: single-choice sentiment/topic via score(), one packed pass
+    per question. Stop 4: noul, a yes/no question answered as one P(yes)
+    scalar. Stop 5: score, an ordered rubric whose expected level falls
+    between integers. Stop 6: one state asked a choice + a noul + a score
+    question in ONE packed forward (answer_typed), contrasted with three
+    separate single-choice forwards.
 
 Web-UI runner (the app's MoJev tab spawns this like jevk5_demo.py and
 talks JSON over stdin/stdout):
@@ -45,6 +51,29 @@ SENTIMENT_LABELS = ["positive", "negative", "neutral"]
 TOPIC_LABELS = ["technology", "business", "sports", "politics"]
 QUESTION = {"sentiment": "What is the overall sentiment of this text?",
             "topic": "Which topic category does this text belong to?"}
+TICKET = ("I was charged twice for my subscription this month and "
+          "want a refund.")
+URGENCY_RUBRIC = [
+    "low: routine request, handle in the normal queue",
+    "medium: annoying but nothing is broken, this week",
+    "high: customer blocked or money at risk, today",
+    "urgent: churn or legal risk, drop everything",
+]
+# The stop-6 trio, one question per typed kind over the same ticket.
+TYPED_QUESTIONS = {
+    "team": {"type": "choice",
+             "instructions": "Which team should handle this ticket?",
+             "criteria": {"billing": "payments, refunds, subscriptions",
+                          "technical": "bugs, crashes, outages",
+                          "account": "logins and account settings"}},
+    "refund": {"type": "noul",
+               "instructions": "Is the customer asking for money back?",
+               "criteria": {"false": "no money involved",
+                            "true": "requests money back"}},
+    "urgency": {"type": "score",
+                "instructions": "How urgent is this issue?",
+                "criteria": URGENCY_RUBRIC},
+}
 
 
 def banner(title: str) -> None:
@@ -76,6 +105,18 @@ def decide_one(score, text: str, task: str, labels: list[str]) -> dict:
     }
 
 
+def one_forward_each(score, state: str, questions: dict) -> None:
+    """The contrast arm for the answer_typed stop: the same questions
+    answered one score() call at a time, one packed forward per question."""
+    from engines.mojev_engine import option_texts
+
+    for name, question in questions.items():
+        options, _ = option_texts(name, question)
+        pick, probs = score(state, name, question.get("instructions", ""),
+                            options)
+        print(f"  {name:<8} {str(pick)[:56]:<56} p={max(probs):.2f}")
+
+
 # ------------------------------------------------------------------ runner
 def serve() -> None:
     payload = json.loads(sys.stdin.read())
@@ -99,10 +140,10 @@ def tour() -> None:
 
     print("Loading MoLeMo-Lab/mojev (0.85B Qwen3.5 encoder via "
           "trust_remote_code; first run downloads the checkpoint)...")
-    from engines.mojev_engine import load_engine
+    from engines.mojev_engine import load_typed_engine
 
     t0 = time.perf_counter()
-    score, _ = load_engine("cpu")
+    score, answer_typed, _ = load_typed_engine("cpu")
     print(f"  ready in {time.perf_counter() - t0:.1f}s")
 
     # ---------------------------------------------------------------- 1
@@ -126,6 +167,46 @@ def tour() -> None:
     print(f'  text: "{text}"')
     row = timed(decide_one, score, text, "topic", TOPIC_LABELS)
     show(row["probabilities"])
+
+    # ---------------------------------------------------------------- 4
+    banner("4. Noul - a yes/no question answered as one P(yes) scalar")
+    print(f'  state: "{TICKET}"')
+    answers, usage = timed(answer_typed, TICKET,
+                           {"refund": TYPED_QUESTIONS["refund"]})
+    print(f"  P(yes) = {answers['refund']['noul']:.4f}  "
+          f"({usage['input_tokens']} input tokens, one forward)")
+
+    # ---------------------------------------------------------------- 5
+    banner("5. Score - an ordered rubric; the expected level falls "
+           "between integers")
+    text = SHARED_TEXTS[3]
+    print(f'  text: "{text}"')
+    answers, _ = timed(answer_typed, text,
+                       {"urgency": TYPED_QUESTIONS["urgency"]})
+    show(answers["urgency"])
+
+    # ---------------------------------------------------------------- 6
+    banner("6. Showpiece - one state, three typed questions, ONE packed "
+           "forward (answer_typed)")
+    print(f'  state: "{TICKET}"')
+    answers, usage = timed(answer_typed, TICKET, TYPED_QUESTIONS)
+    print(f"  choice + noul + score packed into one sequence "
+          f"({usage['input_tokens']} input tokens):")
+    for name, row in answers.items():
+        if row["type"] == "noul":
+            print(f"  {name:<8} P(yes)={row['noul']:.4f}")
+        elif row["type"] == "choice":
+            probs = " ".join(f"{k}={v:.2f}"
+                             for k, v in row["probabilities"].items())
+            print(f"  {name:<8} {row['choice']:<9} {probs}")
+        else:
+            best = max(row["probabilities"],
+                       key=row["probabilities"].__getitem__)
+            print(f"  {name:<8} expected={row['score']:.3f}  "
+                  f"peak level {best} ({row['legend'][best][:40]}...)")
+    print("  the same three questions as separate single-choice calls "
+          "(three forwards):")
+    timed(one_forward_each, score, TICKET, TYPED_QUESTIONS)
 
     print("\nDone. Same texts through the other decision engines:  "
           ".venv/Scripts/python demos/certo_demo.py / "
