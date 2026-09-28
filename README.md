@@ -571,7 +571,11 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
                                          # with the decision-tuned sibling
                                          # GLiNER2.5-Decide (--model decide
                                          # tours only that checkpoint)
-.venv/Scripts/python demos/demo_gliformer.py   # GLiFormer tour + embeddings
+.venv/Scripts/python demos/demo_gliformer.py   # GLiFormer tour + embeddings,
+                                         # incl. parse_pdf: layout-aware
+                                         # extraction over a PDF (pymupdf
+                                         # sample; `uv pip install --python
+                                         # .venv pymupdf` first)
                                           # (--model base or large)
 .venv/Scripts/python demos/demo_glirel.py      # GLiREL zero-shot relations
                                          # (GLiNER 2.5 base supplies the
@@ -856,6 +860,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | File | What it is |
 |---|---|
 | `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_glirel.py` / `demos/demo_gliner_relex.py` / `demos/demo_relik.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
+| `demos/demo_gliformer.py` stop 7 | `parse_pdf`: entity extraction over a pymupdf-drawn two-page ticket PDF (words + boxes + rendered page image; card-size pages — A4 at the encoder's fixed 144 dpi wants ~8 GB CPU RAM) |
 | `demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/lfm_rlcd_demo.py` | LFM2.5-RLCD tour (incl. the autoregressive-baseline stop) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
@@ -909,3 +914,4 @@ says Apache 2.0. The Ollaya-served models keep their authors' licenses
 Apache 2.0; decision, JevK5 4B and Winnow E4B: Apache 2.0 — JevK5's
 NOTICE says part of its training questions were written by an OpenAI
 model), and the Ollaya runtime itself is Apache 2.0.
+

@@ -8,9 +8,13 @@ GLiFormer is Knowledgator's layout-aware multi-task encoder:
   4. structured records           (structure, incl. nested Pydantic schemas)
   5. several tasks in one call    (inference)
   6. text embeddings              (embed_text)
+  7. PDF document input           (parse_pdf over a pymupdf-drawn sample)
 
 Model: https://huggingface.co/knowledgator/gliformer-large-v1
 Docs:   https://github.com/Knowledgator/GLiFormer
+
+parse_pdf additionally needs PyMuPDF (the package imports it lazily):
+    uv pip install --python .venv pymupdf
 
 Run:
     python demos/demo_gliformer.py                 # large (575.6M, English)
@@ -21,7 +25,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
+import tempfile
 import time
 
 import torch
@@ -191,7 +197,72 @@ def embeddings(model):
     print(f"  cos(lab, pizza)    = {cos(vectors[0:1], vectors[2:3]).item():.3f}")
 
 
-SECTIONS = [entities, classification, relations, records, multitask, embeddings]
+# ---------------------------------------------------------------- showcase 7
+def build_sample_pdf(directory=None):
+    """A deterministic two-page support-ticket PDF drawn with pymupdf:
+    page 1 names a person, company, money and an email in body lines;
+    page 2 is a monospaced refund-ledger table. parse_pdf reads the words,
+    their boxes and a rendered page image from the same file, so the
+    sample needs a real text layer, not a screenshot. Pages stay card-size
+    (340x150 pt): the layout encoder's memory scales with page pixels, and
+    A4 pages at its fixed 144 dpi want ~8 GB on CPU."""
+    import pymupdf
+
+    if directory is None:
+        directory = tempfile.mkdtemp(prefix="gliformer-pdf-")
+    path = os.path.join(directory, "ticket.pdf")
+    doc = pymupdf.open()
+    page = doc.new_page(width=340, height=150)
+    y = 40
+    for line in (
+        "Support Ticket #4821 - Acme Cloud Services",
+        "Customer: Dana Whitfield",
+        "Account ENT-2210 billed $1,240.00 on 2026-09-02",
+        "and again on 2026-09-03.",
+        "Contact: dana.whitfield@northwind.example",
+    ):
+        page.insert_text((24, y), line, fontname="helv", fontsize=8)
+        y += 15
+    page2 = doc.new_page(width=340, height=150)
+    page2.insert_text((24, 36), "Refund ledger", fontname="hebo", fontsize=9)
+    y = 54
+    for row in (
+        "Date        Amount     Status",
+        "2026-09-02  $1,240.00  captured",
+        "2026-09-03  $1,240.00  captured",
+        "2026-09-04  $1,240.00  refund pending",
+    ):
+        page2.insert_text((24, y), row, fontname="cour", fontsize=7)
+        y += 13
+    doc.save(path)
+    doc.close()
+    return path
+
+
+def pdf_layout(model):
+    banner("7. parse_pdf - layout-aware extraction over a PDF document")
+    path = build_sample_pdf()
+    print(f"  generated sample: {path}")
+    print("  (the plain-text stops above never touch layout; this path reads")
+    print("   words + boxes + a rendered page image from the PDF itself)")
+    res = timed(
+        model.parse_pdf,
+        path,
+        entities=["company", "person", "money", "email", "date"],
+        return_pages=True,
+    )
+    print(f"  result keys: {sorted(res)}")
+    pages = res.get("pages") or []
+    for page_no, page_ents in enumerate(res.get("ner") or []):
+        label = (f"page {pages[page_no]}" if page_no < len(pages)
+                 else f"page {page_no}")
+        for ent in page_ents:
+            print(f"  {label}: {ent['text']!r:<26} "
+                  f"{ent['label']:<10} {ent['score']:.3f}")
+
+
+SECTIONS = [entities, classification, relations, records, multitask,
+            embeddings, pdf_layout]
 
 
 def main() -> None:
