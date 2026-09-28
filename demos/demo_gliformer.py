@@ -241,16 +241,19 @@ def build_sample_pdf(directory=None):
 
 def pdf_layout(model):
     banner("7. parse_pdf - layout-aware extraction over a PDF document")
-    path = build_sample_pdf()
-    print(f"  generated sample: {path}")
-    print("  (the plain-text stops above never touch layout; this path reads")
-    print("   words + boxes + a rendered page image from the PDF itself)")
-    res = timed(
-        model.parse_pdf,
-        path,
-        entities=["company", "person", "money", "email", "date"],
-        return_pages=True,
-    )
+    # the tour cleans up after itself; build_sample_pdf keeps its mkdtemp
+    # default for direct one-off use (the PDF tests rely on it)
+    with tempfile.TemporaryDirectory(prefix="gliformer-pdf-") as directory:
+        path = build_sample_pdf(directory)
+        print(f"  generated sample: {path}")
+        print("  (the plain-text stops above never touch layout; this path reads")
+        print("   words + boxes + a rendered page image from the PDF itself)")
+        res = timed(
+            model.parse_pdf,
+            path,
+            entities=["company", "person", "money", "email", "date"],
+            return_pages=True,
+        )
     print(f"  result keys: {sorted(res)}")
     pages = res.get("pages") or []
     for page_no, page_ents in enumerate(res.get("ner") or []):

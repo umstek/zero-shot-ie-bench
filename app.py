@@ -2127,8 +2127,6 @@ def build_mojev_tab():
                 payload = json.loads(proc.stdout)
             except Exception as exc:
                 return {"error": str(exc)}
-            if "error" in payload:
-                return payload
             return payload
 
         mj_t_button.click(run_mojev_typed,

@@ -64,6 +64,9 @@ KEV_URL = "http://127.0.0.1:8009/v1/systemone"
 DECIDER_URL = "http://127.0.0.1:8018/v1/systemone"
 AGENTJEV_URL = "http://127.0.0.1:8149/api/evaluate"
 SYSTEMONE_URLS = {"kev": KEV_URL, "decider": DECIDER_URL}
+# the model field the benches send: decider is versioned
+# (decider-0.8b), kev has no versioned id (kev-latest)
+MODEL_NAMES = {"kev": "kev-latest", "decider": "decider-0.8b"}
 
 ENGLISH_TICKET = ("I was charged twice for my subscription this month "
                   "and want a refund.")
@@ -185,7 +188,7 @@ def serve() -> None:
                       "_latency_s": round(time.perf_counter() - t0, 3)}
         else:
             client = connect_systemone(SYSTEMONE_URLS[system],
-                                       f"{system}-latest")
+                                       MODEL_NAMES[system])
             result = client.ask(state, questions, timeout=600)
         # ASCII-escaped JSON survives Windows pipes using legacy code pages.
         print(json.dumps({"answers": result["answers"],
@@ -210,7 +213,7 @@ def tour() -> None:
     # ---------------------------------------------------------------- 2
     banner("2. decider 0.8B (:8018) - identical input, direct lookalike "
            "comparison")
-    systemone_stop("decider 0.8B", DECIDER_URL, "decider-latest", rows)
+    systemone_stop("decider 0.8B", DECIDER_URL, "decider-0.8b", rows)
 
     # ---------------------------------------------------------------- 3
     banner("3. AgentJev 0.6B (:8149) - urgency score + refund boolean, "

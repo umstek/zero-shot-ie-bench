@@ -118,11 +118,14 @@ def decide_one(score, text: str, task: str, labels: list[str]) -> dict:
 def one_forward_each(score, state: str, questions: dict) -> None:
     """The contrast arm for the answer_typed stop: the same questions
     answered one score() call at a time, one packed forward per question."""
-    from engines.mojev_engine import option_texts
+    from engines.mojev_engine import _render, option_texts
 
     for name, question in questions.items():
         options, _ = option_texts(name, question)
-        pick, probs = score(state, name, question.get("instructions", ""),
+        instructions = question.get("instructions")
+        pick, probs = score(state, name,
+                            _render(instructions)
+                            if instructions is not None else "",
                             options)
         print(f"  {name:<8} {str(pick)[:56]:<56} p={max(probs):.2f}")
 

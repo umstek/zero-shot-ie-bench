@@ -1,5 +1,8 @@
 gliner2[local]>=2.0.0
 gliformer>=0.1.2
+# gliformer's parse_pdf (demo stop 7 + its tests) needs pymupdf, which
+# gliformer itself only pulls in under its pdf/all extras
+pymupdf>=1.23
 glirel>=1.2.1
 # gliner is already gliformer's dependency; the floor is the version the
 # relex checkpoint (knowledgator/gliner-relex-multi-v1.0, relations=

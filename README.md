@@ -619,8 +619,8 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # shared English ticket (needs the
                                          # :8029 server from the setup block)
 .venv-von/Scripts/python demos/mojev_demo.py   # MoJev 0.85B packed one-pass
-                                         # scoring (transformers-5 venv)
-                                         # scoring incl. noul + score rubric and
+                                         # scoring (transformers-5 venv) incl.
+                                         # noul + score rubric and
                                          # choice+noul+score in ONE packed forward
 .venv/Scripts/python demos/systemone_locals_demo.py  # kev / decider / AgentJev:
                                          # the score + yes/no questions the
@@ -629,7 +629,6 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # :8009/:8018/:8149 servers from the
                                          # setup block; the AgentJev start
                                          # line is in bench_spectrum.py)
-
 .venv-von/Scripts/python demos/lumma_demo.py   # Lumma-Fev typed-decision tour:
                                          # one decide() answers a choice, a
                                          # noul and a score question at once
@@ -914,4 +913,3 @@ says Apache 2.0. The Ollaya-served models keep their authors' licenses
 Apache 2.0; decision, JevK5 4B and Winnow E4B: Apache 2.0 — JevK5's
 NOTICE says part of its training questions were written by an OpenAI
 model), and the Ollaya runtime itself is Apache 2.0.
-
