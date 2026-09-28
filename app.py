@@ -804,12 +804,13 @@ on :11435); Lumma, Julia and Intern-Decision spawn one-shot
 | All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) | ✅ (all questions one forward) | ✅ (questions independently scored in one batch) | ✅ (per text, all questions one forward — up to 16 questions/request) |
 | Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema (3 fields + AR baseline demoed) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ enum rubric (demoed) | ❌ | ✅ score (demoed) | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean (demoed) | ❌ | ✅ noul (demoed) | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Image input | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request — see the tab's image section) |
 | Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) |
 | **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and still the slowest here (1.4x the next-slowest, winnow e4b) | the pre-decision-model classic: entailment scoring, one premise–hypothesis pair per option | vLLM Semantic Router Decision 1.0; 17.49 on Decision Index 0.2 | the full JevBench-#3 build on llama.cpp; first local 100% multilingual here | Gemma 4 E4B fine-tune; 0.722 on Ollaya's typed-decisions | one forward over packed state+question rows, no generation; the 4B leads local multilingual (96.3%) on the reference PyTorch kernels | mmBERT-small encoder + decision head, full softmax over 2–20 described options; rare-tier 56% at 144M and the fastest local decision engine here (0.067 s/q) | Qwen3.5 decision fine-tune — option-symbol logits read at the masked `<decision>` slots of an assistant JSON skeleton, one causal forward answers up to 16 questions; per-checkpoint calibration temperature; fp32 on CPU (bf16 is ~7x slower here) |
@@ -909,6 +910,36 @@ def build_gliner_tab(model):
             cls_button.click(run_classification,
                              [gl_model, cls_text, cls_labels, cls_multi],
                              cls_out)
+
+        with gr.Tab("Score rubric (Decide)"):
+            gr.Markdown("Decide rates ordinal rubrics without a special "
+                        "score task: the ordered scale is passed as plain "
+                        "string labels and the picked label IS the score. "
+                        "Pick the **Decide** checkpoint above — the base "
+                        "extractor answers too, but Decide is the "
+                        "decision-tuned sibling.")
+            sr_text = gr.Textbox(
+                label="Text",
+                value="I finished it in two nights. The ending is "
+                      "earned, the middle drags, and I would still hand "
+                      "it to a friend.", lines=3)
+            sr_rubric = gr.Textbox(
+                label="Rubric levels (comma-separated, lowest to highest)",
+                value="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10")
+            sr_button = gr.Button("Score", variant="primary")
+            sr_out = gr.JSON(label="Picked level (the score) + confidence")
+
+            def run_score_rubric(model_id, text, rubric_csv):
+                model = get_gliner_model(model_id)
+                rubric = parse_labels(rubric_csv)
+                if not text or len(rubric) < 2:
+                    return {"error": "provide text and at least two "
+                                     "rubric levels"}
+                return model.classify_text(
+                    text, {"score": rubric}, include_confidence=True)
+
+            sr_button.click(run_score_rubric,
+                            [gl_model, sr_text, sr_rubric], sr_out)
 
         with gr.Tab("Relations"):
             rel_text = gr.Textbox(label="Text",
@@ -1680,6 +1711,57 @@ def build_von_tab():
 
         von_button.click(run_von, [von_text, von_labels, von_instr], von_out)
 
+        gr.Markdown("#### Judge + rate — the two question types behind "
+                    "choice\n"
+                    "The same option-marker head also answers yes/no "
+                    "questions (`judge`, the SDK's noul: the probability "
+                    "the condition holds) and ordinal rubrics (`rate`: a "
+                    "probability-weighted expectation over the levels, "
+                    "lowest to highest). One shared sample, both in a "
+                    "single spawn.")
+        von_jr_text = gr.Textbox(
+            label="Text (the shared sample)",
+            value="I was charged twice for my subscription this month "
+                  "and want a refund.", lines=2)
+        von_jr_judge = gr.Textbox(
+            label="Judge question (yes/no)",
+            value="Is the customer asking for a refund?")
+        with gr.Row():
+            von_jr_rate = gr.Textbox(
+                label="Rate question (ordinal rubric)",
+                value="How urgent is this issue?")
+            von_jr_rubric = gr.Textbox(
+                label="Rubric levels (comma-separated, lowest to highest)",
+                value="could wait a few days, should be fixed soon, "
+                      "needs immediate action")
+        von_jr_button = gr.Button("Judge + rate")
+        von_jr_out = gr.JSON(label="Judgment (yes probability + verdict) "
+                                   "and rating (expectation + per-level "
+                                   "probabilities)")
+
+        def run_von_judge_rate(text, judge_instructions, rate_instructions,
+                               rubric_csv):
+            if not text.strip():
+                return {"error": "provide a text"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "von_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper],
+                    input=json.dumps({"mode": "judge_rate", "text": text,
+                                      "judge_instructions": judge_instructions,
+                                      "rate_instructions": rate_instructions,
+                                      "rubric": parse_labels(rubric_csv)}),
+                    capture_output=True, text=True, timeout=180)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            return payload
+
+        von_jr_button.click(run_von_judge_rate,
+                            [von_jr_text, von_jr_judge, von_jr_rate,
+                             von_jr_rubric], von_jr_out)
+
 
 # ------------------------------------------------------- JevK5-Lite tab
 def build_jevk5_tab():
@@ -1985,6 +2067,72 @@ def build_mojev_tab():
 
         mj_button.click(run_mojev, [mj_text, mj_labels, mj_task], mj_out)
 
+        gr.Markdown("#### Typed questions — choice + noul + score in ONE packed forward")
+        mj_t_state = gr.Textbox(
+            label="State (one text, asked everything)",
+            value="I was charged twice for my subscription this month "
+                  "and want a refund.", lines=3)
+        with gr.Row():
+            mj_t_choice = gr.Textbox(
+                label="Choice labels (comma-separated)",
+                value="billing, technical, account")
+            mj_t_noul = gr.Textbox(
+                label="Noul proposition (yes/no)",
+                value="Does the customer request a refund?")
+        mj_t_score = gr.Textbox(
+            label="Score rubric (one level per line, low to high)",
+            value="low: routine request, handle in the normal queue\n"
+                  "medium: annoying but nothing is broken, this week\n"
+                  "high: customer blocked or money at risk, today\n"
+                  "urgent: churn or legal risk, drop everything", lines=4)
+        mj_t_button = gr.Button("Answer all three (one forward)",
+                                variant="primary")
+        mj_t_out = gr.JSON(label="answers + usage (input tokens)")
+
+        def run_mojev_typed(state, choice_csv, noul_text, rubric_block):
+            labels = parse_labels(choice_csv)
+            levels = [line.strip() for line in rubric_block.splitlines()
+                      if line.strip()]
+            if not state.strip():
+                return {"error": "provide a state"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct choice labels"}
+            if not noul_text.strip():
+                return {"error": "provide a noul proposition"}
+            if len(levels) < 2:
+                return {"error": "provide at least two rubric levels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "mojev_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"mode": "typed", "state": state,
+                                      "questions": {
+                                          "team": {
+                                              "type": "choice",
+                                              "instructions":
+                                                  "Which team handles this?",
+                                              "criteria":
+                                                  {label: None
+                                                   for label in labels}},
+                                          "refund": {
+                                              "type": "noul",
+                                              "instructions": noul_text},
+                                          "urgency": {
+                                              "type": "score",
+                                              "instructions":
+                                                  "How urgent is this?",
+                                              "criteria": levels}}}),
+                    capture_output=True, text=True, timeout=300)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            return payload
+
+        mj_t_button.click(run_mojev_typed,
+                          [mj_t_state, mj_t_choice, mj_t_noul, mj_t_score],
+                          mj_t_out)
+
 
 # ----------------------------------------------------------- nanodiff tab
 MAIN_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -2234,6 +2382,91 @@ def build_intern_decision_tab():
         it_button.click(run_intern_decision,
                         [it_model, it_text, it_labels, it_task], it_out)
 
+        # The checkpoints are multimodal: the same tab can also answer a
+        # typed question about an uploaded image (vision tower + projector
+        # ship in every snapshot) — demos/intern_decision_image_demo.py.
+        gr.Markdown("#### Image decisions — upload an image, ask one "
+                    "typed question\n"
+                    "Spawns `demos/intern_decision_image_demo.py --serve` "
+                    "(`.venv-von`); the vision tower encodes the image in "
+                    "the same single forward pass that scores the "
+                    "decision slot.")
+        it_img = gr.Image(type="filepath", label="Image (png/jpg)")
+        it_qtype = gr.Dropdown(choices=["choice", "noul", "score"],
+                               value="choice", label="Question type")
+        it_qinstr = gr.Textbox(
+            label="Question", value="Which team should handle the "
+                                    "ticket in the image?")
+        it_qcrit = gr.Textbox(
+            label="Options — choice: “label = description” per line "
+                  "(or comma labels); score: rubric levels, low to high; "
+                  "noul: unused",
+            value="billing = Payments, invoices and refunds\n"
+                  "technical = Bugs, errors and outages\n"
+                  "account = Login, profile and settings", lines=3)
+        it_qstate = gr.Textbox(label="State / context (optional)",
+                               value="A customer photographed their "
+                                     "support ticket.")
+        it_img_button = gr.Button("Decide on image", variant="primary")
+        it_img_out = gr.JSON(label="Answer, probabilities, confidence")
+
+        def parse_image_criteria(question_type, block):
+            """criteria textbox -> the serve payload's criteria value
+            (choice: label -> description dict, score: rubric list)."""
+            lines = [line.strip() for line in block.splitlines()
+                     if line.strip()]
+            if question_type == "score":
+                levels = [level.strip() for level in block.split(",")
+                          if level.strip()]
+                if len(levels) < 2:
+                    raise ValueError(
+                        "score needs at least two comma-separated rubric "
+                        "levels, low to high")
+                return levels
+            criteria = {}
+            for line in lines:
+                label, sep, description = line.partition("=")
+                label = label.strip().rstrip(",").strip()
+                if not label:
+                    continue
+                criteria[label] = (description.strip() if sep
+                                   else label)
+            return criteria or parse_labels(block)
+
+        def run_intern_decision_image(checkpoint, image_path, question_type,
+                                      instructions, criteria_block, state):
+            if not image_path:
+                return {"error": "upload an image first"}
+            try:
+                payload = {"image": image_path, "type": question_type,
+                           "instructions": instructions, "state": state,
+                           "model": checkpoint.lower()}
+                if question_type != "noul":
+                    payload["criteria"] = parse_image_criteria(
+                        question_type, criteria_block)
+                if question_type == "choice" and len(payload["criteria"]) < 2:
+                    return {"error": "choice needs at least two options"}
+            except ValueError as exc:
+                return {"error": str(exc)}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos",
+                "intern_decision_image_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps(payload),
+                    capture_output=True, text=True, timeout=600)
+                result = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in result:
+                return result
+            return result.get("answer", result)
+
+        it_img_button.click(run_intern_decision_image,
+                            [it_model, it_img, it_qtype, it_qinstr,
+                             it_qcrit, it_qstate], it_img_out)
+
 
 # ----------------------------------------------------------------- so1 tab
 _SO1_DECIDER = None
@@ -2301,6 +2534,60 @@ def build_so1_tab():
                     for i, (text, row) in enumerate(zip(texts, rows))}
 
         so_button.click(run_so1, [so_text, so_labels, so_task], so_out)
+
+        gr.Markdown("#### Yes/no + scale — the typed question helpers\n"
+                    "The package also ships `yes_no()` and `scale()` "
+                    "constructors: both build plain Choices (options "
+                    "'yes'/'no', or the integers low..high), so the same "
+                    "logprob engine answers them unchanged. One shared "
+                    "sample, both questions in one decide() call.")
+        so_typed_text = gr.Textbox(
+            label="Text (the shared sample)",
+            value="I was charged twice for my subscription this month "
+                  "and want a refund.", lines=2)
+        so_yn_question = gr.Textbox(
+            label="Yes/no question",
+            value="Is the customer asking for a refund?")
+        with gr.Row():
+            so_scale_question = gr.Textbox(
+                label="Scale question",
+                value="How urgent is this issue? 1 = could wait, "
+                      "5 = needs immediate action")
+            so_scale_range = gr.Textbox(
+                label="Scale range (low, high)",
+                value="1, 5")
+        so_typed_button = gr.Button("Judge + scale")
+        so_typed_out = gr.JSON(label="Per question: choice, probabilities, "
+                                     "confidence")
+
+        def run_so1_typed(text, yn_question, scale_question, scale_range):
+            from so1 import scale, yes_no
+
+            if not text.strip() or not yn_question.strip() \
+                    or not scale_question.strip():
+                return {"error": "provide a text and both questions"}
+            bounds = [chunk.strip() for chunk in scale_range.split(",")
+                      if chunk.strip()]
+            try:
+                low, high = int(bounds[0]), int(bounds[1])
+            except (IndexError, ValueError):
+                return {"error": "scale range needs two integers: low, high"}
+            try:
+                decider = get_so1_decider()
+                answers = decider.decide(
+                    state=text,
+                    questions=[yes_no(yn_question),
+                               scale(scale_question, low, high)],
+                    mode="separate")
+            except Exception as exc:
+                return {"error": str(exc)}
+            return {"yes/no": answers[0].as_dict(),
+                    "scale": answers[1].as_dict()}
+
+        so_typed_button.click(run_so1_typed,
+                              [so_typed_text, so_yn_question,
+                               so_scale_question, so_scale_range],
+                              so_typed_out)
 
 
 def main() -> None:

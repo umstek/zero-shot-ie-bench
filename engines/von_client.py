@@ -21,12 +21,13 @@ def provenance():
             "sdk_revision": SDK_REVISION, "backend": "option-marker"}
 
 
-def load_von_decider():
-    """Download and strictly load all weights before returning decide()."""
+def load_von_backend():
+    """Download the pinned checkpoint and strictly load the backend once;
+    the decide/judge/rate wrappers below share it. Heavy imports stay
+    inside so the module imports without torch (offline tests)."""
     from huggingface_hub import snapshot_download
     try:
         from von.backends.option_marker_backend import OptionMarkerBackend
-        from von.types import Choice
     except ImportError as exc:
         raise RuntimeError(
             "Install requirements-von.txt in .venv-von; the PyPI SDK does "
@@ -41,6 +42,15 @@ def load_von_decider():
     # Pinned SDK uses weights_only=True and strict load_state_dict here.
     # Eager loading both validates the trained head and excludes setup from timing.
     backend._get_model()
+    return backend
+
+
+def load_von_decider(backend=None):
+    """Download and strictly load all weights before returning decide(),
+    a thin wrapper over the SDK's evaluate_choice (choices is the
+    {label: description-or-null} criteria dict)."""
+    backend = backend if backend is not None else load_von_backend()
+    from von.types import Choice
 
     def decide(*, state, choices, instructions):
         return backend.evaluate_choice(
@@ -48,3 +58,37 @@ def load_von_decider():
             temperature=backend._default_temp)
 
     return decide
+
+
+def load_von_judge(backend=None):
+    """Yes/no judgments: download and strictly load all weights before
+    returning judge(state=..., instructions=...), a thin wrapper over the
+    SDK's evaluate_noul. The answer's `noul` is P(condition true) —
+    0.0-1.0, no separate argmax pick."""
+    backend = backend if backend is not None else load_von_backend()
+    from von.types import Noul
+
+    def judge(*, state, instructions):
+        return backend.evaluate_noul(
+            "judgment", state, Noul(instructions=instructions),
+            temperature=backend._default_temp)
+
+    return judge
+
+
+def load_von_rate(backend=None):
+    """Ordinal score rubrics: download and strictly load all weights
+    before returning rate(state=..., rubric=[...], instructions=...), a
+    thin wrapper over the SDK's evaluate_score. `rubric` is the ordered
+    level list (lowest to highest, str or {what, examples} dicts); the
+    answer's `score` is the probability-weighted expectation over the
+    levels and `probabilities` is keyed by level index."""
+    backend = backend if backend is not None else load_von_backend()
+    from von.types import Score
+
+    def rate(*, state, rubric, instructions):
+        return backend.evaluate_score(
+            "rating", state, Score(instructions=instructions, criteria=rubric),
+            temperature=backend._default_temp)
+
+    return rate

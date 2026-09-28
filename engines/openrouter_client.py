@@ -129,10 +129,16 @@ def _post(url: str, body: dict, timeout: int = 120) -> dict:
     raise RuntimeError("OpenRouter retry loop exhausted")  # unreachable
 
 
-def rerank(model: str, query: str, documents: list[str],
+def rerank(model: str, query: str, documents: list,
            top_n: int | None = None,
            tracker: UsageTracker | None = None) -> list[dict]:
     """Relevance-score every document against the query.
+
+    documents are plain strings for text rerankers, or structured
+    {"text": ..., "image": ...} objects for multimodal ones (Nemotron
+    Rerank VL): image is a remote URL or a base64-encoded data URI of a
+    document page/slide screenshot — that is the "VL" input the repo's
+    benches never exercised (demos/nemotron_vl_demo.py).
 
     Returns the endpoint's results rows ({"index": i, "relevance_score": s})
     in the order the endpoint sends them; callers rank by index themselves.

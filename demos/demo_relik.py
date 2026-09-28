@@ -14,6 +14,8 @@ every prediction maps onto a real Wikidata property.
   3. multilingual probe               (English Wikipedia checkpoints - expect
                                        degraded or empty output, stated up front)
   4. reader entity spans              (untyped --NME-- mentions, char offsets)
+  5. the NER+relation sibling         (typed spans + triplets, one reader;
+                                       fixed 10-type Wikipedia vocabulary)
 
 Measured on this machine: ~180M params total (33.4M E5-small retriever +
 146.5M reader), ~700 MB on disk (reader 570M, encoder 129M, index 0.6M).
@@ -42,7 +44,7 @@ import sys
 # importing the client first installs the Windows csv shim relik needs
 # (SapienzaNLP/relik#39); load_relik() itself is called inside main so the
 # multiprocessing workers spawned during inference don't re-run the load
-from engines.relik_client import load_relik
+from engines.relik_client import NER_MODEL_ID, load_relik
 
 
 def banner(title: str) -> None:
@@ -134,7 +136,46 @@ def reader_spans(relik) -> None:
           f"== {out.spans[0].text!r}")
 
 
-SECTIONS = [canonical, wikidata_friendly, multilingual, reader_spans]
+# ---------------------------------------------------------------- showcase 5
+def ner_sibling(_relik) -> None:
+    """The joint NER+relation sibling: same pipeline family, one reader
+    for spans AND triplets. Span types come from a fixed 10-type
+    Wikipedia set (person, location, organization, ...) - a closed
+    vocabulary, NOT zero-shot; GLiNER (demo.py) takes arbitrary labels
+    at inference. Loading it needs the two relik 1.0.7 fixes in
+    engines.relik_client (the span retriever skips nn.Module.__init__,
+    and the loader injects kwargs the span index rejects)."""
+    banner("5. The NER sibling - typed entities + relations in one reader")
+    print(f"  loading {NER_MODEL_ID} (first run downloads the ~586 MB")
+    print("  reader; the triplet retriever + index are shared with the")
+    print("  model above)...")
+    t0 = time.perf_counter()
+    ner = load_relik(NER_MODEL_ID)
+    print(f"  loaded in {time.perf_counter() - t0:.1f}s")
+    for text in ["Apple CEO Tim Cook announced the iPhone 15 in "
+                 "Cupertino yesterday.",
+                 "Patient received 400mg ibuprofen for severe headache "
+                 "at 2 PM."]:
+        print(f'\n  text: "{text}"')
+        out = timed(ner, text)
+        if isinstance(out, list):
+            out = out[0]
+        if not out.spans:
+            print("  spans: (none)")
+        for s in out.spans:
+            print(f"  {s.text!r:<22} {s.label}")
+        if not out.triplets:
+            print("  (no triplets predicted)")
+        for t in out.triplets:
+            print(f"  ({t.subject.text}:{t.subject.label}) -[{t.label}]-> "
+                  f"({t.object.text}:{t.object.label})  "
+                  f"conf={t.confidence:.2f}")
+    print("\n  (the model above labels its spans --NME--; the sibling")
+    print("   types them from the fixed Wikipedia set)")
+
+
+SECTIONS = [canonical, wikidata_friendly, multilingual, reader_spans,
+            ner_sibling]
 
 
 def main() -> None:

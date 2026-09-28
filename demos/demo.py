@@ -10,8 +10,10 @@ One boundary-architecture model, six tasks, no fine-tuning:
 
 Model family: fastino/gliner2.5-{small,base,multi}-v1
 Section 7 also tours the decision-tuned sibling fastino/GLiNER2.5-Decide
-(340M) on the same sample texts — on the mixed-pool benchmark it is the
-second-best local classifier and still NER-capable.
+(340M) on the same sample texts - entities, classification, and the
+ordinal score rubric (a 0-10 rating passed as plain string labels) - on
+the mixed-pool benchmark it is the second-best local classifier and
+still NER-capable.
 Docs: https://github.com/fastino-ai/GLiNER2
 
 Run:
@@ -37,6 +39,14 @@ MODELS = {
 
 MODEL_ID = MODELS["base"]  # set in main(); sections that reload use this
 DECIDE_MODEL_ID = MODELS["decide"]
+
+
+def rubric_levels(low: int = 0, high: int = 10) -> list[str]:
+    """An ordinal score rubric as classify_text wants it: the ordered
+    scale as plain string labels (lowest to highest), e.g. 0-10."""
+    if high <= low:
+        raise ValueError("high must be greater than low")
+    return [str(i) for i in range(low, high + 1)]
 
 
 def banner(title: str) -> None:
@@ -201,10 +211,33 @@ def records(model):
 
 
 # ---------------------------------------------------------------- showcase 7
+def score_rubric(engine) -> None:
+    """7c on whichever engine is in hand: the freshly loaded Decide
+    sibling on a base tour, the already-loaded model under
+    --model decide (where 7a/7b would only repeat sections 1-2)."""
+    banner("7c. Score rubric - ordinal rating (the model card's own example)")
+    text = ("I finished it in two nights. The ending is earned, the "
+            "middle drags, and I would still hand it to a friend.")
+    print(f'  text: "{text}"')
+    print(f'  rubric: 0-10  (lowest to highest; no special score task - '
+          "the ordered scale is passed as plain string labels)")
+    result = timed(
+        engine.classify_text,
+        text,
+        {"rating": rubric_levels(0, 10)},
+        include_confidence=True,
+    )
+    show(result)
+    print("  (the picked label IS the score - the card's illustrative "
+          "run lands on 7)")
+
+
 def decide_sibling(model):
     banner("7. GLiNER2.5-Decide - decision-tuned sibling, same sample texts")
     if MODEL_ID == DECIDE_MODEL_ID:
-        print("  (this tour already runs Decide - section skipped)")
+        print("  (this tour already runs Decide - 7a/7b would only repeat")
+        print("   sections 1-2; the score rubric still runs on it)")
+        score_rubric(model)
         return
     from gliner2 import AutoExtractor
 
@@ -233,6 +266,8 @@ def decide_sibling(model):
         {"sentiment": ["positive", "negative", "neutral"]},
     )
     show(result)
+
+    score_rubric(sibling)
 
 
 SECTIONS = [entities, classification, relations, joint, attributes, records,
