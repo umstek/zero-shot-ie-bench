@@ -115,6 +115,21 @@ def main() -> None:
         probs = " ".join(f"{k}={v:.3f}" for k, v in res["probs"].items())
         print(f'  {res["top"]:<10} {probs}  "{text[:44]}"')
 
+    # ---------------------------------------------------------------- 4
+    banner("4. Abstention - the abstain_below threshold the benches "
+           "never pass")
+    print("  (the calibrated probabilities above sit near chance on "
+          "prose - the card's transfer warning and the 22.9% bench row; "
+          "decide(abstain_below=...) turns that flatness into a refusal "
+          "instead of a confident wrong answer)")
+    for text in ("I was charged twice for the same order, please refund "
+                 "one of them.",
+                 "Water boils at 100 degrees Celsius at sea level."):
+        res = model.decide(text, options, abstain_below=0.5)
+        verdict = "ABSTAIN" if res["abstain"] else "answer"
+        print(f'  {verdict:<7} top={res["top"]} p={res["probs"][res["top"]]:.3f}'
+              f'  "{text[:44]}"')
+
     print("\nDone. Same texts through the rerankers and the packed scorer:  "
           ".venv/Scripts/python demos/reranker_demo.py / "
           ".venv-von/Scripts/python demos/mojev_demo.py\n")

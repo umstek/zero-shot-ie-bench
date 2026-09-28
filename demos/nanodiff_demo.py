@@ -149,6 +149,28 @@ def tour() -> None:
                 TOPIC_LABELS)
     show(row["probabilities"])
 
+    # ---------------------------------------------------------------- 4
+    banner("4. Multi-question - THREE typed questions, ONE forward "
+           "(predict_multi)")
+    print("  (the release's multi-decision form: a numbered answer line "
+          "with one masked slot per question - the vendored "
+          "build_multi_prompt/response the benches never call)")
+    ticket = ("I was charged twice for my subscription this month and "
+              "want a refund.")
+    questions = [
+        ("Which team should handle this ticket?",
+         ["billing", "technical", "account"]),
+        ("Is the customer asking for a refund?", ["no", "yes"]),
+        ("How urgent is this issue?",
+         ["could wait", "soon", "immediately"]),
+    ]
+    print(f'  state: "{ticket}"')
+    from engines.nanodiff_engine.runner import predict_multi
+    answers = timed(predict_multi, model, ticket, questions, "cpu")
+    for (question, _), (pick, probs) in zip(questions, answers):
+        probs_str = " ".join(f"{k}={v:.2f}" for k, v in probs.items())
+        print(f"  {pick:<11} {probs_str}  <- {question}")
+
     print("\nDone. Same texts through the autoregressive decision engines:  "
           ".venv/Scripts/python demos/certo_demo.py / "
           ".venv-von/Scripts/python demos/mojev_demo.py\n")
