@@ -21,12 +21,12 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [GLiClass](https://github.com/knowledgator/gliclass) (`knowledgator/gliclass-*-v3.0`) | local zero-shot classifier (all labels, one pass) | 33M / 151M / 187M / 439M | Apache 2.0 | $0 · local |
 | [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) · [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) · [GTE-rerank-ModernBERT-base](https://huggingface.co/Alibaba-NLP/gte-rerank-modernbert-base) | local cross-encoder rerankers (score text+label pairs, argmax = decision) | 494M / 568M / 150M | Apache 2.0 | $0 · local |
 | [Laya](https://huggingface.co/convaiinnovations/laya) (`laya`) | local typed-decision engine (choice/score/noul) | 421M (322M multilingual) | Apache 2.0 | $0 · local |
-| [von-1.0](https://huggingface.co/wfzyx/von-1.0) (`von-sdk`) | local typed-decision engine (System One protocol) | 396M | Apache 2.0 | $0 · local |
-| [open-alternative-jev](https://github.com/ikermoel/open-alternative-jev) (`so1`) | local decision harness over any ChatML LLM (logprobs) | BYO LLM (tested Qwen2.5-0.5B) | MIT | $0 · local |
+| [von-1.0](https://huggingface.co/wfzyx/von-1.0) (`von-sdk`) | local typed-decision engine (System One protocol; the HF card now describes von-1.2 — this repo pins the von-1.0 weights) | 396M | Apache 2.0 | $0 · local |
+| [open-alternative-jev](https://github.com/ikermoel/open-alternative-jev) (`so1`) | local decision harness over any ChatML LLM (logprobs) | BYO LLM (tested Qwen2.5-0.5B) | Apache 2.0 (upstream README; the venv keeps the git install from its MIT days) | $0 · local |
 | [Kev](https://github.com/jaredpalmer/kev) (`jaredpalmer/kev-0.8b`) | local decision engine (open-weight Jev lookalike, System One contract) | 0.8B (9.3M trained) | Apache 2.0 | $0 · local |
 | [AgentJev](https://github.com/malevrigns/agent-jev) | local decision engine (candidate head over Qwen3-0.6B, own API) | 0.6B | Apache 2.0 | $0 · local |
 | [decider](https://huggingface.co/Mapika/decider-0.8b) (`decider-ai`) | local decision engine (System One contract) | 0.8B | Apache 2.0 | $0 · local |
-| [OpenThai-SystemOne](https://huggingface.co/iapp-technology/OpenThai-SystemOne) (`openthai-systemone`) | local decision engine (Thai/English, System One contract) | 0.8B | Apache 2.0 package; weights gated on HF | $0 · local |
+| [OpenThai-SystemOne](https://huggingface.co/iapp/OpenThai-SystemOne) (`openthai-systemone`) | local decision engine (Thai/English, System One contract) | 0.8B | Apache 2.0 package; weights gated on HF | $0 · local |
 | [Verdict](https://huggingface.co/heman10x/rlcd-modernbert-151m) | local decision encoder (ModernBERT + abstention head) | 151M | Apache 2.0 | $0 · local |
 | [JevK5-Lite](https://huggingface.co/alibiserikbay/JevK5-Lite) (`jevk5` runtime) | local decision classifier (label-head encoder, one pass) | 437M | Apache 2.0 | $0 · local |
 | [LFM2.5-RLCD](https://huggingface.co/notnotsamuel/LFM2.5-350M-RLCD) (`engines/rlcd_engine/`, vendored) | local decision engine (constrained decoding over LFM2.5) | 350M | engine MIT; weights LFM Open License v1.0 | $0 · local |
@@ -442,12 +442,12 @@ Highlights:
 | Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
+| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Image input | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) |
+| Image input | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) |
 | Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
 | License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) |
 | Batch shape | per text | per text (batch_size) | per text, all labels | per text, one pair per label | all questions, one pass | per text | one packed prompt | all questions, one request | all questions, one request | all questions, one request | all questions, one request | all questions, one request | per text, all options | per text, all heads + labels | per text, all field candidates | per text, all option descriptions | per text, all packed candidates | per text, one masked forward | per text, one pair per option | per text, one row per question | per text, one request per question | per text, one request per question | per text, all questions one forward | per text, all questions one batch | per text, all questions one forward |
@@ -462,7 +462,8 @@ particular will not parse in PowerShell/cmd.
 ```bash
 uv venv .venv
 uv pip install --python .venv -r requirements.txt --overrides overrides.txt
-# so1 is not on PyPI (needed by the so1 tab + benchmarks):
+# so1 (upstream has since published open-alternative-jev on PyPI under
+# Apache-2.0; this venv keeps the git install from its MIT days):
 uv pip install --python .venv "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev"
 # the three cross-encoder rerankers run in-process in the main venv;
 # the reranker-as-decision-engine path needs sentence-transformers:
@@ -591,6 +592,24 @@ hosted OpenRouter systems (see `engines/openrouter_client.py`).
 .venv/Scripts/python demos/nanodiff_demo.py    # nanodiff 350M diffusion-LM tour
                                          # (~10 s/question; vendored
                                          # engines/nanodiff_engine/)
+.venv/Scripts/python demos/nemotron_vl_demo.py  # Nemotron Rerank VL image
+                                         # documents: three PIL-drawn page
+                                         # screenshots ranked as base64
+                                         # data-URI documents against a text
+                                         # query, next to the same pages as
+                                         # plain text (OpenRouter free tier)
+C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
+                                         # Verdict 151M tour: one evaluate()
+                                         # answers a Choice + a Score rubric
+                                         # + a Noul proposition over one
+                                         # ticket, then the abstention probe
+                                         # fires on an unrelated context
+                                         # (agent-jev venv; VERDICT_HOME)
+.venv/Scripts/python demos/openthai_demo.py     # OpenThai-SystemOne tour: the
+                                         # score + noul questions the benches
+                                         # never ask, over a Thai and the
+                                         # shared English ticket (needs the
+                                         # :8029 server from the setup block)
 .venv-von/Scripts/python demos/mojev_demo.py   # MoJev 0.85B packed one-pass
                                          # scoring (transformers-5 venv)
 .venv-von/Scripts/python demos/lumma_demo.py   # Lumma-Fev typed-decision tour:
@@ -733,7 +752,7 @@ extra Laya checkpoints noted below):
 | `Alibaba-NLP/gte-rerank-modernbert-base` | 150M | ModernBERT-base cross-encoder — benchmarked |
 | `altslate/certo-decision-model` | 421M | ModernBERT-large + calibrated per-option score head; vendored engine (`engines/certo_engine/`) — benchmarked |
 | `MoLeMo-Lab/mojev` | 0.85B | Qwen3.5 + fla packed one-pass scorer, loads via trust_remote_code; adapted engine (`engines/mojev_engine/`) — benchmarked |
-| `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (BY571/nanoDiff architecture); vendored engine (`engines/nanodiff_engine/`) — benchmarked |
+| `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (architecture repo BY571/nanoDiff; the card lists the base as `Sebasdi/nanodiff-350m-base`); vendored engine (`engines/nanodiff_engine/`) — benchmarked |
 | `FrontiersMind/Lumma-fev-0.1b` | 154M | card name "Lumma-Fev-0.15B"; causal backbone + pointer head over choice/score/noul rows, `lumma-fev` package — benchmarked |
 | `FrontiersMind/Lumma-fev-0.6b` | 649M | same pointer-head architecture at the middle scale — benchmarked |
 | `FrontiersMind/Lumma-fev-4b` | 4.2B | largest checkpoint practical on this 32 GB CPU machine — benchmarked |
@@ -821,9 +840,12 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/lfm_rlcd_demo.py` | LFM2.5-RLCD tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
-| `demos/certo_demo.py` | Certo 421M calibrated `decide()` tour (vendored `engines/certo_engine/`, main venv) |
+| `demos/certo_demo.py` | Certo 421M calibrated `decide()` tour incl. the `abstain_below` threshold stop (vendored `engines/certo_engine/`, main venv) |
 | `demos/mojev_demo.py` | MoJev 0.85B tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/nanodiff_demo.py` | nanodiff 350M diffusion-LM tour + one-shot runner (`--serve`) in the main venv, spawned by its web-UI tab |
+| `demos/nanodiff_demo.py` | nanodiff 350M diffusion-LM tour (incl. `predict_multi`: three typed questions in one forward) + one-shot runner (`--serve`) in the main venv, spawned by its web-UI tab |
+| `demos/nemotron_vl_demo.py` | Nemotron Rerank VL image-document tour: PIL-drawn page screenshots as base64 data-URI documents through OpenRouter's structured rerank documents, vs the same pages as plain text (main venv, network) |
+| `demos/verdict_demo.py` | Verdict (RLCD 151M) tour: Choice + Score + Noul in one `evaluate()` and an abstention probe, plus a one-shot runner (`--serve`) — run under the agent-jev venv python |
+| `demos/openthai_demo.py` | OpenThai-SystemOne tour: score + noul over a Thai and the shared English ticket via the local :8029 System One server, plus a one-shot runner (`--serve`) |
 | `demos/lumma_demo.py` | Lumma-Fev tour (all three question types in one `decide()`) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/julia_demo.py` | Julia 1 tour (all three question types in one `predict()` batch) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
 | `demos/intern_decision_demo.py` | Intern-Decision tour (all three question types in one `predict()` forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
