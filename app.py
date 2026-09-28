@@ -2234,6 +2234,91 @@ def build_intern_decision_tab():
         it_button.click(run_intern_decision,
                         [it_model, it_text, it_labels, it_task], it_out)
 
+        # The checkpoints are multimodal: the same tab can also answer a
+        # typed question about an uploaded image (vision tower + projector
+        # ship in every snapshot) — demos/intern_decision_image_demo.py.
+        gr.Markdown("#### Image decisions — upload an image, ask one "
+                    "typed question\n"
+                    "Spawns `demos/intern_decision_image_demo.py --serve` "
+                    "(`.venv-von`); the vision tower encodes the image in "
+                    "the same single forward pass that scores the "
+                    "decision slot.")
+        it_img = gr.Image(type="filepath", label="Image (png/jpg)")
+        it_qtype = gr.Dropdown(choices=["choice", "noul", "score"],
+                               value="choice", label="Question type")
+        it_qinstr = gr.Textbox(
+            label="Question", value="Which team should handle the "
+                                    "ticket in the image?")
+        it_qcrit = gr.Textbox(
+            label="Options — choice: “label = description” per line "
+                  "(or comma labels); score: rubric levels, low to high; "
+                  "noul: unused",
+            value="billing = Payments, invoices and refunds\n"
+                  "technical = Bugs, errors and outages\n"
+                  "account = Login, profile and settings", lines=3)
+        it_qstate = gr.Textbox(label="State / context (optional)",
+                               value="A customer photographed their "
+                                     "support ticket.")
+        it_img_button = gr.Button("Decide on image", variant="primary")
+        it_img_out = gr.JSON(label="Answer, probabilities, confidence")
+
+        def parse_image_criteria(question_type, block):
+            """criteria textbox -> the serve payload's criteria value
+            (choice: label -> description dict, score: rubric list)."""
+            lines = [line.strip() for line in block.splitlines()
+                     if line.strip()]
+            if question_type == "score":
+                levels = [level.strip() for level in block.split(",")
+                          if level.strip()]
+                if len(levels) < 2:
+                    raise ValueError(
+                        "score needs at least two comma-separated rubric "
+                        "levels, low to high")
+                return levels
+            criteria = {}
+            for line in lines:
+                label, sep, description = line.partition("=")
+                label = label.strip().rstrip(",").strip()
+                if not label:
+                    continue
+                criteria[label] = (description.strip() if sep
+                                   else label)
+            return criteria or parse_labels(block)
+
+        def run_intern_decision_image(checkpoint, image_path, question_type,
+                                      instructions, criteria_block, state):
+            if not image_path:
+                return {"error": "upload an image first"}
+            try:
+                payload = {"image": image_path, "type": question_type,
+                           "instructions": instructions, "state": state,
+                           "model": checkpoint.lower()}
+                if question_type != "noul":
+                    payload["criteria"] = parse_image_criteria(
+                        question_type, criteria_block)
+                if question_type == "choice" and len(payload["criteria"]) < 2:
+                    return {"error": "choice needs at least two options"}
+            except ValueError as exc:
+                return {"error": str(exc)}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos",
+                "intern_decision_image_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps(payload),
+                    capture_output=True, text=True, timeout=600)
+                result = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in result:
+                return result
+            return result.get("answer", result)
+
+        it_img_button.click(run_intern_decision_image,
+                            [it_model, it_img, it_qtype, it_qinstr,
+                             it_qcrit, it_qstate], it_img_out)
+
 
 # ----------------------------------------------------------------- so1 tab
 _SO1_DECIDER = None

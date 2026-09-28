@@ -42,8 +42,13 @@ engines resolve to C:\\src\\Intern-Decision-0.8B/-2B/-4B.
 Unlike Lumma's decide(state, questions) and Julia's predict(state,
 questions), this engine takes ONE request dict:
 engine.predict({"state": ..., "questions": {...}}) — the state may be
-any JSON value and is rendered into the prompt; images are supported by
-the checkpoints but this repo is text-only.
+any JSON value and is rendered into the prompt. The same request may
+also carry "images": [local file path, ...] (1-8): each snapshot ships
+a vision tower + projector next to the language weights, and the
+runtime opens the images with PIL and encodes them in the same single
+forward pass — demos/intern_decision_image_demo.py exercises that
+multimodal path (on the 0.8B, an image request runs ~3.4 s vs ~1.3 s
+text-only on this CPU).
 """
 
 import os
