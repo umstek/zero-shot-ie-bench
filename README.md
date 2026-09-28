@@ -442,8 +442,8 @@ Highlights:
 | Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
+| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -670,10 +670,12 @@ C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (loca
 ## Web UI
 
 `app.py` serves a live demo tab per family — GLiNER 2.5 (checkpoint
-selector includes GLiNER2.5-Decide), GLiFormer, GLiREL, GLiNER-relex,
+selector includes GLiNER2.5-Decide, plus a Decide score-rubric
+section), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo,
 MoJev, nanodiff, Lumma (0.15B/0.6B/4B checkpoint dropdown), Julia,
-Intern-Decision (0.8B/2B/4B checkpoint dropdown), so1,
+Intern-Decision (0.8B/2B/4B checkpoint dropdown), so1 (choice plus a
+yes_no/scale section),
 Jev (cloud), and OpenRouter (all ten hosted systems:
 Kev 4B, Span-01/Lite, seven rerankers — one metered API request per click,
 needs `OPENROUTER_API_KEY`), plus **Ollaya** (the five daemon-served
@@ -695,7 +697,9 @@ shared loader (`engines/von_client.py`) pins the
 upstream SDK and model revision and requires the complete
 `option_marker.pt` state dict — missing or incompatible weights fail
 before inference; there is no random-head fallback (first use downloads
-~3 GB).
+~3 GB). The von tab's second section demos the two question types behind
+choice through the same runner: judge (the SDK's noul — the probability
+the condition holds) and rate (the expectation over an ordered rubric).
 
 Regression tests run without model downloads or cloud credentials:
 
@@ -829,8 +833,8 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `engines/ollaya_client.py` | keyless System One client for the local Ollaya daemon (name → tag registry; records the state-is-the-text and described-criteria request findings) |
 | `demos/ollaya_demo.py` | tour of the five Ollaya-served models: typed questions in one request, shared-text sentiment, score rubric |
 | `app.py` | Gradio web UI: live tab per family + benchmark + compare |
-| `demos/von_demo.py` | one-shot von runner inside `.venv-von`, spawned by the von tab |
-| `engines/von_client.py` | pinned, complete option-marker checkpoint loader shared by demo and benchmarks |
+| `demos/von_demo.py` | von tour (shared-text choice, then a judge and a rate stop on one shared sample) + one-shot runner (`--serve`, choice and judge_rate modes) inside `.venv-von`, spawned by both von tab sections |
+| `engines/von_client.py` | pinned, complete option-marker checkpoint loader (decide/judge/rate wrappers over evaluate_choice/evaluate_noul/evaluate_score) shared by demo, tab and benchmarks |
 | `demos/relik_demo.py` | one-shot ReLiK runner inside `.venv-relik`, spawned by the ReLiK tab |
 | `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK retriever-reader pipeline |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |

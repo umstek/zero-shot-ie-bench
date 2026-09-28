@@ -10,8 +10,10 @@ One boundary-architecture model, six tasks, no fine-tuning:
 
 Model family: fastino/gliner2.5-{small,base,multi}-v1
 Section 7 also tours the decision-tuned sibling fastino/GLiNER2.5-Decide
-(340M) on the same sample texts — on the mixed-pool benchmark it is the
-second-best local classifier and still NER-capable.
+(340M) on the same sample texts - entities, classification, and the
+ordinal score rubric (a 0-10 rating passed as plain string labels) - on
+the mixed-pool benchmark it is the second-best local classifier and
+still NER-capable.
 Docs: https://github.com/fastino-ai/GLiNER2
 
 Run:
@@ -37,6 +39,14 @@ MODELS = {
 
 MODEL_ID = MODELS["base"]  # set in main(); sections that reload use this
 DECIDE_MODEL_ID = MODELS["decide"]
+
+
+def rubric_levels(low: int = 0, high: int = 10) -> list[str]:
+    """An ordinal score rubric as classify_text wants it: the ordered
+    scale as plain string labels (lowest to highest), e.g. 0-10."""
+    if high <= low:
+        raise ValueError("high must be greater than low")
+    return [str(i) for i in range(low, high + 1)]
 
 
 def banner(title: str) -> None:
@@ -233,6 +243,22 @@ def decide_sibling(model):
         {"sentiment": ["positive", "negative", "neutral"]},
     )
     show(result)
+
+    banner("7c. Score rubric - ordinal rating (the model card's own example)")
+    text = ("I finished it in two nights. The ending is earned, the "
+            "middle drags, and I would still hand it to a friend.")
+    print(f'  text: "{text}"')
+    print(f'  rubric: 0-10  (lowest to highest; no special score task - '
+          "the ordered scale is passed as plain string labels)")
+    result = timed(
+        sibling.classify_text,
+        text,
+        {"rating": rubric_levels(0, 10)},
+        include_confidence=True,
+    )
+    show(result)
+    print("  (the picked label IS the score - the card's example review "
+          "lands on 7)")
 
 
 SECTIONS = [entities, classification, relations, joint, attributes, records,

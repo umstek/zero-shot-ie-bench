@@ -805,8 +805,8 @@ on :11435); Lumma, Julia and Intern-Decision spawn one-shot
 | Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (untested here) | ❌ | ❌ | ❌ | ✅ score | ✅ rate | ✅ | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge | ✅ yes_no | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
+| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (untested here) | ❌ (lite is classification-only) | ❌ | ❌ | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul | ✅ noul | ✅ boolean | ✅ noul | ✅ noul | ✅ noul (untested here) | ❌ | ✅ boolean | ❌ | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
 | Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
 | Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -909,6 +909,36 @@ def build_gliner_tab(model):
             cls_button.click(run_classification,
                              [gl_model, cls_text, cls_labels, cls_multi],
                              cls_out)
+
+        with gr.Tab("Score rubric (Decide)"):
+            gr.Markdown("Decide rates ordinal rubrics without a special "
+                        "score task: the ordered scale is passed as plain "
+                        "string labels and the picked label IS the score. "
+                        "Pick the **Decide** checkpoint above — the base "
+                        "extractor answers too, but Decide is the "
+                        "decision-tuned sibling.")
+            sr_text = gr.Textbox(
+                label="Text",
+                value="I finished it in two nights. The ending is "
+                      "earned, the middle drags, and I would still hand "
+                      "it to a friend.", lines=3)
+            sr_rubric = gr.Textbox(
+                label="Rubric levels (comma-separated, lowest to highest)",
+                value="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10")
+            sr_button = gr.Button("Score", variant="primary")
+            sr_out = gr.JSON(label="Picked level (the score) + confidence")
+
+            def run_score_rubric(model_id, text, rubric_csv):
+                model = get_gliner_model(model_id)
+                rubric = parse_labels(rubric_csv)
+                if not text or len(rubric) < 2:
+                    return {"error": "provide text and at least two "
+                                     "rubric levels"}
+                return model.classify_text(
+                    text, {"score": rubric}, include_confidence=True)
+
+            sr_button.click(run_score_rubric,
+                            [gl_model, sr_text, sr_rubric], sr_out)
 
         with gr.Tab("Relations"):
             rel_text = gr.Textbox(label="Text",
@@ -1680,6 +1710,59 @@ def build_von_tab():
 
         von_button.click(run_von, [von_text, von_labels, von_instr], von_out)
 
+        gr.Markdown("#### Judge + rate — the two question types behind "
+                    "choice\n"
+                    "The same option-marker head also answers yes/no "
+                    "questions (`judge`, the SDK's noul: the probability "
+                    "the condition holds) and ordinal rubrics (`rate`: a "
+                    "probability-weighted expectation over the levels, "
+                    "lowest to highest). One shared sample, both in a "
+                    "single spawn.")
+        von_jr_text = gr.Textbox(
+            label="Text (the shared sample)",
+            value="I was charged twice for my subscription this month "
+                  "and want a refund.", lines=2)
+        von_jr_judge = gr.Textbox(
+            label="Judge question (yes/no)",
+            value="Is the customer asking for a refund?")
+        with gr.Row():
+            von_jr_rate = gr.Textbox(
+                label="Rate question (ordinal rubric)",
+                value="How urgent is this issue?")
+            von_jr_rubric = gr.Textbox(
+                label="Rubric levels (comma-separated, lowest to highest)",
+                value="could wait a few days, should be fixed soon, "
+                      "needs immediate action")
+        von_jr_button = gr.Button("Judge + rate")
+        von_jr_out = gr.JSON(label="Judgment (yes probability + verdict) "
+                                   "and rating (expectation + per-level "
+                                   "probabilities)")
+
+        def run_von_judge_rate(text, judge_instructions, rate_instructions,
+                               rubric_csv):
+            if not text.strip():
+                return {"error": "provide a text"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "von_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper],
+                    input=json.dumps({"mode": "judge_rate", "text": text,
+                                      "judge_instructions": judge_instructions,
+                                      "rate_instructions": rate_instructions,
+                                      "rubric": parse_labels(rubric_csv)}),
+                    capture_output=True, text=True, timeout=180)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return payload
+
+        von_jr_button.click(run_von_judge_rate,
+                            [von_jr_text, von_jr_judge, von_jr_rate,
+                             von_jr_rubric], von_jr_out)
+
 
 # ------------------------------------------------------- JevK5-Lite tab
 def build_jevk5_tab():
@@ -2386,6 +2469,60 @@ def build_so1_tab():
                     for i, (text, row) in enumerate(zip(texts, rows))}
 
         so_button.click(run_so1, [so_text, so_labels, so_task], so_out)
+
+        gr.Markdown("#### Yes/no + scale — the typed question helpers\n"
+                    "The package also ships `yes_no()` and `scale()` "
+                    "constructors: both build plain Choices (options "
+                    "'yes'/'no', or the integers low..high), so the same "
+                    "logprob engine answers them unchanged. One shared "
+                    "sample, both questions in one decide() call.")
+        so_typed_text = gr.Textbox(
+            label="Text (the shared sample)",
+            value="I was charged twice for my subscription this month "
+                  "and want a refund.", lines=2)
+        so_yn_question = gr.Textbox(
+            label="Yes/no question",
+            value="Is the customer asking for a refund?")
+        with gr.Row():
+            so_scale_question = gr.Textbox(
+                label="Scale question",
+                value="How urgent is this issue? 1 = could wait, "
+                      "5 = needs immediate action")
+            so_scale_range = gr.Textbox(
+                label="Scale range (low, high)",
+                value="1, 5")
+        so_typed_button = gr.Button("Judge + scale")
+        so_typed_out = gr.JSON(label="Per question: choice, probabilities, "
+                                     "confidence")
+
+        def run_so1_typed(text, yn_question, scale_question, scale_range):
+            from so1 import scale, yes_no
+
+            if not text.strip() or not yn_question.strip() \
+                    or not scale_question.strip():
+                return {"error": "provide a text and both questions"}
+            bounds = [chunk.strip() for chunk in scale_range.split(",")
+                      if chunk.strip()]
+            try:
+                low, high = int(bounds[0]), int(bounds[1])
+            except (IndexError, ValueError):
+                return {"error": "scale range needs two integers: low, high"}
+            try:
+                decider = get_so1_decider()
+                answers = decider.decide(
+                    state=text,
+                    questions=[yes_no(yn_question),
+                               scale(scale_question, low, high)],
+                    mode="separate")
+            except Exception as exc:
+                return {"error": str(exc)}
+            return {"yes/no": answers[0].as_dict(),
+                    "scale": answers[1].as_dict()}
+
+        so_typed_button.click(run_so1_typed,
+                              [so_typed_text, so_yn_question,
+                               so_scale_question, so_scale_range],
+                              so_typed_out)
 
 
 def main() -> None:
