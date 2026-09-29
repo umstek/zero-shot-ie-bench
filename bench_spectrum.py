@@ -51,8 +51,10 @@ and once `ollaya pull <tag>` per model — see engines/ollaya_client.py):
     python bench_spectrum.py --system "winnow e4b (Ollaya)"
 
 OpenRouter-hosted systems need OPENROUTER_API_KEY in .env; their providers
-are not ZDR - they may retain request data:
+are not ZDR - they may retain request data (Solar Decide additionally has
+a ZDR Upstage endpoint, but the runs here use default routing):
     python bench_spectrum.py --system "Kev 4B (OpenRouter)"
+    python bench_spectrum.py --system "Solar Decide (OpenRouter)"
     python bench_spectrum.py --system "Span-01 Lite"
     python bench_spectrum.py --system "cohere-rerank-v3.5 (OpenRouter)"
 
@@ -107,12 +109,17 @@ RERANKERS = {
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
     "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
 }
-# hosted on OpenRouter: System One contract (kev, span) and the rerank
-# router. typesafe/jev-1.13 also lives there but is RBAC-gated and already
-# benched through the TypeSafe API directly; typesafe/jev-router is a chat
-# router, not a typed-decision endpoint.
+# hosted on OpenRouter: System One contract (kev, solar-decide, span) and
+# the rerank router. Solar Decide is Upstage's structured-decision model on
+# Solar Mini 4 (35B MoE / 3B active, 524K context; answers choice with
+# probabilities, score rubrics, noul - but rejects an explicit
+# criteria: null on noul, omit the field instead). typesafe/jev-1.13 also
+# lives there but is RBAC-gated and already benched through the TypeSafe
+# API directly; typesafe/jev-router is a chat router, not a typed-decision
+# endpoint.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
+    "Solar Decide (OpenRouter)": "upstage/solar-decide",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
 }
@@ -198,13 +205,15 @@ def classify_extractor(model_id: str, gliformer: bool):
 
 
 def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
-                     tracker=None):
+                     tracker=None, model_id: str | None = None):
     """Laya, Jev, AgentJev, or a local System One server (Kev, decider,
     OpenThai): one batched call per task, preds mapped back per question.
     The locals serve the same wire format as Jev on their own ports and get
     string instructions — the shape Laya and Kev both expect; AgentJev has
     its own /api/evaluate contract (port 8149) with label descriptions as
-    option semantics. (Ollaya systems do NOT batch here: their decision
+    option semantics. model_id selects the checkpoint for the
+    OpenRouter-hosted System One engines ("or-systemone": kev-4b,
+    solar-decide). (Ollaya systems do NOT batch here: their decision
     layers build the premise from the state, so each text is its own
     request - see the dedicated branch in main().)"""
     INSTR = {
@@ -235,14 +244,15 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
             out = agent.predict({"task": task}, questions)
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
-    elif client_kind in SYSTEMONE_LOCAL_PORTS or client_kind == "or-kev":
+    elif client_kind in SYSTEMONE_LOCAL_PORTS or client_kind == "or-systemone":
         from engines.jev_client import JevClient, choice
 
-        if client_kind == "or-kev":
-            # OpenRouter-hosted kev-4b: same wire format, Bearer key
+        if client_kind == "or-systemone":
+            # OpenRouter-hosted System One decision engines (kev-4b,
+            # solar-decide): same wire format, Bearer key
             from engines.openrouter_client import systemone
 
-            client = systemone("jaredpalmer/kev-4b", tracker)
+            client = systemone(model_id, tracker)
         else:
             client = JevClient(
                 base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
@@ -437,7 +447,7 @@ def main() -> None:
     elif name in ("Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                  "Kev 4B (OpenRouter)"):
+                  "Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)"):
         from engines.openrouter_client import UsageTracker
 
         repo = ("convaiinnovations/laya-typed-decisions"
@@ -448,12 +458,16 @@ def main() -> None:
                 else "agentjev" if name.startswith("AgentJev")
                 else "decider" if name.startswith("decider")
                 else "openthai" if name.startswith("OpenThai")
-                else "or-kev" if name == "Kev 4B (OpenRouter)"
+                else "or-systemone"
+                if name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
                 else "jev" if name == "Jev" else None)
         if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
-        tracker = UsageTracker() if name in ("Jev", "Kev 4B (OpenRouter)") else None
-        run_task = classify_batched(kind, repo=repo, tracker=tracker)
+        tracker = (UsageTracker() if name in ("Jev", "Kev 4B (OpenRouter)",
+                                              "Solar Decide (OpenRouter)")
+                   else None)
+        run_task = classify_batched(kind, repo=repo, tracker=tracker,
+                                    model_id=OPENROUTER_SYSTEMONE.get(name))
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()
@@ -735,7 +749,7 @@ def main() -> None:
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
     # only the local System One servers, Ollaya's first-request model load,
     # Lumma's, Julia's and Intern-Decision's first-pass init get the
-    # untimed warm-up; the hosted or-kev endpoint is stateless, so every
+    # untimed warm-up; the hosted endpoints are stateless, so every
     # request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai"))
                or name in OLLAYA or name in LUMMA or name in JULIA

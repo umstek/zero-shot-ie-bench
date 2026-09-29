@@ -1,7 +1,7 @@
 # zero-shot-ie-bench
 
-Fifty-three zero-shot systems (fifty of them benchmarked) across
-twenty-nine information-extraction and classification families —
+Fifty-four zero-shot systems (fifty-one of them benchmarked) across
+thirty information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints, plus five models served by
@@ -42,11 +42,14 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Winnow E4B](https://huggingface.co/EldanRing/Winnow-E4B) (`winnow:e4b` via Ollaya, Q8_0 GGUF) | local decision LLM (EldanRing, fine-tuned from Gemma 4 E4B on llama.cpp; option letters' logits) | E4B (8 GB Q8_0) | Apache 2.0 | $0 · local |
 | [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | proprietary API | metered · n/r ‡ |
 | [Kev 4B](https://openrouter.ai/jaredpalmer/kev-4b) (`jaredpalmer/kev-4b` via OpenRouter) | cloud decision engine (same System One contract as local Kev, hosted) | 4B | proprietary API | metered · $1.5e-6/q † |
+| [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
 | [Span-01](https://openrouter.ai/respan/span-01) / [Span-01 Lite](https://openrouter.ai/respan/span-01-lite) (`respan/span-01*`) | cloud behavior scorer (one noul probability per label, argmax = decision) | closed | proprietary API | metered · $9.0e-7/q · Lite free † |
 | [Qwen3-Reranker 8B](https://openrouter.ai/qwen/qwen3-reranker-8b) · [Voyage rerank-2.5](https://openrouter.ai/voyageai/rerank-2.5) (+lite) · [Nemotron Rerank VL 1B](https://openrouter.ai/nvidia/llama-nemotron-rerank-vl-1b-v2:free) · [Cohere Rerank](https://openrouter.ai/cohere/rerank-4-pro) (4 Pro / 4 Fast / v3.5), all via OpenRouter | cloud rerankers (same (instruction, label) argmax mapping as the local ones) | 8B / closed / 1.7B / closed | proprietary API | metered · $1.4e-6–$2.5e-3/q · Nemotron free † |
 
 † Non-ZDR endpoints: these providers may retain request data (OpenRouter's
 account privacy settings gate this — the account used here allows them).
+Solar Decide is the one † system with a ZDR Upstage endpoint on
+OpenRouter; the runs here used default routing, so it stays non-ZDR.
 Every local system in the repo keeps text on the machine. The Cost column
 marks who bills per request: `$0 · local` systems cost no API money
 (only CPU time), `metered` systems bill per token/search with the
@@ -77,6 +80,9 @@ slots of one causal forward over an assistant JSON skeleton — the
 causal-forward letter-logit cousin of the GGUF letter-logit LLMs and
 so1's logprob harness, with a per-checkpoint calibration temperature),
 cloud Jev / Kev 4B /
+Upstage's Solar Decide (the Solar Mini 4 MoE behind the same System One
+contract — calibrated choice probabilities and score/noul read straight
+off the option logits, no generation) /
 Span-01, and the five Ollaya-served
 models — NLI entailment classifiers, the Semantic-Router `decision`, the
 full JevK5 4B and Winnow E4B). The GLiNER lineage
@@ -131,7 +137,7 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 50 systems)
+## Mixed-pool spectrum benchmark (all 51 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -145,7 +151,8 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 | System | Classification | s/question | NER exact | s/question |
 |---|---|---|---|---|
-| Jev (cloud) | **93.8%** | 0.018 | n/a | |
+| Solar Decide (OpenRouter) † | **95.8%** | 0.308 | n/a | |
+| Jev (cloud) | 93.8% | 0.018 | n/a | |
 | winnow e4b (Ollaya) | **87.5%** | 8.138 | n/a | |
 | qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a | |
 | GLiNER2.5-Decide | 85.4% | 0.412 | 61% | 0.476 |
@@ -198,8 +205,17 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 Takeaways:
 
-- **winnow e4b ties qwen3-reranker-8b at 87.5% — the best non-Jev
-  systems of all 50** — and winnow is local and free (the metered
+- **Solar Decide takes the overall lead at 95.8%** — the first system to
+  beat cloud Jev (93.8%) on the mixed pool, in its first week on
+  OpenRouter. Its two misses are boundary topics (a football club's
+  share price read `sports`, a government AI strategy read
+  `technology`); it also joins the 100% multilingual club on arrival
+  (below). It batches each 24-question task into one request like kev,
+  but Solar's tokenizer runs long on English (~8.7k input tokens per
+  batched request), so it bills ~$1.8e-5/question — 12× kev-4b, still
+  110× below cohere 4-fast.
+- **winnow e4b ties qwen3-reranker-8b at 87.5% — the best systems
+  behind Jev and Solar Decide of all 51** — and winnow is local and free (the metered
   reranker needs OpenRouter; one more datapoint for rerankers doubling
   as decision engines — bge locally reaches 72.9%, Kev/OpenThai level,
   where the same rerankers sit near zero on JevBench's leaderboard).
@@ -291,6 +307,7 @@ reconstructed from list prices. Measured on these exact runs (one pass;
 | voyage-rerank-2.5-lite † | $0.000068 | $0.000115 | $0.0000014 |
 | Kev 4B (OpenRouter) | $0.000072 | $0.000106 | $0.0000015 |
 | voyage-rerank-2.5 † | $0.000170 | $0.000287 | $0.0000035 |
+| Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | qwen3-reranker-8b † | $0.0032 | $0.0036 | $0.0000667 |
 | cohere-rerank-v3.5 † | $0.048 | $0.054 | $0.0010 |
 | cohere-rerank-4-fast † | $0.096 | $0.108 | $0.0020 |
@@ -305,7 +322,10 @@ measurements say that the price lists don't: Cohere bills ~2.5 search
 units per rerank request (a 48-q run on 4-pro costs $0.12, not the
 naive 48 × $0.001); kev-4b and Span-01 sit near $1e-6/question — kev
 batches each 24-question task into one request, Span's payloads are
-tiny. Not benched on OpenRouter on purpose: `typesafe/jev-1.13`
+tiny. solar-decide batches like kev but bills by input token, and
+Solar's tokenizer is English-verbose (~8.7k tokens per batched
+request), landing it at $1.8e-5/question. Not benched on OpenRouter on
+purpose: `typesafe/jev-1.13`
 (RBAC-gated; Jev measured via TypeSafe directly) and
 `typesafe/jev-router` (a chat router, not a typed-decision endpoint).
 
@@ -341,13 +361,14 @@ images (regenerate with `python make_chart_images.py`):
 Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish,
 Ukrainian · Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified
 by blind back-translation through an independent model instance (it
-caught 8 errors, including a sentiment-flipping Sinhala word). All 50
+caught 8 errors, including a sentiment-flipping Sinhala word). All 51
 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
 | Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
 | jevk5 4B (Ollaya) | 100% | 100% | 100% | **100%** |
+| Solar Decide (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
@@ -403,6 +424,11 @@ systems answer the same 54 texts.
 
 Highlights:
 
+- **Solar Decide joins the 100% club on arrival** — perfect on all 54
+  texts, Sinhala/Icelandic/Welsh included, matching Jev and jevk5 4B;
+  the Solar Mini 4 backbone is built Korean/English/Japanese-first, and
+  the breadth shows even outside that trio (0.885 s/text, one request
+  per text on this suite).
 - **jevk5 4B is the first local system at 100% multilingual** — perfect
   on all 54 texts including Sinhala, matching cloud Jev; its sibling
   winnow e4b follows at 98% (100% Sinhala, one Icelandic miss), ahead
@@ -417,9 +443,10 @@ Highlights:
   languages then collapses on rare scripts (22%).
 - GLiNER2.5-multi is perfect through Ukrainian but drops on Welsh/Sinhala
   (89% overall — still the best local *encoder*); gliclass-large transfers
-  surprisingly well for an English-family release (81%, 100% Chinese,
-  joint-best local Sinhala 67%); Jev and jevk5 4B are the only
-  100%-on-Sinhala systems.
+surprisingly well for an English-family release (81%, 100% Chinese,
+  joint-best local Sinhala 67%); 100%-on-Sinhala is shared by seven
+  systems — Jev, jevk5 4B, winnow e4b, Solar Decide, hosted Kev 4B,
+  Span-01 and Intern-Decision 0.8B.
 - bge-reranker-v2-m3's flat 67/67/67 is structural: it never predicts
   neutral (35 neg / 19 pos across all 54 texts), so every language
   scores exactly 4/6 — right on the four subjective texts, wrong on
@@ -673,7 +700,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (50 systems; von, JevK5-Lite,
+                                         # (51 systems; von, JevK5-Lite,
                                          # LFM2.5-RLCD 350M, MoJev 0.85B,
                                          # Lumma-Fev, Julia 1 and
                                          # Intern-Decision: same command
@@ -682,7 +709,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
 # imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 50 systems →
+                                         # 9 languages, all 51 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
@@ -720,8 +747,8 @@ ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo,
 MoJev, nanodiff, Lumma (0.15B/0.6B/4B checkpoint dropdown), Julia,
 Intern-Decision (0.8B/2B/4B checkpoint dropdown), so1 (choice plus a
 yes_no/scale section),
-Jev (cloud), and OpenRouter (all ten hosted systems:
-Kev 4B, Span-01/Lite, seven rerankers — one metered API request per click,
+Jev (cloud), and OpenRouter (all eleven hosted systems:
+Kev 4B, Solar Decide, Span-01/Lite, seven rerankers — one metered API request per click,
 needs `OPENROUTER_API_KEY`), plus **Ollaya** (the five daemon-served
 decision models behind a model dropdown — needs the local `ollaya serve`,
 free), plus benchmark tabs (classification /
@@ -888,12 +915,12 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK pipeline, parametrized so the tour can load the joint NER+relation sibling (two relik 1.0.7 load fixes; the benched default is forwarded verbatim) |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
-| `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Span-01, seven rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
+| `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Solar Decide, Span-01, seven rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
 | `engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 50 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 51 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
