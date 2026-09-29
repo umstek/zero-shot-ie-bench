@@ -1,13 +1,13 @@
-"""Interactive demo + benchmarks for fifty-three zero-shot IE/classification
-systems across twenty-nine families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for fifty-four zero-shot IE/classification
+systems across thirty families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff, Lumma, Julia, Intern-Decision, so1, Jev (cloud), OpenRouter
 (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the fifty
+local daemon; benchmark tabs hold the measured numbers for the fifty-one
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
-benchmarked), the OpenRouter-hosted systems (Kev 4B, Span-01, seven
-rerankers) included.
+benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
+seven rerankers) included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -1478,13 +1478,14 @@ def build_ollaya_tab():
 
 
 # -------------------------------------------------- OpenRouter (hosted) tab
-# The ten OpenRouter-hosted systems (same names and model ids as
-# bench_spectrum.py): three System One decision engines — Kev answers one
-# choice question, Span-01 scores one noul question per label — and seven
-# rerank endpoints used as decision engines via argmax over per-label
-# relevance.
+# The eleven OpenRouter-hosted systems (same names and model ids as
+# bench_spectrum.py): four System One decision engines — Kev and Solar
+# Decide answer one choice question, Span-01 scores one noul question per
+# label — and seven rerank endpoints used as decision engines via argmax
+# over per-label relevance.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
+    "Solar Decide (OpenRouter)": "upstage/solar-decide",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
 }
@@ -1505,12 +1506,14 @@ def build_openrouter_tab():
 
     with gr.Tab("OpenRouter (hosted)"):
         gr.Markdown("### The OpenRouter-hosted systems, live\n"
-                    "The ten hosted systems from the benchmark tabs: Kev 4B "
-                    "answers one choice question, Span-01 / Span-01 Lite "
+                    "The eleven hosted systems from the benchmark tabs: "
+                    "Kev 4B and Solar Decide answer one choice question, "
+                    "Span-01 / Span-01 Lite "
                     "score one noul question per label, and the seven "
                     "rerankers score one (instruction, label) pair per "
                     "label (argmax = decision). Requests leave the machine "
-                    "(non-ZDR providers, † in README); needs "
+                    "(non-ZDR providers, † in README; Solar Decide also "
+                    "has a ZDR Upstage endpoint, unused here); needs "
                     "`OPENROUTER_API_KEY` in the repo-root `.env`. Each "
                     "click is one metered API request (free tiers: "
                     "Span-01 Lite, nemotron).")
@@ -1556,7 +1559,8 @@ def build_openrouter_tab():
                             "relevance scores": ranked}
                 client = openrouter_client.systemone(
                     OPENROUTER_SYSTEMONE[system])
-                if system == "Kev 4B (OpenRouter)":
+                if system in ("Kev 4B (OpenRouter)",
+                              "Solar Decide (OpenRouter)"):
                     payload = client.ask({"task": task}, {"q": choice(
                         f'What is the overall {task} of this text: '
                         f'"{text}"', {label: None for label in labels})})
@@ -2618,13 +2622,13 @@ def main() -> None:
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
                     "Lumma, Julia, Intern-Decision, so1, the cloud Jev, "
-                    "the ten "
+                    "the eleven "
                     "OpenRouter-hosted systems and the five Ollaya-served "
                     "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 50 systems across twenty-nine "
+                    "measured numbers for all 51 systems across thirty "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)

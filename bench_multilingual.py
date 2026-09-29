@@ -42,8 +42,10 @@ from the Verdict-open-jev checkout (VERDICT_HOME, default C:\src\verdict)
 under the agent-jev venv python.
 
 OpenRouter-hosted systems need OPENROUTER_API_KEY in .env; their providers
-are not ZDR - they may retain request data:
+are not ZDR - they may retain request data (Solar Decide additionally has
+a ZDR Upstage endpoint, but the runs here use default routing):
     python bench_multilingual.py --system "Kev 4B (OpenRouter)"
+    python bench_multilingual.py --system "Solar Decide (OpenRouter)"
     python bench_multilingual.py --system "Span-01 Lite"
     python bench_multilingual.py --system "cohere-rerank-v3.5 (OpenRouter)"
 
@@ -197,6 +199,7 @@ RERANKERS = {
 # names so results files line up across benchmarks
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
+    "Solar Decide (OpenRouter)": "upstage/solar-decide",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
 }
@@ -557,14 +560,15 @@ def run_jev(texts, tracker=None):
              for i in range(len(texts))], dt / len(texts))
 
 
-def run_or_kev(texts, tracker=None):
-    """OpenRouter-hosted kev-4b: same per-text System One request shape as
-    run_systemone (string instructions), no warmup - the endpoint is
-    stateless. Non-ZDR endpoint."""
+def run_or_systemone(texts, model_id, tracker=None):
+    """OpenRouter-hosted System One decision engine (kev-4b,
+    solar-decide): same per-text request shape as run_systemone (string
+    instructions), no warmup - the endpoint is stateless. Non-ZDR
+    endpoint."""
     from engines.jev_client import choice
     from engines.openrouter_client import systemone
 
-    client = systemone("jaredpalmer/kev-4b", tracker)
+    client = systemone(model_id, tracker)
     preds, lat = [], []
     for text in texts:
         question = choice(
@@ -729,11 +733,12 @@ def main() -> None:
         preds, lat = run_systemone(texts, 8029, "openthai-systemone")
     elif name == "Verdict 151M (local)":
         preds, lat = run_verdict(texts)
-    elif name == "Kev 4B (OpenRouter)":
+    elif name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)"):
         from engines.openrouter_client import UsageTracker
 
         tracker = UsageTracker()
-        preds, lat = run_or_kev(texts, tracker)
+        preds, lat = run_or_systemone(texts, OPENROUTER_SYSTEMONE[name],
+                                      tracker)
     elif name == "Jev":
         from engines.openrouter_client import UsageTracker
 
@@ -782,7 +787,7 @@ def main() -> None:
                     "the same 54 texts.")
     # only the local System One servers, Ollaya's first-request model load,
     # Lumma's, Julia's and Intern-Decision's first-pass init get the
-    # untimed warm-up; the hosted or-kev endpoint is stateless, so every
+    # untimed warm-up; the hosted endpoints are stateless, so every
     # request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai"))
                or name in OLLAYA or name in LUMMA or name in JULIA
