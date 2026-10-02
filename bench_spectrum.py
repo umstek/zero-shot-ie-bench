@@ -58,6 +58,13 @@ a ZDR Upstage endpoint, but the runs here use default routing):
     python bench_spectrum.py --system "Span-01 Lite"
     python bench_spectrum.py --system "cohere-rerank-v3.5 (OpenRouter)"
 
+Cloudflare's Clef models are hosted on Workers AI and need a one-time
+`cf auth login` (the CLI's session token is used and auto-refreshed;
+see engines/clef_client.py) or a Workers AI API token in .env as
+CLOUDFLARE_AUTH_TOKEN plus CLOUDFLARE_ACCOUNT_ID:
+    python bench_spectrum.py --system "Clef (Workers AI)"
+    python bench_spectrum.py --system "Clef-flash (Workers AI)"
+
 Output: results/bench_spectrum_results.json
 """
 
@@ -123,6 +130,15 @@ OPENROUTER_SYSTEMONE = {
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
 }
+# Cloudflare's Clef decision models on Workers AI (engines/clef_client.py;
+# values are the body "model" selectors). Clef rides a frozen Qwen3.8-27B
+# backbone (64k ctx, vision), Clef-flash a Qwen3.5-9B one (~39 ms median,
+# self-reported); same System One contract, and unlike the OpenRouter
+# systems Cloudflare commits to not reading/storing/training on requests
+CLEF_MODELS = {
+    "Clef (Workers AI)": "clef",
+    "Clef-flash (Workers AI)": "clef-flash",
+}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -159,6 +175,7 @@ INTERN_DECISION = {"Intern-Decision 0.8B": "0.8B",
                    "Intern-Decision 4B": "4B"}
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
+               + list(CLEF_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
                   "Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
@@ -211,9 +228,9 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
     The locals serve the same wire format as Jev on their own ports and get
     string instructions — the shape Laya and Kev both expect; AgentJev has
     its own /api/evaluate contract (port 8149) with label descriptions as
-    option semantics. model_id selects the checkpoint for the
-    OpenRouter-hosted System One engines ("or-systemone": kev-4b,
-    solar-decide). (Ollaya systems do NOT batch here: their decision
+    option semantics. model_id selects the checkpoint for the hosted
+    System One engines ("or-systemone": kev-4b, solar-decide; "clef":
+    clef, clef-flash). (Ollaya systems do NOT batch here: their decision
     layers build the premise from the state, so each text is its own
     request - see the dedicated branch in main().)"""
     INSTR = {
@@ -244,7 +261,8 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
             out = agent.predict({"task": task}, questions)
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
-    elif client_kind in SYSTEMONE_LOCAL_PORTS or client_kind == "or-systemone":
+    elif (client_kind in SYSTEMONE_LOCAL_PORTS
+          or client_kind in ("or-systemone", "clef")):
         from engines.jev_client import JevClient, choice
 
         if client_kind == "or-systemone":
@@ -253,6 +271,13 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
             from engines.openrouter_client import systemone
 
             client = systemone(model_id, tracker)
+        elif client_kind == "clef":
+            # Cloudflare Workers AI-hosted Clef models: same wire format
+            # behind the v4 REST envelope (engines/clef_client.py)
+            from engines.clef_client import clef as clef_build
+
+            client = clef_build(model_id,
+                                usage_sink=tracker.add if tracker else None)
         else:
             client = JevClient(
                 base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
@@ -444,10 +469,11 @@ def main() -> None:
             t1 = time.perf_counter()
             cls_preds.append(cls_one(q["text"], q["task"]))
             cls_lat.append(time.perf_counter() - t1)
-    elif name in ("Laya (local)", "Laya typed-decisions", "Jev",
-                  "Kev 0.8B (local)", "AgentJev 0.6B (local)",
-                  "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                  "Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)"):
+    elif (name in ("Laya (local)", "Laya typed-decisions", "Jev",
+                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
+                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
+                   "Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
+          or name in CLEF_MODELS):
         from engines.openrouter_client import UsageTracker
 
         repo = ("convaiinnovations/laya-typed-decisions"
@@ -460,14 +486,17 @@ def main() -> None:
                 else "openthai" if name.startswith("OpenThai")
                 else "or-systemone"
                 if name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
+                else "clef" if name in CLEF_MODELS
                 else "jev" if name == "Jev" else None)
         if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
         tracker = (UsageTracker() if name in ("Jev", "Kev 4B (OpenRouter)",
                                               "Solar Decide (OpenRouter)")
+                   or name in CLEF_MODELS
                    else None)
         run_task = classify_batched(kind, repo=repo, tracker=tracker,
-                                    model_id=OPENROUTER_SYSTEMONE.get(name))
+                                    model_id=OPENROUTER_SYSTEMONE.get(name)
+                                    or CLEF_MODELS.get(name))
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()
