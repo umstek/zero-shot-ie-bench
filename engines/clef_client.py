@@ -74,12 +74,19 @@ def _cf_config_path() -> str:
 def _read_cf_session() -> tuple[str, float]:
     with open(_cf_config_path(), encoding="utf-8") as fh:
         cfg = json.load(fh)
-    token = (cfg.get("oauth_token") or "").strip()
+    # malformed shapes raise ValueError so load_token()'s error boundary
+    # turns them into the `cf auth login` guidance
+    if not isinstance(cfg, dict):
+        raise ValueError(f"cf config is not an object: {type(cfg).__name__}")
+    raw_token = cfg.get("oauth_token")
+    if not isinstance(raw_token, str):
+        raise ValueError("cf config oauth_token is not a string")
+    token = raw_token.strip()
     expires = float("inf")
-    if cfg.get("expiration_time"):
+    raw_exp = cfg.get("expiration_time")
+    if isinstance(raw_exp, str) and raw_exp:
         try:
-            exp = datetime.fromisoformat(
-                cfg["expiration_time"].replace("Z", "+00:00"))
+            exp = datetime.fromisoformat(raw_exp.replace("Z", "+00:00"))
             expires = exp.timestamp()
         except ValueError:
             pass
@@ -95,10 +102,21 @@ def _run_cf(*args: str) -> str:
 
 
 def _cf_account_id() -> str:
-    out = _run_cf("auth", "whoami")
-    blob = out[out.find("{"):out.rfind("}") + 1]
-    for account in json.loads(blob).get("accounts", []):
-        return str(account["id"])
+    # every failure mode (missing CLI, no login, non-JSON or unexpected
+    # output, timeout) returns "" so account_id() raises its guidance
+    try:
+        out = _run_cf("auth", "whoami")
+        data = json.loads(out[out.find("{"):out.rfind("}") + 1])
+        if not isinstance(data, dict):
+            return ""
+        accounts = data.get("accounts", [])
+        if not isinstance(accounts, list):
+            return ""
+        for account in accounts:
+            if isinstance(account, dict) and "id" in account:
+                return str(account["id"])
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
     return ""
 
 

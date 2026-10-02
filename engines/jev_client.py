@@ -102,6 +102,8 @@ class JevClient:
         # Cloudflare /ai/run wraps payloads in a v4 envelope
         # ({"success": true, "result": {model, answers, usage}}); unwrap
         # so every System One caller sees the same flat shape
+        if not isinstance(payload, dict):
+            raise RuntimeError(f"Jev response is not an object: {payload!r:.300}")
         if "answers" not in payload and isinstance(payload.get("result"), dict):
             payload = payload["result"]
         if "answers" not in payload:
