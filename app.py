@@ -1477,12 +1477,14 @@ def build_ollaya_tab():
                        [o_model, o_text, o_labels, o_question], o_table)
 
 
-# -------------------------------------------------- OpenRouter (hosted) tab
-# The eleven OpenRouter-hosted systems (same names and model ids as
+# ------------------------------------------- hosted decision APIs tab
+# The OpenRouter-hosted systems (same names and model ids as
 # bench_spectrum.py): four System One decision engines — Kev and Solar
 # Decide answer one choice question, Span-01 scores one noul question per
 # label — and seven rerank endpoints used as decision engines via argmax
-# over per-label relevance.
+# over per-label relevance. Plus Cloudflare's Clef / Clef-flash on
+# Workers AI (engines/clef_client.py: cf CLI session token or
+# CLOUDFLARE_AUTH_TOKEN), same choice-question mapping.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
@@ -1499,26 +1501,34 @@ OPENROUTER_RERANKERS = {
     "cohere-rerank-4-fast (OpenRouter)": "cohere/rerank-4-fast",
     "cohere-rerank-v3.5 (OpenRouter)": "cohere/rerank-v3.5",
 }
+CLEF_MODELS = {
+    "Clef (Workers AI)": "clef",
+    "Clef-flash (Workers AI)": "clef-flash",
+}
 
 
 def build_openrouter_tab():
     import gradio as gr
 
-    with gr.Tab("OpenRouter (hosted)"):
-        gr.Markdown("### The OpenRouter-hosted systems, live\n"
-                    "The eleven hosted systems from the benchmark tabs: "
+    with gr.Tab("Hosted decision APIs"):
+        gr.Markdown("### The hosted systems, live\n"
+                    "The thirteen hosted systems from the benchmark tabs: "
                     "Kev 4B and Solar Decide answer one choice question, "
                     "Span-01 / Span-01 Lite "
                     "score one noul question per label, and the seven "
                     "rerankers score one (instruction, label) pair per "
                     "label (argmax = decision). Requests leave the machine "
                     "(non-ZDR providers, † in README; Solar Decide also "
-                    "has a ZDR Upstage endpoint, unused here); needs "
-                    "`OPENROUTER_API_KEY` in the repo-root `.env`. Each "
-                    "click is one metered API request (free tiers: "
-                    "Span-01 Lite, nemotron).")
+                    "has a ZDR Upstage endpoint, unused here); the "
+                    "OpenRouter systems need `OPENROUTER_API_KEY` in the "
+                    "repo-root `.env`, the Clef systems need a one-time "
+                    "`cf auth login` (or `CLOUDFLARE_AUTH_TOKEN`; "
+                    "Cloudflare commits to not reading/storing/training "
+                    "on requests). Each click is one metered API request "
+                    "(free tiers: Span-01 Lite, nemotron).")
         oro_model = gr.Dropdown(
-            choices=list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS),
+            choices=list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
+            + list(CLEF_MODELS),
             value="qwen3-reranker-8b (OpenRouter)", label="System")
         oro_text = gr.Textbox(
             label="Text",
@@ -1539,7 +1549,8 @@ def build_openrouter_tab():
             labels = parse_labels(labels_csv)
             if not text or not labels:
                 return {"error": "provide text and at least one label"}
-            if not openrouter_client.load_openrouter_key():
+            if (system not in CLEF_MODELS
+                    and not openrouter_client.load_openrouter_key()):
                 return {"error": "no OPENROUTER_API_KEY in repo-root .env "
                                  "(see engines/openrouter_client.py)"}
             try:
@@ -1557,10 +1568,16 @@ def build_openrouter_tab():
                     return {"endpoint": "rerank",
                             "decision": next(iter(ranked)),
                             "relevance scores": ranked}
-                client = openrouter_client.systemone(
-                    OPENROUTER_SYSTEMONE[system])
-                if system in ("Kev 4B (OpenRouter)",
-                              "Solar Decide (OpenRouter)"):
+                if system in CLEF_MODELS:
+                    from engines.clef_client import clef
+
+                    client = clef(CLEF_MODELS[system])
+                else:
+                    client = openrouter_client.systemone(
+                        OPENROUTER_SYSTEMONE[system])
+                if (system in ("Kev 4B (OpenRouter)",
+                               "Solar Decide (OpenRouter)")
+                        or system in CLEF_MODELS):
                     payload = client.ask({"task": task}, {"q": choice(
                         f'What is the overall {task} of this text: '
                         f'"{text}"', {label: None for label in labels})})
@@ -2623,12 +2640,13 @@ def main() -> None:
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
                     "Lumma, Julia, Intern-Decision, so1, the cloud Jev, "
                     "the eleven "
-                    "OpenRouter-hosted systems and the five Ollaya-served "
+                    "OpenRouter-hosted systems, the two Clef models on "
+                    "Cloudflare Workers AI and the five Ollaya-served "
                     "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 51 systems across thirty "
+                    "measured numbers for all 53 systems across thirty "
                     "families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)

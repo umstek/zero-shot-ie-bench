@@ -99,6 +99,11 @@ class JevClient:
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", "replace")[:300]
             raise RuntimeError(f"Jev HTTP {exc.code}: {detail}") from exc
+        # Cloudflare /ai/run wraps payloads in a v4 envelope
+        # ({"success": true, "result": {model, answers, usage}}); unwrap
+        # so every System One caller sees the same flat shape
+        if "answers" not in payload and isinstance(payload.get("result"), dict):
+            payload = payload["result"]
         if "answers" not in payload:
             raise RuntimeError(f"Jev response missing answers: {payload!r:.300}")
         if self.usage_sink:
