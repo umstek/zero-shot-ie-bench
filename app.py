@@ -1,10 +1,10 @@
-"""Interactive demo + benchmarks for fifty-four zero-shot IE/classification
-systems across thirty families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for fifty-seven zero-shot IE/classification
+systems across thirty-one families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
-nanodiff, Lumma, Julia, Intern-Decision, so1, Jev (cloud), OpenRouter
-(hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the fifty-one
+nanodiff, Lumma, Julia, Intern-Decision, K2-Type, so1, Jev (cloud),
+OpenRouter (hosted) and the Ollaya
+local daemon; benchmark tabs hold the measured numbers for the fifty-four
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
 seven rerankers) included.
@@ -828,34 +828,34 @@ def build_compare_tab():
     import gradio as gr
 
     gr.Markdown("""
-## Feature comparison — twenty-five families
+## Feature comparison — twenty-six families
 
 GLiNER 2.5 = small/base/multi + decision-tuned Decide checkpoints ·
 GLiClass = edge/modern-base/base/large · Lumma = 0.15B/0.6B/4B ·
 Intern-Decision = 0.8B/2B/4B —
 per-size scores live in the benchmark tabs. The four Ollaya families
 run on the local Ollaya daemon (`ollaya serve`, System One contract
-on :11435); Lumma, Julia and Intern-Decision spawn one-shot
+on :11435); Lumma, Julia, Intern-Decision and K2-Type spawn one-shot
 `demos/*_demo.py --serve` runners under `.venv-von`.
 
-| | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) | Lumma | Julia | Intern-Decision |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Ability group** | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) | Decision engine (local, NLI entailment) | Decision engine (local, endpoint head) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, one forward over packed questions) | Decision engine (local, encoder + decision head) | Decision engine (local, masked-slot symbol logits) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) | ✅ (all questions one forward) | ✅ (questions independently scored in one batch) | ✅ (per text, all questions one forward — up to 16 questions/request) |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema (3 fields + AR baseline demoed) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ enum rubric (demoed) | ❌ | ✅ score (demoed) | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean (demoed) | ❌ | ✅ noul (demoed) | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Image input | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request — see the tab's image section) |
-| Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) |
-| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and still the slowest here (1.4x the next-slowest, winnow e4b) | the pre-decision-model classic: entailment scoring, one premise–hypothesis pair per option | vLLM Semantic Router Decision 1.0; 17.49 on Decision Index 0.2 | the full JevBench-#3 build on llama.cpp; first local 100% multilingual here | Gemma 4 E4B fine-tune; 0.722 on Ollaya's typed-decisions | one forward over packed state+question rows, no generation; the 4B leads local multilingual (96.3%) on the reference PyTorch kernels | mmBERT-small encoder + decision head, full softmax over 2–20 described options; rare-tier 56% at 144M and the fastest local decision engine here (0.067 s/q) | Qwen3.5 decision fine-tune — option-symbol logits read at the masked `<decision>` slots of an assistant JSON skeleton, one causal forward answers up to 16 questions; per-checkpoint calibration temperature; fp32 on CPU (bf16 is ~7x slower here) |
+| | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) | Lumma | Julia | Intern-Decision | K2-Type |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Ability group** | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) | Decision engine (local, NLI entailment) | Decision engine (local, endpoint head) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, one forward over packed questions) | Decision engine (local, encoder + decision head) | Decision engine (local, masked-slot symbol logits) | Decision engine (local, pointer head over packed questions) |
+| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text classification | ✅ | ✅ | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice |
+| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) | ✅ (all questions one forward) | ✅ (questions independently scored in one batch) | ✅ (per text, all questions one forward — up to 16 questions/request) | ✅ (all questions one forward) |
+| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema (3 fields + AR baseline demoed) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ enum rubric (demoed) | ❌ | ✅ score (demoed) | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score | ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean (demoed) | ❌ | ✅ noul (demoed) | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul | ✅ noul |
+| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | 83% over 9 langs (rare tier 56%) |
+| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Image input | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request — see the tab's image section) | ❌ |
+| Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) |
+| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) | Apache 2.0 |
+| **Notable** | boundary architecture; decision-tuned Decide sibling is the best local cls on the mixed pool (85.4%), still NER-capable (61%) | layout-aware + embeddings | purpose-built classifier, 16 ms/text at edge size | neutral cross-encoders scoring text+label pairs; bge doubles as a decision engine at 72.9% here (near-zero on JevBench's composite) | RLCD calibration, script-detecting Router | TypeSafe /v1/systemone protocol-compatible | turns any ChatML LLM into a decision engine via logprobs | 255-choice cap, ECE 0.246 (3rd-party measured) | open-weight Jev reconstruction, LoRA + pointer head | permutation-equivariant candidate head over Qwen3-0.6B | strongest local decision engine here (83.3%) | Gated DeltaNet hybrid backbone, 256-way slot head, Thai/English | RLCD-trained ModernBERT decision head with abstention | lite build of JevBench's #3 JevK5; label-head encoder (DeBERTa-v3-large) distilled by the jevk5 project | RLCD-trained LFM2.5 with constrained-decoding engine (vendored `engines/rlcd_engine/`) | calibrated per-option score head; chance here (22.9%) as on JevBench | packed one-pass candidate scoring, fla kernels on the CPU reference impl; 83% multilingual | bidirectional diffusion LM — the only non-autoregressive system here; chance at 350M and still the slowest here (1.4x the next-slowest, winnow e4b) | the pre-decision-model classic: entailment scoring, one premise–hypothesis pair per option | vLLM Semantic Router Decision 1.0; 17.49 on Decision Index 0.2 | the full JevBench-#3 build on llama.cpp; first local 100% multilingual here | Gemma 4 E4B fine-tune; 0.722 on Ollaya's typed-decisions | one forward over packed state+question rows, no generation; the 4B leads local multilingual (96.3%) on the reference PyTorch kernels | mmBERT-small encoder + decision head, full softmax over 2–20 described options; rare-tier 56% at 144M and the fastest local decision engine here (0.067 s/q) | Qwen3.5 decision fine-tune — option-symbol logits read at the masked `<decision>` slots of an assistant JSON skeleton, one causal forward answers up to 16 questions; per-checkpoint calibration temperature; fp32 on CPU (bf16 is ~7x slower here) | IFM's 0.9B Jev-style decision model — state encoded once, questions isolated by a block-causal attention mask, a pointer head scores each option's hidden state against its question's (one forward, no generation); 0.762 JevBench public; speaks TypeSafe's /v1/systemone wire format (upstream server is CUDA-only — this repo loads it in-process on CPU) |
 
 Three benchmark tabs follow from this table: **Classification** (every
 system, one mixed pool), **Extraction** (the six span-producing systems)
@@ -2531,6 +2531,70 @@ def build_intern_decision_tab():
                              it_qcrit, it_qstate], it_img_out)
 
 
+# ------------------------------------------------------------- K2-Type tab
+def build_k2type_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("K2-Type 0.9B (local)"):
+        gr.Markdown("### K2-Type 0.9B — IFM's typed-decision model\n"
+                    "A 0.9B Jev-style decision model (K2-Horizon-0.9B "
+                    "backbone): a state and typed questions "
+                    "(choice/score/noul) are packed into one sequence and "
+                    "answered by a single forward pass — the state is "
+                    "encoded once, questions are isolated by a "
+                    "block-causal attention mask, and a pointer head "
+                    "scores every option's hidden state against its "
+                    "question's. No generation, ever. Apache 2.0, 0.762 "
+                    "on the JevBench public set. It runs from the local "
+                    "`C:/src/K2-Type-0.9B` snapshot in `.venv-von` "
+                    "(the upstream `jev.serve` server hardcodes a CUDA "
+                    "GPU; engines/k2type_client.py loads it in-process "
+                    "on the CPU): each click spawns "
+                    "`demos/k2type_demo.py --serve`, which loads the "
+                    "weights once and answers every line in that single "
+                    "process (see README).")
+        kt_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        kt_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        kt_task = gr.Textbox(label="Task word (phrases the question)",
+                             value="sentiment")
+        kt_button = gr.Button("Decide", variant="primary")
+        kt_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_k2type(texts_block, labels_csv, task):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "k2type_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"texts": texts, "task": task,
+                                      "labels": labels}),
+                    capture_output=True, text=True, timeout=600)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        kt_button.click(run_k2type, [kt_text, kt_labels, kt_task], kt_out)
+
+
 # ----------------------------------------------------------------- so1 tab
 _SO1_DECIDER = None
 
@@ -2654,7 +2718,7 @@ def build_so1_tab():
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="18-family demo + benchmark")
+    parser = argparse.ArgumentParser(description="22-tab demo + benchmark")
     parser.add_argument("--port", type=int, default=7860)
     args = parser.parse_args()
 
@@ -2680,7 +2744,8 @@ def main() -> None:
                     "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
-                    "Lumma, Julia, Intern-Decision, so1, the cloud Jev, "
+                    "Lumma, Julia, Intern-Decision, K2-Type, so1, the "
+                    "cloud Jev, "
                     "the eleven "
                     "OpenRouter-hosted systems, the two Clef models on "
                     "Cloudflare Workers AI and the five Ollaya-served "
@@ -2688,8 +2753,8 @@ def main() -> None:
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 53 systems across thirty "
-                    "families.")
+                    "measured numbers for all 54 systems across "
+                    "thirty-one families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
         build_glirel_tab()
@@ -2707,6 +2772,7 @@ def main() -> None:
         build_lumma_tab()
         build_julia_tab()
         build_intern_decision_tab()
+        build_k2type_tab()
         build_so1_tab()
         build_jev_tab()
         build_ollaya_tab()

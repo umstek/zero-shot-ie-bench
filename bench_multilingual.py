@@ -24,6 +24,7 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system "Intern-Decision 0.8B"
     .venv-von/Scripts/python bench_multilingual.py --system "Intern-Decision 2B"
     .venv-von/Scripts/python bench_multilingual.py --system "Intern-Decision 4B"
+    .venv-von/Scripts/python bench_multilingual.py --system "K2-Type 0.9B (local)"
 
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
@@ -231,7 +232,7 @@ OPENROUTER_RERANKERS = {
 # name -> tag map and the client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
-from engines import intern_decision_client, julia_client
+from engines import intern_decision_client, julia_client, k2type_client
 
 OLLAYA = OLLAYA_MODELS
 # FrontiersMind's Lumma-Fev typed-decision family, in-process via the
@@ -254,6 +255,11 @@ JULIA = {"Julia 1 144M": julia_client.MODEL_ID}
 INTERN_DECISION = {"Intern-Decision 0.8B": "0.8B",
                    "Intern-Decision 2B": "2B",
                    "Intern-Decision 4B": "4B"}
+# IFM's K2-Type-0.9B typed-decision model, in-process via the runtime
+# shipped inside its HF snapshot (engines/k2type_client.py loads the local
+# C:\src\K2-Type-0.9B snapshot; see bench_spectrum.py for the notes); same
+# names across benchmarks so results files line up
+K2TYPE = {"K2-Type 0.9B (local)": k2type_client.MODEL_ID}
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
@@ -263,7 +269,7 @@ ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                   "so1 (Qwen2.5-0.5B)", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                  "Verdict 151M (local)"]
+                  "Verdict 151M (local)", "K2-Type 0.9B (local)"]
                + list(OLLAYA) + list(LUMMA) + list(JULIA)
                + list(INTERN_DECISION))
 
@@ -616,6 +622,34 @@ def run_clef(texts, model_id, tracker=None):
     return preds, statistics.mean(lat)
 
 
+def run_k2type(texts):
+    """IFM's K2-Type-0.9B, in-process (engines/k2type_client.py loads the
+    C:\\src\\K2-Type-0.9B snapshot on the CPU): same per-text request shape
+    as run_clef (string instructions with the text restated, described
+    criteria - the option texts the pointer head scores; the shape probe
+    tied every variant at 8/8, see bench_spectrum.py), one predict() per
+    text so latency is comparable with the other local models."""
+    from engines import k2type_client
+    from engines.jev_client import choice
+
+    engine = k2type_client.load_engine()
+    # one untimed predict pays torch's first-pass init before the timed
+    # loop, like the other in-process engines
+    engine.predict({"task": "warmup"},
+                   {"w": choice('Sentiment of "good"?',
+                                {"positive": None, "negative": None})})
+    preds, lat = [], []
+    for text in texts:
+        question = choice(
+            f'What is the overall sentiment of this text: "{text}"',
+            dict(SENTIMENT_LABELS))
+        t0 = time.perf_counter()
+        out = engine.predict({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
 def run_systemone(texts, port: int, model: str):
     """Local System One server (Kev/decider/OpenThai), one request per text
     so latency is comparable with the other local models. String
@@ -768,6 +802,8 @@ def main() -> None:
         preds, lat = run_systemone(texts, 8029, "openthai-systemone")
     elif name == "Verdict 151M (local)":
         preds, lat = run_verdict(texts)
+    elif name in K2TYPE:
+        preds, lat = run_k2type(texts)
     elif name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)"):
         from engines.openrouter_client import UsageTracker
 
@@ -829,7 +865,7 @@ def main() -> None:
     # Lumma's, Julia's and Intern-Decision's first-pass init get the
     # untimed warm-up; the hosted endpoints are stateless, so every
     # request is timed
-    warmed = ((name.startswith(("Kev", "decider", "OpenThai"))
+    warmed = ((name.startswith(("Kev", "decider", "OpenThai", "K2-Type"))
                or name in OLLAYA or name in LUMMA or name in JULIA
                or name in INTERN_DECISION)
               and name != "Kev 4B (OpenRouter)")
