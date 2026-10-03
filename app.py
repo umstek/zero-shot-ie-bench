@@ -470,9 +470,11 @@ def cost_bars(df: pd.DataFrame, title: str):
 # and the README PNG on the house stack. Accuracy is the vertical pole;
 # cost (log) runs to the lower-right and latency to the lower-left,
 # both foreshortened by the pitch; dashed drop lines and floor shadows
-# carry each marker's depth. Each system wears its own hue, and the
-# faint dashed leader tying it to the accuracy pole at its own height
-# repeats that hue in a lightened shade.
+# carry each marker's depth. Each system wears its own hue; the label
+# prints in that hue darkened for contrast, the faint dashed leader
+# tying the marker to the accuracy pole at its own height repeats the
+# hue in a lightened shade - so a label matches its dot even where the
+# packer had to displace it through the dense cluster.
 _ISO_YAW = math.radians(45)     # cost axis to the lower-right
 _ISO_PITCH = math.radians(20)   # camera elevation over the floor
 _COST_SPEED_W, _COST_SPEED_H = 880, 560
@@ -490,6 +492,13 @@ def _lighten(hex_color: str, amount: float) -> str:
     channels = [int(hex_color[i:i + 2], 16) for i in (1, 3, 5)]
     return "#" + "".join(
         f"{round(c + (255 - c) * amount):02x}" for c in channels)
+
+
+def _darken(hex_color: str, amount: float) -> str:
+    """Blend a #rrggbb color toward black by `amount` (0..1)."""
+    channels = [int(hex_color[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(
+        f"{round(c * (1 - amount)):02x}" for c in channels)
 
 
 def _iso_basis():
@@ -642,6 +651,7 @@ def _cost_speed_geometry(df: pd.DataFrame):
     rank = {n: i for i, n in enumerate(sorted(names))}
     colors = [_DOT_COLORS[rank[n] % len(_DOT_COLORS)] for n in names]
     leader_colors = [_lighten(c, 0.55) for c in colors]
+    label_colors = [_darken(c, 0.3) for c in colors]
 
     # greedy label placement, cost_scatter's rules plus the room the
     # denser 3D cluster needs: rightmost points claim their space
@@ -688,7 +698,8 @@ def _cost_speed_geometry(df: pd.DataFrame):
             "labels_acc": labels_acc, "ang_cost": ang_cost,
             "ang_lat": ang_lat, "titles": titles, "points": points,
             "feet": feet, "names": names, "disp": disp, "assign": assign,
-            "colors": colors, "leader_colors": leader_colors}
+            "colors": colors, "leader_colors": leader_colors,
+            "label_colors": label_colors}
 
 
 def cost_speed_scatter(df: pd.DataFrame, title: str):
@@ -700,8 +711,10 @@ def cost_speed_scatter(df: pd.DataFrame, title: str):
     dashed line to its floor shadow so depth reads without rotation,
     plus a fainter dashed leader to the accuracy pole at its own
     height so the vertical axis reads directly. Each system wears its
-    own hue (labels sit next to the dots, so no legend) and its
-    leader repeats it in a lightened shade.
+    own hue — its label prints in that hue darkened for contrast, so
+    a label matches its dot even where the packer displaced it through
+    the dense high-accuracy cluster — and its leader repeats the hue
+    in a lightened shade (labels sit next to the dots, so no legend).
     The projected axes carry shape, not lookup - tooltips hold the
     exact values. Labels reuse cost_scatter's greedy pixel-space
     collision search; rows without a latency measurement stay off the
@@ -779,6 +792,7 @@ def cost_speed_scatter(df: pd.DataFrame, title: str):
                        _y=[p[1] for p in g["points"]],
                        Label=g["disp"],
                        _c=g["colors"],
+                       _c_dark=g["label_colors"],
                        _side=[a[0] for a in g["assign"]],
                        _dy=[a[1] for a in g["assign"]])
     layers.append(
@@ -796,8 +810,10 @@ def cost_speed_scatter(df: pd.DataFrame, title: str):
             alt.Chart(sub)
             .mark_text(align="left" if side == "right" else "right",
                        dx=11 if side == "right" else -11, dy=int(dy),
-                       fontSize=10)
-            .encode(text="Label:N", **enc()))
+                       fontSize=10, fontWeight=600)
+            .encode(text="Label:N",
+                    color=alt.Color("_c_dark:N", scale=None, legend=None),
+                    **enc()))
     return alt.layer(*layers).interactive().properties(
         width=_COST_SPEED_W, height=_COST_SPEED_H)
 
