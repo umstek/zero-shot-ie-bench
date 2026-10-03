@@ -395,6 +395,8 @@ images (regenerate with `python make_chart_images.py`):
 
 ![Measured cost per question, metered hosted systems (ranked)](docs/charts/cls_cost_bars.png)
 
+![Accuracy vs cost vs latency, metered hosted systems (isometric)](docs/charts/cls_cost_speed.png)
+
 ![Accuracy vs question difficulty](docs/charts/cls_spectrum.png)
 
 ![Mean latency per question](docs/charts/cls_latency.png)
