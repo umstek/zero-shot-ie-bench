@@ -136,6 +136,41 @@ _SCATTER_W, _SCATTER_H = 1100, 720
 COST_UNREPORTED = {"Jev"}
 
 
+def clef_derived_cost(system: str, usage: dict):
+    """The Clef pair's run cost: Cloudflare reports input tokens but no
+    $, so it is derived as measured tokens × the Workers AI list price
+    (engines/clef_client.py holds the prices — the same derivation as the
+    README's cost table). None for non-Clef systems or nothing to derive
+    from, so callers fall back to the reported cost_usd."""
+    model = CLEF_MODELS.get(system)
+    if model is None or not usage.get("input_tokens"):
+        return None
+    from engines.clef_client import INPUT_USD_PER_MTOK
+
+    return usage["input_tokens"] / 1_000_000 * INPUT_USD_PER_MTOK[model]
+
+
+def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
+    """(System, Accuracy %, $ per question) for the metered hosted
+    systems: provider-reported cost, else the Clef pair's derived
+    tokens × list price — so the Clef pair charts with the metered
+    systems instead of dropping off the price charts. $0 free tiers
+    (Span-01 Lite, Nemotron) and Jev's unreported cost stay off a cost
+    axis (the table in the tab still lists them)."""
+    rows = []
+    for s, v in systems.items():
+        usage = v.get("usage")
+        if not isinstance(usage, dict) or not usage.get("paid_requests"):
+            continue
+        run_cost = usage["cost_usd"] or clef_derived_cost(s, usage)
+        if s in COST_UNREPORTED or not run_cost:
+            continue
+        rows.append({"System": s,
+                     "Accuracy %": round(v["cls_accuracy"] * 100, 1),
+                     "$ per question": run_cost / n_q})
+    return pd.DataFrame(rows)
+
+
 def _scatter_label_layers(df: pd.DataFrame):
     """Split points into (dy, side, sub-frame) label groups so labels of
     neighboring points don't print through each other.
@@ -285,15 +320,17 @@ _COST_W, _COST_H = 860, 420
 
 
 def cost_scatter(df: pd.DataFrame, title: str):
-    """Accuracy vs measured cost per question for the metered hosted
-    systems (callers filter to usage-reported cost > 0; free tiers and
-    unreported-cost systems stay off a cost axis). Labels are placed by a
+    """Accuracy vs cost per question for the metered hosted systems
+    (callers filter to provider-reported cost > 0, else the Clef pair's
+    derived tokens × list price; free tiers and unreported-cost systems
+    stay off a cost axis). Labels are placed by a
     greedy pixel-space collision search (est. 6.5 px/char, same yardstick
     as the tradeoff packer): left-aligned off the marker, flipping side
     and dy until clear of every other marker and placed label, so
     near-coincident pairs (Span-01 / Kev 4B at ~1e-6) and vertical
     neighbors (cohere v3.5 under 4-fast) both resolve. Display names drop
-    the " (OpenRouter)" suffix — redundant on an all-OpenRouter chart and
+    the " (OpenRouter)" / " (Workers AI)" suffixes — redundant on an
+    all-hosted chart and
     85 px the right edge can't spare; tooltips keep the full system
     name."""
     floor = 1e-7  # $0.0000001/question: a decade below the cheapest paid tier
@@ -307,8 +344,9 @@ def cost_scatter(df: pd.DataFrame, title: str):
     def px(v: float) -> float:
         return (math.log10(v) - math.log10(floor)) / log_span * _COST_W
 
-    plot["Label"] = plot["System"].str.replace(" (OpenRouter)", "",
-                                               regex=False)
+    plot["Label"] = (plot["System"]
+                     .str.replace(" (OpenRouter)", "", regex=False)
+                     .str.replace(" (Workers AI)", "", regex=False))
     plot["_side"], plot["_dy"] = "right", -13
     pts = [(px(row["$ per question"]),
             (100 - row["Accuracy %"]) / 100 * _COST_H,
@@ -353,7 +391,7 @@ def cost_scatter(df: pd.DataFrame, title: str):
         .mark_circle(size=90)
         .encode(
             x=alt.X("$ per question:Q", scale=xscale,
-                    title="Measured cost per question, $ (log)"),
+                    title="Cost per question, $ (log; Clef ≈ derived)"),
             y=alt.Y("Accuracy %:Q", scale=yscale, title="Accuracy %"),
             tooltip=[alt.Tooltip("System:N"),
                      alt.Tooltip("Accuracy %:Q", format=".1f"),
@@ -375,9 +413,10 @@ def cost_scatter(df: pd.DataFrame, title: str):
 
 
 def cost_bars(df: pd.DataFrame, title: str):
-    """Measured cost per classification question, ranked cheapest-first,
-    for the metered hosted systems (free tiers stay off a cost axis).
-    Log axis; the floor clip is a guard in case a $0 row ever slips
+    """Cost per classification question, ranked cheapest-first,
+    for the metered hosted systems (free tiers stay off a cost axis;
+    the Clef pair's bars are the derived tokens × list price). Log axis;
+    the floor clip is a guard in case a $0 row ever slips
     through, printing "$0 (free tier)"."""
     floor = 1e-7
     plot = df.copy()
@@ -396,7 +435,7 @@ def cost_bars(df: pd.DataFrame, title: str):
             y=alt.Y("System:N", sort=order, title=None,
                     axis=alt.Axis(labelFontSize=12, labelLimit=280)),
             x=alt.X("_v:Q", scale=xscale,
-                    title="Measured cost per question, $ (log)",
+                    title="Cost per question, $ (log; Clef ≈ derived)",
                     axis=alt.Axis(format=".0e")),
             x2=alt.X2("_floor:Q"),
             tooltip=[alt.Tooltip("System:N"), alt.Tooltip("_text:N")],
@@ -523,11 +562,16 @@ def build_classification_tab():
         cost_rows = []
         for s, v in hosted.items():
             usage = v["usage"]
-            cost = usage["cost_usd"]
-            cost_cell = ("not reported" if s in COST_UNREPORTED
-                         or usage.get("cost_reported") is False
-                         else f"${cost:.6f}" if cost < 0.01
-                         else f"${cost:.4f}")
+            derived = clef_derived_cost(s, usage)
+            if derived is not None:
+                cost_cell = f"≈${derived:.6f} (derived)"
+            elif (s in COST_UNREPORTED
+                    or usage.get("cost_reported") is False):
+                cost_cell = "not reported"
+            else:
+                cost = usage["cost_usd"]
+                cost_cell = (f"${cost:.6f}" if cost < 0.01
+                             else f"${cost:.4f}")
             # absent token fields read "not reported", not 0 (stored
             # results from before the flags default to shown)
             tokens_cell = ("not reported"
@@ -541,16 +585,14 @@ def build_classification_tab():
                      datatype=["str", "str", "number", "str"],
                      label="Measured provider accounting for the hosted "
                            "systems (usage blocks in API responses; Jev's "
-                           "provider reports tokens but no cost)")
+                           "provider reports tokens but no cost, the Clef "
+                           "pair's ≈ rows are Workers AI list price × "
+                           "measured tokens)")
         # the cost charts carry metered systems only: $0 free tiers
         # (Span-01 Lite, Nemotron) and Jev's unreported cost stay in the
-        # table above but not on a cost axis
-        cost_summary = pd.DataFrame([
-            {"System": s,
-             "Accuracy %": round(v["cls_accuracy"] * 100, 1),
-             "$ per question": v["usage"]["cost_usd"] / n_q}
-            for s, v in hosted.items()
-            if s not in COST_UNREPORTED and v["usage"]["cost_usd"] > 0])
+        # table above but not on a cost axis; the Clef pair charts at its
+        # derived cost (cost_summary_frame)
+        cost_summary = cost_summary_frame(systems, n_q)
         if len(cost_summary):
             gr.Plot(cost_scatter(
                 cost_summary,
@@ -558,8 +600,8 @@ def build_classification_tab():
                 "is better"))
             gr.Plot(cost_bars(
                 cost_summary,
-                "Measured cost per question, metered hosted systems "
-                "(ranked)"))
+                "Cost per question, metered hosted systems (ranked; "
+                "Clef ≈ derived)"))
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []
