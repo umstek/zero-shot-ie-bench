@@ -103,7 +103,8 @@ def _ensure_runtime_on_path(size=DEFAULT_SIZE) -> None:
     """Put the snapshot on sys.path so `import decision2` resolves
     (idempotent). Unconditional insert: a FAILED earlier load could
     leave a stale path entry, and a "not already present" guard would
-    then import the wrong snapshot's package — index 0 always wins."""
+    then import the wrong snapshot's package — remove every existing
+    occurrence, then index 0 always wins."""
     size = normalize_size(size)
     home = model_dir(size)
     if not os.path.isdir(os.path.join(home, "decision2")):
@@ -111,8 +112,9 @@ def _ensure_runtime_on_path(size=DEFAULT_SIZE) -> None:
             f"no {SIZES[size]} snapshot at {home} — pull it with "
             f"`hf download vllm-sr/{SIZES[size]} --local-dir {home}` "
             "(or point DECISION2_HOME at the prefix directory)")
-    if home not in sys.path:
-        sys.path.insert(0, home)
+    while home in sys.path:
+        sys.path.remove(home)
+    sys.path.insert(0, home)
 
 
 class Decision2Engine:
