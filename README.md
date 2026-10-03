@@ -42,7 +42,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [decision](https://ollaya.dev/library/decision) (`decision` via Ollaya) | local decision engine (vLLM Semantic Router Decision 1.0: Qwen3.5-0.8B backbone + endpoint head, one forward pass per question) | 0.75B | Apache 2.0 | $0 · local |
 | [JevK5 4B](https://huggingface.co/alibiserikbay/JevK5-GGUF) (`jevk5` via Ollaya, Q8_0 GGUF) | local decision LLM (the full JevK5 v0.3 on llama.cpp; letters' logits, one pass per question) | 4B | Apache 2.0 | $0 · local |
 | [Winnow E4B](https://huggingface.co/EldanRing/Winnow-E4B) (`winnow:e4b` via Ollaya, Q8_0 GGUF) | local decision LLM (EldanRing, fine-tuned from Gemma 4 E4B on llama.cpp; option letters' logits) | E4B (8 GB Q8_0) | Apache 2.0 | $0 · local |
-| [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | proprietary API | metered · n/r ‡ |
+| [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | proprietary API | metered · $5.3e-6/q ‡ |
 | [Kev 4B](https://openrouter.ai/jaredpalmer/kev-4b) (`jaredpalmer/kev-4b` via OpenRouter) | cloud decision engine (same System One contract as local Kev, hosted) | 4B | proprietary API | metered · $1.5e-6/q † |
 | [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
 | [Clef](https://developers.cloudflare.com/workers-ai/models/clef/) / [Clef-flash](https://developers.cloudflare.com/workers-ai/models/clef-flash/) (`clef` / `clef-flash` on Cloudflare Workers AI) | cloud typed-decision engines (Cloudflare's Jev-API-compatible decision models over frozen Qwen3.8-27B / Qwen3.5-9B + rank-256 routing adapters: choice/score/noul probabilities from one non-autoregressive scoring pass, vision-capable state, 64k context) | 27B / 9B | API metered · Apache 2.0 weights on HF | metered · $2.3e-5 / $8.6e-6/q |
@@ -61,7 +61,8 @@ marks who bills per request: `$0 · local` systems cost no API money
 (only CPU time), `metered` systems bill per token/search with the
 **measured** $ per mixed-pool question shown (see [Measured cost per
 hosted run](#measured-cost-per-hosted-run)); ‡ Jev's provider reports
-tokens but no cost, so it has no measured $ figure.
+tokens but no $, so its figures are derived — list price × measured
+tokens, the same rule as the Clef pair's numbers.
 
 Four mechanism families are represented — **extractors** (GLiNER 2.5,
 GLiFormer: spans/entities/relations/records, plus GLiREL: zero-shot
@@ -334,9 +335,10 @@ Takeaways:
 Each hosted system's results entry carries the provider's own usage
 accounting — the `usage` block billed per API response, never
 reconstructed from list prices. Measured on these exact runs (one pass;
-48 mixed-pool questions / 54 multilingual texts). One exception:
-Cloudflare reports input tokens but no $, so the two Clef rows are
-list price ($0.24 / $0.09 per M input) × measured tokens:
+48 mixed-pool questions / 54 multilingual texts). Two exceptions:
+Cloudflare and TypeSafe report input tokens but no $, so the Clef
+and Jev rows are list price ($0.24 / $0.09 / $0.042 per M input)
+× measured tokens:
 
 | System | 48-q run | 54-text run | $ / question |
 |---|---|---|---|
@@ -346,6 +348,7 @@ list price ($0.24 / $0.09 per M input) × measured tokens:
 | voyage-rerank-2.5-lite † | $0.000068 | $0.000115 | $0.0000014 |
 | Kev 4B (OpenRouter) | $0.000072 | $0.000106 | $0.0000015 |
 | voyage-rerank-2.5 † | $0.000170 | $0.000287 | $0.0000035 |
+| Jev (cloud) ‡ | $0.00026 | $0.00027 | $0.0000053 |
 | Clef-flash (Workers AI) | $0.00041 | $0.00078 | $0.0000086 |
 | Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Clef (Workers AI) | $0.0011 | $0.0021 | $0.000023 |
@@ -353,17 +356,16 @@ list price ($0.24 / $0.09 per M input) × measured tokens:
 | cohere-rerank-v3.5 † | $0.048 | $0.054 | $0.0010 |
 | cohere-rerank-4-fast † | $0.096 | $0.108 | $0.0020 |
 | cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
-| Jev (cloud) | — | — | not reported ‡ |
 
 The cost charts plot the **metered** systems only — free tiers bill $0
 (Span-01 Lite's plain id is priced $0.0, same as its `:free` twin;
-Nemotron runs on `:free`) and Jev reports no cost (‡ tokens only:
-6,094 / 6,430 input across its 2 + 1 batched requests), so it stays
-off them. The Clef pair used to sit out with Jev — same reason, no
-provider-reported $ — but the cost charts now include it at the same
-**derived** numbers as its table rows above: list price × measured
-tokens, computed by `app.cost_summary_frame` from the prices recorded
-in `engines/clef_client.py`, and marked "≈ derived" in the UI. What
+Nemotron runs on `:free`) and stay off them. The Clef pair and Jev
+report tokens but no provider $, so both chart at **derived** numbers
+matching their table rows above: list price × measured tokens,
+computed by `app.cost_summary_frame` from the prices recorded in
+`engines/clef_client.py` and `engines/jev_client.py` (Jev: 6,094 /
+6,430 input tokens across its 2 + 1 batched requests × $0.042/1M),
+and marked "≈ derived" in the UI. What
 the measurements say that the price lists don't: Cohere bills ~2.5 search
 units per rerank request (a 48-q run on 4-pro costs $0.12, not the
 naive 48 × $0.001); kev-4b and Span-01 sit near $1e-6/question — kev

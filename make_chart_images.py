@@ -66,9 +66,9 @@ def spectrum_charts(bench):
     }
 
     # metered systems only (app.cost_summary_frame): $0 free tiers
-    # (Span-01 Lite, Nemotron) and Jev's unreported cost stay out of a
-    # cost chart; the Clef pair charts at its derived tokens × list
-    # price instead of dropping off like before
+    # (Span-01 Lite, Nemotron) stay out of a cost chart; the Clef pair
+    # and Jev chart at derived tokens × list price instead of
+    # dropping off like before
     cost_summary = cost_summary_frame(systems, n_q)
     if len(cost_summary):
         charts["cls_cost"] = cost_scatter(
@@ -78,7 +78,7 @@ def spectrum_charts(bench):
         charts["cls_cost_bars"] = cost_bars(
             cost_summary,
             "Cost per question, metered hosted systems (ranked; "
-            "Clef ≈ derived)")
+            "≈ = derived)")
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []
