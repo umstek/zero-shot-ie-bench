@@ -465,10 +465,26 @@ def cost_bars(df: pd.DataFrame, title: str):
 # and the README PNG on the house stack. Accuracy is the vertical pole;
 # cost (log) runs to the lower-right and latency to the lower-left,
 # both foreshortened by the pitch; dashed drop lines and floor shadows
-# carry each marker's depth.
+# carry each marker's depth. Each system wears its own hue, and the
+# faint dashed leader tying it to the accuracy pole at its own height
+# repeats that hue in a lightened shade.
 _ISO_YAW = math.radians(45)     # cost axis to the lower-right
 _ISO_PITCH = math.radians(20)   # camera elevation over the floor
 _COST_SPEED_W, _COST_SPEED_H = 880, 560
+
+# per-system marker hues (Vega categorical set, extended past ten so
+# the hosted pool has room to grow; past 16 systems hues wrap)
+_DOT_COLORS = ("#4c78a8", "#f58518", "#e45756", "#72b7b2", "#54a24b",
+               "#eeca3b", "#b279a2", "#ff9da6", "#9d755d", "#d67195",
+               "#8cd17d", "#b6992d", "#4a6fe3", "#9c755f", "#96ccc3",
+               "#f0a56a")
+
+
+def _lighten(hex_color: str, amount: float) -> str:
+    """Blend a #rrggbb color toward white by `amount` (0..1)."""
+    channels = [int(hex_color[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(
+        f"{round(c + (255 - c) * amount):02x}" for c in channels)
 
 
 def _iso_basis():
@@ -496,8 +512,9 @@ def _iso_project(cx, cy, cz, basis):
 def _cost_speed_geometry(df: pd.DataFrame):
     """Px-space geometry for cost_speed_scatter: the projected cube's
     axis frame, floor rectangle and ticks, each system's marker + floor
-    shadow, and the markers' greedy label placements - everything the
-    chart draws, before any Altair assembly."""
+    shadow + accuracy-pole leader + hue, and the markers' greedy label
+    placements - everything the chart draws, before any Altair
+    assembly."""
     basis = _iso_basis()
     cost_floor = float(df["$ per question"].min()) * 0.45  # headroom
     cost_top = float(df["$ per question"].max()) * 6       # label room
@@ -534,7 +551,6 @@ def _cost_speed_geometry(df: pd.DataFrame):
     seg_axes = [(px((0.0, 0.0, 0.0)), px(end))
                 for end in ((0.0, 0.0, 1.0), (1.0, 0.0, 0.0),
                             (0.0, 1.0, 0.0))]
-
     o = px((0.0, 0.0, 0.0))
 
     def unit(p1):
@@ -602,14 +618,24 @@ def _cost_speed_geometry(df: pd.DataFrame):
     ]
 
     points, feet, names = [], [], []
+    # a faint dashed leader per marker, tying the dot to the accuracy
+    # pole at exactly its own height - the vertical axis reads
+    # straight off the pole's ticks
+    seg_leaders = []
     for _, row in df.iterrows():
         c3 = cube(row["$ per question"], row["Latency s"],
                   row["Accuracy %"])
         points.append(px(c3))
         feet.append(px((c3[0], c3[1], 0.0)))
+        seg_leaders.append((px(c3), px((0.0, 0.0, c3[2]))))
         names.append(str(row["System"]))
     disp = [n.replace(" (OpenRouter)", "").replace(" (Workers AI)", "")
             for n in names]
+    # stable per-system hue: rank by the full system name so the web
+    # UI and the README PNG agree run over run
+    rank = {n: i for i, n in enumerate(sorted(names))}
+    colors = [_DOT_COLORS[rank[n] % len(_DOT_COLORS)] for n in names]
+    leader_colors = [_lighten(c, 0.55) for c in colors]
 
     # greedy label placement, cost_scatter's rules plus the room the
     # denser 3D cluster needs: rightmost points claim their space
@@ -650,11 +676,13 @@ def _cost_speed_geometry(df: pd.DataFrame):
         assign_map[i] = (side, dy)
     assign = [assign_map[i] for i in range(len(points))]
 
-    return {"seg_floor": seg_floor, "seg_axes": seg_axes, "ticks": ticks,
+    return {"seg_floor": seg_floor, "seg_axes": seg_axes,
+            "seg_leaders": seg_leaders, "ticks": ticks,
             "labels_cost": labels_cost, "labels_lat": labels_lat,
             "labels_acc": labels_acc, "ang_cost": ang_cost,
             "ang_lat": ang_lat, "titles": titles, "points": points,
-            "feet": feet, "names": names, "disp": disp, "assign": assign}
+            "feet": feet, "names": names, "disp": disp, "assign": assign,
+            "colors": colors, "leader_colors": leader_colors}
 
 
 def cost_speed_scatter(df: pd.DataFrame, title: str):
@@ -663,7 +691,11 @@ def cost_speed_scatter(df: pd.DataFrame, title: str):
     isometric scatter (Altair has no 3D mark): accuracy is the
     vertical pole, cost per question runs to the lower-right on a log
     scale, mean latency to the lower-left, and each marker drops a
-    dashed line to its floor shadow so depth reads without rotation.
+    dashed line to its floor shadow so depth reads without rotation,
+    plus a fainter dashed leader to the accuracy pole at its own
+    height so the vertical axis reads directly. Each system wears its
+    own hue (labels sit next to the dots, so no legend) and its
+    leader repeats it in a lightened shade.
     The projected axes carry shape, not lookup - tooltips hold the
     exact values. Labels reuse cost_scatter's greedy pixel-space
     collision search; rows without a latency measurement stay off the
@@ -682,17 +714,25 @@ def cost_speed_scatter(df: pd.DataFrame, title: str):
                 domain=[0, _COST_SPEED_H], zero=False, reverse=True),
                 axis=None))
 
-    def seg_df(segs):
+    def seg_df(segs, colors=None):
         rows = []
         for i, (a, b) in enumerate(segs):
-            rows.append({"seg": i, "_x": a[0], "_y": a[1]})
-            rows.append({"seg": i, "_x": b[0], "_y": b[1]})
+            row = {"seg": i, "_x": a[0], "_y": a[1]}
+            if colors is not None:
+                row["_c"] = colors[i]
+            rows.append(row)
+            rows.append(dict(row, _x=b[0], _y=b[1]))
         return pd.DataFrame(rows)
 
     layers = [
         alt.Chart(seg_df(g["seg_floor"]), title=title)
         .mark_line(color="#bbb", strokeWidth=1)
         .encode(detail="seg:N", **enc()),
+        alt.Chart(seg_df(g["seg_leaders"], g["leader_colors"]))
+        .mark_line(strokeWidth=1, strokeDash=[2, 3])
+        .encode(detail="seg:N",
+                color=alt.Color("_c:N", scale=None, legend=None),
+                **enc()),
         alt.Chart(seg_df(g["seg_axes"]))
         .mark_line(color="#888", strokeWidth=1.2)
         .encode(detail="seg:N", **enc()),
@@ -732,12 +772,14 @@ def cost_speed_scatter(df: pd.DataFrame, title: str):
     plot = plot.assign(_x=[p[0] for p in g["points"]],
                        _y=[p[1] for p in g["points"]],
                        Label=g["disp"],
+                       _c=g["colors"],
                        _side=[a[0] for a in g["assign"]],
                        _dy=[a[1] for a in g["assign"]])
     layers.append(
         alt.Chart(plot)
         .mark_circle(size=95)
-        .encode(tooltip=[alt.Tooltip("System:N"),
+        .encode(color=alt.Color("_c:N", scale=None, legend=None),
+                tooltip=[alt.Tooltip("System:N"),
                          alt.Tooltip("Accuracy %:Q", format=".1f"),
                          alt.Tooltip("$ per question:Q", format=".7f"),
                          alt.Tooltip("Latency s:Q", format=".3f")],

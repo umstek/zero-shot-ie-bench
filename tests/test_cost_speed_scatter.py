@@ -2,6 +2,7 @@
 projection for the metered hosted systems, and cost_summary_frame
 carrying the latency column it feeds on."""
 
+import json
 import math
 import unittest
 
@@ -70,6 +71,30 @@ class CostSpeedGeometryTest(unittest.TestCase):
         self.assertGreaterEqual(len(g["labels_lat"]), 3)
         self.assertEqual(len(g["labels_acc"]), 5)  # 20..100 by 20
 
+    def test_leader_line_to_accuracy_pole(self):
+        # one faint leader per marker, from the dot to the accuracy
+        # axis at exactly the dot's height: it starts at the marker,
+        # lands on the pole between base and top, and a higher-
+        # accuracy dot lands higher up the pole
+        g = app._cost_speed_geometry(FRAME)
+        self.assertEqual(len(g["seg_leaders"]), 3)
+        pole_x = g["seg_axes"][0][0][0]  # the accuracy axis is first
+        landings = []
+        for point, leader in zip(g["points"], g["seg_leaders"]):
+            self.assertEqual(len(leader), 2)
+            self.assertAlmostEqual(leader[0][0], point[0], delta=0.5)
+            self.assertAlmostEqual(leader[0][1], point[1], delta=0.5)
+            self.assertAlmostEqual(leader[1][0], pole_x, delta=1.5)
+            landings.append(leader[1][1])
+        pole_base, pole_top = g["seg_axes"][0]
+        for y in landings:
+            self.assertGreater(y, pole_top[1])
+            self.assertLess(y, pole_base[1])
+        # fixture accuracy: Clef 97.9 > Jev 93.8 > cohere 83.3, and
+        # up the pole is smaller screen y
+        self.assertLess(landings[1], landings[0])
+        self.assertLess(landings[0], landings[2])
+
     def test_expensive_slow_sits_toward_the_front(self):
         # cohere-4-pro (max cost, max latency) must sit lower on
         # screen than Jev (min cost, min latency): the origin corner is
@@ -78,6 +103,29 @@ class CostSpeedGeometryTest(unittest.TestCase):
         jev, cohere = g["points"][0], g["points"][2]
         self.assertGreater(cohere[1], jev[1])
 
+    def test_per_system_hues_and_lightened_leaders(self):
+        # one distinct hue per system, assigned by sorted system name
+        # so the web UI and the PNG agree; leader lines carry the same
+        # hue blended toward white
+        g = app._cost_speed_geometry(FRAME)
+        self.assertEqual(len(g["colors"]), 3)
+        self.assertEqual(len(set(g["colors"])), 3)
+        for dot, leader in zip(g["colors"], g["leader_colors"]):
+            self.assertRegex(dot, r"#[0-9a-f]{6}")
+            self.assertRegex(leader, r"#[0-9a-f]{6}")
+            for i in (1, 3, 5):
+                self.assertGreaterEqual(int(leader[i:i + 2], 16),
+                                        int(dot[i:i + 2], 16))
+        # row order must not change the hue a system gets
+        g2 = app._cost_speed_geometry(FRAME.iloc[::-1])
+        self.assertEqual(dict(zip(g["names"], g["colors"])),
+                         dict(zip(g2["names"], g2["colors"])))
+
+    def test_lighten_blends_toward_white(self):
+        self.assertEqual(app._lighten("#000000", 0.5), "#808080")
+        self.assertEqual(app._lighten("#ffffff", 0.5), "#ffffff")
+        self.assertEqual(app._lighten("#4c78a8", 0.0), "#4c78a8")
+
     def test_chart_serializes(self):
         chart = app.cost_speed_scatter(FRAME, "t")
         spec = chart.to_dict()
@@ -85,6 +133,8 @@ class CostSpeedGeometryTest(unittest.TestCase):
         # frame + axes + ticks + 3 tick-label layers + 3 titles +
         # drop lines + shadows + points + labels
         self.assertGreater(len(spec["layer"]), 10)
+        # per-system hue wired through as literal color values
+        self.assertIn('"_c"', json.dumps(spec))
 
 
 class LatencyColumnTest(unittest.TestCase):
