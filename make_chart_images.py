@@ -16,8 +16,8 @@ import pandas as pd
 
 import app
 from app import (accuracy_heatmap, cost_bars, cost_scatter,
-                 cost_summary_frame, hbar_chart, hbar_chart_labeled,
-                 spectrum_line, tradeoff_scatter)
+                 cost_speed_scatter, cost_summary_frame, hbar_chart,
+                 hbar_chart_labeled, spectrum_line, tradeoff_scatter)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                    "docs", "charts")
@@ -79,6 +79,11 @@ def spectrum_charts(bench):
             cost_summary,
             "Cost per question, metered hosted systems (ranked; "
             "≈ = derived)")
+        # the third axis: isometric cost × latency × accuracy
+        charts["cls_cost_speed"] = cost_speed_scatter(
+            cost_summary,
+            "Accuracy vs cost vs latency, metered hosted systems "
+            "(isometric; ≈ = derived)")
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []

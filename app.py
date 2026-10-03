@@ -152,13 +152,14 @@ def derived_cost(system: str, usage: dict):
 
 
 def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
-    """(System, Accuracy %, $ per question) for the metered hosted
+    """(System, Accuracy %, $ per question, Latency s) for the metered hosted
     systems: provider-reported cost, else derived tokens × list price
     for the providers that report tokens but no $ (the Clef pair,
     Jev) — so they chart with the metered systems instead of
     dropping off the price charts. $0 free tiers (Span-01 Lite,
     Nemotron) stay off a cost axis (the table in the tab still
-    lists them)."""
+    lists them). Latency s rides along for the isometric
+    cost × speed × accuracy view (cost_speed_scatter)."""
     rows = []
     for s, v in systems.items():
         usage = v.get("usage")
@@ -169,7 +170,9 @@ def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
             continue
         rows.append({"System": s,
                      "Accuracy %": round(v["cls_accuracy"] * 100, 1),
-                     "$ per question": run_cost / n_q})
+                     "$ per question": run_cost / n_q,
+                     "Latency s": round(v.get("cls_mean_latency_s")
+                                        or 0.0, 3)})
     return pd.DataFrame(rows)
 
 
@@ -454,6 +457,303 @@ def cost_bars(df: pd.DataFrame, title: str):
         width=640, height=max(180, 26 * len(order) + 50))
 
 
+
+# --- the third axis: an isometric cost × latency × accuracy view ---------
+# Altair has no 3D mark, so the three metered-system axes are projected
+# with one fixed yaw/pitch rotation (the mplot3d approach) and drawn as
+# plain px-space marks - one definition renders both the web UI plot
+# and the README PNG on the house stack. Accuracy is the vertical pole;
+# cost (log) runs to the lower-right and latency to the lower-left,
+# both foreshortened by the pitch; dashed drop lines and floor shadows
+# carry each marker's depth.
+_ISO_YAW = math.radians(45)     # cost axis to the lower-right
+_ISO_PITCH = math.radians(20)   # camera elevation over the floor
+_COST_SPEED_W, _COST_SPEED_H = 880, 560
+
+
+def _iso_basis():
+    """Unit-axis images under the rotation: each entry is (screen x,
+    screen y up, depth toward the viewer)."""
+    return (
+        (math.cos(_ISO_YAW),
+         -math.sin(_ISO_YAW) * math.sin(_ISO_PITCH),
+         math.sin(_ISO_YAW) * math.cos(_ISO_PITCH)),
+        (-math.sin(_ISO_YAW),
+         -math.cos(_ISO_YAW) * math.sin(_ISO_PITCH),
+         math.cos(_ISO_YAW) * math.cos(_ISO_PITCH)),
+        (0.0, math.cos(_ISO_PITCH), math.sin(_ISO_PITCH)),
+    )
+
+
+def _iso_project(cx, cy, cz, basis):
+    """Cube coords in [0, 1] cubed -> (screen x, screen y up, depth)."""
+    ex, ey, ez = basis
+    return (cx * ex[0] + cy * ey[0],
+            cx * ex[1] + cy * ey[1] + cz * ez[1],
+            cx * ex[2] + cy * ey[2] + cz * ez[2])
+
+
+def _cost_speed_geometry(df: pd.DataFrame):
+    """Px-space geometry for cost_speed_scatter: the projected cube's
+    axis frame, floor rectangle and ticks, each system's marker + floor
+    shadow, and the markers' greedy label placements - everything the
+    chart draws, before any Altair assembly."""
+    basis = _iso_basis()
+    cost_floor = float(df["$ per question"].min()) * 0.45  # headroom
+    cost_top = float(df["$ per question"].max()) * 6       # label room
+    lat_top = float(df["Latency s"].max()) * 1.15
+    log_lo, log_hi = math.log10(cost_floor), math.log10(cost_top)
+
+    def cube(cost, lat, acc):
+        c = (math.log10(cost) - log_lo) / (log_hi - log_lo)
+        return (min(max(c, 0.0), 1.0),
+                min(max(lat / lat_top, 0.0), 1.0),
+                min(max(acc / 100.0, 0.0), 1.0))
+
+    # fit the projected unit cube into the canvas; the left pad holds
+    # the accuracy tick labels, both side pads hold system labels
+    corners = [(c, l, a) for c in (0.0, 1.0) for l in (0.0, 1.0)
+               for a in (0.0, 1.0)]
+    proj = [_iso_project(*p, basis) for p in corners]
+    umin = min(p[0] for p in proj)
+    umax = max(p[0] for p in proj)
+    vmin = min(p[1] for p in proj)
+    vmax = max(p[1] for p in proj)
+    pad_x, pad_top, pad_bot = 130, 18, 54
+    kx = (_COST_SPEED_W - 2 * pad_x) / (umax - umin)
+    ky = (_COST_SPEED_H - pad_top - pad_bot) / (vmax - vmin)
+
+    def px(p):
+        u, v, _depth = _iso_project(*p, basis)
+        return ((u - umin) * kx + pad_x, pad_top + (vmax - v) * ky)
+
+    # floor rectangle + the three axes out of the origin corner
+    floor = [(0, 0), (1, 0), (1, 1), (0, 1)]
+    seg_floor = [(px((a[0], a[1], 0.0)), px((b[0], b[1], 0.0)))
+                 for a, b in zip(floor, floor[1:] + floor[:1])]
+    seg_axes = [(px((0.0, 0.0, 0.0)), px(end))
+                for end in ((0.0, 0.0, 1.0), (1.0, 0.0, 0.0),
+                            (0.0, 1.0, 0.0))]
+
+    o = px((0.0, 0.0, 0.0))
+
+    def unit(p1):
+        dx, dy = p1[0] - o[0], p1[1] - o[1]
+        n = math.hypot(dx, dy)
+        return dx / n, dy / n
+
+    ux = unit(px((1.0, 0.0, 0.0)))   # cost-axis direction on screen
+    uy = unit(px((0.0, 1.0, 0.0)))   # latency-axis direction
+
+    def angle(u):
+        # keep text upright (|angle| <= 90) then wrap into [0, 360),
+        # the range Vega-Lite accepts
+        a = math.degrees(math.atan2(u[1], u[0]))
+        a = a - 180 if a > 90 else (a + 180 if a < -90 else a)
+        return a % 360
+
+    ang_cost = angle(ux)
+    ang_lat = angle((-uy[0], -uy[1]))  # text reads left-to-right
+
+    def perp_out(u_axis, u_out):
+        # perpendicular of u_axis pointing the u_out way (outward from
+        # the cube) - tick marks and their labels offset along this
+        p = (-u_axis[1], u_axis[0])
+        if p[0] * u_out[0] + p[1] * u_out[1] < 0:
+            p = (u_axis[1], -u_axis[0])
+        return p
+
+    pc = perp_out(ux, (-uy[0], -uy[1]))
+    pl = perp_out(uy, (-ux[0], -ux[1]))
+
+    ticks = []          # (inner point, outer point) tick segments
+    labels_cost, labels_lat, labels_acc = [], [], []
+    for e in range(math.ceil(log_lo), math.floor(log_hi) + 1):
+        c = (e - log_lo) / (log_hi - log_lo)
+        if not 0 < c < 1:
+            continue
+        p = px((c, 0.0, 0.0))
+        ticks.append((p, (p[0] + pc[0] * 9, p[1] + pc[1] * 9)))
+        labels_cost.append((p[0] + pc[0] * 24, p[1] + pc[1] * 24,
+                            f"{10 ** e:.0e}".replace("e-0", "e-")))
+    for step in range(1, 20):
+        v = step / 10
+        if v >= lat_top:
+            break
+        p = px((0.0, v / lat_top, 0.0))
+        ticks.append((p, (p[0] + pl[0] * 9, p[1] + pl[1] * 9)))
+        labels_lat.append((p[0] + pl[0] * 24, p[1] + pl[1] * 24,
+                           f"{v:.1f}"))
+    for acc in range(20, 101, 20):
+        p = px((0.0, 0.0, acc / 100))
+        ticks.append((p, (p[0] - 7, p[1])))
+        labels_acc.append((p[0] - 13, p[1], str(acc)))
+
+    mid_cost = px((0.5, 0.0, 0.0))
+    mid_lat = px((0.0, 0.5, 0.0))
+    top_z = px((0.0, 0.0, 1.0))
+    titles = [
+        (mid_cost[0] + pc[0] * 46, mid_cost[1] + pc[1] * 46,
+         "Cost per question, $ (log; ≈ = derived)", ang_cost,
+         "center"),
+        (mid_lat[0] + pl[0] * 46, mid_lat[1] + pl[1] * 46,
+         "Mean latency per question, s", ang_lat, "center"),
+        (top_z[0] - 8, top_z[1] - 10, "Accuracy %", 0.0, "right"),
+    ]
+
+    points, feet, names = [], [], []
+    for _, row in df.iterrows():
+        c3 = cube(row["$ per question"], row["Latency s"],
+                  row["Accuracy %"])
+        points.append(px(c3))
+        feet.append(px((c3[0], c3[1], 0.0)))
+        names.append(str(row["System"]))
+    disp = [n.replace(" (OpenRouter)", "").replace(" (Workers AI)", "")
+            for n in names]
+
+    # greedy label placement, cost_scatter's rules plus the room the
+    # denser 3D cluster needs: rightmost points claim their space
+    # first (the right edge is the crowded frontier), a label must
+    # clear every other marker and every placed label by 4 px with a
+    # deep dy ladder, flipping side before giving up (6.5 px/char
+    # yardstick)
+    markers = [(p[0] - 7, p[0] + 7, p[1] - 7, p[1] + 7) for p in points]
+    placed = []
+    assign_map = {}
+    for i in sorted(range(len(points)), key=lambda j: -points[j][0]):
+        p, label = points[i], disp[i]
+        w = 6.5 * len(label)
+        cands = []
+        for side in ("right", "left"):
+            x0 = p[0] + 11 if side == "right" else p[0] - 11 - w
+            if x0 < 2 or x0 + w > _COST_SPEED_W - 2:
+                continue
+            for dy in (-13, 13, -27, 27, -41, 41, -55, 55, -69, 69):
+                cands.append((side, x0, x0 + w, dy))
+        if not cands:
+            cands = [("right", p[0] + 11, p[0] + 11 + w, -13)]
+        obstacles = markers[:i] + markers[i + 1:] + placed
+
+        def collisions(box):
+            return sum(1 for b in obstacles
+                       if box[0] - 4 < b[1] and box[1] + 4 > b[0]
+                       and box[2] - 1 < b[3] and box[3] + 1 > b[2])
+
+        chosen = next(
+            (c for c in cands
+             if collisions((c[1], c[2], p[1] + c[3] - 8,
+                            p[1] + c[3] + 6)) == 0),
+            min(cands, key=lambda c: collisions(
+                (c[1], c[2], p[1] + c[3] - 8, p[1] + c[3] + 6))))
+        side, x0, x1, dy = chosen
+        placed.append((x0, x1, p[1] + dy - 8, p[1] + dy + 6))
+        assign_map[i] = (side, dy)
+    assign = [assign_map[i] for i in range(len(points))]
+
+    return {"seg_floor": seg_floor, "seg_axes": seg_axes, "ticks": ticks,
+            "labels_cost": labels_cost, "labels_lat": labels_lat,
+            "labels_acc": labels_acc, "ang_cost": ang_cost,
+            "ang_lat": ang_lat, "titles": titles, "points": points,
+            "feet": feet, "names": names, "disp": disp, "assign": assign}
+
+
+def cost_speed_scatter(df: pd.DataFrame, title: str):
+    """Accuracy vs cost vs mean latency for the metered hosted systems
+    - the three hosted axes in one picture, as a hand-projected
+    isometric scatter (Altair has no 3D mark): accuracy is the
+    vertical pole, cost per question runs to the lower-right on a log
+    scale, mean latency to the lower-left, and each marker drops a
+    dashed line to its floor shadow so depth reads without rotation.
+    The projected axes carry shape, not lookup - tooltips hold the
+    exact values. Labels reuse cost_scatter's greedy pixel-space
+    collision search; rows without a latency measurement stay off the
+    projection (all three axes must exist)."""
+    plot = df[pd.to_numeric(df["Latency s"], errors="coerce")
+              .fillna(0) > 0].copy()
+    if not len(plot):
+        return alt.Chart(plot, title=title).mark_point()
+    g = _cost_speed_geometry(plot)
+
+    def enc():
+        return dict(
+            x=alt.X("_x:Q", scale=alt.Scale(
+                domain=[0, _COST_SPEED_W], zero=False), axis=None),
+            y=alt.Y("_y:Q", scale=alt.Scale(
+                domain=[0, _COST_SPEED_H], zero=False, reverse=True),
+                axis=None))
+
+    def seg_df(segs):
+        rows = []
+        for i, (a, b) in enumerate(segs):
+            rows.append({"seg": i, "_x": a[0], "_y": a[1]})
+            rows.append({"seg": i, "_x": b[0], "_y": b[1]})
+        return pd.DataFrame(rows)
+
+    layers = [
+        alt.Chart(seg_df(g["seg_floor"]), title=title)
+        .mark_line(color="#bbb", strokeWidth=1)
+        .encode(detail="seg:N", **enc()),
+        alt.Chart(seg_df(g["seg_axes"]))
+        .mark_line(color="#888", strokeWidth=1.2)
+        .encode(detail="seg:N", **enc()),
+        alt.Chart(seg_df(g["ticks"]))
+        .mark_line(color="#888", strokeWidth=1)
+        .encode(detail="seg:N", **enc()),
+    ]
+    for rows, ang, align in ((g["labels_cost"], g["ang_cost"], "center"),
+                             (g["labels_lat"], g["ang_lat"], "center"),
+                             (g["labels_acc"], 0.0, "right")):
+        if rows:
+            layers.append(
+                alt.Chart(pd.DataFrame([{"_x": x, "_y": y, "t": t}
+                                        for x, y, t in rows]))
+                .mark_text(fontSize=10, color="#555", angle=ang,
+                           align=align)
+                .encode(text="t:N", **enc()))
+    for x, y, t, ang, align in g["titles"]:
+        layers.append(
+            alt.Chart(pd.DataFrame([{"_x": x, "_y": y, "t": t}]))
+            .mark_text(fontSize=12, color="#222", angle=ang,
+                       align=align, fontWeight=600)
+            .encode(text="t:N", **enc()))
+    drop_rows = []
+    for n, p, f in zip(g["names"], g["points"], g["feet"]):
+        drop_rows.append({"System": n, "_x": p[0], "_y": p[1]})
+        drop_rows.append({"System": n, "_x": f[0], "_y": f[1]})
+    layers.append(
+        alt.Chart(pd.DataFrame(drop_rows))
+        .mark_line(color="#aaa", strokeWidth=1, strokeDash=[2, 3])
+        .encode(detail="System:N", **enc()))
+    layers.append(
+        alt.Chart(pd.DataFrame([{"_x": f[0], "_y": f[1]}
+                                for f in g["feet"]]))
+        .mark_circle(size=25, color="#999", opacity=0.5)
+        .encode(**enc()))
+    plot = plot.assign(_x=[p[0] for p in g["points"]],
+                       _y=[p[1] for p in g["points"]],
+                       Label=g["disp"],
+                       _side=[a[0] for a in g["assign"]],
+                       _dy=[a[1] for a in g["assign"]])
+    layers.append(
+        alt.Chart(plot)
+        .mark_circle(size=95)
+        .encode(tooltip=[alt.Tooltip("System:N"),
+                         alt.Tooltip("Accuracy %:Q", format=".1f"),
+                         alt.Tooltip("$ per question:Q", format=".7f"),
+                         alt.Tooltip("Latency s:Q", format=".3f")],
+                **enc()))
+    for side, dy in sorted(set(g["assign"])):
+        sub = plot[(plot["_side"] == side) & (plot["_dy"] == dy)]
+        layers.append(
+            alt.Chart(sub)
+            .mark_text(align="left" if side == "right" else "right",
+                       dx=11 if side == "right" else -11, dy=int(dy),
+                       fontSize=10)
+            .encode(text="Label:N", **enc()))
+    return alt.layer(*layers).interactive().properties(
+        width=_COST_SPEED_W, height=_COST_SPEED_H)
+
+
 def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
     """Accuracy across the measured difficulty range, one line per system.
     Lines also carry per-system dash patterns: systems that agree on a
@@ -604,6 +904,10 @@ def build_classification_tab():
                 cost_summary,
                 "Cost per question, metered hosted systems (ranked; "
                 "≈ = derived)"))
+            gr.Plot(cost_speed_scatter(
+                cost_summary,
+                "Accuracy vs cost vs latency, metered hosted systems "
+                "(isometric; ≈ = derived)"))
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []
