@@ -1,6 +1,6 @@
 """app.derived_cost: measured tokens × published list price for the
 providers whose usage block reports tokens but no $ (the Clef pair,
-Jev), and cost_summary_frame putting Jev on the cost axis."""
+Jev, GLiDE), and cost_summary_frame putting Jev on the cost axis."""
 
 import unittest
 
@@ -25,6 +25,13 @@ class DerivedCostTest(unittest.TestCase):
         self.assertAlmostEqual(
             app.derived_cost("Clef-flash (Workers AI)", usage),
             4600 * 0.09 / 1_000_000)
+
+    def test_glide_derived_from_measured_tokens(self):
+        # GLiDE's recorded spectrum row: 3,833 input tokens × $0.15/M
+        # (thinking/output tokens are $0, so input is the whole cost)
+        self.assertAlmostEqual(
+            app.derived_cost("GLiDE (Fastino)", {"input_tokens": 3833}),
+            3833 * 0.15 / 1_000_000)
 
     def test_no_price_or_no_tokens_is_none(self):
         self.assertIsNone(app.derived_cost("Solar Decide (local)",

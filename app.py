@@ -1,10 +1,10 @@
-"""Interactive demo + benchmarks for sixty zero-shot IE/classification
-systems across thirty-two families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for sixty-one zero-shot IE/classification
+systems across thirty-three families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff, Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, so1, Jev (cloud),
 OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the fifty-seven
+local daemon; benchmark tabs hold the measured numbers for the fifty-eight
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
 seven rerankers) included.
@@ -128,7 +128,7 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         width=640, height=max(180, 26 * len(order) + 50))
 
 
-# 43 systems; grew 860x520 (28) → 980x660 (38) → 1100x720 (43)
+# 43 systems; grew 860x520 (28) → 980x660 (38) → 1100x720 (43, holds to 58)
 _SCATTER_W, _SCATTER_H = 1100, 720
 
 
@@ -144,6 +144,9 @@ def derived_cost(system: str, usage: dict):
     elif system == "Jev":
         from engines.jev_client import INPUT_USD_PER_MTOK
         price = INPUT_USD_PER_MTOK
+    elif system in FASTINO_MODELS:
+        from engines.fastino_client import INPUT_USD_PER_MTOK
+        price = INPUT_USD_PER_MTOK[FASTINO_MODELS[system]]
     else:
         return None
     if not usage.get("input_tokens"):
@@ -155,7 +158,7 @@ def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
     """(System, Accuracy %, $ per question) for the metered hosted
     systems: provider-reported cost, else derived tokens × list price
     for the providers that report tokens but no $ (the Clef pair,
-    Jev) — so they chart with the metered systems instead of
+    Jev, GLiDE) — so they chart with the metered systems instead of
     dropping off the price charts. $0 free tiers (Span-01 Lite,
     Nemotron) stay off a cost axis (the table in the tab still
     lists them)."""
@@ -331,7 +334,8 @@ def cost_scatter(df: pd.DataFrame, title: str):
     and dy until clear of every other marker and placed label, so
     near-coincident pairs (Span-01 / Kev 4B at ~1e-6) and vertical
     neighbors (cohere v3.5 under 4-fast) both resolve. Display names drop
-    the " (OpenRouter)" / " (Workers AI)" suffixes — redundant on an
+    the " (OpenRouter)" / " (Workers AI)" / " (Fastino)" suffixes —
+    redundant on an
     all-hosted chart and
     85 px the right edge can't spare; tooltips keep the full system
     name."""
@@ -348,7 +352,8 @@ def cost_scatter(df: pd.DataFrame, title: str):
 
     plot["Label"] = (plot["System"]
                      .str.replace(" (OpenRouter)", "", regex=False)
-                     .str.replace(" (Workers AI)", "", regex=False))
+                     .str.replace(" (Workers AI)", "", regex=False)
+                     .str.replace(" (Fastino)", "", regex=False))
     plot["_side"], plot["_dy"] = "right", -13
     pts = [(px(row["$ per question"]),
             (100 - row["Accuracy %"]) / 100 * _COST_H,
@@ -588,11 +593,11 @@ def build_classification_tab():
                      label="Measured provider accounting for the hosted "
                            "systems (usage blocks in API responses; the "
                            "≈ rows are list price × measured tokens — "
-                           "TypeSafe and Workers AI report tokens but "
-                           "no $)")
+                           "TypeSafe, Workers AI and Fastino report "
+                           "tokens but no $)")
         # the cost charts carry metered systems only: $0 free tiers
         # (Span-01 Lite, Nemotron) stay in the table above but not on a
-        # cost axis; the Clef pair and Jev chart at derived cost
+        # cost axis; the Clef pair, Jev and GLiDE chart at derived cost
         # (cost_summary_frame)
         cost_summary = cost_summary_frame(systems, n_q)
         if len(cost_summary):
@@ -1528,7 +1533,8 @@ def build_ollaya_tab():
 # label — and seven rerank endpoints used as decision engines via argmax
 # over per-label relevance. Plus Cloudflare's Clef / Clef-flash on
 # Workers AI (engines/clef_client.py: cf CLI session token or
-# CLOUDFLARE_AUTH_TOKEN), same choice-question mapping.
+# CLOUDFLARE_AUTH_TOKEN), same choice-question mapping, and Fastino's
+# GLiDE (engines/fastino_client.py: FASTINO_API_KEY), likewise.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
@@ -1549,6 +1555,7 @@ CLEF_MODELS = {
     "Clef (Workers AI)": "clef",
     "Clef-flash (Workers AI)": "clef-flash",
 }
+FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
 
 
 def build_openrouter_tab():
@@ -1556,7 +1563,7 @@ def build_openrouter_tab():
 
     with gr.Tab("Hosted decision APIs"):
         gr.Markdown("### The hosted systems, live\n"
-                    "The thirteen hosted systems from the benchmark tabs: "
+                    "The fourteen hosted systems from the benchmark tabs: "
                     "Kev 4B and Solar Decide answer one choice question, "
                     "Span-01 / Span-01 Lite "
                     "score one noul question per label, and the seven "
@@ -1568,11 +1575,13 @@ def build_openrouter_tab():
                     "repo-root `.env`, the Clef systems need a one-time "
                     "`cf auth login` (or `CLOUDFLARE_AUTH_TOKEN`; "
                     "Cloudflare commits to not reading/storing/training "
-                    "on requests). Each click is one metered API request "
+                    "on requests), and GLiDE needs `FASTINO_API_KEY` "
+                    "(ZDR per Fastino's model catalog). Each click is one "
+                    "metered API request "
                     "(free tiers: Span-01 Lite, nemotron).")
         oro_model = gr.Dropdown(
             choices=list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
-            + list(CLEF_MODELS),
+            + list(CLEF_MODELS) + list(FASTINO_MODELS),
             value="qwen3-reranker-8b (OpenRouter)", label="System")
         oro_text = gr.Textbox(
             label="Text",
@@ -1593,10 +1602,16 @@ def build_openrouter_tab():
             labels = parse_labels(labels_csv)
             if not text or not labels:
                 return {"error": "provide text and at least one label"}
-            if (system not in CLEF_MODELS
+            if (system not in CLEF_MODELS and system not in FASTINO_MODELS
                     and not openrouter_client.load_openrouter_key()):
                 return {"error": "no OPENROUTER_API_KEY in repo-root .env "
                                  "(see engines/openrouter_client.py)"}
+            if system in FASTINO_MODELS:
+                from engines import fastino_client
+
+                if not fastino_client.load_api_key():
+                    return {"error": "no FASTINO_API_KEY in repo-root .env "
+                                     "(see engines/fastino_client.py)"}
             try:
                 if system in OPENROUTER_RERANKERS:
                     # one request scores every label as a document
@@ -1616,12 +1631,17 @@ def build_openrouter_tab():
                     from engines.clef_client import clef
 
                     client = clef(CLEF_MODELS[system])
+                elif system in FASTINO_MODELS:
+                    from engines.fastino_client import glide
+
+                    client = glide()
                 else:
                     client = openrouter_client.systemone(
                         OPENROUTER_SYSTEMONE[system])
                 if (system in ("Kev 4B (OpenRouter)",
                                "Solar Decide (OpenRouter)")
-                        or system in CLEF_MODELS):
+                        or system in CLEF_MODELS
+                        or system in FASTINO_MODELS):
                     payload = client.ask({"task": task}, {"q": choice(
                         f'What is the overall {task} of this text: '
                         f'"{text}"', {label: None for label in labels})})
@@ -2821,13 +2841,14 @@ def main() -> None:
                     "cloud Jev, "
                     "the eleven "
                     "OpenRouter-hosted systems, the two Clef models on "
-                    "Cloudflare Workers AI and the five Ollaya-served "
+                    "Cloudflare Workers AI, Fastino's GLiDE and the five "
+                    "Ollaya-served "
                     "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 57 systems across "
-                    "thirty-two families.")
+                    "measured numbers for all 58 systems across "
+                    "thirty-three families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
         build_glirel_tab()
