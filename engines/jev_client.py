@@ -27,6 +27,13 @@ import urllib.request
 SYSTEM_ONE_URL = "https://api.typesafe.ai/v1/systemone"
 DEFAULT_MODEL = "jev-latest"
 REQUEST_LIMIT_TOKENS = 32_000  # jev-latest request ceiling
+# TypeSafe's published input price, $ per 1M input tokens. The response
+# usage block reports tokens but no $, so cost charts derive Jev's cost
+# as measured input tokens × this price (app.derived_cost); System One
+# answers in one forward pass — no output tokens — so input pricing is
+# the whole cost (the same rule the README's cost table applies to the
+# Clef pair)
+INPUT_USD_PER_MTOK = 0.042
 
 
 def load_api_key() -> str:
