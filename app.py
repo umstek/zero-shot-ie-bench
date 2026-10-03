@@ -635,6 +635,7 @@ def _cost_speed_geometry(df: pd.DataFrame):
         seg_leaders.append((px(c3), px((0.0, 0.0, c3[2]))))
         names.append(str(row["System"]))
     disp = [n.replace(" (OpenRouter)", "").replace(" (Workers AI)", "")
+              .replace(" (Fastino)", "")
             for n in names]
     # stable per-system hue: rank by the full system name so the web
     # UI and the README PNG agree run over run
