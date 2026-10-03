@@ -60,6 +60,10 @@ CLOUDFLARE_AUTH_TOKEN plus CLOUDFLARE_ACCOUNT_ID:
     python bench_multilingual.py --system "Clef (Workers AI)"
     python bench_multilingual.py --system "Clef-flash (Workers AI)"
 
+Fastino's GLiDE needs FASTINO_API_KEY in .env (ZDR per the model
+catalog; input $0.15/M tokens, thinking tokens free):
+    python bench_multilingual.py --system "GLiDE (Fastino)"
+
 Ollaya systems need the local Ollaya daemon (System One contract on :11435;
 `ollaya serve` after installing from https://ollaya.dev/download):
     python bench_multilingual.py --system "nli deberta-v3-large (Ollaya)"
@@ -221,6 +225,10 @@ CLEF_MODELS = {
     "Clef (Workers AI)": "clef",
     "Clef-flash (Workers AI)": "clef-flash",
 }
+# Fastino's hosted GLiDE decision model (see bench_spectrum.py for the
+# notes; engines/fastino_client.py); same names across benchmarks so
+# results files line up
+FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -276,6 +284,7 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
+               + list(FASTINO_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M"]
                + ["Laya Router", "Laya typed-decisions", "von",
                   "JevK5-Lite", "LFM2.5-RLCD 350M",
@@ -635,6 +644,27 @@ def run_clef(texts, model_id, tracker=None):
     return preds, statistics.mean(lat)
 
 
+def run_glide(texts, tracker=None):
+    """Fastino-hosted GLiDE (engines/fastino_client.py): same per-text
+    request shape as run_clef (string instructions with the text restated,
+    stateless endpoint), one request per text so latency is comparable.
+    ZDR per Fastino's model catalog; thinking tokens bill $0."""
+    from engines.fastino_client import glide
+    from engines.jev_client import choice
+
+    client = glide(usage_sink=tracker.add if tracker else None)
+    preds, lat = [], []
+    for text in texts:
+        question = choice(
+            f'What is the overall sentiment of this text: "{text}"',
+            {label: None for label in SENTIMENT_LABELS})
+        t0 = time.perf_counter()
+        out = client.ask({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
 def run_k2type(texts):
     """IFM's K2-Type-0.9B, in-process (engines/k2type_client.py loads the
     C:\\src\\K2-Type-0.9B snapshot on the CPU): same per-text request shape
@@ -861,6 +891,11 @@ def main() -> None:
 
         tracker = UsageTracker()
         preds, lat = run_clef(texts, CLEF_MODELS[name], tracker)
+    elif name in FASTINO_MODELS:
+        from engines.openrouter_client import UsageTracker
+
+        tracker = UsageTracker()
+        preds, lat = run_glide(texts, tracker)
     elif name == "Jev":
         from engines.openrouter_client import UsageTracker
 

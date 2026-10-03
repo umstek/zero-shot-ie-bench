@@ -70,6 +70,11 @@ CLOUDFLARE_AUTH_TOKEN plus CLOUDFLARE_ACCOUNT_ID:
     python bench_spectrum.py --system "Clef (Workers AI)"
     python bench_spectrum.py --system "Clef-flash (Workers AI)"
 
+Fastino's GLiDE (the "thinking decision model" from the GLiNER maker's
+hosted API) needs FASTINO_API_KEY in .env (ZDR per the model catalog;
+input $0.15/M tokens, thinking tokens free):
+    python bench_spectrum.py --system "GLiDE (Fastino)"
+
 Output: results/bench_spectrum_results.json
 """
 
@@ -145,6 +150,13 @@ CLEF_MODELS = {
     "Clef (Workers AI)": "clef",
     "Clef-flash (Workers AI)": "clef-flash",
 }
+# Fastino's hosted GLiDE decision model (engines/fastino_client.py;
+# values are the body "model" selectors). One fast pass plus adaptive
+# thinking when uncertain; usage.output_tokens are thinking tokens priced
+# at $0, so only input bills ($0.15/M). Fastino's hosted GLiNER models are
+# the same open-weight checkpoints benched locally above, so only GLiDE
+# rides the API
+FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -195,7 +207,7 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Sol 2B": "sol-2b"}
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
-               + list(CLEF_MODELS)
+               + list(CLEF_MODELS) + list(FASTINO_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
                   "Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
@@ -250,9 +262,10 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
     its own /api/evaluate contract (port 8149) with label descriptions as
     option semantics. model_id selects the checkpoint for the hosted
     System One engines ("or-systemone": kev-4b, solar-decide; "clef":
-    clef, clef-flash). (Ollaya systems do NOT batch here: their decision
-    layers build the premise from the state, so each text is its own
-    request - see the dedicated branch in main().)"""
+    clef, clef-flash; "fastino": glide - single model, selector unused).
+    (Ollaya systems do NOT batch here: their decision layers build the
+    premise from the state, so each text is its own request - see the
+    dedicated branch in main().)"""
     INSTR = {
         "sentiment": 'What is the overall sentiment of this text: "{text}"',
         "topic": 'Which topic category does this text belong to: "{text}"',
@@ -282,7 +295,7 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
     elif (client_kind in SYSTEMONE_LOCAL_PORTS
-          or client_kind in ("or-systemone", "clef")):
+          or client_kind in ("or-systemone", "clef", "fastino")):
         from engines.jev_client import JevClient, choice
 
         if client_kind == "or-systemone":
@@ -298,6 +311,12 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
 
             client = clef_build(model_id,
                                 usage_sink=tracker.add if tracker else None)
+        elif client_kind == "fastino":
+            # Fastino-hosted GLiDE: same wire format, flat payload,
+            # Bearer key (engines/fastino_client.py)
+            from engines.fastino_client import glide as glide_build
+
+            client = glide_build(usage_sink=tracker.add if tracker else None)
         else:
             client = JevClient(
                 base_url=f"http://127.0.0.1:{SYSTEMONE_LOCAL_PORTS[client_kind]}"
@@ -493,7 +512,7 @@ def main() -> None:
                    "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                    "decider 0.8B (local)", "OpenThai 0.8B (local)",
                    "Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
-          or name in CLEF_MODELS):
+          or name in CLEF_MODELS or name in FASTINO_MODELS):
         from engines.openrouter_client import UsageTracker
 
         repo = ("convaiinnovations/laya-typed-decisions"
@@ -507,16 +526,18 @@ def main() -> None:
                 else "or-systemone"
                 if name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
                 else "clef" if name in CLEF_MODELS
+                else "fastino" if name in FASTINO_MODELS
                 else "jev" if name == "Jev" else None)
         if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
         tracker = (UsageTracker() if name in ("Jev", "Kev 4B (OpenRouter)",
                                               "Solar Decide (OpenRouter)")
-                   or name in CLEF_MODELS
+                   or name in CLEF_MODELS or name in FASTINO_MODELS
                    else None)
         run_task = classify_batched(kind, repo=repo, tracker=tracker,
                                     model_id=OPENROUTER_SYSTEMONE.get(name)
-                                    or CLEF_MODELS.get(name))
+                                    or CLEF_MODELS.get(name)
+                                    or FASTINO_MODELS.get(name))
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()
