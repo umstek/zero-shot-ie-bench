@@ -69,8 +69,12 @@ def _ensure_runtime_on_path() -> None:
             f"no K2-Type-0.9B snapshot at {home} — download it with "
             "`hf download IFM/K2-Type-0.9B --local-dir <dir>` and point "
             "K2TYPE_HOME at the directory")
-    if home not in sys.path:
-        sys.path.insert(0, home)
+    # remove any earlier copy, then re-insert at index 0 — a "not already
+    # present" guard would leave a stale home entry sitting deeper in
+    # sys.path, where another jev-bearing directory could win the import
+    while home in sys.path:
+        sys.path.remove(home)
+    sys.path.insert(0, home)
 
 
 def _render(value):
