@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 54 systems answer the same 54 texts.",
+      "All 57 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -82,7 +82,10 @@
       "Solar Decide (OpenRouter) recorded 2026-09-29 19:44, 48s, CPU",
       "Clef (Workers AI) recorded 2026-10-02 20:04, 43s, CPU",
       "Clef-flash (Workers AI) recorded 2026-10-02 20:04, 34s, CPU",
-      "K2-Type 0.9B (local) recorded 2026-10-03 12:11, 55s, CPU"
+      "K2-Type 0.9B (local) recorded 2026-10-03 12:11, 55s, CPU",
+      "Decision 2.0 Kai 0.6B recorded 2026-10-03 13:21, 62s, CPU",
+      "Decision 2.0 Eos 0.8B recorded 2026-10-03 13:23, 92s, CPU",
+      "Decision 2.0 Sol 2B recorded 2026-10-03 13:25, 160s, CPU"
     ]
   },
   "by_language": {
@@ -679,6 +682,39 @@
       "Sinhala": 0.6667,
       "Icelandic": 0.6667,
       "Welsh": 0.3333
+    },
+    "Decision 2.0 Kai 0.6B": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 0.8333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.5,
+      "Welsh": 0.5
+    },
+    "Decision 2.0 Eos 0.8B": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 0.5
+    },
+    "Decision 2.0 Sol 2B": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.5,
+      "Icelandic": 0.6667,
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -951,6 +987,21 @@
       "popular": 1.0,
       "medium": 0.9444,
       "rare": 0.5556
+    },
+    "Decision 2.0 Kai 0.6B": {
+      "popular": 0.9444,
+      "medium": 0.8333,
+      "rare": 0.4444
+    },
+    "Decision 2.0 Eos 0.8B": {
+      "popular": 0.8889,
+      "medium": 0.8889,
+      "rare": 0.6111
+    },
+    "Decision 2.0 Sol 2B": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.5
     }
   },
   "latency": {
@@ -1007,7 +1058,10 @@
     "Solar Decide (OpenRouter)": 0.885,
     "Clef (Workers AI)": 0.796,
     "Clef-flash (Workers AI)": 0.636,
-    "K2-Type 0.9B (local)": 0.791
+    "K2-Type 0.9B (local)": 0.791,
+    "Decision 2.0 Kai 0.6B": 0.859,
+    "Decision 2.0 Eos 0.8B": 1.36,
+    "Decision 2.0 Sol 2B": 2.459
   },
   "laya_routing": {
     "Spanish": {
@@ -1085,7 +1139,10 @@
     "Solar Decide (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "Clef (Workers AI)": "Model download and loading excluded; first forward pass included.",
     "Clef-flash (Workers AI)": "Model download and loading excluded; first forward pass included.",
-    "K2-Type 0.9B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
+    "K2-Type 0.9B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 2.0 Kai 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 2.0 Eos 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 2.0 Sol 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
   },
   "provenance": {
     "von": {
