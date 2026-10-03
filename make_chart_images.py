@@ -15,9 +15,9 @@ import os
 import pandas as pd
 
 import app
-from app import (COST_UNREPORTED, accuracy_heatmap, cost_bars, cost_scatter,
-                 hbar_chart, hbar_chart_labeled, spectrum_line,
-                 tradeoff_scatter)
+from app import (accuracy_heatmap, cost_bars, cost_scatter,
+                 cost_summary_frame, hbar_chart, hbar_chart_labeled,
+                 spectrum_line, tradeoff_scatter)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                    "docs", "charts")
@@ -65,26 +65,20 @@ def spectrum_charts(bench):
             summary, "Speed vs accuracy — up and left is better"),
     }
 
-    # metered systems only: $0 free tiers (Span-01 Lite, Nemotron) and
-    # Jev's unreported cost stay out of a cost chart
-    hosted = {s: v for s, v in systems.items()
-              if isinstance(v.get("usage"), dict)
-              and v["usage"].get("paid_requests")
-              and v["usage"]["cost_usd"] > 0
-              and s not in COST_UNREPORTED}
-    if hosted:
-        cost_summary = pd.DataFrame([
-            {"System": s,
-             "Accuracy %": round(v["cls_accuracy"] * 100, 1),
-             "$ per question": v["usage"]["cost_usd"] / n_q}
-            for s, v in hosted.items()])
+    # metered systems only (app.cost_summary_frame): $0 free tiers
+    # (Span-01 Lite, Nemotron) and Jev's unreported cost stay out of a
+    # cost chart; the Clef pair charts at its derived tokens × list
+    # price instead of dropping off like before
+    cost_summary = cost_summary_frame(systems, n_q)
+    if len(cost_summary):
         charts["cls_cost"] = cost_scatter(
             cost_summary,
             "Cost vs accuracy, metered hosted systems — up and left "
             "is better")
         charts["cls_cost_bars"] = cost_bars(
             cost_summary,
-            "Measured cost per question, metered hosted systems (ranked)")
+            "Cost per question, metered hosted systems (ranked; "
+            "Clef ≈ derived)")
 
     thresholds = sorted({round(t / 20, 2) for t in range(21)})
     spec_rows = []

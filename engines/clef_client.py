@@ -43,6 +43,10 @@ MODELS = {
     "clef": "@cf/cloudflare/clef",          # Qwen3.8-27B, 64k ctx, vision
     "clef-flash": "@cf/cloudflare/clef-flash",  # Qwen3.5-9B, ~39 ms median
 }
+# Workers AI list prices, $ per 1M input tokens. The response usage block
+# reports tokens but no $, so cost charts derive the Clef pair's cost as
+# measured input tokens × these prices (the README's cost-table rule)
+INPUT_USD_PER_MTOK = {"clef": 0.24, "clef-flash": 0.09}
 API_BASE = "https://api.cloudflare.com/client/v4"
 
 
