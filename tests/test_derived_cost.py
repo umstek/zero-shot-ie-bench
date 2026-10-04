@@ -1,6 +1,7 @@
 """app.derived_cost: measured tokens × published list price for the
 providers whose usage block reports tokens but no $ (the Clef pair,
-Jev, GLiDE), and cost_summary_frame putting Jev on the cost axis."""
+Jev, GLiDE, TypeLLM), and cost_summary_frame putting Jev on the cost
+axis."""
 
 import unittest
 
@@ -33,11 +34,27 @@ class DerivedCostTest(unittest.TestCase):
             app.derived_cost("GLiDE (Fastino)", {"input_tokens": 3833}),
             3833 * 0.15 / 1_000_000)
 
+    def test_typellm_derived_from_input_plus_thinking_tokens(self):
+        # TypeLLM's recorded spectrum rows: input bills at $0.05/M and
+        # per-question thinking tokens at $0.50/M (answers free) - the
+        # plain run spent no thinking tokens, the thinking run both
+        self.assertAlmostEqual(
+            app.derived_cost("TypeLLM (hosted)",
+                             {"input_tokens": 2507, "thinking_tokens": 0}),
+            2507 * 0.05 / 1_000_000)
+        self.assertAlmostEqual(
+            app.derived_cost("TypeLLM thinking (hosted)",
+                             {"input_tokens": 3226,
+                              "thinking_tokens": 9376}),
+            (3226 * 0.05 + 9376 * 0.50) / 1_000_000)
+
     def test_no_price_or_no_tokens_is_none(self):
         self.assertIsNone(app.derived_cost("Solar Decide (local)",
                                            {"input_tokens": 100}))
         self.assertIsNone(app.derived_cost("Jev", {"input_tokens": 0}))
         self.assertIsNone(app.derived_cost("Jev", {}))
+        self.assertIsNone(app.derived_cost("TypeLLM (hosted)",
+                                           {"thinking_tokens": 9376}))
 
     def test_cost_summary_frame_charts_jev_not_free_tiers(self):
         systems = {

@@ -85,10 +85,13 @@ def models(timeout: int = 30) -> dict:
 
 
 def enum_question(instructions: str, values: list, thinking: bool = False,
-                  thinking_budget: int = 1024) -> dict:
+                  thinking_budget: int = 1024,
+                  return_probabilities: bool = False) -> dict:
     """A choice question: one constrained pick among `values` (at most
     24). thinking=True spends reasoning tokens first ($0.50/M; budget
-    caps them, 4096 max)."""
+    caps them, 4096 max). return_probabilities=True answers with
+    {"value", "probabilities"} instead of the bare value (demos; the
+    benches take the bare pick like every other system)."""
     if not 2 <= len(values) <= 24:
         raise ValueError(f"enum needs 2-24 values, got {len(values)}")
     question = {"type": "string", "enum": list(values),
@@ -96,6 +99,8 @@ def enum_question(instructions: str, values: list, thinking: bool = False,
     if thinking:
         question["thinking"] = True
         question["thinking_budget"] = thinking_budget
+    if return_probabilities:
+        question["return_probabilities"] = True
     return question
 
 

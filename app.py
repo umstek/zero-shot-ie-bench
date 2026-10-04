@@ -1,10 +1,10 @@
-"""Interactive demo + benchmarks for sixty-one zero-shot IE/classification
-systems across thirty-three families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for sixty-three zero-shot IE/classification
+systems across thirty-four families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff, Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, so1, Jev (cloud),
 OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the fifty-eight
+local daemon; benchmark tabs hold the measured numbers for the sixty
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
 seven rerankers) included.
@@ -128,7 +128,7 @@ def hbar_chart_labeled(df: pd.DataFrame, value: str, title: str,
         width=640, height=max(180, 26 * len(order) + 50))
 
 
-# 43 systems; grew 860x520 (28) → 980x660 (38) → 1100x720 (43, holds to 58)
+# 43 systems; grew 860x520 (28) → 980x660 (38) → 1100x720 (43, holds to 60)
 _SCATTER_W, _SCATTER_H = 1100, 720
 
 
@@ -147,6 +147,17 @@ def derived_cost(system: str, usage: dict):
     elif system in FASTINO_MODELS:
         from engines.fastino_client import INPUT_USD_PER_MTOK
         price = INPUT_USD_PER_MTOK[FASTINO_MODELS[system]]
+    elif system in TYPELLM_MODELS:
+        # two metered token kinds: input at $0.05/M plus thinking at
+        # $0.50/M (answers free); both measured in the usage block
+        from engines.typellm_client import (INPUT_USD_PER_MTOK,
+                                            THINKING_USD_PER_MTOK)
+
+        if not usage.get("input_tokens"):
+            return None
+        return (usage["input_tokens"] * INPUT_USD_PER_MTOK
+                + usage.get("thinking_tokens", 0) * THINKING_USD_PER_MTOK
+                ) / 1_000_000
     else:
         return None
     if not usage.get("input_tokens"):
@@ -158,7 +169,8 @@ def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
     """(System, Accuracy %, $ per question, Latency s) for the metered hosted
     systems: provider-reported cost, else derived tokens × list price
     for the providers that report tokens but no $ (the Clef pair,
-    Jev, GLiDE) — so they chart with the metered systems instead of
+    Jev, GLiDE, TypeLLM — input + thinking tokens) — so they chart with
+    the metered systems instead of
     dropping off the price charts. $0 free tiers (Span-01 Lite,
     Nemotron) stay off a cost axis (the table in the tab still
     lists them). Latency s rides along for the isometric
@@ -337,8 +349,8 @@ def cost_scatter(df: pd.DataFrame, title: str):
     and dy until clear of every other marker and placed label, so
     near-coincident pairs (Span-01 / Kev 4B at ~1e-6) and vertical
     neighbors (cohere v3.5 under 4-fast) both resolve. Display names drop
-    the " (OpenRouter)" / " (Workers AI)" / " (Fastino)" suffixes —
-    redundant on an
+    the " (OpenRouter)" / " (Workers AI)" / " (Fastino)" / " (hosted)"
+    suffixes — redundant on an
     all-hosted chart and
     85 px the right edge can't spare; tooltips keep the full system
     name."""
@@ -356,7 +368,8 @@ def cost_scatter(df: pd.DataFrame, title: str):
     plot["Label"] = (plot["System"]
                      .str.replace(" (OpenRouter)", "", regex=False)
                      .str.replace(" (Workers AI)", "", regex=False)
-                     .str.replace(" (Fastino)", "", regex=False))
+                     .str.replace(" (Fastino)", "", regex=False)
+                     .str.replace(" (hosted)", "", regex=False))
     plot["_side"], plot["_dy"] = "right", -13
     pts = [(px(row["$ per question"]),
             (100 - row["Accuracy %"]) / 100 * _COST_H,
@@ -635,6 +648,7 @@ def _cost_speed_geometry(df: pd.DataFrame):
         seg_leaders.append((px(c3), px((0.0, 0.0, c3[2]))))
         names.append(str(row["System"]))
     disp = [n.replace(" (OpenRouter)", "").replace(" (Workers AI)", "")
+            .replace(" (Fastino)", "").replace(" (hosted)", "")
             for n in names]
     # stable per-system hue: rank by the full system name so the web
     # UI and the README PNG agree run over run
@@ -935,12 +949,13 @@ def build_classification_tab():
                      label="Measured provider accounting for the hosted "
                            "systems (usage blocks in API responses; the "
                            "≈ rows are list price × measured tokens — "
-                           "TypeSafe, Workers AI and Fastino report "
-                           "tokens but no $)")
+                           "TypeSafe, Workers AI, Fastino and TypeLLM "
+                           "report tokens but no $; TypeLLM's thinking "
+                           "tokens bill at their own price)")
         # the cost charts carry metered systems only: $0 free tiers
         # (Span-01 Lite, Nemotron) stay in the table above but not on a
-        # cost axis; the Clef pair, Jev and GLiDE chart at derived cost
-        # (cost_summary_frame)
+        # cost axis; the Clef pair, Jev, GLiDE and TypeLLM chart at
+        # derived cost (cost_summary_frame)
         cost_summary = cost_summary_frame(systems, n_q)
         if len(cost_summary):
             gr.Plot(cost_scatter(
@@ -1880,7 +1895,10 @@ def build_ollaya_tab():
 # over per-label relevance. Plus Cloudflare's Clef / Clef-flash on
 # Workers AI (engines/clef_client.py: cf CLI session token or
 # CLOUDFLARE_AUTH_TOKEN), same choice-question mapping, and Fastino's
-# GLiDE (engines/fastino_client.py: FASTINO_API_KEY), likewise.
+# GLiDE (engines/fastino_client.py: FASTINO_API_KEY), likewise. TypeLLM's
+# hosted API (engines/typellm_client.py: TYPELLM_API_KEY) answers
+# constrained enum questions instead - and takes images (Qwen3.8-27B
+# vision), so the demo below carries an optional image upload.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
@@ -1902,6 +1920,11 @@ CLEF_MODELS = {
     "Clef-flash (Workers AI)": "clef-flash",
 }
 FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
+# TypeLLM's hosted type-safe generation API; single public model
+# (typellm-latest), so the value selects the variant: thinking off, or
+# per-question reasoning (billed at $0.50/M on top of input's $0.05/M)
+TYPELLM_MODELS = {"TypeLLM (hosted)": False,
+                  "TypeLLM thinking (hosted)": True}
 
 
 def build_openrouter_tab():
@@ -1909,30 +1932,39 @@ def build_openrouter_tab():
 
     with gr.Tab("Hosted decision APIs"):
         gr.Markdown("### The hosted systems, live\n"
-                    "The fourteen hosted systems from the benchmark tabs: "
+                    "The sixteen hosted systems from the benchmark tabs: "
                     "Kev 4B and Solar Decide answer one choice question, "
                     "Span-01 / Span-01 Lite "
-                    "score one noul question per label, and the seven "
+                    "score one noul question per label, the seven "
                     "rerankers score one (instruction, label) pair per "
-                    "label (argmax = decision). Requests leave the machine "
+                    "label (argmax = decision), and TypeLLM answers one "
+                    "constrained enum question - the only system here "
+                    "that also takes an image (upload one below; its "
+                    "typellm-latest Qwen3.8-27B reads it with the text). "
+                    "Requests leave the machine "
                     "(non-ZDR providers, † in README; Solar Decide also "
                     "has a ZDR Upstage endpoint, unused here); the "
                     "OpenRouter systems need `OPENROUTER_API_KEY` in the "
                     "repo-root `.env`, the Clef systems need a one-time "
                     "`cf auth login` (or `CLOUDFLARE_AUTH_TOKEN`; "
                     "Cloudflare commits to not reading/storing/training "
-                    "on requests), and GLiDE needs `FASTINO_API_KEY` "
-                    "(ZDR per Fastino's model catalog). Each click is one "
+                    "on requests), GLiDE needs `FASTINO_API_KEY` "
+                    "(ZDR per Fastino's model catalog) and TypeLLM needs "
+                    "`TYPELLM_API_KEY`. Each click is one "
                     "metered API request "
                     "(free tiers: Span-01 Lite, nemotron).")
         oro_model = gr.Dropdown(
             choices=list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
-            + list(CLEF_MODELS) + list(FASTINO_MODELS),
+            + list(CLEF_MODELS) + list(FASTINO_MODELS)
+            + list(TYPELLM_MODELS),
             value="qwen3-reranker-8b (OpenRouter)", label="System")
         oro_text = gr.Textbox(
-            label="Text",
+            label="Text (optional for TypeLLM when an image is uploaded)",
             value="Oh great, my package finally arrived — only two weeks "
                   "late and crushed.", lines=3)
+        oro_image = gr.Image(
+            type="pil", label="Image (TypeLLM only; base64 data URI to "
+                              "the API)", height=180)
         oro_labels = gr.Textbox(label="Labels (comma-separated)",
                                 value="positive, negative, neutral")
         oro_task = gr.Textbox(label="Task word for the instruction",
@@ -1941,14 +1973,20 @@ def build_openrouter_tab():
         oro_out = gr.JSON(label="Decision + per-label scores or "
                                 "probabilities + endpoint kind")
 
-        def run_openrouter(system, text, labels_csv, task):
+        def run_openrouter(system, text, labels_csv, task, image):
             from engines import openrouter_client
             from engines.jev_client import choice
 
             labels = parse_labels(labels_csv)
-            if not text or not labels:
-                return {"error": "provide text and at least one label"}
+            if (not text and image is None) or not labels:
+                return {"error": "provide text (or, for TypeLLM, an image) "
+                                 "and at least one label"}
+            if image is not None and system not in TYPELLM_MODELS:
+                # the other systems are text-only; a stray image with
+                # them is a UI mistake, not a request parameter
+                return {"error": "only the TypeLLM systems take an image"}
             if (system not in CLEF_MODELS and system not in FASTINO_MODELS
+                    and system not in TYPELLM_MODELS
                     and not openrouter_client.load_openrouter_key()):
                 return {"error": "no OPENROUTER_API_KEY in repo-root .env "
                                  "(see engines/openrouter_client.py)"}
@@ -1958,7 +1996,52 @@ def build_openrouter_tab():
                 if not fastino_client.load_api_key():
                     return {"error": "no FASTINO_API_KEY in repo-root .env "
                                      "(see engines/fastino_client.py)"}
+            if system in TYPELLM_MODELS:
+                from engines import typellm_client
+
+                if not typellm_client.load_api_key():
+                    return {"error": "no TYPELLM_API_KEY in repo-root .env "
+                                     "(see engines/typellm_client.py)"}
             try:
+                if system in TYPELLM_MODELS:
+                    # one constrained enum question over the house
+                    # context; with an image the question points at it
+                    # (text rides along as the caption when present)
+                    subject = (
+                        f'What is the overall {task} of this text: '
+                        f'"{text}"' if image is None else
+                        f'What is the overall {task} of this image'
+                        + (f' — caption: "{text}"' if text else ""))
+                    question = typellm_client.enum_question(
+                        subject, labels,
+                        thinking=TYPELLM_MODELS[system],
+                        return_probabilities=True)
+                    images = None
+                    if image is not None:
+                        import base64
+                        import io
+
+                        buf = io.BytesIO()
+                        image.save(buf, format="PNG")
+                        images = ["data:image/png;base64,"
+                                  + base64.b64encode(
+                                      buf.getvalue()).decode()]
+                    payload = typellm_client.generate(
+                        json.dumps({"task": task}), {"q": question},
+                        images=images, timeout=90)
+                    answer = payload["result"]["q"]
+                    out: dict = {"endpoint": "typellm generate (enum)",
+                                 "decision": (answer.get("value")
+                                              if isinstance(answer, dict)
+                                              else answer)}
+                    if isinstance(answer, dict):
+                        if answer.get("probabilities") is not None:
+                            out["probabilities"] = answer["probabilities"]
+                    if payload.get("thinking", {}).get("q"):
+                        out["thinking"] = payload["thinking"]["q"]
+                    out["usage"] = payload.get("usage")
+                    out["elapsed_s"] = payload.get("elapsed")
+                    return out
                 if system in OPENROUTER_RERANKERS:
                     # one request scores every label as a document
                     rows = openrouter_client.rerank(
@@ -2014,7 +2097,8 @@ def build_openrouter_tab():
                 return {"error": str(exc)}
 
         oro_button.click(run_openrouter,
-                         [oro_model, oro_text, oro_labels, oro_task],
+                         [oro_model, oro_text, oro_labels, oro_task,
+                          oro_image],
                          oro_out)
 
 
@@ -3187,14 +3271,15 @@ def main() -> None:
                     "cloud Jev, "
                     "the eleven "
                     "OpenRouter-hosted systems, the two Clef models on "
-                    "Cloudflare Workers AI, Fastino's GLiDE and the five "
+                    "Cloudflare Workers AI, Fastino's GLiDE, TypeLLM's "
+                    "two entries and the five "
                     "Ollaya-served "
                     "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 58 systems across "
-                    "thirty-three families.")
+                    "measured numbers for all 60 systems across "
+                    "thirty-four families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
         build_glirel_tab()
