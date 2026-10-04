@@ -1,7 +1,7 @@
 # zero-shot-ie-bench
 
-Sixty-one zero-shot systems (fifty-eight of them benchmarked) across
-thirty-three information-extraction and classification families —
+Sixty-three zero-shot systems (sixty of them benchmarked) across
+thirty-four information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints, plus five models served by
@@ -47,6 +47,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
 | [Clef](https://developers.cloudflare.com/workers-ai/models/clef/) / [Clef-flash](https://developers.cloudflare.com/workers-ai/models/clef-flash/) (`clef` / `clef-flash` on Cloudflare Workers AI) | cloud typed-decision engines (Cloudflare's Jev-API-compatible decision models over frozen Qwen3.8-27B / Qwen3.5-9B + rank-256 routing adapters: choice/score/noul probabilities from one non-autoregressive scoring pass, vision-capable state, 64k context) | 27B / 9B | API metered · Apache 2.0 weights on HF | metered · $2.3e-5 / $8.6e-6/q |
 | [GLiDE](https://fastino.ai/) (`fastino/GLiDE` on the Fastino API) | cloud typed-decision engine (Fastino's "thinking decision model": one fast scoring pass plus adaptive reasoning when the leading option is uncertain; choice/score/noul with calibrated probabilities, 40k context, thinking tokens priced $0) | undisclosed | API metered · research tier | metered · $1.2e-5/q |
+| [TypeLLM](https://typellm.ai/) (`typellm-latest` on the TypeLLM API) | cloud type-safe generation harness (SGLang constrained decoding over a hosted Qwen3.8-27B: JSON-Schema fields answered by one-token enum picks, optional per-question thinking at its own price; vision-capable, up to 8 images per request) | 27B | Apache 2.0 (harness) · proprietary API | metered · $2.6e-6 plain / $1.0e-4 thinking /q † |
 | [Span-01](https://openrouter.ai/respan/span-01) / [Span-01 Lite](https://openrouter.ai/respan/span-01-lite) (`respan/span-01*`) | cloud behavior scorer (one noul probability per label, argmax = decision) | closed | proprietary API | metered · $9.0e-7/q · Lite free † |
 | [Qwen3-Reranker 8B](https://openrouter.ai/qwen/qwen3-reranker-8b) · [Voyage rerank-2.5](https://openrouter.ai/voyageai/rerank-2.5) (+lite) · [Nemotron Rerank VL 1B](https://openrouter.ai/nvidia/llama-nemotron-rerank-vl-1b-v2:free) · [Cohere Rerank](https://openrouter.ai/cohere/rerank-4-pro) (4 Pro / 4 Fast / v3.5), all via OpenRouter | cloud rerankers (same (instruction, label) argmax mapping as the local ones) | 8B / closed / 1.7B / closed | proprietary API | metered · $1.4e-6–$2.5e-3/q · Nemotron free † |
 
@@ -58,7 +59,8 @@ The Clef pair runs directly on Workers AI (not via OpenRouter) under
 Cloudflare's commitment to not read, store, or train on requests, so
 it carries no † — and its weights are open, so it can also run local.
 GLiDE runs on Fastino's own API, whose model catalog marks it ZDR, so
-it also carries no †.
+it also carries no †. TypeLLM's API publishes no data-retention
+commitment, so its two entries keep the †.
 Every local system in the repo keeps text on the machine. The Cost column
 marks who bills per request: `$0 · local` systems cost no API money
 (only CPU time), `metered` systems bill per token/search with the
@@ -95,6 +97,10 @@ contract — calibrated choice probabilities and score/noul read straight
 off the option logits, no generation) /
 Fastino's GLiDE (the GLiNER maker's hosted "thinking decision model" —
 one fast pass, extra reasoning allocated only when uncertain) /
+TypeLLM's hosted API (the type-safe generation harness over a served
+Qwen3.8-27B — JSON-Schema-constrained answers with optional
+per-question thinking, the schema-guaranteed cousin of the System One
+contract, Jev-inspired) /
 Span-01, and the five Ollaya-served
 models — NLI entailment classifiers, the Semantic-Router `decision`, the
 full JevK5 4B and Winnow E4B). The GLiNER lineage
@@ -149,7 +155,7 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 58 systems)
+## Mixed-pool spectrum benchmark (all 60 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -165,6 +171,8 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 |---|---|---|---|---|
 | Clef (Workers AI) | **97.9%** | 0.052 | n/a | |
 | GLiDE (Fastino) | **97.9%** | 0.056 | n/a | |
+| TypeLLM thinking (hosted) † | **97.9%** | 0.383 | n/a | |
+| TypeLLM (hosted) † | 95.8% | 0.050 | n/a | |
 | Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a | |
 | Jev (cloud) | 93.8% | 0.018 | n/a | |
 | winnow e4b (Ollaya) | **87.5%** | 8.138 | n/a | |
@@ -224,6 +232,18 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 Takeaways:
 
+- **TypeLLM lands 95.8% plain, 97.9% with thinking** — the type-safe
+  generation harness (constrained enum answers over a hosted
+  Qwen3.8-27B) joins the 97.9% lead in its thinking mode, and the two
+  runs bracket the thinking trade cleanly: per-question reasoning fixes
+  both plain-mode misses (the mixed "slow service, good dessert"
+  sentiment and the government-AI-strategy topic) but flips the
+  startup-AI-pitch question to `business`. Thinking bills 9,376 tokens
+  on the 48-question run at $0.50/M — ~39× its input cost — so the
+  accurate mode runs $1.0e-4/q against the plain mode's $2.6e-6/q (the
+  cheapest hosted decision here after kev-4b and Span-01), at 0.383 vs
+  0.050 s/question. Both entries batch each 24-question task into one
+  request and join the 100% multilingual club (below).
 - **GLiDE ties Clef's 97.9% lead on arrival** — Fastino's "thinking
   decision model" (released Sep 30, three days before this run) matches
   the top of the table in its first bench here. Its single miss is the
@@ -256,8 +276,8 @@ Takeaways:
   input tokens per batched request), so it bills ~$1.8e-5/question —
   12× kev-4b, still 110× below cohere 4-fast.
 - **winnow e4b ties qwen3-reranker-8b at 87.5% — the best systems
-  behind the four hosted leaders (GLiDE, Clef, Solar Decide, Jev) of
-  all 58** — and winnow is local and free (the metered
+  behind the hosted leaders (GLiDE, Clef, TypeLLM's pair, Solar
+  Decide, Jev) of all 60** — and winnow is local and free (the metered
   reranker needs OpenRouter; one more datapoint for rerankers doubling
   as decision engines — bge locally reaches 72.9%, Kev/OpenThai level,
   where the same rerankers sit near zero on JevBench's leaderboard).
@@ -353,10 +373,11 @@ Takeaways:
 Each hosted system's results entry carries the provider's own usage
 accounting — the `usage` block billed per API response, never
 reconstructed from list prices. Measured on these exact runs (one pass;
-48 mixed-pool questions / 54 multilingual texts). Three exceptions:
-Cloudflare, TypeSafe and Fastino report input tokens but no $, so the
-Clef, GLiDE and Jev rows are list price ($0.24 / $0.09 / $0.15 / $0.042
-per M input) × measured tokens:
+48 mixed-pool questions / 54 multilingual texts). Four exceptions:
+Cloudflare, TypeSafe, Fastino and TypeLLM report tokens but no $, so the
+Clef, GLiDE, Jev and TypeLLM rows are list price ($0.24 / $0.09 /
+$0.15 / $0.042 per M input; TypeLLM adds $0.50 per M thinking tokens)
+× measured tokens:
 
 | System | 48-q run | 54-text run | $ / question |
 |---|---|---|---|
@@ -365,6 +386,7 @@ per M input) × measured tokens:
 | Span-01 † | $0.000043 | $0.000040 | $0.0000009 |
 | voyage-rerank-2.5-lite † | $0.000068 | $0.000115 | $0.0000014 |
 | Kev 4B (OpenRouter) | $0.000072 | $0.000106 | $0.0000015 |
+| TypeLLM (hosted) † | $0.00013 | $0.00017 | $0.0000026 |
 | voyage-rerank-2.5 † | $0.000170 | $0.000287 | $0.0000035 |
 | Jev (cloud) ‡ | $0.00026 | $0.00027 | $0.0000053 |
 | Clef-flash (Workers AI) | $0.00041 | $0.00078 | $0.0000086 |
@@ -372,22 +394,28 @@ per M input) × measured tokens:
 | Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Clef (Workers AI) | $0.0011 | $0.0021 | $0.000023 |
 | qwen3-reranker-8b † | $0.0032 | $0.0036 | $0.0000667 |
+| TypeLLM thinking (hosted) † | $0.0048 | $0.0048 | $0.00010 |
 | cohere-rerank-v3.5 † | $0.048 | $0.054 | $0.0010 |
 | cohere-rerank-4-fast † | $0.096 | $0.108 | $0.0020 |
 | cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
 
 The cost charts plot the **metered** systems only — free tiers bill $0
 (Span-01 Lite's plain id is priced $0.0, same as its `:free` twin;
-Nemotron runs on `:free`) and stay off them. The Clef pair, GLiDE and
-Jev report tokens but no provider $, so all three chart at **derived**
+Nemotron runs on `:free`) and stay off them. The Clef pair, GLiDE,
+Jev and TypeLLM report tokens but no provider $, so all four chart at
+**derived**
 numbers
 matching their table rows above: list price × measured tokens,
 computed by `app.cost_summary_frame` from the prices recorded in
-`engines/clef_client.py`, `engines/fastino_client.py` and
-`engines/jev_client.py` (Jev: 6,094 /
+`engines/clef_client.py`, `engines/fastino_client.py`,
+`engines/jev_client.py` and `engines/typellm_client.py` (Jev: 6,094 /
 6,430 input tokens across its 2 + 1 batched requests × $0.042/1M;
 GLiDE: 3,833 / 4,741 input tokens × $0.15/1M — its usage block also
-reports thinking `output_tokens`, priced $0 so they add nothing),
+reports thinking `output_tokens`, priced $0 so they add nothing;
+TypeLLM: input + thinking tokens at $0.05 + $0.50 per M — plain
+2,507 / 3,487 input with no thinking, thinking mode 3,226 / 4,291
+input plus 9,376 / 9,237 thinking, so reasoning is ~97% of that
+mode's bill),
 and marked "≈ derived" in the UI. What
 the measurements say that the price lists don't: Cohere bills ~2.5 search
 units per rerank request (a 48-q run on 4-pro costs $0.12, not the
@@ -437,7 +465,7 @@ images (regenerate with `python make_chart_images.py`):
 Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish,
 Ukrainian · Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified
 by blind back-translation through an independent model instance (it
-caught 8 errors, including a sentiment-flipping Sinhala word). All 58
+caught 8 errors, including a sentiment-flipping Sinhala word). All 60
 systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
@@ -448,6 +476,8 @@ systems answer the same 54 texts.
 | Clef (Workers AI) | 100% | 100% | 100% | **100%** |
 | Clef-flash (Workers AI) | 100% | 100% | 100% | **100%** |
 | GLiDE (Fastino) | 100% | 100% | 100% | **100%** |
+| TypeLLM (hosted) † | 100% | 100% | 100% | **100%** |
+| TypeLLM thinking (hosted) † | 100% | 100% | 100% | **100%** |
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
@@ -507,6 +537,12 @@ systems answer the same 54 texts.
 
 Highlights:
 
+- **TypeLLM joins the 100% club in both modes** — perfect on all 54
+  texts plain (1.11 s/text) and with per-question thinking (2.07
+  s/text), matching GLiDE and the Clef pair: the underlying
+  Qwen3.8-27B carries the rare scripts, and thinking's 9,237 reasoning
+  tokens buy no extra accuracy here — the plain constrained picks are
+  already perfect.
 - **GLiDE joins the 100% club on arrival** — perfect on all 54 texts,
   Sinhala/Icelandic/Welsh included (1.14 s/text, one request per text;
   the whole 54-text run bills ~$0.00071). Fastino markets GLiDE as an
@@ -543,9 +579,10 @@ Highlights:
 - GLiNER2.5-multi is perfect through Ukrainian but drops on Welsh/Sinhala
   (89% overall — still the best local *encoder*); gliclass-large transfers
 surprisingly well for an English-family release (81%, 100% Chinese,
-  joint-best local Sinhala 67%); 100%-on-Sinhala is shared by ten
+  joint-best local Sinhala 67%); 100%-on-Sinhala is shared by twelve
   systems — Jev, jevk5 4B, winnow e4b, Solar Decide, Clef, Clef-flash,
-  GLiDE, hosted Kev 4B, Span-01 and Intern-Decision 0.8B.
+  GLiDE, both TypeLLM entries, hosted Kev 4B, Span-01 and
+  Intern-Decision 0.8B.
 - bge-reranker-v2-m3's flat 67/67/67 is structural: it never predicts
   neutral (35 neg / 19 pos across all 54 texts), so every language
   scores exactly 4/6 — right on the four subjective texts, wrong on
@@ -710,6 +747,9 @@ the hosted OpenRouter systems (see `engines/openrouter_client.py`).
 GLiDE runs on Fastino's own API (see `engines/fastino_client.py`):
 put `FASTINO_API_KEY` in the same `.env` (input $0.15/M tokens,
 thinking tokens $0).
+TypeLLM runs on its own hosted API (see `engines/typellm_client.py`):
+put `TYPELLM_API_KEY` in the same `.env` (input $0.05/M, thinking
+$0.50/M, answer tokens free).
 Clef / Clef-flash run on Cloudflare Workers AI (see
 `engines/clef_client.py`): either a one-time `cf auth login` (the
 client reads and auto-refreshes the cf CLI's OAuth session token;
@@ -837,7 +877,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (58 systems; von, JevK5-Lite,
+                                         # (60 systems; von, JevK5-Lite,
                                          # LFM2.5-RLCD 350M, MoJev 0.85B,
                                          # Lumma-Fev, Julia 1,
                                          # Intern-Decision, K2-Type and
@@ -848,7 +888,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
 # imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 58 systems →
+                                         # 9 languages, all 60 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
@@ -898,12 +938,14 @@ ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo,
 MoJev, nanodiff, Lumma (0.15B/0.6B/4B checkpoint dropdown), Julia,
 Intern-Decision (0.8B/2B/4B checkpoint dropdown), K2-Type, Decision 2.0 (Kai/Eos/Sol checkpoint dropdown), so1 (choice plus a
 yes_no/scale section),
-Jev (cloud), and hosted decision APIs (all fourteen systems: Kev 4B,
+Jev (cloud), and hosted decision APIs (all sixteen systems: Kev 4B,
 Solar Decide, Span-01/Lite and seven rerankers via OpenRouter — one
 metered API request per click, needs `OPENROUTER_API_KEY` — plus Clef /
 Clef-flash on Cloudflare Workers AI — needs a one-time `cf auth login`
-or a Workers AI token in `.env` — and Fastino's GLiDE — needs
-`FASTINO_API_KEY` in `.env`), plus **Ollaya** (the five daemon-served
+or a Workers AI token in `.env` — Fastino's GLiDE — needs
+`FASTINO_API_KEY` in `.env` — and TypeLLM's two entries — needs
+`TYPELLM_API_KEY` in `.env`; its demo also takes an image, the API's
+vision input), plus **Ollaya** (the five daemon-served
 decision models behind a model dropdown — needs the local `ollaya serve`,
 free), plus benchmark tabs (classification /
 extraction / multilingual: tables and charts from
@@ -999,7 +1041,6 @@ Blocked by hardware or runtime:
 | `vllm-sr/Decision-2.0-{Nox-4B,Lux-9B,Vega-27B}` | Decision 2.0's larger sizes — fp32 CPU residency for the 4B alone approaches this 32 GB box and the 9B/27B are far past it; the benchmarked Kai/Eos/Sol trio covers the family (Nox/Lux also noted on the Ollaya `decision` row) |
 | `fastino/gliner2-{base,large,multi}-v1` | older span-architecture GLiNER 2 line, different loader |
 | `gliner-community/gliner_*-v2.5` | classic `gliner` line (LUKE-descended); a one-off CPU trial of `gliner_large-v2.5` scored 56.2% classification / 67% NER at ~0.4 s/question — dominated by GLiNER2.5-base, so not added |
-| [TypeLLM](https://github.com/TypeLLM/TypeLLM) | type-safe generation harness, now Apache 2.0 and pip-installable (`typellm` client) — but still no CPU path here: the documented setup serves Qwen3.8-27B through a Linux SGLang GPU server. Self-reports 195/231 JevBench items (228/231 with thinking mode) — [JevBench results](https://github.com/TypeLLM/TypeLLM/blob/main/evals/jevbench/README.md) |
 
 Not a typed-decision engine, so out of scope for the Jev-activity
 comparison (the one other model on Ollaya's list we checked):
@@ -1081,11 +1122,12 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Solar Decide, Span-01, seven rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
 | `engines/clef_client.py` | dependency-free client for the Clef / Clef-flash decision models on Cloudflare Workers AI (same System One contract behind the v4 REST envelope; cf CLI session token with auto-refresh, or `CLOUDFLARE_AUTH_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in repo-root `.env`) |
 | `engines/fastino_client.py` | dependency-free client for Fastino's hosted GLiDE decision model (same System One contract, flat payload; `FASTINO_API_KEY` in repo-root `.env`) |
+| `engines/typellm_client.py` | dependency-free client for TypeLLM's hosted API (JSON-Schema enum questions via POST /v1/generate, images as base64 data URIs; `TYPELLM_API_KEY` in repo-root `.env`) |
 | `engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 58 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 60 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
