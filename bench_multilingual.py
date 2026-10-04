@@ -64,6 +64,12 @@ Fastino's GLiDE needs FASTINO_API_KEY in .env (ZDR per the model
 catalog; input $0.15/M tokens, thinking tokens free):
     python bench_multilingual.py --system "GLiDE (Fastino)"
 
+TypeLLM's hosted type-safe generation API needs TYPELLM_API_KEY in .env
+(input $0.05/M, thinking $0.50/M, answers free); both modes run, the
+thinking one bills reasoning tokens per question:
+    python bench_multilingual.py --system "TypeLLM (hosted)"
+    python bench_multilingual.py --system "TypeLLM thinking (hosted)"
+
 Ollaya systems need the local Ollaya daemon (System One contract on :11435;
 `ollaya serve` after installing from https://ollaya.dev/download):
     python bench_multilingual.py --system "nli deberta-v3-large (Ollaya)"
@@ -229,6 +235,12 @@ CLEF_MODELS = {
 # notes; engines/fastino_client.py); same names across benchmarks so
 # results files line up
 FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
+# TypeLLM's hosted type-safe generation API (see bench_spectrum.py for
+# the notes; engines/typellm_client.py); single public model, so the
+# value selects the variant: thinking off, or per-question reasoning.
+# Same names across benchmarks so results files line up
+TYPELLM_MODELS = {"TypeLLM (hosted)": False,
+                  "TypeLLM thinking (hosted)": True}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -284,7 +296,7 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
 ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
-               + list(FASTINO_MODELS)
+               + list(FASTINO_MODELS) + list(TYPELLM_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M"]
                + ["Laya Router", "Laya typed-decisions", "von",
                   "JevK5-Lite", "LFM2.5-RLCD 350M",
@@ -665,6 +677,28 @@ def run_glide(texts, tracker=None):
     return preds, statistics.mean(lat)
 
 
+def run_typellm(texts, thinking, tracker=None):
+    """TypeLLM's hosted API (engines/typellm_client.py): same per-text
+    request shape as run_glide (house context state, text restated in the
+    instructions, stateless endpoint), one request per text so latency is
+    comparable. thinking=True bills per-question reasoning tokens at
+    $0.50/M on top of input's $0.05/M."""
+    from engines.typellm_client import enum_question, generate
+
+    preds, lat = [], []
+    for text in texts:
+        question = enum_question(
+            f'What is the overall sentiment of this text: "{text}"',
+            list(SENTIMENT_LABELS), thinking=thinking)
+        t0 = time.perf_counter()
+        out = generate(json.dumps({"task": "sentiment"}), {"q": question},
+                       timeout=90,
+                       usage_sink=tracker.add if tracker else None)
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["result"].get("q"))
+    return preds, statistics.mean(lat)
+
+
 def run_k2type(texts):
     """IFM's K2-Type-0.9B, in-process (engines/k2type_client.py loads the
     C:\\src\\K2-Type-0.9B snapshot on the CPU): same per-text request shape
@@ -896,6 +930,11 @@ def main() -> None:
 
         tracker = UsageTracker()
         preds, lat = run_glide(texts, tracker)
+    elif name in TYPELLM_MODELS:
+        from engines.openrouter_client import UsageTracker
+
+        tracker = UsageTracker()
+        preds, lat = run_typellm(texts, TYPELLM_MODELS[name], tracker)
     elif name == "Jev":
         from engines.openrouter_client import UsageTracker
 

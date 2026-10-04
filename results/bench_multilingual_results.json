@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 58 systems answer the same 54 texts.",
+      "All 60 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -86,7 +86,9 @@
       "Decision 2.0 Kai 0.6B recorded 2026-10-03 13:21, 62s, CPU",
       "Decision 2.0 Eos 0.8B recorded 2026-10-03 13:23, 92s, CPU",
       "Decision 2.0 Sol 2B recorded 2026-10-03 13:25, 160s, CPU",
-      "GLiDE (Fastino) recorded 2026-10-03 19:45, 62s, CPU"
+      "GLiDE (Fastino) recorded 2026-10-03 19:45, 62s, CPU",
+      "TypeLLM (hosted) recorded 2026-10-04 23:57, 60s, CPU",
+      "TypeLLM thinking (hosted) recorded 2026-10-04 23:59, 112s, CPU"
     ]
   },
   "by_language": {
@@ -727,6 +729,28 @@
       "Sinhala": 1.0,
       "Icelandic": 1.0,
       "Welsh": 1.0
+    },
+    "TypeLLM (hosted)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "TypeLLM thinking (hosted)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -1019,6 +1043,16 @@
       "popular": 1.0,
       "medium": 1.0,
       "rare": 1.0
+    },
+    "TypeLLM (hosted)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "TypeLLM thinking (hosted)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
     }
   },
   "latency": {
@@ -1079,7 +1113,9 @@
     "Decision 2.0 Kai 0.6B": 0.859,
     "Decision 2.0 Eos 0.8B": 1.36,
     "Decision 2.0 Sol 2B": 2.459,
-    "GLiDE (Fastino)": 1.143
+    "GLiDE (Fastino)": 1.143,
+    "TypeLLM (hosted)": 1.111,
+    "TypeLLM thinking (hosted)": 2.073
   },
   "laya_routing": {
     "Spanish": {
@@ -1161,7 +1197,9 @@
     "Decision 2.0 Kai 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Decision 2.0 Eos 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Decision 2.0 Sol 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "GLiDE (Fastino)": "Model download and loading excluded; first forward pass included."
+    "GLiDE (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "TypeLLM (hosted)": "Model download and loading excluded; first forward pass included.",
+    "TypeLLM thinking (hosted)": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {
@@ -1258,6 +1296,26 @@
       "total_tokens": 0,
       "cost_reported": false,
       "input_tokens_reported": true
+    },
+    "TypeLLM (hosted)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 3487,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": false,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": true
+    },
+    "TypeLLM thinking (hosted)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 4291,
+      "total_tokens": 0,
+      "thinking_tokens": 9237,
+      "cost_reported": false,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": true
     }
   }
 }
