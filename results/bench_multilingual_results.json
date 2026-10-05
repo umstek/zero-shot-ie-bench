@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 59 systems answer the same 54 texts.",
+      "All 62 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -87,7 +87,10 @@
       "Decision 2.0 Eos 0.8B recorded 2026-10-03 13:23, 92s, CPU",
       "Decision 2.0 Sol 2B recorded 2026-10-03 13:25, 160s, CPU",
       "GLiDE (Fastino) recorded 2026-10-03 19:45, 62s, CPU",
-      "nanodiff 350M v2 recorded 2026-10-05 20:49, 644s, CPU"
+      "nanodiff 350M v2 recorded 2026-10-05 20:49, 644s, CPU",
+      "GLiNER2.5-base (Fastino) recorded 2026-10-05 21:23, 49s, CPU",
+      "GLiNER2.5-multi (Fastino) recorded 2026-10-05 21:24, 44s, CPU",
+      "GLiNER2.5-Decide (Fastino) recorded 2026-10-05 21:24, 47s, CPU"
     ]
   },
   "by_language": {
@@ -739,6 +742,39 @@
       "Sinhala": 0.3333,
       "Icelandic": 0.3333,
       "Welsh": 0.3333
+    },
+    "GLiNER2.5-base (Fastino)": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.1667,
+      "Welsh": 0.3333
+    },
+    "GLiNER2.5-multi (Fastino)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 1.0,
+      "Welsh": 0.6667
+    },
+    "GLiNER2.5-Decide (Fastino)": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.6667,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -1036,6 +1072,21 @@
       "popular": 0.3889,
       "medium": 0.2778,
       "rare": 0.3333
+    },
+    "GLiNER2.5-base (Fastino)": {
+      "popular": 0.8889,
+      "medium": 0.5,
+      "rare": 0.2778
+    },
+    "GLiNER2.5-multi (Fastino)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.6667
+    },
+    "GLiNER2.5-Decide (Fastino)": {
+      "popular": 0.8889,
+      "medium": 0.8333,
+      "rare": 0.3333
     }
   },
   "latency": {
@@ -1097,7 +1148,10 @@
     "Decision 2.0 Eos 0.8B": 1.36,
     "Decision 2.0 Sol 2B": 2.459,
     "GLiDE (Fastino)": 1.143,
-    "nanodiff 350M v2": 11.689
+    "nanodiff 350M v2": 11.689,
+    "GLiNER2.5-base (Fastino)": 0.899,
+    "GLiNER2.5-multi (Fastino)": 0.82,
+    "GLiNER2.5-Decide (Fastino)": 0.864
   },
   "laya_routing": {
     "Spanish": {
@@ -1180,7 +1234,10 @@
     "Decision 2.0 Eos 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Decision 2.0 Sol 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "GLiDE (Fastino)": "Model download and loading excluded; first forward pass included.",
-    "nanodiff 350M v2": "Model download and loading excluded; first forward pass included."
+    "nanodiff 350M v2": "Model download and loading excluded; first forward pass included.",
+    "GLiNER2.5-base (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "GLiNER2.5-multi (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "GLiNER2.5-Decide (Fastino)": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {
@@ -1275,6 +1332,30 @@
       "cost_usd": 0.0,
       "input_tokens": 4741,
       "total_tokens": 0,
+      "cost_reported": false,
+      "input_tokens_reported": true
+    },
+    "GLiNER2.5-base (Fastino)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 1048,
+      "total_tokens": 2039,
+      "cost_reported": false,
+      "input_tokens_reported": true
+    },
+    "GLiNER2.5-multi (Fastino)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 1048,
+      "total_tokens": 2045,
+      "cost_reported": false,
+      "input_tokens_reported": true
+    },
+    "GLiNER2.5-Decide (Fastino)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 1048,
+      "total_tokens": 2233,
       "cost_reported": false,
       "input_tokens_reported": true
     }

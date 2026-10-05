@@ -60,9 +60,15 @@ CLOUDFLARE_AUTH_TOKEN plus CLOUDFLARE_ACCOUNT_ID:
     python bench_multilingual.py --system "Clef (Workers AI)"
     python bench_multilingual.py --system "Clef-flash (Workers AI)"
 
-Fastino's GLiDE needs FASTINO_API_KEY in .env (ZDR per the model
-catalog; input $0.15/M tokens, thinking tokens free):
+Fastino's hosted systems need FASTINO_API_KEY in .env (all ZDR per the
+model catalog): GLiDE rides Fastino's /v1/systemone (input $0.15/M
+tokens, thinking tokens free) and the hosted GLiNER twins the local
+GLiNER rows line up against ride the chat-completions endpoint (input
+$0.03/M tokens, output free):
     python bench_multilingual.py --system "GLiDE (Fastino)"
+    python bench_multilingual.py --system "GLiNER2.5-base (Fastino)"
+    python bench_multilingual.py --system "GLiNER2.5-multi (Fastino)"
+    python bench_multilingual.py --system "GLiNER2.5-Decide (Fastino)"
 
 Ollaya systems need the local Ollaya daemon (System One contract on :11435;
 `ollaya serve` after installing from https://ollaya.dev/download):
@@ -229,6 +235,15 @@ CLEF_MODELS = {
 # notes; engines/fastino_client.py); same names across benchmarks so
 # results files line up
 FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
+# Fastino's hosted GLiNER twins (see bench_spectrum.py for the notes;
+# engines/fastino_client.py): same names as the local GLINER entries'
+# hosted-available checkpoints, one API request per text like a local
+# one-call-per-text run. No small twin - Fastino does not host it
+FASTINO_EXTRACTORS = {
+    "GLiNER2.5-base (Fastino)": "gliner2.5-base",
+    "GLiNER2.5-multi (Fastino)": "gliner2.5-multi",
+    "GLiNER2.5-Decide (Fastino)": "decide",
+}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -281,7 +296,8 @@ K2TYPE = {"K2-Type 0.9B (local)": k2type_client.MODEL_ID}
 DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
-ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
+ALL_SYSTEMS = (list(GLINER) + list(FASTINO_EXTRACTORS)
+               + list(GLIFORMER) + list(GLICLASS)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
                + list(FASTINO_MODELS)
@@ -309,6 +325,17 @@ def make_classifier(name: str, tracker=None):
 
         def one(text: str):
             return model.classify_text(text, {"task": labels})["task"]
+    elif name in FASTINO_EXTRACTORS:
+        # Fastino's hosted GLiNER twin: same classify_text surface over
+        # the chat-completions endpoint (one API request per text, the
+        # same decomposition as the local one-call-per-text run)
+        from engines.fastino_client import gliner
+
+        client = gliner(FASTINO_EXTRACTORS[name],
+                        usage_sink=tracker.add if tracker else None)
+
+        def one(text: str):
+            return client.classify_text(text, {"task": labels})["task"]
     elif name in GLIFORMER:
         from gliformer import GLiFormer
 
@@ -854,8 +881,10 @@ def main() -> None:
     if (name in GLINER or name in GLIFORMER or name in GLICLASS
             or name in RERANKERS or name in OPENROUTER_RERANKERS
             or name in ("Span-01", "Span-01 Lite")
+            or name in FASTINO_EXTRACTORS
             or name == "Certo 421M"):
-        if name in OPENROUTER_RERANKERS or name in ("Span-01", "Span-01 Lite"):
+        if (name in OPENROUTER_RERANKERS or name in ("Span-01", "Span-01 Lite")
+                or name in FASTINO_EXTRACTORS):
             from engines.openrouter_client import UsageTracker
 
             tracker = UsageTracker()

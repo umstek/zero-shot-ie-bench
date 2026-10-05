@@ -33,6 +33,17 @@ class DerivedCostTest(unittest.TestCase):
             app.derived_cost("GLiDE (Fastino)", {"input_tokens": 3833}),
             3833 * 0.15 / 1_000_000)
 
+    def test_fastino_gliner_twins_derived_at_the_catalog_price(self):
+        # the hosted GLiNER twins' recorded spectrum row: 864 input
+        # tokens × $0.03/M each (GET /v1/base-models price; output
+        # tokens are $0)
+        for system in ("GLiNER2.5-base (Fastino)",
+                       "GLiNER2.5-multi (Fastino)",
+                       "GLiNER2.5-Decide (Fastino)"):
+            self.assertAlmostEqual(
+                app.derived_cost(system, {"input_tokens": 864}),
+                864 * 0.03 / 1_000_000)
+
     def test_no_price_or_no_tokens_is_none(self):
         self.assertIsNone(app.derived_cost("Solar Decide (local)",
                                            {"input_tokens": 100}))
@@ -53,6 +64,27 @@ class DerivedCostTest(unittest.TestCase):
         self.assertAlmostEqual(frame.loc[0, "$ per question"],
                                6094 * 0.042 / 1_000_000 / 48)
         self.assertEqual(frame.loc[0, "Accuracy %"], 80.0)
+
+    def test_cost_summary_frame_divides_by_the_questions_answered(self):
+        # the hosted GLiNER twins' usage block bills 48 classification +
+        # 18 NER questions (66 paid requests); GLiDE answers the 48 only.
+        # 864 input tokens x $0.03/M over 66 questions = $3.9e-7/question
+        systems = {
+            "GLiNER2.5-base (Fastino)": {
+                "cls_accuracy": 0.8333, "ner_exact": [True] * 18,
+                "usage": {"paid_requests": 66, "cost_usd": 0.0,
+                          "input_tokens": 864}},
+            "GLiDE (Fastino)": {
+                "cls_accuracy": 0.9792,
+                "usage": {"paid_requests": 2, "cost_usd": 0.0,
+                          "input_tokens": 3833}},
+        }
+        frame = app.cost_summary_frame(systems, n_q=48)
+        by_name = frame.set_index("System")["$ per question"]
+        self.assertAlmostEqual(by_name["GLiNER2.5-base (Fastino)"],
+                               864 * 0.03 / 1_000_000 / 66)
+        self.assertAlmostEqual(by_name["GLiDE (Fastino)"],
+                               3833 * 0.15 / 1_000_000 / 48)
 
 
 if __name__ == "__main__":

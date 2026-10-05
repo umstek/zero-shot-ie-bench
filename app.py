@@ -1,13 +1,13 @@
-"""Interactive demo + benchmarks for sixty-two zero-shot IE/classification
+"""Interactive demo + benchmarks for sixty-five zero-shot IE/classification
 systems across thirty-three families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff (v1 + v2), Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, so1, Jev (cloud),
 OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the fifty-nine
+local daemon; benchmark tabs hold the measured numbers for the sixty-two
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
-seven rerankers) included.
+seven rerankers) and Fastino's hosted GLiNER twins included.
 
 Run:
     python app.py            # loads the GLiNER 2.5 + GLiFormer checkpoints
@@ -158,10 +158,10 @@ def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
     """(System, Accuracy %, $ per question, Latency s) for the metered hosted
     systems: provider-reported cost, else derived tokens × list price
     for the providers that report tokens but no $ (the Clef pair,
-    Jev, GLiDE) — so they chart with the metered systems instead of
-    dropping off the price charts. $0 free tiers (Span-01 Lite,
-    Nemotron) stay off a cost axis (the table in the tab still
-    lists them). Latency s rides along for the isometric
+    Jev, GLiDE, the hosted GLiNER twins) — so they chart with the
+    metered systems instead of dropping off the price charts. $0 free
+    tiers (Span-01 Lite, Nemotron) stay off a cost axis (the table in
+    the tab still lists them). Latency s rides along for the isometric
     cost × speed × accuracy view (cost_speed_scatter)."""
     rows = []
     for s, v in systems.items():
@@ -171,9 +171,13 @@ def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
         run_cost = usage["cost_usd"] or derived_cost(s, usage)
         if not run_cost:
             continue
+        # the usage block bills the whole run: systems that also answer
+        # the NER pool (the hosted GLiNER twins) ran n_q + NER questions,
+        # everyone else n_q — divide by what the run actually answered
+        answered = n_q + (len(v["ner_exact"]) if v.get("ner_exact") else 0)
         rows.append({"System": s,
                      "Accuracy %": round(v["cls_accuracy"] * 100, 1),
-                     "$ per question": run_cost / n_q,
+                     "$ per question": run_cost / answered,
                      "Latency s": round(v.get("cls_mean_latency_s")
                                         or 0.0, 3)})
     return pd.DataFrame(rows)
@@ -956,8 +960,8 @@ def build_classification_tab():
                            "tokens but no $)")
         # the cost charts carry metered systems only: $0 free tiers
         # (Span-01 Lite, Nemotron) stay in the table above but not on a
-        # cost axis; the Clef pair, Jev and GLiDE chart at derived cost
-        # (cost_summary_frame)
+        # cost axis; the Clef pair, Jev, GLiDE and the hosted GLiNER
+        # twins chart at derived cost (cost_summary_frame)
         cost_summary = cost_summary_frame(systems, n_q)
         if len(cost_summary):
             gr.Plot(cost_scatter(
@@ -1897,7 +1901,9 @@ def build_ollaya_tab():
 # over per-label relevance. Plus Cloudflare's Clef / Clef-flash on
 # Workers AI (engines/clef_client.py: cf CLI session token or
 # CLOUDFLARE_AUTH_TOKEN), same choice-question mapping, and Fastino's
-# GLiDE (engines/fastino_client.py: FASTINO_API_KEY), likewise.
+# GLiDE (System One contract) plus the hosted GLiNER twins
+# (engines/fastino_client.py: FASTINO_API_KEY) — the twins ride the
+# chat-completions endpoint with a classifications schema
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
@@ -1918,7 +1924,13 @@ CLEF_MODELS = {
     "Clef (Workers AI)": "clef",
     "Clef-flash (Workers AI)": "clef-flash",
 }
-FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
+# values are engines/fastino_client.py body-model selectors: "glide"
+# rides /v1/systemone, the hosted GLiNER twins ride chat completions
+# (the small checkpoint has no hosted twin — see the client docstring)
+FASTINO_MODELS = {"GLiDE (Fastino)": "glide",
+                  "GLiNER2.5-base (Fastino)": "gliner2.5-base",
+                  "GLiNER2.5-multi (Fastino)": "gliner2.5-multi",
+                  "GLiNER2.5-Decide (Fastino)": "decide"}
 
 
 def build_openrouter_tab():
@@ -1926,7 +1938,7 @@ def build_openrouter_tab():
 
     with gr.Tab("Hosted decision APIs"):
         gr.Markdown("### The hosted systems, live\n"
-                    "The fourteen hosted systems from the benchmark tabs: "
+                    "The seventeen hosted systems from the benchmark tabs: "
                     "Kev 4B and Solar Decide answer one choice question, "
                     "Span-01 / Span-01 Lite "
                     "score one noul question per label, and the seven "
@@ -1938,9 +1950,11 @@ def build_openrouter_tab():
                     "repo-root `.env`, the Clef systems need a one-time "
                     "`cf auth login` (or `CLOUDFLARE_AUTH_TOKEN`; "
                     "Cloudflare commits to not reading/storing/training "
-                    "on requests), and GLiDE needs `FASTINO_API_KEY` "
-                    "(ZDR per Fastino's model catalog). Each click is one "
-                    "metered API request "
+                    "on requests), and the four Fastino systems need "
+                    "`FASTINO_API_KEY` (all ZDR per Fastino's model "
+                    "catalog; GLiDE rides /v1/systemone, the hosted "
+                    "GLiNER twins ride chat completions). Each click is "
+                    "one metered API request "
                     "(free tiers: Span-01 Lite, nemotron).")
         oro_model = gr.Dropdown(
             choices=list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
@@ -1990,6 +2004,17 @@ def build_openrouter_tab():
                     return {"endpoint": "rerank",
                             "decision": next(iter(ranked)),
                             "relevance scores": ranked}
+                if (system in FASTINO_MODELS
+                        and FASTINO_MODELS[system] != "glide"):
+                    # the hosted GLiNER twins: classification rides the
+                    # chat-completions schema, not System One (Decide is
+                    # the decision-tuned sibling — same endpoint)
+                    from engines.fastino_client import gliner
+
+                    decision = gliner(FASTINO_MODELS[system]).classify_text(
+                        text, {task: labels})[task]
+                    return {"endpoint": "chat/completions (classification)",
+                            "decision": decision}
                 if system in CLEF_MODELS:
                     from engines.clef_client import clef
 
@@ -3211,13 +3236,15 @@ def main() -> None:
                     "cloud Jev, "
                     "the eleven "
                     "OpenRouter-hosted systems, the two Clef models on "
-                    "Cloudflare Workers AI, Fastino's GLiDE and the five "
-                    "Ollaya-served "
+                    "Cloudflare Workers AI, Fastino's GLiDE and hosted "
+                    "GLiNER twins (base, multi, Decide — the same "
+                    "checkpoints the GLiNER tab runs locally) and the "
+                    "five Ollaya-served "
                     "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 59 systems across "
+                    "measured numbers for all 62 systems across "
                     "thirty-three families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)

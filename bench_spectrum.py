@@ -70,10 +70,16 @@ CLOUDFLARE_AUTH_TOKEN plus CLOUDFLARE_ACCOUNT_ID:
     python bench_spectrum.py --system "Clef (Workers AI)"
     python bench_spectrum.py --system "Clef-flash (Workers AI)"
 
-Fastino's GLiDE (the "thinking decision model" from the GLiNER maker's
-hosted API) needs FASTINO_API_KEY in .env (ZDR per the model catalog;
-input $0.15/M tokens, thinking tokens free):
+Fastino's hosted systems need FASTINO_API_KEY in .env (all ZDR per the
+model catalog): GLiDE rides Fastino's /v1/systemone (input $0.15/M
+tokens, thinking tokens free) and the hosted GLiNER twins - the same
+open-weight checkpoints benched locally above - ride the
+chat-completions endpoint (input $0.03/M tokens, output free; the
+small checkpoint is not hosted, so no twin for it):
     python bench_spectrum.py --system "GLiDE (Fastino)"
+    python bench_spectrum.py --system "GLiNER2.5-base (Fastino)"
+    python bench_spectrum.py --system "GLiNER2.5-multi (Fastino)"
+    python bench_spectrum.py --system "GLiNER2.5-Decide (Fastino)"
 
 Output: results/bench_spectrum_results.json
 """
@@ -153,10 +159,22 @@ CLEF_MODELS = {
 # Fastino's hosted GLiDE decision model (engines/fastino_client.py;
 # values are the body "model" selectors). One fast pass plus adaptive
 # thinking when uncertain; usage.output_tokens are thinking tokens priced
-# at $0, so only input bills ($0.15/M). Fastino's hosted GLiNER models are
-# the same open-weight checkpoints benched locally above, so only GLiDE
-# rides the API
+# at $0, so only input bills ($0.15/M). Rides /v1/systemone like the
+# local System One servers, hence the batched classify_batched path
 FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
+# Fastino's hosted GLiNER twins (same open-weight checkpoints as the
+# local EXTRACTORS entries; engines/fastino_client.py mirrors the local
+# AutoExtractor surface over the chat-completions endpoint, so one API
+# request per question like a local one-call-per-text run). Input
+# $0.03/M, output $0. The small checkpoint has no hosted twin (not in
+# Fastino's catalog; the id 404s), so no entry for it. Decide is the
+# decision-tuned sibling - classification primary, extraction still
+# supported - mirroring its local twin's both-sections coverage
+FASTINO_EXTRACTORS = {
+    "GLiNER2.5-base (Fastino)": "gliner2.5-base",
+    "GLiNER2.5-multi (Fastino)": "gliner2.5-multi",
+    "GLiNER2.5-Decide (Fastino)": "decide",
+}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -205,7 +223,8 @@ K2TYPE = {"K2-Type 0.9B (local)": k2type_client.MODEL_ID}
 DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
-ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
+ALL_SYSTEMS = (list(EXTRACTORS) + list(FASTINO_EXTRACTORS)
+               + list(GLICLASS) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + list(CLEF_MODELS) + list(FASTINO_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
@@ -363,6 +382,34 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
     return run_task
 
 
+def classify_fastino_hosted(selector: str, tracker=None):
+    """Fastino's hosted GLiNER twins (engines/fastino_client.py): the
+    same open-weight checkpoints as the local EXTRACTORS entries, served
+    from Fastino's chat-completions endpoint. The client mirrors the
+    local AutoExtractor surface, so the per-question decomposition and
+    the parsing match classify_extractor exactly; the difference is one
+    network round-trip per question instead of a local forward pass.
+    Covers both sections like the local checkpoints (Decide's
+    classification tuning does not remove its span support)."""
+    from engines.fastino_client import gliner
+
+    client = gliner(selector, usage_sink=tracker.add if tracker else None)
+
+    def cls_one(text: str, task: str) -> str | None:
+        labels = list(SENTIMENT_LABELS if task == "sentiment"
+                      else TOPIC_LABELS)
+        return client.classify_text(text, {"task": labels})["task"]
+
+    def ner_one(text: str) -> list:
+        out = client.extract_entities(text, NER_LABELS, include_spans=True,
+                                      include_confidence=False)
+        return sorted({(i["start"], i["end"], lab)
+                       for lab, items in out.get("entities", {}).items()
+                       for i in items})
+
+    return cls_one, ner_one
+
+
 def classify_gliclass(model_id: str):
     from gliclass import GLiClassModel, ZeroShotClassificationPipeline
     from transformers import AutoTokenizer
@@ -438,13 +485,22 @@ def main() -> None:
     ner_lat: list[float] = []
     tracker = None  # set by the hosted branches; locals stay untracked
 
-    if name in EXTRACTORS or name in GLICLASS:
+    if (name in EXTRACTORS or name in GLICLASS
+            or name in FASTINO_EXTRACTORS):
         if name in EXTRACTORS:
             cls_one, ner_one = classify_extractor(
                 EXTRACTORS[name], name.startswith("GLiFormer"))
-        else:
+        elif name in GLICLASS:
             cls_one = classify_gliclass(GLICLASS[name])
             ner_one = None
+        else:
+            # Fastino's hosted GLiNER twins: measured provider accounting
+            # like the other hosted branches (input tokens x list price)
+            from engines.openrouter_client import UsageTracker
+
+            tracker = UsageTracker()
+            cls_one, ner_one = classify_fastino_hosted(
+                FASTINO_EXTRACTORS[name], tracker)
         for q in CLS_QUESTIONS:
             t1 = time.perf_counter()
             cls_preds.append(cls_one(q["text"], q["task"]))
