@@ -209,6 +209,7 @@ ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + list(CLEF_MODELS) + list(FASTINO_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
+                  "nanodiff 350M v2",
                   "Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
@@ -879,6 +880,21 @@ def main() -> None:
         from engines.nanodiff_engine.runner import QUESTION, load_model, predict
 
         model, _ = load_model("cpu")
+        for q in CLS_QUESTIONS:
+            t1 = time.perf_counter()
+            pred, _ = predict(model, q["text"], QUESTION[q["task"]],
+                              list(SENTIMENT_LABELS if q["task"] == "sentiment"
+                                   else TOPIC_LABELS), "cpu")
+            cls_lat.append(time.perf_counter() - t1)
+            cls_preds.append(pred)
+    elif name == "nanodiff 350M v2":
+        # the v2 retrain: same typed-decision format and architecture, new
+        # weights (pngwn/nanodiff-350m-typed-decisions-v2 -- see
+        # runner.CKPT_V2); classification only, like v1
+        from engines.nanodiff_engine.runner import (CKPT_V2, QUESTION,
+                                                    load_model, predict)
+
+        model, _ = load_model("cpu", CKPT_V2)
         for q in CLS_QUESTIONS:
             t1 = time.perf_counter()
             pred, _ = predict(model, q["text"], QUESTION[q["task"]],

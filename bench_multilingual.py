@@ -285,7 +285,8 @@ ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
                + list(FASTINO_MODELS)
-               + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M"]
+               + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
+                  "nanodiff 350M v2"]
                + ["Laya Router", "Laya typed-decisions", "von",
                   "JevK5-Lite", "LFM2.5-RLCD 350M",
                   "so1 (Qwen2.5-0.5B)", "Jev",
@@ -519,6 +520,19 @@ def make_decider(name: str):
         from engines.nanodiff_engine.runner import QUESTION, load_model, predict
 
         model, _ = load_model("cpu")
+
+        def one(text: str):
+            pred, _ = predict(model, text, QUESTION["sentiment"],
+                              labels, "cpu")
+            return pred
+    elif name == "nanodiff 350M v2":
+        # the v2 retrain: same typed-decision format and architecture, new
+        # weights (pngwn/nanodiff-350m-typed-decisions-v2 -- see
+        # runner.CKPT_V2); like v1 otherwise
+        from engines.nanodiff_engine.runner import (CKPT_V2, QUESTION,
+                                                    load_model, predict)
+
+        model, _ = load_model("cpu", CKPT_V2)
 
         def one(text: str):
             pred, _ = predict(model, text, QUESTION["sentiment"],
@@ -853,7 +867,8 @@ def main() -> None:
             lat.append(time.perf_counter() - t1)
         lat = statistics.mean(lat)
     elif (name in ("von", "so1 (Qwen2.5-0.5B)", "JevK5-Lite",
-                   "LFM2.5-RLCD 350M", "MoJev 0.85B", "nanodiff 350M")
+                   "LFM2.5-RLCD 350M", "MoJev 0.85B", "nanodiff 350M",
+                   "nanodiff 350M v2")
           or name in LUMMA or name in JULIA or name in INTERN_DECISION):
         one = make_decider(name)
         preds, lat = [], []

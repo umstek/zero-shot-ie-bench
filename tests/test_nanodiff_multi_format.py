@@ -1,5 +1,7 @@
 """Offline tests for the nanodiff multi-decision format (the
-build_multi_prompt/response pair predict_multi relies on).
+build_multi_prompt/response pair predict_multi relies on), plus the v2
+checkpoint constants ('nanodiff 350M v2' in the benches loads through the
+same vendored runner).
 
 No checkpoint, no network - only the tiktoken-based format math (the
 engine package import does pull torch, which the main venv ships).
@@ -14,6 +16,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from engines.nanodiff_engine import runner
 from engines.nanodiff_engine.decision_format import (
     build_multi_prompt, build_multi_response, encode_example)
 
@@ -52,6 +55,32 @@ class MultiFormatTests(unittest.TestCase):
         prompt = build_multi_prompt("s" * 200, questions)
         # PROMPT_LEN is 480; encode_example hard-rejects oversize prompts
         encode_example(prompt, *build_multi_response([0] * 8))
+
+
+class V2CheckpointTests(unittest.TestCase):
+    """The 'nanodiff 350M v2' bench entries load through the same vendored
+    runner (same ARCH, same typed-decision format); only the checkpoint
+    constant differs. Constants only - no download, no weights."""
+
+    def test_default_ckpt_is_still_the_v1_release(self):
+        repo, _, fn = runner.CKPT.partition("::")
+        self.assertEqual(repo, "pngwn/nanodiff-350m-typed-decisions-lam1")
+        self.assertEqual(fn, "nanodiff-350m-typed-decisions-lam1.pt")
+
+    def test_v2_ckpt_targets_the_v2_release(self):
+        repo, _, fn = runner.CKPT_V2.partition("::")
+        self.assertEqual(repo, "pngwn/nanodiff-350m-typed-decisions-v2")
+        self.assertEqual(fn, "nanodiff-350m-typed-decisions-v2.pt")
+
+    def test_load_model_defaults_to_v1_and_accepts_v2(self):
+        self.assertIn(runner.CKPT, runner.load_model.__defaults__)
+
+    def test_v2_shares_the_arch(self):
+        # the v2 checkpoint's embedded config matches runner.ARCH (verified
+        # against the release header: n_layer=16, n_head=20, n_embd=1280,
+        # block_size=512), so load_model builds the same NanoDiff shape
+        self.assertEqual(runner.ARCH, dict(n_layer=16, n_head=20,
+                                           n_embd=1280, block_size=512))
 
 
 if __name__ == "__main__":
