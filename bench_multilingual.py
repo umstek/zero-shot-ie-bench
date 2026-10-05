@@ -29,6 +29,14 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system "Decision 2.0 Eos 0.8B"
     .venv-von/Scripts/python bench_multilingual.py --system "Decision 2.0 Sol 2B"
 
+GLiNER-X (Knowledgator's mT5-encoder multilingual family) needs its own
+venv — the classic gliner package with the stanza extra resolves
+transformers 5.x, incompatible with the main venv's pinned 4.57.6
+(see README setup for `.venv-glinerx`):
+    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-small
+    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-base
+    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-large
+
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
@@ -258,10 +266,17 @@ OPENROUTER_RERANKERS = {
 # name -> tag map and the client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
-from engines import (decision2_client, intern_decision_client, julia_client,
-                     k2type_client)
+from engines import (decision2_client, glinerx_client, intern_decision_client,
+                     julia_client, k2type_client)
 
 OLLAYA = OLLAYA_MODELS
+# Knowledgator's GLiNER-X multilingual family (mT5 encoder backbone; see
+# bench_spectrum.py for the notes; engines/glinerx_client.py holds the
+# registry and the request-shape findings — NER-only checkpoints, the
+# classification answers ride the vendor multitask prompt as census
+# rows). Runs under .venv-glinerx/Scripts/python; same names across
+# benchmarks so results files line up
+GLINER_X = glinerx_client.MODELS
 # FrontiersMind's Lumma-Fev typed-decision family, in-process via the
 # lumma-fev package (.venv-von: transformers >=5.4,<6); same names as
 # bench_spectrum.py so results files line up across benchmarks
@@ -297,7 +312,7 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
 ALL_SYSTEMS = (list(GLINER) + list(FASTINO_EXTRACTORS)
-               + list(GLIFORMER) + list(GLICLASS)
+               + list(GLIFORMER) + list(GLICLASS) + list(GLINER_X)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
                + list(FASTINO_MODELS)
@@ -345,6 +360,30 @@ def make_classifier(name: str, tracker=None):
         def one(text: str):
             out = model.classify(text, labels, threshold=0.5)
             return out[0]["class_name"] if out else None
+    elif name in GLINER_X:
+        # Knowledgator's GLiNER-X (classic gliner package over an mT5
+        # encoder, stanza word splitter; runs under .venv-glinerx) — see
+        # bench_spectrum.py for the notes. NER-only checkpoints, so the
+        # answers ride the vendor multitask prompt and land as census
+        # rows (engines/glinerx_client.py). The word splitter lazily
+        # builds a stanza tokenize pipeline per detected language, so an
+        # untimed splitter pass over one text per bench language pays
+        # every lazy pipeline load (and any first-use stanza download)
+        # before the timed loop, like the other local engines' warm-up.
+        from engines.glinerx_client import (CLASSIFICATION_THRESHOLD,
+                                            classification_prompt,
+                                            load_glinerx,
+                                            reduce_classification,
+                                            warm_splitter)
+
+        model = load_glinerx(GLINER_X[name])
+        warm_splitter(model, [items[0][0] for items in LANGUAGES.values()])
+
+        def one(text: str):
+            entities = model.predict_entities(
+                classification_prompt(labels, text), labels,
+                threshold=CLASSIFICATION_THRESHOLD)
+            return reduce_classification(entities, labels)
     elif name == "Certo 421M":
         # calibrated non-generative decision model (vendored engines/certo_engine/):
         # score each label description against the state in one forward pass
@@ -879,6 +918,7 @@ def main() -> None:
     print(f"{name}: 54 texts (9 languages x 6) ...")
     t0 = time.perf_counter()
     if (name in GLINER or name in GLIFORMER or name in GLICLASS
+            or name in GLINER_X
             or name in RERANKERS or name in OPENROUTER_RERANKERS
             or name in ("Span-01", "Span-01 Lite")
             or name in FASTINO_EXTRACTORS

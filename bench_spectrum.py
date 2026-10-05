@@ -31,6 +31,14 @@ family:
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Eos 0.8B"
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Sol 2B"
 
+GLiNER-X (Knowledgator's mT5-encoder multilingual family) needs its own
+venv — the classic gliner package with the stanza extra resolves
+transformers 5.x, incompatible with the main venv's pinned 4.57.6
+(see README setup for `.venv-glinerx`):
+    .venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-small
+    .venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-base
+    .venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-large
+
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
         --run jaredpalmer/kev-0.8b --port 8009
@@ -95,8 +103,8 @@ import time
 
 from bench import NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, spans_of
 from bench_graded import NER, SENTIMENT, TOPIC
-from engines import (decision2_client, intern_decision_client, julia_client,
-                     k2type_client)
+from engines import (decision2_client, glinerx_client, intern_decision_client,
+                     julia_client, k2type_client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
 RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -128,6 +136,13 @@ GLICLASS = {
     "gliclass-base": "knowledgator/gliclass-base-v3.0",
     "gliclass-large": "knowledgator/gliclass-large-v3.0",
 }
+# Knowledgator's GLiNER-X multilingual family (mT5 encoder backbone, the
+# first non-DeBERTa GLiNER here; classic `gliner` package + stanza word
+# splitter, Apache-2.0, released 2026-04-29). engines/glinerx_client.py
+# holds the registry and the request-shape findings (NER is the cards'
+# only task; classification rides the vendor multitask prompt as a census
+# row). Runs under .venv-glinerx/Scripts/python — see README setup
+GLINER_X = glinerx_client.MODELS
 RERANKERS = {
     "mxbai-rerank-base-v2": "mixedbread-ai/mxbai-rerank-base-v2",
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
@@ -224,7 +239,7 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
 ALL_SYSTEMS = (list(EXTRACTORS) + list(FASTINO_EXTRACTORS)
-               + list(GLICLASS) + list(RERANKERS)
+               + list(GLICLASS) + list(GLINER_X) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + list(CLEF_MODELS) + list(FASTINO_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
@@ -410,6 +425,36 @@ def classify_fastino_hosted(selector: str, tracker=None):
     return cls_one, ner_one
 
 
+def classify_glinerx(model_id: str):
+    """Knowledgator's GLiNER-X (classic `gliner` package over an mT5
+    encoder, stanza word splitter — runs under .venv-glinerx). NER via
+    predict_entities is the card's only supported task; classification
+    rides the vendor multitask prompt (engines/glinerx_client.py) and
+    lands as a census row — the checkpoints are NER-only and every
+    mapping we probed collapses onto one label (see the client
+    docstring). Covers both sections like the GLiNER2.5 rows."""
+    from engines.glinerx_client import (CLASSIFICATION_THRESHOLD,
+                                        NER_THRESHOLD, classification_prompt,
+                                        load_glinerx, reduce_classification)
+
+    model = load_glinerx(model_id)
+
+    def cls_one(text: str, task: str) -> str | None:
+        labels = list(SENTIMENT_LABELS if task == "sentiment"
+                      else TOPIC_LABELS)
+        entities = model.predict_entities(
+            classification_prompt(labels, text), labels,
+            threshold=CLASSIFICATION_THRESHOLD)
+        return reduce_classification(entities, labels)
+
+    def ner_one(text: str) -> list:
+        entities = model.predict_entities(text, NER_LABELS,
+                                          threshold=NER_THRESHOLD)
+        return sorted({(e["start"], e["end"], e["label"]) for e in entities})
+
+    return cls_one, ner_one
+
+
 def classify_gliclass(model_id: str):
     from gliclass import GLiClassModel, ZeroShotClassificationPipeline
     from transformers import AutoTokenizer
@@ -486,13 +531,17 @@ def main() -> None:
     tracker = None  # set by the hosted branches; locals stay untracked
 
     if (name in EXTRACTORS or name in GLICLASS
-            or name in FASTINO_EXTRACTORS):
+            or name in FASTINO_EXTRACTORS or name in GLINER_X):
         if name in EXTRACTORS:
             cls_one, ner_one = classify_extractor(
                 EXTRACTORS[name], name.startswith("GLiFormer"))
         elif name in GLICLASS:
             cls_one = classify_gliclass(GLICLASS[name])
             ner_one = None
+        elif name in GLINER_X:
+            # Knowledgator's GLiNER-X: NER-only checkpoints, so the cls
+            # answers ride the vendor multitask prompt (census rows)
+            cls_one, ner_one = classify_glinerx(GLINER_X[name])
         else:
             # Fastino's hosted GLiNER twins: measured provider accounting
             # like the other hosted branches (input tokens x list price)

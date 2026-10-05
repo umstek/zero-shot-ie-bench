@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 62 systems answer the same 54 texts.",
+      "All 65 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -90,7 +90,10 @@
       "nanodiff 350M v2 recorded 2026-10-05 20:49, 644s, CPU",
       "GLiNER2.5-base (Fastino) recorded 2026-10-05 21:23, 49s, CPU",
       "GLiNER2.5-multi (Fastino) recorded 2026-10-05 21:24, 44s, CPU",
-      "GLiNER2.5-Decide (Fastino) recorded 2026-10-05 21:24, 47s, CPU"
+      "GLiNER2.5-Decide (Fastino) recorded 2026-10-05 21:24, 47s, CPU",
+      "GLiNER-X-small recorded 2026-10-05 22:59, 58s, CPU",
+      "GLiNER-X-base recorded 2026-10-05 22:59, 23s, CPU",
+      "GLiNER-X-large recorded 2026-10-05 23:00, 36s, CPU"
     ]
   },
   "by_language": {
@@ -775,6 +778,39 @@
       "Sinhala": 0.3333,
       "Icelandic": 0.3333,
       "Welsh": 0.3333
+    },
+    "GLiNER-X-small": {
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.1667,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER-X-base": {
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER-X-large": {
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.1667,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
     }
   },
   "by_tier": {
@@ -1087,6 +1123,21 @@
       "popular": 0.8889,
       "medium": 0.8333,
       "rare": 0.3333
+    },
+    "GLiNER-X-small": {
+      "popular": 0.3333,
+      "medium": 0.2778,
+      "rare": 0.3333
+    },
+    "GLiNER-X-base": {
+      "popular": 0.3333,
+      "medium": 0.2778,
+      "rare": 0.3333
+    },
+    "GLiNER-X-large": {
+      "popular": 0.3333,
+      "medium": 0.3333,
+      "rare": 0.2778
     }
   },
   "latency": {
@@ -1151,7 +1202,10 @@
     "nanodiff 350M v2": 11.689,
     "GLiNER2.5-base (Fastino)": 0.899,
     "GLiNER2.5-multi (Fastino)": 0.82,
-    "GLiNER2.5-Decide (Fastino)": 0.864
+    "GLiNER2.5-Decide (Fastino)": 0.864,
+    "GLiNER-X-small": 0.231,
+    "GLiNER-X-base": 0.106,
+    "GLiNER-X-large": 0.252
   },
   "laya_routing": {
     "Spanish": {
@@ -1237,7 +1291,10 @@
     "nanodiff 350M v2": "Model download and loading excluded; first forward pass included.",
     "GLiNER2.5-base (Fastino)": "Model download and loading excluded; first forward pass included.",
     "GLiNER2.5-multi (Fastino)": "Model download and loading excluded; first forward pass included.",
-    "GLiNER2.5-Decide (Fastino)": "Model download and loading excluded; first forward pass included."
+    "GLiNER2.5-Decide (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "GLiNER-X-small": "Model download and loading excluded; first forward pass included.",
+    "GLiNER-X-base": "Model download and loading excluded; first forward pass included.",
+    "GLiNER-X-large": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {
