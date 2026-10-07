@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "timezone": "Asia/Colombo",
+  "schedule": ["before 4am on Monday"],
+  "rangeStrategy": "bump",
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "relik's venv is a deliberately frozen stack - relik 1.0.7 itself pins torch 2.3.1 and transformers <4.42 (see requirements-relik.txt), so a bump here breaks the documented install. Never propose updates for it.",
+      "matchFileNames": ["requirements-relik.txt"],
+      "enabled": false
+    }
+  ]
+}
