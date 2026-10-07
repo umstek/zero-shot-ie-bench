@@ -106,16 +106,20 @@ class CostSpeedGeometryTest(unittest.TestCase):
     def test_per_system_hues_and_lightened_leaders(self):
         # one distinct hue per system, assigned by sorted system name
         # so the web UI and the PNG agree; leader lines carry the same
-        # hue blended toward white
+        # hue blended toward white, labels the same hue toward black
         g = app._cost_speed_geometry(FRAME)
         self.assertEqual(len(g["colors"]), 3)
         self.assertEqual(len(set(g["colors"])), 3)
-        for dot, leader in zip(g["colors"], g["leader_colors"]):
+        for dot, leader, label in zip(g["colors"], g["leader_colors"],
+                                      g["label_colors"]):
             self.assertRegex(dot, r"#[0-9a-f]{6}")
             self.assertRegex(leader, r"#[0-9a-f]{6}")
+            self.assertRegex(label, r"#[0-9a-f]{6}")
             for i in (1, 3, 5):
                 self.assertGreaterEqual(int(leader[i:i + 2], 16),
                                         int(dot[i:i + 2], 16))
+                self.assertLessEqual(int(label[i:i + 2], 16),
+                                     int(dot[i:i + 2], 16))
         # row order must not change the hue a system gets
         g2 = app._cost_speed_geometry(FRAME.iloc[::-1])
         self.assertEqual(dict(zip(g["names"], g["colors"])),
@@ -126,6 +130,11 @@ class CostSpeedGeometryTest(unittest.TestCase):
         self.assertEqual(app._lighten("#ffffff", 0.5), "#ffffff")
         self.assertEqual(app._lighten("#4c78a8", 0.0), "#4c78a8")
 
+    def test_darken_blends_toward_black(self):
+        self.assertEqual(app._darken("#ffffff", 0.5), "#808080")
+        self.assertEqual(app._darken("#000000", 0.5), "#000000")
+        self.assertEqual(app._darken("#4c78a8", 0.0), "#4c78a8")
+
     def test_chart_serializes(self):
         chart = app.cost_speed_scatter(FRAME, "t")
         spec = chart.to_dict()
@@ -133,8 +142,11 @@ class CostSpeedGeometryTest(unittest.TestCase):
         # frame + axes + ticks + 3 tick-label layers + 3 titles +
         # drop lines + shadows + points + labels
         self.assertGreater(len(spec["layer"]), 10)
-        # per-system hue wired through as literal color values
-        self.assertIn('"_c"', json.dumps(spec))
+        # per-system hue wired through as literal color values, for
+        # the dots and the hue-matched labels alike
+        dumped = json.dumps(spec)
+        self.assertIn('"_c"', dumped)
+        self.assertIn('"_c_dark"', dumped)
 
 
 class LatencyColumnTest(unittest.TestCase):
