@@ -60,15 +60,19 @@ class UsageTracker:
     endpoint's documented usage block carries search_units/total_tokens,
     with cost and input_tokens optional, so each is only accumulated
     (and flagged cost_reported / input_tokens_reported) when the
-    provider's response actually contained it."""
+    provider's response actually contained it. TypeLLM's usage block adds
+    thinking_tokens (billed at their own price), accumulated the same
+    way."""
 
     def __init__(self):
         self.requests = 0
         self.cost = 0.0
         self.input_tokens = 0
         self.total_tokens = 0
+        self.thinking_tokens = 0
         self.cost_reported = False
         self.input_tokens_reported = False
+        self.thinking_tokens_reported = False
 
     def add(self, usage) -> None:
         if not isinstance(usage, dict):
@@ -80,6 +84,9 @@ class UsageTracker:
         if usage.get("input_tokens") is not None:
             self.input_tokens += int(usage["input_tokens"])
             self.input_tokens_reported = True
+        if usage.get("thinking_tokens") is not None:
+            self.thinking_tokens += int(usage["thinking_tokens"])
+            self.thinking_tokens_reported = True
         self.total_tokens += int(usage.get("total_tokens") or 0)
 
     def as_dict(self) -> dict:
@@ -87,8 +94,10 @@ class UsageTracker:
                 "cost_usd": round(self.cost, 6),
                 "input_tokens": self.input_tokens,
                 "total_tokens": self.total_tokens,
+                "thinking_tokens": self.thinking_tokens,
                 "cost_reported": self.cost_reported,
-                "input_tokens_reported": self.input_tokens_reported}
+                "input_tokens_reported": self.input_tokens_reported,
+                "thinking_tokens_reported": self.thinking_tokens_reported}
 
 
 def systemone(model: str, tracker: UsageTracker | None = None):

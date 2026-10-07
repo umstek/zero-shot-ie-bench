@@ -75,6 +75,13 @@ hosted API) needs FASTINO_API_KEY in .env (ZDR per the model catalog;
 input $0.15/M tokens, thinking tokens free):
     python bench_spectrum.py --system "GLiDE (Fastino)"
 
+TypeLLM's hosted type-safe generation API (constrained enum picks over
+their typellm-latest Qwen3.8-27B deployment) needs TYPELLM_API_KEY in
+.env (input $0.05/M, thinking $0.50/M, answers free); both modes run,
+the thinking one bills reasoning tokens per question:
+    python bench_spectrum.py --system "TypeLLM (hosted)"
+    python bench_spectrum.py --system "TypeLLM thinking (hosted)"
+
 Output: results/bench_spectrum_results.json
 """
 
@@ -157,6 +164,13 @@ CLEF_MODELS = {
 # the same open-weight checkpoints benched locally above, so only GLiDE
 # rides the API
 FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
+# TypeLLM's hosted type-safe generation API (engines/typellm_client.py;
+# single public model typellm-latest, so the value selects the variant:
+# thinking off, or per-question reasoning at $0.50/M on top of input's
+# $0.05/M - answers stay free). Same names as bench_multilingual.py so
+# results files line up across benchmarks
+TYPELLM_MODELS = {"TypeLLM (hosted)": False,
+                  "TypeLLM thinking (hosted)": True}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -208,6 +222,7 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
 ALL_SYSTEMS = (list(EXTRACTORS) + list(GLICLASS) + list(RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + list(CLEF_MODELS) + list(FASTINO_MODELS)
+               + list(TYPELLM_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
                   "Laya (local)", "Laya typed-decisions", "Jev",
                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
@@ -262,7 +277,8 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
     its own /api/evaluate contract (port 8149) with label descriptions as
     option semantics. model_id selects the checkpoint for the hosted
     System One engines ("or-systemone": kev-4b, solar-decide; "clef":
-    clef, clef-flash; "fastino": glide - single model, selector unused).
+    clef, clef-flash; "fastino": glide - single model, selector unused)
+    and the thinking flag for "typellm" (single public model).
     (Ollaya systems do NOT batch here: their decision layers build the
     premise from the state, so each text is its own request - see the
     dedicated branch in main().)"""
@@ -338,6 +354,27 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
             out = client.ask({"task": task}, questions)
             return [out["answers"][f"t{i}"].get("choice")
                     for i in range(len(texts))]
+    elif client_kind == "typellm":
+        # TypeLLM's hosted API (engines/typellm_client.py): one
+        # /v1/generate per task packs all 24 texts as constrained enum
+        # questions - the same batching the System One engines above get.
+        # The house shape carries over: context is the System One state
+        # JSON-serialized ({"task": ...}), each question's instructions
+        # restate the text. model_id is the thinking flag (TYPELLM_MODELS).
+        from engines.typellm_client import enum_question, generate
+
+        thinking = bool(model_id)
+
+        def run_task(task: str, texts: list[str]) -> list:
+            labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
+            questions = {
+                f"t{i}": enum_question(INSTR[task].format(text=t),
+                                       list(labels), thinking=thinking)
+                for i, t in enumerate(texts)}
+            out = generate(json.dumps({"task": task}), questions,
+                           timeout=90,
+                           usage_sink=tracker.add if tracker else None)
+            return [out["result"].get(f"t{i}") for i in range(len(texts))]
     elif client_kind == "agentjev":
         from engines.agentjev_client import ask
 
@@ -512,7 +549,8 @@ def main() -> None:
                    "Kev 0.8B (local)", "AgentJev 0.6B (local)",
                    "decider 0.8B (local)", "OpenThai 0.8B (local)",
                    "Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
-          or name in CLEF_MODELS or name in FASTINO_MODELS):
+          or name in CLEF_MODELS or name in FASTINO_MODELS
+          or name in TYPELLM_MODELS):
         from engines.openrouter_client import UsageTracker
 
         repo = ("convaiinnovations/laya-typed-decisions"
@@ -527,17 +565,20 @@ def main() -> None:
                 if name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
                 else "clef" if name in CLEF_MODELS
                 else "fastino" if name in FASTINO_MODELS
+                else "typellm" if name in TYPELLM_MODELS
                 else "jev" if name == "Jev" else None)
         if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
         tracker = (UsageTracker() if name in ("Jev", "Kev 4B (OpenRouter)",
                                               "Solar Decide (OpenRouter)")
                    or name in CLEF_MODELS or name in FASTINO_MODELS
+                   or name in TYPELLM_MODELS
                    else None)
         run_task = classify_batched(kind, repo=repo, tracker=tracker,
                                     model_id=OPENROUTER_SYSTEMONE.get(name)
                                     or CLEF_MODELS.get(name)
-                                    or FASTINO_MODELS.get(name))
+                                    or FASTINO_MODELS.get(name)
+                                    or TYPELLM_MODELS.get(name))
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()
