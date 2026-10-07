@@ -375,9 +375,9 @@ accounting — the `usage` block billed per API response, never
 reconstructed from list prices. Measured on these exact runs (one pass;
 48 mixed-pool questions / 54 multilingual texts). Four exceptions:
 Cloudflare, TypeSafe, Fastino and TypeLLM report tokens but no $, so the
-Clef, GLiDE, Jev and TypeLLM rows are list price ($0.24 / $0.09 /
-$0.15 / $0.042 per M input; TypeLLM adds $0.50 per M thinking tokens)
-× measured tokens:
+Clef, Clef-flash, GLiDE, Jev and TypeLLM rows are list price ($0.24 /
+$0.09 / $0.15 / $0.042 / $0.05 per M input; TypeLLM adds $0.50 per M
+thinking tokens) × measured tokens:
 
 | System | 48-q run | 54-text run | $ / question |
 |---|---|---|---|

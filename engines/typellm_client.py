@@ -37,11 +37,13 @@ No third-party deps on purpose: urllib only.
 
 from __future__ import annotations
 
+import email.utils
 import json
 import os
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 
 BASE_URL = "https://api.typellm.ai"
 GENERATE_URL = BASE_URL + "/v1/generate"
@@ -55,6 +57,9 @@ THINKING_USD_PER_MTOK = 0.50
 # 90 s and one call carries at most 64 questions
 MAX_TIMEOUT_S = 90
 MAX_QUESTIONS = 64
+# Retry-After is advisory: a far-future or clock-skewed date must not
+# stall a bench run, so honor it only up to this many seconds
+MAX_RETRY_AFTER_S = 60.0
 
 
 def load_api_key() -> str:
@@ -108,9 +113,12 @@ def generate(context: str, questions: dict, images: list[str] | None = None,
              model: str = DEFAULT_MODEL, timeout: int = 60,
              max_retries: int = 2, usage_sink=None) -> dict:
     """One POST /v1/generate; returns the flat response payload plus
-    _latency_s. Retries a 429 (honoring Retry-After), a 5xx other than
-    504 and a connection error up to `max_retries` times - the same
-    policy the pip `typellm` client documents."""
+    _latency_s. The response must carry a result object answering every
+    asked question - anything less raises before the payload reaches
+    callers or usage accounting. Retries a 429 (honoring Retry-After in
+    either RFC 9110 form), a 5xx other than 504 and a connection error
+    up to `max_retries` times - the same policy the pip `typellm`
+    client documents."""
     if not questions or len(questions) > MAX_QUESTIONS:
         raise ValueError(f"1-{MAX_QUESTIONS} questions per call, got "
                          f"{len(questions)}")
@@ -131,9 +139,7 @@ def generate(context: str, questions: dict, images: list[str] | None = None,
             with urllib.request.urlopen(request, timeout=timeout + 30
                                         ) as response:
                 payload = json.loads(response.read().decode("utf-8"))
-            if not isinstance(payload, dict) or "result" not in payload:
-                raise RuntimeError(f"TypeLLM response missing result: "
-                                   f"{payload!r:.300}")
+            _validate_response(payload, questions)
             if usage_sink:
                 usage_sink(payload.get("usage"))
             payload["_latency_s"] = round(time.perf_counter() - t0, 3)
@@ -147,9 +153,12 @@ def generate(context: str, questions: dict, images: list[str] | None = None,
                     f"TypeLLM HTTP {exc.code}: {detail}") from exc
             last_error = RuntimeError(
                 f"TypeLLM HTTP {exc.code}: {detail}")
-            if exc.code == 429 and exc.headers.get("Retry-After"):
-                time.sleep(float(exc.headers["Retry-After"]))
-                continue
+            if exc.code == 429:
+                delay = _retry_after_seconds(
+                    exc.headers.get("Retry-After", ""))
+                if delay is not None:
+                    time.sleep(delay)
+                    continue
         except urllib.error.URLError as exc:
             # connection error (DNS, reset, timeout) - retryable
             last_error = RuntimeError(f"TypeLLM connection error: {exc}")
@@ -157,6 +166,45 @@ def generate(context: str, questions: dict, images: list[str] | None = None,
                 raise last_error from exc
         time.sleep(2 ** attempt)
     raise last_error  # unreachable; the loop returns or raises
+
+
+def _validate_response(payload, questions: dict) -> None:
+    """Reject anything but the documented flat response: a result object
+    holding an answer for every asked question. A null result or a
+    dropped answer would otherwise surface as a KeyError in the demo or
+    silently score as a wrong prediction in the benches."""
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"TypeLLM response is not an object: "
+                           f"{payload!r:.300}")
+    result = payload.get("result")
+    if not isinstance(result, dict):
+        raise RuntimeError(f"TypeLLM response result is not an object: "
+                           f"{payload!r:.300}")
+    missing = sorted(name for name in questions if name not in result)
+    if missing:
+        raise RuntimeError(f"TypeLLM response has no answers for "
+                           f"{missing}: {payload!r:.300}")
+
+
+def _retry_after_seconds(value: str):
+    """Retry-After as a sleep in seconds, or None to use the caller's
+    own backoff. RFC 9110 allows delay-seconds or an HTTP-date; both are
+    accepted, and either form is clamped to [0, MAX_RETRY_AFTER_S] so an
+    absurd value cannot stall a bench run."""
+    try:
+        return min(max(float(value), 0.0), MAX_RETRY_AFTER_S)
+    except ValueError:
+        pass
+    try:
+        when = email.utils.parsedate_to_datetime(value)
+    except (TypeError, ValueError):
+        return None
+    if when is None:
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    delay = (when - datetime.now(timezone.utc)).total_seconds()
+    return min(max(delay, 0.0), MAX_RETRY_AFTER_S)
 
 
 def _require_key() -> str:
