@@ -60,6 +60,10 @@ are not ZDR - they may retain request data (Solar Decide additionally has
 a ZDR Upstage endpoint, but the runs here use default routing):
     python bench_spectrum.py --system "Kev 4B (OpenRouter)"
     python bench_spectrum.py --system "Solar Decide (OpenRouter)"
+    python bench_spectrum.py --system "Decider V1.1 27B (OpenRouter)"
+    # Decisions family: also "Decider V1 27B (OpenRouter)",
+    # "D1 (OpenRouter)", "Tev1 4B (OpenRouter)",
+    # "Mercury Decide (OpenRouter)" (free tier, 20 req/min)
     python bench_spectrum.py --system "Span-01 Lite"
     python bench_spectrum.py --system "cohere-rerank-v3.5 (OpenRouter)"
 
@@ -142,12 +146,32 @@ RERANKERS = {
 # lives there but is RBAC-gated and already benched through the TypeSafe
 # API directly; typesafe/jev-router is a chat router, not a typed-decision
 # endpoint.
+#
+# The Decisions family OpenRouter added since (output modality
+# "decisions", same /v1/systemone contract; only input bills, decisions
+# are free): Perplexity's Decider V1 / V1.1 27B (262K ctx, vision-capable,
+# $0.04 / $0.02 per M input), Liquid's d1 ($0.04/M; one of its providers
+# retains prompts -> non-ZDR), Together's Tev1 4B experimental (SFT of
+# Qwen3.5-4B, $0.042/M) and Inception's Mercury Decide on the :free tier
+# (diffusion LM, $0; the free-tier provider retains prompts -> non-ZDR).
+# openai/gpt-6-luna-decisions ($0.10/M) is NOT benchmarked: OpenAI's
+# endpoint retains prompts and this account enforces ZDR, so OpenRouter
+# refuses to route to it.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
+    "Decider V1 27B (OpenRouter)": "perplexity/pplx-decider-v1-27b",
+    "Decider V1.1 27B (OpenRouter)": "perplexity/pplx-decider-v1.1-27b",
+    "D1 (OpenRouter)": "liquid/d1",
+    "Tev1 4B (OpenRouter)": "togethercomputer/tev1-4b-experimental",
+    "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
 }
+# the choice-question subset: every OpenRouter System One model except
+# the two Span behavior scorers, whose noul branch in main() runs first
+OR_SYSTEMONE_CHOICE = {name for name in OPENROUTER_SYSTEMONE
+                       if not name.startswith("Span-01")}
 # Cloudflare's Clef decision models on Workers AI (engines/clef_client.py;
 # values are the body "model" selectors). Clef rides a frozen Qwen3.8-27B
 # backbone (64k ctx, vision), Clef-flash a Qwen3.5-9B one (~39 ms median,
@@ -547,8 +571,8 @@ def main() -> None:
             cls_lat.append(time.perf_counter() - t1)
     elif (name in ("Laya (local)", "Laya typed-decisions", "Jev",
                    "Kev 0.8B (local)", "AgentJev 0.6B (local)",
-                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                   "Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
+                   "decider 0.8B (local)", "OpenThai 0.8B (local)")
+          or name in OR_SYSTEMONE_CHOICE
           or name in CLEF_MODELS or name in FASTINO_MODELS
           or name in TYPELLM_MODELS):
         from engines.openrouter_client import UsageTracker
@@ -561,16 +585,15 @@ def main() -> None:
                 else "agentjev" if name.startswith("AgentJev")
                 else "decider" if name.startswith("decider")
                 else "openthai" if name.startswith("OpenThai")
-                else "or-systemone"
-                if name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)")
+                else "or-systemone" if name in OR_SYSTEMONE_CHOICE
                 else "clef" if name in CLEF_MODELS
                 else "fastino" if name in FASTINO_MODELS
                 else "typellm" if name in TYPELLM_MODELS
                 else "jev" if name == "Jev" else None)
         if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
-        tracker = (UsageTracker() if name in ("Jev", "Kev 4B (OpenRouter)",
-                                              "Solar Decide (OpenRouter)")
+        tracker = (UsageTracker() if name == "Jev"
+                   or name in OR_SYSTEMONE_CHOICE
                    or name in CLEF_MODELS or name in FASTINO_MODELS
                    or name in TYPELLM_MODELS
                    else None)

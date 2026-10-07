@@ -10,7 +10,7 @@
     ],
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 60 systems answer the same 54 texts.",
+      "All 65 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -88,7 +88,12 @@
       "Decision 2.0 Sol 2B recorded 2026-10-03 13:25, 160s, CPU",
       "GLiDE (Fastino) recorded 2026-10-03 19:45, 62s, CPU",
       "TypeLLM (hosted) recorded 2026-10-04 23:57, 60s, CPU",
-      "TypeLLM thinking (hosted) recorded 2026-10-04 23:59, 112s, CPU"
+      "TypeLLM thinking (hosted) recorded 2026-10-04 23:59, 112s, CPU",
+      "Decider V1 27B (OpenRouter) recorded 2026-10-07 22:14, 36s, CPU",
+      "Decider V1.1 27B (OpenRouter) recorded 2026-10-07 22:15, 38s, CPU",
+      "D1 (OpenRouter) recorded 2026-10-07 22:16, 41s, CPU",
+      "Tev1 4B (OpenRouter) recorded 2026-10-07 22:16, 31s, CPU",
+      "Mercury Decide (OpenRouter) recorded 2026-10-07 22:16, 24s, CPU"
     ]
   },
   "by_language": {
@@ -751,6 +756,61 @@
       "Sinhala": 1.0,
       "Icelandic": 1.0,
       "Welsh": 1.0
+    },
+    "Decider V1 27B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Decider V1.1 27B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "D1 (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Tev1 4B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Mercury Decide (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -1053,6 +1113,31 @@
       "popular": 1.0,
       "medium": 1.0,
       "rare": 1.0
+    },
+    "Decider V1 27B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Decider V1.1 27B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "D1 (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Tev1 4B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Mercury Decide (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
     }
   },
   "latency": {
@@ -1115,7 +1200,12 @@
     "Decision 2.0 Sol 2B": 2.459,
     "GLiDE (Fastino)": 1.143,
     "TypeLLM (hosted)": 1.111,
-    "TypeLLM thinking (hosted)": 2.073
+    "TypeLLM thinking (hosted)": 2.073,
+    "Decider V1 27B (OpenRouter)": 0.673,
+    "Decider V1.1 27B (OpenRouter)": 0.705,
+    "D1 (OpenRouter)": 0.754,
+    "Tev1 4B (OpenRouter)": 0.57,
+    "Mercury Decide (OpenRouter)": 0.439
   },
   "laya_routing": {
     "Spanish": {
@@ -1199,7 +1289,12 @@
     "Decision 2.0 Sol 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "GLiDE (Fastino)": "Model download and loading excluded; first forward pass included.",
     "TypeLLM (hosted)": "Model download and loading excluded; first forward pass included.",
-    "TypeLLM thinking (hosted)": "Model download and loading excluded; first forward pass included."
+    "TypeLLM thinking (hosted)": "Model download and loading excluded; first forward pass included.",
+    "Decider V1 27B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Decider V1.1 27B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "D1 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Tev1 4B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Mercury Decide (OpenRouter)": "Model download and loading excluded; first forward pass included."
   },
   "provenance": {
     "von": {
@@ -1316,6 +1411,56 @@
       "cost_reported": false,
       "input_tokens_reported": true,
       "thinking_tokens_reported": true
+    },
+    "Decider V1 27B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000254,
+      "input_tokens": 6349,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Decider V1.1 27B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000127,
+      "input_tokens": 6349,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "D1 (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000163,
+      "input_tokens": 4074,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Tev1 4B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000269,
+      "input_tokens": 6403,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Mercury Decide (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 3804,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
     }
   }
 }

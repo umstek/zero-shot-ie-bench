@@ -50,6 +50,10 @@ are not ZDR - they may retain request data (Solar Decide additionally has
 a ZDR Upstage endpoint, but the runs here use default routing):
     python bench_multilingual.py --system "Kev 4B (OpenRouter)"
     python bench_multilingual.py --system "Solar Decide (OpenRouter)"
+    python bench_multilingual.py --system "Decider V1.1 27B (OpenRouter)"
+    # Decisions family: also "Decider V1 27B (OpenRouter)",
+    # "D1 (OpenRouter)", "Tev1 4B (OpenRouter)",
+    # "Mercury Decide (OpenRouter)" (free tier, 20 req/min)
     python bench_multilingual.py --system "Span-01 Lite"
     python bench_multilingual.py --system "cohere-rerank-v3.5 (OpenRouter)"
 
@@ -216,14 +220,24 @@ RERANKERS = {
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
     "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
 }
-# hosted on OpenRouter (see bench_spectrum.py for the full id map); same
-# names so results files line up across benchmarks
+# hosted on OpenRouter (see bench_spectrum.py for the full id map and
+# the Decisions-family notes); same names so results files line up
+# across benchmarks
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
+    "Decider V1 27B (OpenRouter)": "perplexity/pplx-decider-v1-27b",
+    "Decider V1.1 27B (OpenRouter)": "perplexity/pplx-decider-v1.1-27b",
+    "D1 (OpenRouter)": "liquid/d1",
+    "Tev1 4B (OpenRouter)": "togethercomputer/tev1-4b-experimental",
+    "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
 }
+# the choice-question subset (the Span scorers answer noul only - their
+# make_one() branch claims them first)
+OR_SYSTEMONE_CHOICE = {name for name in OPENROUTER_SYSTEMONE
+                       if not name.startswith("Span-01")}
 # Cloudflare's Clef decision models on Workers AI (see bench_spectrum.py
 # for the notes; engines/clef_client.py); same names across benchmarks so
 # results files line up
@@ -616,9 +630,10 @@ def run_jev(texts, tracker=None):
 
 def run_or_systemone(texts, model_id, tracker=None):
     """OpenRouter-hosted System One decision engine (kev-4b,
-    solar-decide): same per-text request shape as run_systemone (string
-    instructions), no warmup - the endpoint is stateless. Non-ZDR
-    endpoint."""
+    solar-decide and the Decisions family): same per-text request shape
+    as run_systemone (string instructions), no warmup - the endpoint is
+    stateless. Non-ZDR endpoint unless the provider commits otherwise
+    (see README daggers)."""
     from engines.jev_client import choice
     from engines.openrouter_client import systemone
 
@@ -629,7 +644,17 @@ def run_or_systemone(texts, model_id, tracker=None):
             f'What is the overall sentiment of this text: "{text}"',
             {label: None for label in SENTIMENT_LABELS})
         t0 = time.perf_counter()
-        out = client.ask({"task": "sentiment"}, {"q": question})
+        # :free models (Mercury Decide) share a 20-requests/minute
+        # account cap; JevClient.ask does not retry, so wait out the
+        # reset window here instead of losing the run's 54th request
+        for attempt in range(6):
+            try:
+                out = client.ask({"task": "sentiment"}, {"q": question})
+                break
+            except RuntimeError as exc:
+                if "HTTP 429" not in str(exc) or attempt == 5:
+                    raise
+                time.sleep(20)
         lat.append(time.perf_counter() - t0)
         preds.append(out["answers"]["q"].get("choice"))
     return preds, statistics.mean(lat)
@@ -914,7 +939,7 @@ def main() -> None:
         preds, lat = run_k2type(texts)
     elif name in DECISION2:
         preds, lat = run_decision2(texts, DECISION2[name])
-    elif name in ("Kev 4B (OpenRouter)", "Solar Decide (OpenRouter)"):
+    elif name in OR_SYSTEMONE_CHOICE:
         from engines.openrouter_client import UsageTracker
 
         tracker = UsageTracker()
