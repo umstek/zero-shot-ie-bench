@@ -1,10 +1,10 @@
-"""Interactive demo + benchmarks for sixty-three zero-shot IE/classification
+"""Interactive demo + benchmarks for sixty-eight zero-shot IE/classification
 systems across thirty-four families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff, Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, so1, Jev (cloud),
 OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the sixty
+local daemon; benchmark tabs hold the measured numbers for the sixty-five
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
 seven rerankers) included.
@@ -1905,22 +1905,33 @@ def build_ollaya_tab():
 
 # ------------------------------------------- hosted decision APIs tab
 # The OpenRouter-hosted systems (same names and model ids as
-# bench_spectrum.py): four System One decision engines — Kev and Solar
-# Decide answer one choice question, Span-01 scores one noul question per
-# label — and seven rerank endpoints used as decision engines via argmax
-# over per-label relevance. Plus Cloudflare's Clef / Clef-flash on
-# Workers AI (engines/clef_client.py: cf CLI session token or
-# CLOUDFLARE_AUTH_TOKEN), same choice-question mapping, and Fastino's
-# GLiDE (engines/fastino_client.py: FASTINO_API_KEY), likewise. TypeLLM's
-# hosted API (engines/typellm_client.py: TYPELLM_API_KEY) answers
-# constrained enum questions instead - and takes images (Qwen3.8-27B
-# vision), so the demo below carries an optional image upload.
+# bench_spectrum.py): nine System One decision engines — Kev and Solar
+# Decide plus the Decisions family (Perplexity Decider V1/V1.1, Liquid d1,
+# Together Tev1, Inception Mercury) answer one choice question, Span-01
+# scores one noul question per label — and seven rerank endpoints used as
+# decision engines via argmax over per-label relevance. Plus Cloudflare's
+# Clef / Clef-flash on Workers AI (engines/clef_client.py: cf CLI session
+# token or CLOUDFLARE_AUTH_TOKEN), same choice-question mapping, and
+# Fastino's GLiDE (engines/fastino_client.py: FASTINO_API_KEY), likewise.
+# TypeLLM's hosted API (engines/typellm_client.py: TYPELLM_API_KEY)
+# answers constrained enum questions instead - and takes images
+# (Qwen3.8-27B vision), so the demo below carries an optional image
+# upload.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
+    "Decider V1 27B (OpenRouter)": "perplexity/pplx-decider-v1-27b",
+    "Decider V1.1 27B (OpenRouter)": "perplexity/pplx-decider-v1.1-27b",
+    "D1 (OpenRouter)": "liquid/d1",
+    "Tev1 4B (OpenRouter)": "togethercomputer/tev1-4b-experimental",
+    "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
 }
+# the choice-question subset (the Span scorers answer noul only - the
+# noul branch below claims them first)
+OR_SYSTEMONE_CHOICE = {name for name in OPENROUTER_SYSTEMONE
+                       if not name.startswith("Span-01")}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -1948,9 +1959,11 @@ def build_openrouter_tab():
 
     with gr.Tab("Hosted decision APIs"):
         gr.Markdown("### The hosted systems, live\n"
-                    "The sixteen hosted systems from the benchmark tabs: "
-                    "Kev 4B and Solar Decide answer one choice question, "
-                    "Span-01 / Span-01 Lite "
+                    "The twenty-one hosted systems from the benchmark "
+                    "tabs: Kev 4B, Solar Decide and the five Decisions "
+                    "family arrivals (Perplexity Decider V1/V1.1, Liquid "
+                    "d1, Together Tev1, Inception Mercury) answer one "
+                    "choice question, Span-01 / Span-01 Lite "
                     "score one noul question per label, the seven "
                     "rerankers score one (instruction, label) pair per "
                     "label (argmax = decision), and TypeLLM answers one "
@@ -1959,7 +1972,8 @@ def build_openrouter_tab():
                     "typellm-latest Qwen3.8-27B reads it with the text). "
                     "Requests leave the machine "
                     "(non-ZDR providers, † in README; Solar Decide also "
-                    "has a ZDR Upstage endpoint, unused here); the "
+                    "has a ZDR Upstage endpoint, unused here, and the "
+                    "Perplexity / Tev1 providers retain nothing); the "
                     "OpenRouter systems need `OPENROUTER_API_KEY` in the "
                     "repo-root `.env`, the Clef systems need a one-time "
                     "`cf auth login` (or `CLOUDFLARE_AUTH_TOKEN`; "
@@ -1968,7 +1982,7 @@ def build_openrouter_tab():
                     "(ZDR per Fastino's model catalog) and TypeLLM needs "
                     "`TYPELLM_API_KEY`. Each click is one "
                     "metered API request "
-                    "(free tiers: Span-01 Lite, nemotron).")
+                    "(free tiers: Span-01 Lite, nemotron, Mercury).")
         oro_model = gr.Dropdown(
             choices=list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
             + list(CLEF_MODELS) + list(FASTINO_MODELS)
@@ -2083,8 +2097,7 @@ def build_openrouter_tab():
                 else:
                     client = openrouter_client.systemone(
                         OPENROUTER_SYSTEMONE[system])
-                if (system in ("Kev 4B (OpenRouter)",
-                               "Solar Decide (OpenRouter)")
+                if (system in OR_SYSTEMONE_CHOICE
                         or system in CLEF_MODELS
                         or system in FASTINO_MODELS):
                     payload = client.ask({"task": task}, {"q": choice(
@@ -3294,7 +3307,7 @@ def main() -> None:
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 60 systems across "
+                    "measured numbers for all 65 systems across "
                     "thirty-four families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
