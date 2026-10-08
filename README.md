@@ -1,10 +1,11 @@
 # zero-shot-ie-bench
 
-Sixty-eight zero-shot systems (sixty-five of them benchmarked) across
-thirty-eight information-extraction and classification families —
+Seventy-five zero-shot systems (seventy-two of them benchmarked) across
+thirty-nine information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
-OpenRouter's decision and rerank endpoints, plus five models served by
+OpenRouter's decision and rerank endpoints plus Fastino's API, plus five
+models served by
 the local [Ollaya](https://ollaya.dev) daemon) — demoed, benchmarked,
 and cross-compared in one repo with a web UI.
 
@@ -13,6 +14,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | System | Kind | Size | License | Cost |
 |---|---|---|---|---|
 | [GLiNER 2.5](https://github.com/fastino-ai/GLiNER2) (`fastino/gliner2.5-*`) | local extractor encoder (boundary arch) | 74M / 194M / 287M | Apache 2.0 | $0 · local |
+| [GLiNER-X](https://huggingface.co/knowledgator/gliner-x-small) (`knowledgator/gliner-x-{small,base,large}`) | local multilingual extractor encoder (span-level gliner over an mT5 encoder — the first non-DeBERTa GLiNER here — with a stanza word splitter; NER-only, HF-card-only release) | 300M / 494M / 865M | Apache 2.0 | $0 · local |
 | [GLiNER2.5-Decide](https://huggingface.co/fastino/GLiNER2.5-Decide) (`fastino/GLiNER2.5-Decide`) | local decision-tuned classifier in the GLiNER 2.5 family (spans + label heads, one pass) | 340M | Apache 2.0 | $0 · local |
 | [GLiFormer](https://github.com/Knowledgator/GLiFormer) (`knowledgator/gliformer-*`) | local extractor encoder (layout-aware DeBERTa) | ~190M / 575.6M | Apache 2.0 | $0 · local |
 | [GLiREL](https://github.com/jackboyla/GLiREL) (`jackboyla/glirel-large-v0`) | local zero-shot relation extractor (label-prompted encoder over entity pairs) | ~467M | CC BY-NC-SA 4.0 | $0 · local |
@@ -33,6 +35,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Certo 421M](https://huggingface.co/altslate/certo-decision-model) (`engines/certo_engine/`, vendored) | local decision model (calibrated per-option score head over ModernBERT-large, no generation) | 421M | MIT (engine + weights) | $0 · local |
 | [MoJev](https://huggingface.co/MoLeMo-Lab/mojev) 0.85B (`engines/mojev_engine/`, adapted) | local decision engine (packed one-pass candidate scoring; choice/score/noul in one forward, Qwen3.5 + fla) | 0.85B | engine MIT; checkpoint card MIT (Qwen base-model license on the encoder weights) | $0 · local |
 | [nanodiff 350M](https://huggingface.co/pngwn/nanodiff-350m-typed-decisions-lam1) (`engines/nanodiff_engine/`, vendored) | local decision model (bidirectional diffusion LM — the only non-autoregressive system here) | 350M | MIT | $0 · local |
+| [nanodiff 350M v2](https://huggingface.co/pngwn/nanodiff-350m-typed-decisions-v2) (`engines/nanodiff_engine/`, vendored) | local decision model (the v2 retrain of the same recipe — same bidirectional diffusion LM, same typed-decision format; the named `…-v2-lam1` HF repo was created empty, the weights live one repo up) | 350M | MIT | $0 · local |
 | [Lumma-Fev](https://huggingface.co/FrontiersMind/Lumma-fev-0.1b) (`FrontiersMind/Lumma-fev-0.1b/0.6b/4b`, `lumma-fev` package) | local typed-decision engine (single forward over state+questions, no generation) | 154M / 649M / 4.2B | Apache 2.0 | $0 · local |
 | [Julia 1](https://huggingface.co/SupersonicLabs/Julia-1) (`julia` runtime package ships in the HF repo) | local decision model (mmBERT-small encoder + decision head, full softmax over 2–20 described options) | 144.3M | Apache 2.0 | $0 · local |
 | [Intern-Decision](https://huggingface.co/collections/internlm/intern-decision) (`internlm/Intern-Decision-{0.8B,2B,4B}`, runtime ships in the HF repos) | local multimodal decision LLM (Qwen3.5 fine-tune; one causal forward, option-symbol logits at masked decision slots, calibrated probabilities; the snapshots' vision tower accepts 1–8 images per request) | 853M / 2.2B / 4.5B | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) | $0 · local |
@@ -47,6 +50,8 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
 | [Clef](https://developers.cloudflare.com/workers-ai/models/clef/) / [Clef-flash](https://developers.cloudflare.com/workers-ai/models/clef-flash/) (`clef` / `clef-flash` on Cloudflare Workers AI) | cloud typed-decision engines (Cloudflare's Jev-API-compatible decision models over frozen Qwen3.8-27B / Qwen3.5-9B + rank-256 routing adapters: choice/score/noul probabilities from one non-autoregressive scoring pass, vision-capable state, 64k context) | 27B / 9B | API metered · Apache 2.0 weights on HF | metered · $2.3e-5 / $8.6e-6/q |
 | [GLiDE](https://fastino.ai/) (`fastino/GLiDE` on the Fastino API) | cloud typed-decision engine (Fastino's "thinking decision model": one fast scoring pass plus adaptive reasoning when the leading option is uncertain; choice/score/noul with calibrated probabilities, 40k context, thinking tokens priced $0) | undisclosed | API metered · research tier | metered · $1.2e-5/q |
+| [GLiNER2.5](https://github.com/fastino-ai/GLiNER2) base / multi (`fastino/gliner2.5-base-v1` / `fastino/gliner2.5-multi-v1` on the Fastino API) | cloud extractors — the hosted twins of the local GLiNER2.5-base / multi checkpoints (NER + classification per text over the chat-completions endpoint; the small checkpoint has no hosted twin) | 194M / 287M | API metered · Apache 2.0 weights | metered · $3.9e-7/q |
+| [GLiNER2.5-Decide](https://huggingface.co/fastino/GLiNER2.5-Decide) (`fastino/GLiNER-2.5-Decide` on the Fastino API — hosted id hyphenated, HF repo not) | cloud decision encoder — the hosted twin of the local decision-tuned sibling (classification primary, extraction still supported; rides the chat-completions schema, not GLiDE's System One endpoint) | 340M | API metered · Apache 2.0 weights | metered · $3.9e-7/q |
 | [TypeLLM](https://typellm.ai/) (`typellm-latest` on the TypeLLM API) | cloud type-safe generation harness (SGLang constrained decoding over a hosted Qwen3.8-27B: JSON-Schema fields answered by one-token enum picks, optional per-question thinking at its own price; vision-capable, up to 8 images per request) | 27B | Apache 2.0 (harness) · proprietary API | metered · $2.6e-6 plain / $1.0e-4 thinking /q † |
 | [Span-01](https://openrouter.ai/respan/span-01) / [Span-01 Lite](https://openrouter.ai/respan/span-01-lite) (`respan/span-01*`) | cloud behavior scorer (one noul probability per label, argmax = decision) | closed | proprietary API | metered · $9.0e-7/q · Lite free † |
 | [Decider](https://openrouter.ai/perplexity/pplx-decider-v1-27b) [V1](https://openrouter.ai/perplexity/pplx-decider-v1-27b) / [V1.1](https://openrouter.ai/perplexity/pplx-decider-v1.1-27b) 27B (`perplexity/pplx-decider-*`) | cloud decision model (Perplexity's Decisions-API entry: typed probabilistic answers — choice with per-option probabilities, noul, score rubrics — up to 128 questions per request; text/JSON state, image modality listed but not live yet) | 27B | proprietary API | metered · $4.4e-6 (V1) / $2.2e-6 (V1.1) /q |
@@ -65,9 +70,10 @@ Mercury's :free tier retain prompts, so they carry the †.
 The Clef pair runs directly on Workers AI (not via OpenRouter) under
 Cloudflare's commitment to not read, store, or train on requests, so
 it carries no † — and its weights are open, so it can also run local.
-GLiDE runs on Fastino's own API, whose model catalog marks it ZDR, so
-it also carries no †. TypeLLM's API publishes no data-retention
-commitment, so its two entries keep the †.
+GLiDE runs on Fastino's own API, whose model catalog marks every model
+ZDR, so GLiDE and the hosted GLiNER twins also carry no †. TypeLLM's
+API publishes no data-retention commitment, so its two entries keep
+the †.
 Every local system in the repo keeps text on the machine. The Cost column
 marks who bills per request: `$0 · local` systems cost no API money
 (only CPU time), `metered` systems bill per token/search with the
@@ -77,6 +83,7 @@ tokens but no $, so its figures are derived — list price × measured
 tokens, the same rule as the Clef pair's and GLiDE's numbers.
 
 Four mechanism families are represented — **extractors** (GLiNER 2.5,
+GLiNER-X: spans only, multilingual by design,
 GLiFormer: spans/entities/relations/records, plus GLiREL: zero-shot
 relations over entity pairs it is handed, GLiNER-relex: joint NER +
 relations in one pass, and ReLiK: retriever-reader relations over a
@@ -113,7 +120,8 @@ models — NLI entailment classifiers, the Semantic-Router `decision`, the
 full JevK5 4B and Winnow E4B). The GLiNER lineage
 forked between Fastino (GLiNER 2.5, original author Urchade Zaratiana)
 and Knowledgator (classic `gliner` — GLiNER-relex is that line's joint
-NER+relations checkpoint — plus GLiFormer, GLiClass); GLiREL
+NER+relations checkpoint — plus GLiFormer, GLiClass, and 2026's
+GLiNER-X, the line's first mT5-encoder generation); GLiREL
 (jackboyla) grows out of the same architecture into relation extraction,
 and Laya's card positions itself as the open local counterpart of cloud
 Jev.
@@ -162,11 +170,12 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 65 systems)
+## Mixed-pool spectrum benchmark (all 72 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
-varying difficulty); the six extractors also answer 18 NER questions.
+varying difficulty); the nine local extractors and the three hosted GLiNER
+twins also answer 18 NER questions.
 Question difficulty is **measured** as the fraction of answering systems
 that got it wrong; the web UI plots accuracy along that spectrum, and
 per-question predictions live in `results/bench_spectrum_results.json`.
@@ -189,11 +198,13 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | winnow e4b (Ollaya) | **87.5%** | 8.138 | n/a | |
 | qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a | |
 | GLiNER2.5-Decide | 85.4% | 0.412 | 61% | 0.476 |
+| GLiNER2.5-Decide (Fastino) | 85.4% | 0.853 | 56% | 0.832 |
 | Kev 4B (OpenRouter) † | 85.4% | 0.079 | n/a | |
 | Span-01 † | 85.4% | 0.440 | n/a | |
 | jevk5 4B (Ollaya) | 85.4% | 7.299 | n/a | |
 | Intern-Decision 4B | 85.4% | 8.0 | n/a | |
 | GLiNER2.5-base | 83.3% | 0.111 | 61% | 0.135 |
+| GLiNER2.5-base (Fastino) | 83.3% | 0.834 | 56% | 0.856 |
 | Clef-flash (Workers AI) | 83.3% | 0.083 | n/a | |
 | decider 0.8B (local) | 83.3% | 2.144 | n/a | |
 | cohere-rerank-4-pro (OpenRouter) † | 83.3% | 0.418 | n/a | |
@@ -207,6 +218,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | Intern-Decision 2B | 81.2% | 3.166 | n/a | |
 | GLiNER2.5-multi | 79.2% | 0.152 | **67%** | 0.180 |
 | Tev1 4B (OpenRouter) | 79.2% | 0.081 | n/a | |
+| GLiNER2.5-multi (Fastino) | 79.2% | 0.831 | 61% | 0.849 |
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
 | von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
 | AgentJev 0.6B (local) | 79.2% | 0.646 | n/a | |
@@ -235,12 +247,16 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | LFM2.5-RLCD 350M | 56.2% | 0.469 | n/a | |
 | Lumma-fev 0.15B | 56.2% | 0.256 | n/a | |
 | Lumma-fev 0.6B | 54.2% | 0.587 | n/a | |
+| GLiNER-X-base | 45.8% | 0.103 | 50% | 0.079 |
 | so1 + Qwen2.5-0.5B | 43.8% | 0.237 | n/a | |
 | Verdict 151M (local) | 39.6% | 0.165 | n/a | |
+| GLiNER-X-large | 39.6% | 0.224 | 61% | 0.162 |
 | nemotron-rerank-vl-1b (OpenRouter) † | 35.4% | 4.521 | n/a | |
+| GLiNER-X-small | 33.3% | 0.063 | 39% | 0.046 |
 | Julia 1 144M | 31.2% | 0.067 | n/a | |
 | nanodiff 350M | 25.0% | 11.56 | n/a | |
 | Certo 421M | 22.9% | 1.014 | n/a | |
+| nanodiff 350M v2 | 18.8% | 10.778 | n/a | |
 
 Takeaways:
 
@@ -283,6 +299,19 @@ Takeaways:
   the same accuracy, with the adaptive-thinking output tokens priced
   $0. It also joins the 100% multilingual club on arrival (below),
   under a ZDR catalog listing.
+- **The hosted GLiNER twins are the cheapest metered rows on the board
+  — and bit-identical to their local checkpoints on classification.**
+  Fastino's API hosts the same open-weight GLiNER2.5 checkpoints this
+  repo benches locally (base, multi and the decision-tuned Decide; the
+  small checkpoint has no hosted twin), and all three twins reproduce
+  their local run's 48 classification answers exactly (83.3 / 79.2 /
+  85.4%). NER differs on one question each (61→56%, 67→61%, 61→56% —
+  a serving-stack wobble, not a weight change). The trade is latency
+  for pennies: ~0.83–0.85 s/question of network round-trip vs
+  0.11–0.48 s of local CPU, at a measured $3.9e-7/question (864 input
+  tokens × $0.03/M for the whole 66-question run — 48 classification +
+  18 NER; one GLiNER request is the sentence plus a small schema,
+  ~13 tokens).
 - **Clef takes the overall lead at 97.9% on arrival** — one week after
   launch, Cloudflare's 27B decision model is the first system past
   Solar Decide (95.8%) and cloud Jev (93.8%). Its single miss is the
@@ -385,9 +414,25 @@ Takeaways:
 - Verdict abstains on 22/48 (abstention scores wrong): 73% on what it
   answers, 39.6% overall. so1 works mechanically, but a 0.5B base LLM is not
   enough brain — swap in a bigger one.
+- **GLiNER-X: the first mT5-backbone GLiNER here is a NER specialist, not
+  a decision engine** — Knowledgator's 2026-04-29 multilingual generation
+  (300M / 494M / 865M; HF-card-only release, no blog, no paper) swaps
+  DeBERTa for an mT5 encoder and a stanza word splitter, in its own
+  `.venv-glinerx` (the card's `gliner[stanza]` install resolves
+  transformers 5.x — incompatible with the pinned main venv). NER exact
+  scales with size, 39% → 50% → 61%, and the large lands level with
+  GLiNER2.5-base (61%) at 0.162 s/question — while classification
+  collapses at every size (33.3 / 45.8 / 39.6%): the card never claims
+  it, the training data is NER synthetic, and the vendor multitask
+  prompt's "answers" read like another NER pass over the prompt (GPU,
+  IPO, Biotech, central bank). Benched through the vendor's own mapping
+  as census rows (`engines/glinerx_client.py`), like the other
+  chance-level systems.
 - Chance-level negatives kept as census rows: nanodiff 350M (diffusion
-  LM, 25.0%, slowest at 11.6 s/question) and Certo 421M (22.9%,
-  near-uniform option probabilities).
+  LM, 25.0%, slowest at 11.6 s/question), Certo 421M (22.9%,
+  near-uniform option probabilities) and nanodiff 350M v2 (18.8%,
+  the v2 retrain of the same recipe — recorded 2026-10, still
+  chance-level and ~11 s/question).
 - Latencies exclude model download/loading, include the first forward
   pass — except the local System One servers (Kev, decider, OpenThai)
   and the Ollaya daemon, which answer one untimed warm-up question
@@ -402,15 +447,16 @@ accounting — the `usage` block billed per API response, never
 reconstructed from list prices. Measured on these exact runs (one pass;
 48 mixed-pool questions / 54 multilingual texts). Four exceptions:
 Cloudflare, TypeSafe, Fastino and TypeLLM report tokens but no $, so the
-Clef, Clef-flash, GLiDE, Jev and TypeLLM rows are list price ($0.24 /
-$0.09 / $0.15 / $0.042 / $0.05 per M input; TypeLLM adds $0.50 per M
-thinking tokens) × measured tokens:
+Clef, Clef-flash, GLiDE, Jev, TypeLLM and hosted-GLiNER-twin rows are
+list price ($0.24 / $0.09 / $0.15 / $0.042 / $0.05 / $0.03 per M input;
+TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 
 | System | 48-q run | 54-text run | $ / question |
 |---|---|---|---|
 | Span-01 Lite † | $0 | $0 | $0 (free tier) |
 | Mercury Decide (OpenRouter) † | $0 | $0 | $0 (free tier) |
 | nemotron-rerank-vl-1b † | $0 | $0 | $0 (free tier) |
+| GLiNER2.5-base / -multi / -Decide (Fastino) | $0.000026 | $0.000031 | $0.00000039 |
 | Span-01 † | $0.000043 | $0.000040 | $0.0000009 |
 | voyage-rerank-2.5-lite † | $0.000068 | $0.000115 | $0.0000014 |
 | Kev 4B (OpenRouter) | $0.000072 | $0.000106 | $0.0000015 |
@@ -434,9 +480,8 @@ thinking tokens) × measured tokens:
 The cost charts plot the **metered** systems only — free tiers bill $0
 (Span-01 Lite's plain id is priced $0.0, same as its `:free` twin;
 Nemotron runs on `:free`) and stay off them. The Clef pair, GLiDE,
-Jev and TypeLLM report tokens but no provider $, so all four chart at
-**derived**
-numbers
+Jev, the hosted GLiNER twins and TypeLLM report tokens but no
+provider $, so all chart at **derived** numbers
 matching their table rows above: list price × measured tokens,
 computed by `app.cost_summary_frame` from the prices recorded in
 `engines/clef_client.py`, `engines/fastino_client.py`,
@@ -447,9 +492,14 @@ reports thinking `output_tokens`, priced $0 so they add nothing;
 TypeLLM: input + thinking tokens at $0.05 + $0.50 per M — plain
 2,507 / 3,487 input with no thinking, thinking mode 3,226 / 4,291
 input plus 9,376 / 9,237 thinking, so reasoning is ~97% of that
-mode's bill),
+mode's bill; the hosted GLiNER twins: 864 / 1,048 input tokens ×
+$0.03/1M over 66 spectrum requests each — 48 classification + 18
+NER, one request per question),
 and marked "≈ derived" in the UI. What
-the measurements say that the price lists don't: Cohere bills ~2.5 search
+the measurements say that the price lists don't: the GLiNER twins are
+the cheapest metered rows on the board at $3.9e-7/question — a GLiNER
+request is just the sentence plus a small schema (~13 input tokens a
+question); Cohere bills ~2.5 search
 units per rerank request (a 48-q run on 4-pro costs $0.12, not the
 naive 48 × $0.001); kev-4b and Span-01 sit near $1e-6/question — kev
 batches each 24-question task into one request, Span's payloads are
@@ -523,6 +573,7 @@ systems answer the same 54 texts.
 | Lumma-fev 4B | 100% | 100% | 89% | 96% |
 | Intern-Decision 2B | 100% | 100% | 72% | 91% |
 | GLiNER2.5-multi (mDeBERTa) | 100% | 100% | 67% | 89% |
+| GLiNER2.5-multi (Fastino) | 100% | 100% | 67% | 89% |
 | decision 0.75B (Ollaya) | 100% | 94% | 72% | 89% |
 | Intern-Decision 0.8B | 94% | 94% | 78% | 89% |
 | Span-01 Lite † | 100% | 100% | 61% | 87% |
@@ -541,6 +592,7 @@ systems answer the same 54 texts.
 | voyage-rerank-2.5 (OpenRouter) † | 83% | 78% | 61% | 74% |
 | nli deberta-v3-large (Ollaya) | 89% | 78% | 39% | 69% |
 | GLiNER2.5-Decide | 89% | 83% | 33% | 69% |
+| GLiNER2.5-Decide (Fastino) | 89% | 83% | 33% | 69% |
 | gliclass-base | 94% | 67% | 39% | 67% |
 | bge-reranker-v2-m3 | 67% | 67% | 67% | 67% |
 | cohere-rerank-v3.5 (OpenRouter) † | 67% | 67% | 67% | 65% |
@@ -549,6 +601,7 @@ systems answer the same 54 texts.
 | AgentJev 0.6B (local) | 83% | 83% | 22% | 63% |
 | Laya typed-decisions | 100% | 44% | 33% | 59% |
 | GLiNER2.5-base | 89% | 50% | 28% | 56% |
+| GLiNER2.5-base (Fastino) | 89% | 50% | 28% | 56% |
 | cohere-rerank-4-fast (OpenRouter) † | 72% | 61% | 33% | 56% |
 | GLiFormer-base | 83% | 44% | 33% | 54% |
 | LFM2.5-RLCD 350M | 78% | 67% | 11% | 52% |
@@ -564,6 +617,10 @@ systems answer the same 54 texts.
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
 | nanodiff 350M | 28% | 39% | 39% | 35% |
 | Lumma-fev 0.15B | 39% | 33% | 33% | 35% |
+| nanodiff 350M v2 | 39% | 28% | 33% | 33% |
+| GLiNER-X-small | 33% | 28% | 33% | 31% |
+| GLiNER-X-base | 33% | 28% | 33% | 31% |
+| GLiNER-X-large | 33% | 33% | 28% | 31% |
 | gliclass-edge | 50% | 22% | 22% | 31% |
 | Certo 421M | 28% | 28% | 33% | 30% |
 | Verdict 151M (local) | 50% | 11% | 6% | 22% |
@@ -590,6 +647,13 @@ Highlights:
   the whole 54-text run bills ~$0.00071). Fastino markets GLiDE as an
   English-first Decision Index model, so the rare-script sweep is a
   pleasant surprise.
+- **The hosted GLiNER twins are bit-identical to their local
+  checkpoints across all nine languages** — GLiNER2.5-multi (Fastino)
+  repeats local multi's row exactly (89% overall, 67% rare tier, 33%
+  Sinhala), as do base (56%) and Decide (69%): same weights behind the
+  API, same predictions — at 0.82–0.90 s/text over the network (local
+  CPU: 0.07–0.44) and ~$0.000031 per 54-text run (1,048 input tokens ×
+  $0.03/M).
 - **Clef and Clef-flash join the 100% club on arrival** — perfect on
   all 54 texts, Sinhala/Icelandic/Welsh included, matching Jev, jevk5
   4B and Solar Decide (0.796 / 0.636 s/text, one request per text);
@@ -625,6 +689,16 @@ surprisingly well for an English-family release (81%, 100% Chinese,
   systems — Jev, jevk5 4B, winnow e4b, Solar Decide, Clef, Clef-flash,
   GLiDE, both TypeLLM entries, hosted Kev 4B, Span-01 and
   Intern-Decision 0.8B.
+- **GLiNER-X's multilingual rows are census rows, not a multilingual
+  result** — the mT5-encoder family is NER-only (the card claims token
+  classification and trains on NER synthetic data), so all three sizes
+  answer the 54 sentiment texts through the vendor multitask prompt and
+  collapse onto one label: 31.5% overall (popular 33 / medium 28 / rare
+  28-33), i.e. the two negative texts per language and nothing else, at
+  0.106-0.252 s/text. The card's ~21-language coverage (incl. lt, et,
+  lv, sl, uk, da, sv, no, cs, pl, ar, zh, hi) is an NER claim this
+  sentiment-only bench cannot score — there is no multilingual NER pool
+  here to show it in.
 - bge-reranker-v2-m3's flat 67/67/67 is structural: it never predicts
   neutral (35 neg / 19 pos across all 54 texts), so every language
   scores exactly 4/6 — right on the four subjective texts, wrong on
@@ -640,24 +714,24 @@ surprisingly well for an English-family release (81%, 100% Chinese,
 
 ## Feature comparison
 
-| Capability | GLiNER 2.5 | GLiFormer | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) | Lumma | Julia | Intern-Decision | K2-Type | Decision 2.0 Decisions (OpenRouter) |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---  |
-| Ability group | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) | Decision engine (local, NLI entailment) | Decision engine (local, endpoint head) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, one forward over packed questions) | Decision engine (local, encoder + decision head) | Decision engine (local, masked-slot symbol logits) | Decision engine (local, pointer head over packed questions) | Decision engine (local, trained candidate head) Decision engines (cloud — OpenRouter's Decisions API: Perplexity Decider V1/V1.1, Liquid d1, Together Tev1, Inception Mercury) |
-| Zero-shot NER spans | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
-| Text classification | ✅ | ✅ | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice ✅ choice |
-| All labels scored in one pass | ✅ | ✅ | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) | ✅ (all questions one forward) | ✅ (questions independently scored in one batch) | ✅ (per text, all questions one forward — up to 16 questions/request) | ✅ (all questions one forward) | ✅ (all questions one forward) ✅ one request (up to 128 questions) |
-| Relations | ✅ + JointIE graph | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
-| Span attributes (per-entity sentiment) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
-| Structured records | ✅ flat, anchor-based | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema (3 fields + AR baseline demoed) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
-| Ordinal score rubrics | ✅ via Decide (demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ enum rubric (demoed) | ❌ | ✅ score (demoed) | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score ✅ score |
-| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean (demoed) | ❌ | ✅ noul (demoed) | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul | ✅ noul | ✅ noul ✅ noul |
-| Text embeddings | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% ✅ 100% over 9 langs (all five) |
-| Runs offline / data local | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ ❌ |
-| Image input | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) | ❌ | ❌ ❌ (Decider lists image modality; text/JSON state only so far) |
-| Cost | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) $0.02–$0.042/1M input, decisions free; Mercury on the :free tier |
-| License | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) | Apache 2.0 | Apache 2.0 proprietary API (Tev1's data recipe + training code are open) |
-| Batch shape | per text | per text (batch_size) | per text, all labels | per text, one pair per label | all questions, one pass | per text | one packed prompt | all questions, one request | all questions, one request | all questions, one request | all questions, one request | all questions, one request | per text, all options | per text, all heads + labels | per text, all field candidates | per text, all option descriptions | per text, all packed candidates | per text, one masked forward | per text, one pair per option | per text, one row per question | per text, one request per question | per text, one request per question | per text, all questions one forward | per text, all questions one batch | per text, all questions one forward | per text, all questions one forward | per text, all questions one forward all questions, one request (spectrum batches 24) |
+| Capability | GLiNER 2.5 | GLiNER 2.5 (Fastino) | GLiFormer | GLiNER-X | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | nanodiff v2 | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) | Lumma | Julia | Intern-Decision | K2-Type | Decision 2.0 Decisions (OpenRouter) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- --- |
+| Ability group | Extractor | Extractor (hosted twin, Fastino API) | Extractor | Extractor | Classifier | Cross-encoder rerankers (decision via argmax) | Decision engine | Decision engine | Decision engine (BYO LLM) | Decision engine (cloud) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, open weights) | Decision engine (local, encoder head) | Decision engine (local, label-head encoder) | Decision engine (local, constrained decoding) | Decision engine (local, per-option score head) | Decision engine (local, packed one-pass scoring) | Decision engine (local, diffusion LM) | Decision engine (local, diffusion LM) | Decision engine (local, NLI entailment) | Decision engine (local, endpoint head) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, GGUF letter-logit LLM) | Decision engine (local, one forward over packed questions) | Decision engine (local, encoder + decision head) | Decision engine (local, masked-slot symbol logits) | Decision engine (local, pointer head over packed questions) | Decision engine (local, trained candidate head) Decision engines (cloud — OpenRouter's Decisions API: Perplexity Decider V1/V1.1, Liquid d1, Together Tev1, Inception Mercury) |
+| Zero-shot NER spans | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
+| Text classification | ✅ | ✅ | ✅ | ❌ (NER-only; the vendor multitask prompt collapses — census rows here) | ✅ | ✅ via argmax | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice | ✅ choice ✅ choice |
+| All labels scored in one pass | ✅ | ✅ (all labels ride one request's schema) | ✅ | ❌ (one span pass per text) | ✅ (its core design) | ❌ one pair per label | ✅ | ✅ | ✅ packed | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ one request | ✅ per query | ✅ one pass | ✅ per field | ✅ one pass | ✅ packed | ✅ one forward | ✅ one forward | ✅ all option pairs, one batched pass | ❌ one row per question | ❌ one pass per question | ❌ one question at a time (state evaluated once per request) | ✅ (all questions one forward) | ✅ (questions independently scored in one batch) | ✅ (per text, all questions one forward — up to 16 questions/request) | ✅ (all questions one forward) | ✅ (all questions one forward) ✅ one request (up to 128 questions) |
+| Relations | ✅ + JointIE graph | ✅ | ✅ joint head | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
+| Span attributes (per-entity sentiment) | ✅ | ✅ (multi twin) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
+| Structured records | ✅ flat, anchor-based | ✅ | ✅ nested Pydantic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ flat closed schema (3 fields + AR baseline demoed) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
+| Ordinal score rubrics | ✅ via Decide (demoed) | ✅ via Decide twin (classifications demoed) | ❌ | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ scale (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ enum rubric (demoed) | ❌ | ✅ score (demoed) | ❌ | ❌ | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score ✅ score |
+| Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ yes_no (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ boolean (demoed) | ❌ | ✅ noul (demoed) | ❌ | ❌ | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul | ✅ noul | ✅ noul ✅ noul |
+| Text embeddings | ❌ | ❌ | ✅ 1024-d | ❌ | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ❌ |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ✅ multi twin (89% over 9 langs here, = local) | ❌ English (63%) | ✅ 21-language card, NER-only — its classification rows here are chance-level (31.5% over 9 langs; GLiNER2.5-multi 89%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | = base LLM's languages (37%) | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | 22% over 9 langs | ✅ 78% over 9 langs | 52% over 9 langs | 30% over 9 langs | ✅ 83% over 9 langs | 35% over 9 langs | 33% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | 52% over 9 langs, rare-tier 56% (mmBERT) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% ✅ 100% over 9 langs (all five) |
+| Runs offline / data local | ✅ | ❌ (Fastino API, ZDR) | ✅ | ✅ (stanza tokenize models cache per language on first use) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ ❌ |
+| Image input | ❌ | ❌ | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) | ❌ | ❌ ❌ (Decider lists image modality; text/JSON state only so far) |
+| Cost | free | $0.03/1M input (output $0) | free | free | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) $0.02–$0.042/1M input, decisions free; Mercury on the :free tier |
+| License | Apache 2.0 | Apache 2.0 weights; metered hosted API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | MIT (lib) | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | Apache 2.0 | MIT (engine); LFM Open License v1.0 (weights) | MIT (engine + weights) | MIT (engine; Qwen base-model license on encoder weights) | MIT | MIT | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) | Apache 2.0 | Apache 2.0 proprietary API (Tev1's data recipe + training code are open) |
+| Batch shape | per text | per text, one request (all labels in the schema) | per text (batch_size) | per text | per text, all labels | per text, one pair per label | all questions, one pass | per text | one packed prompt | all questions, one request | all questions, one request | all questions, one request | all questions, one request | all questions, one request | per text, all options | per text, all heads + labels | per text, all field candidates | per text, all option descriptions | per text, all packed candidates | per text, one masked forward | per text, one masked forward | per text, one pair per option | per text, one row per question | per text, one request per question | per text, one request per question | per text, all questions one forward | per text, all questions one batch | per text, all questions one forward | per text, all questions one forward | per text, all questions one forward all questions, one request (spectrum batches 24) |
 
 ## Setup
 
@@ -683,6 +757,18 @@ uv pip install --python .venv-von -r requirements-von.txt
 # engines/relik_client.py installs — no site-packages patching):
 uv venv --python 3.11 .venv-relik
 uv pip install --python .venv-relik -r requirements-relik.txt
+# GLiNER-X (Knowledgator's mT5-encoder multilingual family) loads through
+# the classic gliner package with the stanza extra (per the model card);
+# a fresh gliner[stanza] resolve wants transformers 5.x, so it gets its
+# own venv instead of touching the pinned main stack:
+uv venv .venv-glinerx
+uv pip install --python .venv-glinerx "gliner[stanza]"
+# the checkpoints' config sets words_splitter_type=stanza, so the word
+# splitter language-detects every text and lazily builds a stanza
+# tokenize pipeline per language — the first bench run downloads those
+# per-language models (Windows cache:
+# %LOCALAPPDATA%/StanfordNLP/stanza/Cache) and the multilingual bench
+# warms them untimed before its timed loop
 # Kev (Jev's open-weights lookalike) serves the same System One contract
 # locally; it needs transformers >=5.17, so it runs from its own clone:
 git clone https://github.com/jaredpalmer/kev.git ../kev
@@ -838,6 +924,8 @@ add `CLOUDFLARE_ACCOUNT_ID` to `.env` to skip the per-run
 .venv/Scripts/python demos/nanodiff_demo.py    # nanodiff 350M diffusion-LM tour
                                          # (~10 s/question; vendored
                                          # engines/nanodiff_engine/)
+.venv/Scripts/python demos/nanodiff_demo.py --v2
+                                         # same tour on the v2 retrain
 .venv/Scripts/python demos/nemotron_vl_demo.py  # Nemotron Rerank VL image
                                          # documents: three PIL-drawn page
                                          # screenshots ranked as base64
@@ -914,25 +1002,37 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # served models (needs `ollaya
                                          # serve`; --models=nli,decision
                                          # picks a subset)
+.venv-glinerx/Scripts/python demos/glinerx_demo.py --tour
+                                         # GLiNER-X tour: multilingual NER
+                                         # (mT5 encoder + stanza word
+                                         # splitter) + the NER-only
+                                         # classification caveat
+                                         # (.venv-glinerx; see setup)
 
 .venv/Scripts/python bench.py            # flat suite, 5 runs per case
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (65 systems; von, JevK5-Lite,
+                                         # (72 systems; von, JevK5-Lite,
                                          # LFM2.5-RLCD 350M, MoJev 0.85B,
                                          # Lumma-Fev, Julia 1,
                                          # Intern-Decision, K2-Type and
                                          # Decision 2.0:
                                          # same command
                                          # under .venv-von/Scripts/python)
+# GLiNER-X runs in-process from .venv-glinerx (classic gliner + stanza):
+.venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-small
+.venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-base
+.venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-large
 # decider/OpenThai speak plain HTTP, so any interpreter works — but Verdict
 # imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 65 systems →
+                                         # 9 languages, all 72 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
+.venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-small
+                                         # (also GLiNER-X-base / GLiNER-X-large)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
                                          # (also "Lumma-fev 0.6B" / "Lumma-fev 4B")
 .venv-von/Scripts/python bench_multilingual.py \
@@ -976,8 +1076,10 @@ C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (loca
 `app.py` serves a live demo tab per family — GLiNER 2.5 (checkpoint
 selector includes GLiNER2.5-Decide, plus a Decide score-rubric
 section), GLiFormer, GLiREL, GLiNER-relex,
-ReLiK, GLiClass, Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo,
-MoJev, nanodiff, Lumma (0.15B/0.6B/4B checkpoint dropdown), Julia,
+ReLiK, GLiNER-X (small/base/large checkpoint dropdown), GLiClass,
+Rerankers, Laya, von, JevK5-Lite, LFM2.5-RLCD, Certo,
+MoJev, nanodiff (v1/v2 checkpoint radio), Lumma (0.15B/0.6B/4B
+checkpoint dropdown), Julia,
 Intern-Decision (0.8B/2B/4B checkpoint dropdown), K2-Type, Decision 2.0 (Kai/Eos/Sol checkpoint dropdown), so1 (choice plus a
 yes_no/scale section),
 Jev (cloud), and hosted decision APIs (all sixteen systems: Kev 4B,
@@ -1001,7 +1103,10 @@ Julia, Intern-Decision, K2-Type, Decision 2.0) spawn one-shot `demos/*_demo.py -
 its model once per click in a single `.venv-von` process; nanodiff does
 the same under the main venv, and ReLiK spawns `demos/relik_demo.py`
 from `.venv-relik`
-(first click loads the pipeline and, once, downloads ~700 MB). von's
+(first click loads the pipeline and, once, downloads ~700 MB), while
+GLiNER-X spawns `demos/glinerx_demo.py` from `.venv-glinerx` (first
+click loads the checkpoint; the very first use also downloads the
+weights and stanza's per-language tokenize models). von's
 shared loader (`engines/von_client.py`) pins the
 upstream SDK and model revision and requires the complete
 `option_marker.pt` state dict — missing or incompatible weights fail
@@ -1029,6 +1134,9 @@ extra Laya checkpoints noted below):
 | `fastino/GLiNER2.5-Decide` | 340M | decision-tuned sibling — benchmarked; best local cls on the mixed pool |
 | `knowledgator/gliformer-base-v1` | ~190M | benchmarked; best NER F1 here |
 | `knowledgator/gliformer-large-v1` | 575.6M | benchmarked; family is base+large only, no small |
+| `knowledgator/gliner-x-small` | 300M | mT5-encoder span-level gliner, stanza word splitter; HF-card-only release 2026-04-29 — benchmarked |
+| `knowledgator/gliner-x-base` | 494M | same mT5 generation at the middle scale — benchmarked |
+| `knowledgator/gliner-x-large` | 865M | largest of the three — benchmarked; NER exact 61% here (level with GLiNER2.5-base) but NER-only: classification collapses at every size |
 | `convaiinnovations/laya` (+multilingual, typed-decisions) | 421M / 322M | English root benchmarked; subfolders exist for the other two |
 | `jaredpalmer/kev-0.8b` | 0.8B (9.3M trained) | Qwen3.5 base + LoRA/head; 4B/9B siblings exist but are impractical on CPU — 0.8B benchmarked |
 | `aimeigaoshou/agent-jev` | 0.6B | Qwen3 base, LM head swapped for a candidate head; single checkpoint — benchmarked |
@@ -1043,6 +1151,7 @@ extra Laya checkpoints noted below):
 | `altslate/certo-decision-model` | 421M | ModernBERT-large + calibrated per-option score head; vendored engine (`engines/certo_engine/`) — benchmarked |
 | `MoLeMo-Lab/mojev` | 0.85B | Qwen3.5 + fla packed one-pass scorer, loads via trust_remote_code; adapted engine (`engines/mojev_engine/`) — benchmarked; noul/score + one-packed-forward tour added |
 | `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (architecture repo BY571/nanoDiff; the card lists the base as `Sebasdi/nanodiff-350m-base`); vendored engine (`engines/nanodiff_engine/`) — benchmarked |
+| `pngwn/nanodiff-350m-typed-decisions-v2` | 350M | v2 retrain of the typed-decisions run (step 3000; the checkpoint's embedded args say lam=1.0, seed 1337 — the same run the `…-v2-lam1` repo, created empty on HF, was meant to publish); same vendored engine, loadable unchanged — benchmarked |
 | `FrontiersMind/Lumma-fev-0.1b` | 154M | card name "Lumma-Fev-0.15B"; causal backbone + pointer head over choice/score/noul rows, `lumma-fev` package — benchmarked |
 | `FrontiersMind/Lumma-fev-0.6b` | 649M | same pointer-head architecture at the middle scale — benchmarked |
 | `FrontiersMind/Lumma-fev-4b` | 4.2B | largest checkpoint practical on this 32 GB CPU machine — benchmarked |
@@ -1143,7 +1252,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
 | `demos/certo_demo.py` | Certo 421M calibrated `decide()` tour incl. the `abstain_below` threshold stop (vendored `engines/certo_engine/`, main venv) |
 | `demos/mojev_demo.py` | MoJev 0.85B tour (incl. noul + score rubric; choice+noul+score in one packed forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/nanodiff_demo.py` | nanodiff 350M diffusion-LM tour (incl. `predict_multi`: three typed questions in one forward) + one-shot runner (`--serve`) in the main venv, spawned by its web-UI tab |
+| `demos/nanodiff_demo.py` | nanodiff 350M diffusion-LM tour (incl. `predict_multi`: three typed questions in one forward; `--v2` runs the v2 retrain) + one-shot runner (`--serve`, `--v2`) in the main venv, spawned by its web-UI tab |
 | `demos/nemotron_vl_demo.py` | Nemotron Rerank VL image-document tour: PIL-drawn page screenshots as base64 data-URI documents through OpenRouter's structured rerank documents, vs the same pages as plain text (main venv, network) |
 | `demos/verdict_demo.py` | Verdict (RLCD 151M) tour: Choice + Score + Noul in one `evaluate()` and an abstention probe, plus a one-shot runner (`--serve`) — run under the agent-jev venv python |
 | `demos/openthai_demo.py` | OpenThai-SystemOne tour: score + noul over a Thai and the shared English ticket via the local :8029 System One server, plus a one-shot runner (`--serve`) |
@@ -1164,18 +1273,20 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `demos/von_demo.py` | von tour (shared-text choice, then a judge and a rate stop on one shared sample) + one-shot runner (`--serve`, choice and judge_rate modes) inside `.venv-von`, spawned by both von tab sections |
 | `engines/von_client.py` | pinned, complete option-marker checkpoint loader (decide/judge/rate wrappers over evaluate_choice/evaluate_noul/evaluate_score) shared by demo, tab and benchmarks |
 | `demos/relik_demo.py` | one-shot ReLiK runner inside `.venv-relik`, spawned by the ReLiK tab |
+| `demos/glinerx_demo.py` | GLiNER-X tour (`--tour`: multilingual NER + the NER-only classification caveat) + one-shot runner (JSON over stdin) inside `.venv-glinerx`, spawned by its web-UI tab |
 | `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK pipeline, parametrized so the tour can load the joint NER+relation sibling (two relik 1.0.7 load fixes; the benched default is forwarded verbatim) |
+| `engines/glinerx_client.py` | registry + loader for the GLiNER-X family through the classic `gliner` package with the stanza extra (.venv-glinerx; the loader names the venv when the stack is missing) plus the vendor multitask classification mapping (prompt + single-label reduction) and the per-language stanza-splitter warm-up — with the probe notes that established the checkpoints are NER-only |
 | `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
 | `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Solar Decide, Span-01, seven rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
 | `engines/clef_client.py` | dependency-free client for the Clef / Clef-flash decision models on Cloudflare Workers AI (same System One contract behind the v4 REST envelope; cf CLI session token with auto-refresh, or `CLOUDFLARE_AUTH_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in repo-root `.env`) |
-| `engines/fastino_client.py` | dependency-free client for Fastino's hosted GLiDE decision model (same System One contract, flat payload; `FASTINO_API_KEY` in repo-root `.env`) |
+| `engines/fastino_client.py` | dependency-free client for Fastino's hosted models: the GLiDE decision model (same System One contract, flat payload) plus the hosted GLiNER twins (the local GLiNER2.5 base/multi/Decide checkpoints over the OpenAI-compatible chat-completions endpoint with a `schema` body; `FASTINO_API_KEY` in repo-root `.env`) |
 | `engines/typellm_client.py` | dependency-free client for TypeLLM's hosted API (JSON-Schema enum questions via POST /v1/generate, images as base64 data URIs; `TYPELLM_API_KEY` in repo-root `.env`) |
 | `engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 65 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 72 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 

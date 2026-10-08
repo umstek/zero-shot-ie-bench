@@ -29,6 +29,14 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system "Decision 2.0 Eos 0.8B"
     .venv-von/Scripts/python bench_multilingual.py --system "Decision 2.0 Sol 2B"
 
+GLiNER-X (Knowledgator's mT5-encoder multilingual family) needs its own
+venv — the classic gliner package with the stanza extra resolves
+transformers 5.x, incompatible with the main venv's pinned 4.57.6
+(see README setup for `.venv-glinerx`):
+    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-small
+    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-base
+    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-large
+
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
@@ -64,9 +72,15 @@ CLOUDFLARE_AUTH_TOKEN plus CLOUDFLARE_ACCOUNT_ID:
     python bench_multilingual.py --system "Clef (Workers AI)"
     python bench_multilingual.py --system "Clef-flash (Workers AI)"
 
-Fastino's GLiDE needs FASTINO_API_KEY in .env (ZDR per the model
-catalog; input $0.15/M tokens, thinking tokens free):
+Fastino's hosted systems need FASTINO_API_KEY in .env (all ZDR per the
+model catalog): GLiDE rides Fastino's /v1/systemone (input $0.15/M
+tokens, thinking tokens free) and the hosted GLiNER twins the local
+GLiNER rows line up against ride the chat-completions endpoint (input
+$0.03/M tokens, output free):
     python bench_multilingual.py --system "GLiDE (Fastino)"
+    python bench_multilingual.py --system "GLiNER2.5-base (Fastino)"
+    python bench_multilingual.py --system "GLiNER2.5-multi (Fastino)"
+    python bench_multilingual.py --system "GLiNER2.5-Decide (Fastino)"
 
 TypeLLM's hosted type-safe generation API needs TYPELLM_API_KEY in .env
 (input $0.05/M, thinking $0.50/M, answers free); both modes run, the
@@ -255,6 +269,15 @@ FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
 # Same names across benchmarks so results files line up
 TYPELLM_MODELS = {"TypeLLM (hosted)": False,
                   "TypeLLM thinking (hosted)": True}
+# Fastino's hosted GLiNER twins (see bench_spectrum.py for the notes;
+# engines/fastino_client.py): same names as the local GLINER entries'
+# hosted-available checkpoints, one API request per text like a local
+# one-call-per-text run. No small twin - Fastino does not host it
+FASTINO_EXTRACTORS = {
+    "GLiNER2.5-base (Fastino)": "gliner2.5-base",
+    "GLiNER2.5-multi (Fastino)": "gliner2.5-multi",
+    "GLiNER2.5-Decide (Fastino)": "decide",
+}
 OPENROUTER_RERANKERS = {
     "qwen3-reranker-8b (OpenRouter)": "qwen/qwen3-reranker-8b",
     "voyage-rerank-2.5-lite (OpenRouter)": "voyageai/rerank-2.5-lite",
@@ -269,10 +292,17 @@ OPENROUTER_RERANKERS = {
 # name -> tag map and the client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
-from engines import (decision2_client, intern_decision_client, julia_client,
-                     k2type_client)
+from engines import (decision2_client, glinerx_client, intern_decision_client,
+                     julia_client, k2type_client)
 
 OLLAYA = OLLAYA_MODELS
+# Knowledgator's GLiNER-X multilingual family (mT5 encoder backbone; see
+# bench_spectrum.py for the notes; engines/glinerx_client.py holds the
+# registry and the request-shape findings — NER-only checkpoints, the
+# classification answers ride the vendor multitask prompt as census
+# rows). Runs under .venv-glinerx/Scripts/python; same names across
+# benchmarks so results files line up
+GLINER_X = glinerx_client.MODELS
 # FrontiersMind's Lumma-Fev typed-decision family, in-process via the
 # lumma-fev package (.venv-von: transformers >=5.4,<6); same names as
 # bench_spectrum.py so results files line up across benchmarks
@@ -307,11 +337,13 @@ K2TYPE = {"K2-Type 0.9B (local)": k2type_client.MODEL_ID}
 DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
-ALL_SYSTEMS = (list(GLINER) + list(GLIFORMER) + list(GLICLASS)
+ALL_SYSTEMS = (list(GLINER) + list(FASTINO_EXTRACTORS)
+               + list(GLIFORMER) + list(GLICLASS) + list(GLINER_X)
                + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
                + list(FASTINO_MODELS) + list(TYPELLM_MODELS)
-               + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M"]
+               + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
+                  "nanodiff 350M v2"]
                + ["Laya Router", "Laya typed-decisions", "von",
                   "JevK5-Lite", "LFM2.5-RLCD 350M",
                   "so1 (Qwen2.5-0.5B)", "Jev",
@@ -334,6 +366,17 @@ def make_classifier(name: str, tracker=None):
 
         def one(text: str):
             return model.classify_text(text, {"task": labels})["task"]
+    elif name in FASTINO_EXTRACTORS:
+        # Fastino's hosted GLiNER twin: same classify_text surface over
+        # the chat-completions endpoint (one API request per text, the
+        # same decomposition as the local one-call-per-text run)
+        from engines.fastino_client import gliner
+
+        client = gliner(FASTINO_EXTRACTORS[name],
+                        usage_sink=tracker.add if tracker else None)
+
+        def one(text: str):
+            return client.classify_text(text, {"task": labels})["task"]
     elif name in GLIFORMER:
         from gliformer import GLiFormer
 
@@ -343,6 +386,30 @@ def make_classifier(name: str, tracker=None):
         def one(text: str):
             out = model.classify(text, labels, threshold=0.5)
             return out[0]["class_name"] if out else None
+    elif name in GLINER_X:
+        # Knowledgator's GLiNER-X (classic gliner package over an mT5
+        # encoder, stanza word splitter; runs under .venv-glinerx) — see
+        # bench_spectrum.py for the notes. NER-only checkpoints, so the
+        # answers ride the vendor multitask prompt and land as census
+        # rows (engines/glinerx_client.py). The word splitter lazily
+        # builds a stanza tokenize pipeline per detected language, so an
+        # untimed splitter pass over one text per bench language pays
+        # every lazy pipeline load (and any first-use stanza download)
+        # before the timed loop, like the other local engines' warm-up.
+        from engines.glinerx_client import (CLASSIFICATION_THRESHOLD,
+                                            classification_prompt,
+                                            load_glinerx,
+                                            reduce_classification,
+                                            warm_splitter)
+
+        model = load_glinerx(GLINER_X[name])
+        warm_splitter(model, [items[0][0] for items in LANGUAGES.values()])
+
+        def one(text: str):
+            entities = model.predict_entities(
+                classification_prompt(labels, text), labels,
+                threshold=CLASSIFICATION_THRESHOLD)
+            return reduce_classification(entities, labels)
     elif name == "Certo 421M":
         # calibrated non-generative decision model (vendored engines/certo_engine/):
         # score each label description against the state in one forward pass
@@ -545,6 +612,19 @@ def make_decider(name: str):
         from engines.nanodiff_engine.runner import QUESTION, load_model, predict
 
         model, _ = load_model("cpu")
+
+        def one(text: str):
+            pred, _ = predict(model, text, QUESTION["sentiment"],
+                              labels, "cpu")
+            return pred
+    elif name == "nanodiff 350M v2":
+        # the v2 retrain: same typed-decision format and architecture, new
+        # weights (pngwn/nanodiff-350m-typed-decisions-v2 -- see
+        # runner.CKPT_V2); like v1 otherwise
+        from engines.nanodiff_engine.runner import (CKPT_V2, QUESTION,
+                                                    load_model, predict)
+
+        model, _ = load_model("cpu", CKPT_V2)
 
         def one(text: str):
             pred, _ = predict(model, text, QUESTION["sentiment"],
@@ -897,10 +977,13 @@ def main() -> None:
     print(f"{name}: 54 texts (9 languages x 6) ...")
     t0 = time.perf_counter()
     if (name in GLINER or name in GLIFORMER or name in GLICLASS
+            or name in GLINER_X
             or name in RERANKERS or name in OPENROUTER_RERANKERS
             or name in ("Span-01", "Span-01 Lite")
+            or name in FASTINO_EXTRACTORS
             or name == "Certo 421M"):
-        if name in OPENROUTER_RERANKERS or name in ("Span-01", "Span-01 Lite"):
+        if (name in OPENROUTER_RERANKERS or name in ("Span-01", "Span-01 Lite")
+                or name in FASTINO_EXTRACTORS):
             from engines.openrouter_client import UsageTracker
 
             tracker = UsageTracker()
@@ -912,7 +995,8 @@ def main() -> None:
             lat.append(time.perf_counter() - t1)
         lat = statistics.mean(lat)
     elif (name in ("von", "so1 (Qwen2.5-0.5B)", "JevK5-Lite",
-                   "LFM2.5-RLCD 350M", "MoJev 0.85B", "nanodiff 350M")
+                   "LFM2.5-RLCD 350M", "MoJev 0.85B", "nanodiff 350M",
+                   "nanodiff 350M v2")
           or name in LUMMA or name in JULIA or name in INTERN_DECISION):
         one = make_decider(name)
         preds, lat = [], []
