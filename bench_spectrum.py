@@ -156,8 +156,28 @@ GLICLASS = {
 GLINER_X = glinerx_client.MODELS
 RERANKERS = {
     "mxbai-rerank-base-v2": "mixedbread-ai/mxbai-rerank-base-v2",
+    "mxbai-rerank-large-v2": "mixedbread-ai/mxbai-rerank-large-v2",
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
     "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
+}
+# NVIDIA's llama-nemotron-rerank-1b-v2 (1.24B, openmdw-1.1 + Llama 3.2
+# Community License, weights refreshed 2026-08-26): a bidirectional-
+# attention Llama-3.2-1B cross-encoder whose head ships as REMOTE CODE
+# (LlamaBidirectionalForSequenceClassification) and whose trained pair
+# format is the card's "question:{q} \n \n passage:{p}" template, so it
+# cannot ride the shared CrossEncoder path (which would concatenate the
+# pair without the trained markers). It still loads in the MAIN venv:
+# the remote code is version-adaptive (transformers >=4.44 incl. 5.x)
+# and runs under the pinned 4.57.6 (one benign unrecognized-rope_theta
+# warning). Request shape measured on the 48-question mixed pool
+# (2026-10-05): the house (instruction, bare-label) pairs the other
+# rerankers score collapse it to 9/24 sentiment, raw text + bare labels
+# 26/48, raw text + the house label descriptions as the passage wins at
+# 31/48 - the same call the Ollaya NLI branch made (bare-label criteria
+# measurably hurt the NLI pair encoder, so criteria carry the
+# descriptions there). fp32 on CPU (the card's bf16 example targets GPU)
+NEMOTRON_RERANKERS = {
+    "nemotron-rerank-1b-v2": "nvidia/llama-nemotron-rerank-1b-v2",
 }
 # hosted on OpenRouter: System One contract (kev, solar-decide, span) and
 # the rerank router. Solar Decide is Upstage's structured-decision model on
@@ -278,6 +298,7 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Sol 2B": "sol-2b"}
 ALL_SYSTEMS = (list(EXTRACTORS) + list(FASTINO_EXTRACTORS)
                + list(GLICLASS) + list(GLINER_X) + list(RERANKERS)
+               + list(NEMOTRON_RERANKERS)
                + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
                + list(CLEF_MODELS) + list(FASTINO_MODELS)
                + list(TYPELLM_MODELS)
@@ -553,6 +574,49 @@ def classify_reranker(repo: str):
     return cls_one
 
 
+def nemotron_prompt(query: str, passage: str) -> str:
+    """The card's trained pair format, verbatim (including the spaces
+    around the blank line) - see the NEMOTRON_RERANKERS notes."""
+    return f"question:{query} \n \n passage:{passage}"
+
+
+def classify_nemotron_reranker(repo: str):
+    """NVIDIA's llama-nemotron-rerank-1b-v2 as decision engine, loading
+    the card verbatim: trust_remote_code (custom bidirectional-attention
+    head), left padding, pad token falling back to eos. Each question
+    scores one prompt per label - the raw text as the query, the house
+    label description as the passage (shape probe in the
+    NEMOTRON_RERANKERS notes) - in one batched forward, argmax = decision.
+    Classification only - no span extraction, so no NER answers. fp32 on
+    CPU (the card's bf16 example targets GPU)."""
+    import torch
+    from transformers import (AutoModelForSequenceClassification,
+                              AutoTokenizer)
+
+    tokenizer = AutoTokenizer.from_pretrained(repo, trust_remote_code=True,
+                                              padding_side="left")
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    model = AutoModelForSequenceClassification.from_pretrained(
+        repo, trust_remote_code=True).eval()
+    if model.config.pad_token_id is None:
+        model.config.pad_token_id = tokenizer.eos_token_id
+    descriptions = {**SENTIMENT_LABELS, **TOPIC_LABELS}
+
+    def cls_one(text: str, task: str) -> str | None:
+        labels = list(SENTIMENT_LABELS if task == "sentiment"
+                      else TOPIC_LABELS)
+        prompts = [nemotron_prompt(text, descriptions[label])
+                   for label in labels]
+        batch = tokenizer(prompts, padding=True, truncation=True,
+                          return_tensors="pt", max_length=512)
+        with torch.inference_mode():
+            logits = model(**batch).logits
+        scores = logits.view(-1).tolist()
+        return labels[max(range(len(scores)), key=lambda i: scores[i])]
+    return cls_one
+
+
 def classify_certo():
     """Certo 421M: calibrated non-generative decision model (vendored
     engines/certo_engine/, card documents no PyPI package). One forward pass scores
@@ -626,6 +690,15 @@ def main() -> None:
         # in-process cross-encoder rerankers as decision engines,
         # classification only - no span extraction, so no NER answers
         cls_one = classify_reranker(RERANKERS[name])
+        for q in CLS_QUESTIONS:
+            t1 = time.perf_counter()
+            cls_preds.append(cls_one(q["text"], q["task"]))
+            cls_lat.append(time.perf_counter() - t1)
+    elif name in NEMOTRON_RERANKERS:
+        # NVIDIA's remote-code bidirectional cross-encoder: card-verbatim
+        # load + measured (text, described-label) shape - see the
+        # NEMOTRON_RERANKERS notes. Classification only, no NER answers.
+        cls_one = classify_nemotron_reranker(NEMOTRON_RERANKERS[name])
         for q in CLS_QUESTIONS:
             t1 = time.perf_counter()
             cls_preds.append(cls_one(q["text"], q["task"]))

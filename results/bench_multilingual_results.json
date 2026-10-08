@@ -791,6 +791,28 @@
       "Ukrainian": 1.0,
       "Vietnamese": 1.0,
       "Welsh": 1.0
+    },
+    "mxbai-rerank-large-v2": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.5,
+      "Icelandic": 0.5,
+      "Welsh": 0.5
+    },
+    "nemotron-rerank-1b-v2": {
+      "Spanish": 1.0,
+      "French": 0.6667,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.5,
+      "Welsh": 0.6667
     }
   },
   "by_tier": {
@@ -1270,7 +1292,7 @@
       "neutral"
     ],
     "notes": [
-      "All 72 systems answer the same 54 texts.",
+      "All 74 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -1360,7 +1382,9 @@
       "Decider V1.1 27B (OpenRouter) recorded 2026-10-07 22:15, 38s, CPU",
       "D1 (OpenRouter) recorded 2026-10-07 22:16, 41s, CPU",
       "Tev1 4B (OpenRouter) recorded 2026-10-07 22:16, 31s, CPU",
-      "Mercury Decide (OpenRouter) recorded 2026-10-07 22:16, 24s, CPU"
+      "Mercury Decide (OpenRouter) recorded 2026-10-07 22:16, 24s, CPU",
+      "mxbai-rerank-large-v2 recorded 2026-10-05 23:56, 249s, CPU",
+      "nemotron-rerank-1b-v2 recorded 2026-10-05 23:58, 74s, CPU"
     ],
     "texts_per_language": 6,
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
