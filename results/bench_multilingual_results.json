@@ -813,6 +813,17 @@
       "Sinhala": 0.6667,
       "Icelandic": 0.5,
       "Welsh": 0.6667
+    },
+    "Solar Decide Flash (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -1175,6 +1186,11 @@
       "medium": 1.0,
       "popular": 1.0,
       "rare": 0.9444
+    },
+    "Solar Decide Flash (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
     }
   },
   "latency": {
@@ -1249,7 +1265,8 @@
     "von": 0.289,
     "voyage-rerank-2.5 (OpenRouter)": 0.363,
     "voyage-rerank-2.5-lite (OpenRouter)": 0.358,
-    "winnow e4b (Ollaya)": 8.689
+    "winnow e4b (Ollaya)": 8.689,
+    "Solar Decide Flash (OpenRouter)": 0.841
   },
   "laya_routing": {
     "Chinese": {
@@ -1292,7 +1309,7 @@
       "neutral"
     ],
     "notes": [
-      "All 74 systems answer the same 54 texts.",
+      "All 75 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -1384,7 +1401,8 @@
       "Tev1 4B (OpenRouter) recorded 2026-10-07 22:16, 31s, CPU",
       "Mercury Decide (OpenRouter) recorded 2026-10-07 22:16, 24s, CPU",
       "mxbai-rerank-large-v2 recorded 2026-10-05 23:56, 249s, CPU",
-      "nemotron-rerank-1b-v2 recorded 2026-10-05 23:58, 74s, CPU"
+      "nemotron-rerank-1b-v2 recorded 2026-10-05 23:58, 74s, CPU",
+      "Solar Decide Flash (OpenRouter) recorded 2026-10-08 23:00, 45s, CPU"
     ],
     "texts_per_language": 6,
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
@@ -1459,7 +1477,8 @@
     "von": "Model download and loading excluded; first forward pass included.",
     "voyage-rerank-2.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "voyage-rerank-2.5-lite (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "winnow e4b (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
+    "winnow e4b (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Solar Decide Flash (OpenRouter)": "Model download and loading excluded; first forward pass included."
   },
   "usage": {
     "Clef (Workers AI)": {
@@ -1642,6 +1661,16 @@
       "cost_usd": 0.000115,
       "input_tokens": 0,
       "paid_requests": 54
+    },
+    "Solar Decide Flash (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.001019,
+      "input_tokens": 20385,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
     }
   }
 }

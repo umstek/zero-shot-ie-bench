@@ -260,6 +260,7 @@ def nemotron_prompt(query: str, passage: str) -> str:
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
+    "Solar Decide Flash (OpenRouter)": "upstage/solar-decide-flash",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
     "Decider V1 27B (OpenRouter)": "perplexity/pplx-decider-v1-27b",

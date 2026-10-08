@@ -183,10 +183,13 @@ NEMOTRON_RERANKERS = {
 # the rerank router. Solar Decide is Upstage's structured-decision model on
 # Solar Mini 4 (35B MoE / 3B active, 524K context; answers choice with
 # probabilities, score rubrics, noul - but rejects an explicit
-# criteria: null on noul, omit the field instead). typesafe/jev-1.13 also
-# lives there but is RBAC-gated and already benched through the TypeSafe
-# API directly; typesafe/jev-router is a chat router, not a typed-decision
-# endpoint.
+# criteria: null on noul, omit the field instead). Solar Decide Flash
+# (added 2026-10-08) is its low-latency sibling on the same contract
+# ($0.05/M input, output free). typesafe/jev-1.13 also lives there (and
+# on the newer POST /api/alpha/decisions router - both answer this
+# account's key; the old RBAC gate is gone) but is already benched
+# through the TypeSafe API directly; typesafe/jev-router is a chat
+# router, not a typed-decision endpoint.
 #
 # The Decisions family OpenRouter added since (output modality
 # "decisions", same /v1/systemone contract; only input bills, decisions
@@ -201,6 +204,7 @@ NEMOTRON_RERANKERS = {
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
+    "Solar Decide Flash (OpenRouter)": "upstage/solar-decide-flash",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
     "Decider V1 27B (OpenRouter)": "perplexity/pplx-decider-v1-27b",
