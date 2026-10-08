@@ -231,15 +231,36 @@ GLICLASS = {
 }
 RERANKERS = {
     "mxbai-rerank-base-v2": "mixedbread-ai/mxbai-rerank-base-v2",
+    "mxbai-rerank-large-v2": "mixedbread-ai/mxbai-rerank-large-v2",
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
     "GTE-rerank-ModernBERT-base": "Alibaba-NLP/gte-reranker-modernbert-base",
 }
+# NVIDIA's llama-nemotron-rerank-1b-v2 (openmdw-1.1 + Llama 3.2 Community
+# License): remote-code bidirectional-attention Llama-3.2-1B cross-encoder
+# with a trained "question:{q} \n \n passage:{p}" pair format - loads in
+# the MAIN venv under the pinned transformers 4.57.6 (the remote code is
+# version-adaptive, >=4.44 incl. 5.x). Its 26-card languages include this
+# bench's rare tier (Sinhala is NOT one of them; Welsh/Icelandic aren't
+# either - the card evals Thai, Hebrew, Bengali). Same measured request
+# shape as bench_spectrum.py (raw text as query, the house label
+# descriptions as passage; the house bare-label shape collapses it - see
+# the NEMOTRON_RERANKERS notes there for the probe)
+NEMOTRON_RERANKERS = {
+    "nemotron-rerank-1b-v2": "nvidia/llama-nemotron-rerank-1b-v2",
+}
+
+
+def nemotron_prompt(query: str, passage: str) -> str:
+    """The card's trained pair format, verbatim (same helper as
+    bench_spectrum.py; the benches duplicate their shape helpers)."""
+    return f"question:{query} \n \n passage:{passage}"
 # hosted on OpenRouter (see bench_spectrum.py for the full id map and
 # the Decisions-family notes); same names so results files line up
 # across benchmarks
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
+    "Solar Decide Flash (OpenRouter)": "upstage/solar-decide-flash",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
     "Decider V1 27B (OpenRouter)": "perplexity/pplx-decider-v1-27b",
@@ -339,7 +360,8 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Sol 2B": "sol-2b"}
 ALL_SYSTEMS = (list(GLINER) + list(FASTINO_EXTRACTORS)
                + list(GLIFORMER) + list(GLICLASS) + list(GLINER_X)
-               + list(RERANKERS) + list(OPENROUTER_SYSTEMONE)
+               + list(RERANKERS) + list(NEMOTRON_RERANKERS)
+               + list(OPENROUTER_SYSTEMONE)
                + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
                + list(FASTINO_MODELS) + list(TYPELLM_MODELS)
                + ["Certo 421M", "MoJev 0.85B", "nanodiff 350M",
@@ -436,6 +458,38 @@ def make_classifier(name: str, tracker=None):
             pairs = [('What is the overall sentiment of this text: '
                       f'"{text}"', label) for label in labels]
             scores = model.predict(pairs)
+            return labels[max(range(len(scores)), key=lambda i: scores[i])]
+    elif name in NEMOTRON_RERANKERS:
+        # NVIDIA's remote-code bidirectional cross-encoder: card-verbatim
+        # load (trust_remote_code, left padding, pad token falling back to
+        # eos) + the measured (text, described-label) shape from
+        # bench_spectrum.py - the house (instruction, bare-label) pairs
+        # the other rerankers score collapse it. One batched forward per
+        # text, argmax = decision; fp32 on CPU (the card's bf16 example
+        # targets GPU)
+        import torch
+        from transformers import (AutoModelForSequenceClassification,
+                                  AutoTokenizer)
+
+        repo = NEMOTRON_RERANKERS[name]
+        tokenizer = AutoTokenizer.from_pretrained(
+            repo, trust_remote_code=True, padding_side="left")
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+        model = AutoModelForSequenceClassification.from_pretrained(
+            repo, trust_remote_code=True).eval()
+        if model.config.pad_token_id is None:
+            model.config.pad_token_id = tokenizer.eos_token_id
+        descriptions = dict(SENTIMENT_LABELS)
+
+        def one(text: str):
+            prompts = [nemotron_prompt(text, descriptions[label])
+                       for label in labels]
+            batch = tokenizer(prompts, padding=True, truncation=True,
+                              return_tensors="pt", max_length=512)
+            with torch.inference_mode():
+                logits = model(**batch).logits
+            scores = logits.view(-1).tolist()
             return labels[max(range(len(scores)), key=lambda i: scores[i])]
     elif name in OPENROUTER_RERANKERS:
         # OpenRouter-hosted rerankers: same (instruction, label) pair
@@ -978,7 +1032,8 @@ def main() -> None:
     t0 = time.perf_counter()
     if (name in GLINER or name in GLIFORMER or name in GLICLASS
             or name in GLINER_X
-            or name in RERANKERS or name in OPENROUTER_RERANKERS
+            or name in RERANKERS or name in NEMOTRON_RERANKERS
+            or name in OPENROUTER_RERANKERS
             or name in ("Span-01", "Span-01 Lite")
             or name in FASTINO_EXTRACTORS
             or name == "Certo 421M"):

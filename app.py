@@ -1,11 +1,11 @@
-"""Interactive demo + benchmarks for seventy-five zero-shot IE/classification
-systems across thirty-five families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for seventy-eight zero-shot IE/classification
+systems across thirty-nine families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiNER-X (spawned into .venv-glinerx), GLiClass, Rerankers, Laya, von,
 JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff (v1 + v2), Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, so1, Jev (cloud),
 OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the seventy-two
+local daemon; benchmark tabs hold the measured numbers for the seventy-five
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
 seven rerankers) and Fastino's hosted GLiNER twins included.
@@ -1986,8 +1986,9 @@ def build_ollaya_tab():
 
 # ------------------------------------------- hosted decision APIs tab
 # The OpenRouter-hosted systems (same names and model ids as
-# bench_spectrum.py): nine System One decision engines — Kev and Solar
-# Decide plus the Decisions family (Perplexity Decider V1/V1.1, Liquid d1,
+# bench_spectrum.py): ten System One decision engines — Kev, Solar
+# Decide and its Flash sibling plus the Decisions family (Perplexity
+# Decider V1/V1.1, Liquid d1,
 # Together Tev1, Inception Mercury) answer one choice question, Span-01
 # scores one noul question per label — and seven rerank endpoints used as
 # decision engines via argmax over per-label relevance. Plus Cloudflare's
@@ -2002,6 +2003,7 @@ def build_ollaya_tab():
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
+    "Solar Decide Flash (OpenRouter)": "upstage/solar-decide-flash",
     "Span-01": "respan/span-01",
     "Span-01 Lite": "respan/span-01-lite",
     "Decider V1 27B (OpenRouter)": "perplexity/pplx-decider-v1-27b",
@@ -2047,8 +2049,9 @@ def build_openrouter_tab():
 
     with gr.Tab("Hosted decision APIs"):
         gr.Markdown("### The hosted systems, live\n"
-                    "The twenty-four hosted systems from the benchmark "
-                    "tabs: Kev 4B, Solar Decide and the five Decisions "
+                    "The twenty-five hosted systems from the benchmark "
+                    "tabs: Kev 4B, Solar Decide, its Flash sibling and "
+                    "the five Decisions "
                     "family arrivals (Perplexity Decider V1/V1.1, Liquid "
                     "d1, Together Tev1, Inception Mercury) answer one "
                     "choice question, Span-01 / Span-01 Lite "
@@ -2533,20 +2536,53 @@ def build_lfm_tab():
 # ------------------------------------------------------------ rerankers tab
 RERANKER_MODELS = {
     "mxbai-rerank-base-v2 — 494M": "mixedbread-ai/mxbai-rerank-base-v2",
-    "bge-reranker-v2-m3 — 568M, best here": "BAAI/bge-reranker-v2-m3",
+    "mxbai-rerank-large-v2 — 1.54B, best reranker here":
+        "mixedbread-ai/mxbai-rerank-large-v2",
+    "bge-reranker-v2-m3 — 568M": "BAAI/bge-reranker-v2-m3",
     "GTE-rerank-ModernBERT-base — 150M, fastest":
         "Alibaba-NLP/gte-reranker-modernbert-base",
+    "nemotron-rerank-1b-v2 — 1.24B, best multilingual reranker here":
+        "nvidia/llama-nemotron-rerank-1b-v2",
 }
 _RERANKER_MODELS: dict[str, object] = {}
 
+# the house sentiment/topic descriptions, reused as nemotron's passages
+# (the same measured shape the benchmarks run - bare labels collapse it,
+# see the NEMOTRON_RERANKERS notes in bench_spectrum.py)
+_NEMOTRON_DESCRIPTIONS = {
+    "positive": "Text expresses a clearly positive attitude",
+    "negative": "Text expresses a clearly negative attitude",
+    "neutral": "Factual or mixed text without a clear attitude",
+    "technology": "Software, hardware, AI, gadgets, engineering",
+    "business": "Companies, markets, revenue, deals, management",
+    "sports": "Athletes, matches, teams, tournaments",
+    "politics": "Government, elections, policy, legislation",
+}
+
 
 def get_reranker(model_id: str):
-    """Lazy per-checkpoint CrossEncoder loader (in-process in the main
-    venv — rerankers are light, like the GLiClass tab)."""
+    """Lazy per-checkpoint loader (in-process in the main venv — the
+    CrossEncoder rerankers are light, like the GLiClass tab; NVIDIA's
+    nemotron loads through its card-verbatim remote-code path)."""
     if model_id not in _RERANKER_MODELS:
-        from sentence_transformers import CrossEncoder
+        if "nemotron-rerank-1b-v2" in model_id:
+            import torch
+            from transformers import (AutoModelForSequenceClassification,
+                                      AutoTokenizer)
 
-        _RERANKER_MODELS[model_id] = CrossEncoder(model_id, device="cpu")
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_id, trust_remote_code=True, padding_side="left")
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+            model = AutoModelForSequenceClassification.from_pretrained(
+                model_id, trust_remote_code=True).eval()
+            if model.config.pad_token_id is None:
+                model.config.pad_token_id = tokenizer.eos_token_id
+            _RERANKER_MODELS[model_id] = (tokenizer, model)
+        else:
+            from sentence_transformers import CrossEncoder
+
+            _RERANKER_MODELS[model_id] = CrossEncoder(model_id, device="cpu")
     return _RERANKER_MODELS[model_id]
 
 
@@ -2555,12 +2591,14 @@ def build_reranker_tab():
 
     with gr.Tab("Rerankers"):
         gr.Markdown("### Cross-encoder rerankers as decision engines\n"
-                    "Three neutral rerankers (mxbai-rerank-base-v2, "
-                    "bge-reranker-v2-m3, GTE-rerank-ModernBERT-base) score "
-                    "one (instruction, label) pair per label; the argmax "
+                    "Five local rerankers (mxbai-rerank-base/large-v2, "
+                    "bge-reranker-v2-m3, GTE-rerank-ModernBERT-base, "
+                    "nvidia nemotron-rerank-1b-v2) score one "
+                    "(instruction, label) pair per label; the argmax "
                     "is the decision — no NER, no generation. In-process "
-                    "in the main venv (sentence-transformers); first click "
-                    "per checkpoint loads it (~10-30 s).")
+                    "in the main venv (sentence-transformers, plus the "
+                    "nemotron remote-code head); first click per "
+                    "checkpoint loads it (~10-60 s).")
         rr_model = gr.Dropdown(choices=list(RERANKER_MODELS.items()),
                                value="mixedbread-ai/mxbai-rerank-base-v2",
                                label="Checkpoint")
@@ -2583,10 +2621,25 @@ def build_reranker_tab():
             if len(set(labels)) < 2:
                 return {"error": "provide at least two distinct labels"}
             try:
-                model = get_reranker(model_id)
-                pairs = [(f'What is the overall {task} of this text: '
-                          f'"{text}"', label) for label in labels]
-                scores = model.predict(pairs)
+                loaded = get_reranker(model_id)
+                if isinstance(loaded, tuple):
+                    # nemotron: the card's trained pair template, the raw
+                    # text as query and the house description as passage
+                    # (unknown labels fall back to the bare label text)
+                    import torch
+
+                    tokenizer, model = loaded
+                    prompts = [f"question:{text} \n \n passage:"
+                               f"{_NEMOTRON_DESCRIPTIONS.get(label, label)}"
+                               for label in labels]
+                    batch = tokenizer(prompts, padding=True, truncation=True,
+                                      return_tensors="pt", max_length=512)
+                    with torch.inference_mode():
+                        scores = model(**batch).logits.view(-1).tolist()
+                else:
+                    pairs = [(f'What is the overall {task} of this text: '
+                              f'"{text}"', label) for label in labels]
+                    scores = loaded.predict(pairs)
             except Exception as exc:
                 return {"error": str(exc)}
             ranked = {label: round(float(score), 4)
@@ -3420,8 +3473,8 @@ def main() -> None:
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 72 systems across "
-                    "thirty-five families.")
+                    "measured numbers for all 75 systems across "
+                    "thirty-nine families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
         build_glirel_tab()

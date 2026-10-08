@@ -1,6 +1,6 @@
 # zero-shot-ie-bench
 
-Seventy-five zero-shot systems (seventy-two of them benchmarked) across
+Seventy-eight zero-shot systems (seventy-five of them benchmarked) across
 thirty-nine information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
@@ -21,7 +21,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [GLiNER-relex](https://huggingface.co/knowledgator/gliner-relex-multi-v1.0) (`knowledgator/gliner-relex-multi-v1.0`) | local joint extractor (zero-shot NER + relations in one pass, multilingual) | ~319M | Apache 2.0 | $0 · local |
 | [ReLiK](https://github.com/SapienzaNLP/relik) (`relik-ie/relik-relation-extraction-small`) | local retriever-reader relation extractor (closed Wikidata-property vocabulary: E5-small retriever + DeBERTa-v3 reader, untyped reader spans) | 33.4M retriever + 146.5M reader (~180M) | HF card Apache 2.0; repo has no LICENSE file and its README footer says CC BY-NC-SA 4.0 | $0 · local |
 | [GLiClass](https://github.com/knowledgator/gliclass) (`knowledgator/gliclass-*-v3.0`) | local zero-shot classifier (all labels, one pass) | 33M / 151M / 187M / 439M | Apache 2.0 | $0 · local |
-| [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) · [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) · [GTE-rerank-ModernBERT-base](https://huggingface.co/Alibaba-NLP/gte-rerank-modernbert-base) | local cross-encoder rerankers (score text+label pairs, argmax = decision) | 494M / 568M / 150M | Apache 2.0 | $0 · local |
+| [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) · [mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) · [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) · [GTE-rerank-ModernBERT-base](https://huggingface.co/Alibaba-NLP/gte-rerank-modernbert-base) · [nemotron-rerank-1b-v2](https://huggingface.co/nvidia/llama-nemotron-rerank-1b-v2) | local cross-encoder rerankers (score text+label pairs, argmax = decision) | 494M / 1.54B / 568M / 150M / 1.24B | Apache 2.0 (nemotron: openmdw-1.1 + Llama 3.2 Community License) | $0 · local |
 | [Laya](https://huggingface.co/convaiinnovations/laya) (`laya`) | local typed-decision engine (choice/score/noul) | 421M (322M multilingual) | Apache 2.0 | $0 · local |
 | [von-1.0](https://huggingface.co/wfzyx/von-1.0) (`von-sdk`) | local typed-decision engine (System One protocol; the HF card now describes von-1.2 — this repo pins the von-1.0 weights) | 396M | Apache 2.0 | $0 · local |
 | [open-alternative-jev](https://github.com/ikermoel/open-alternative-jev) (`so1`) | local decision harness over any ChatML LLM (logprobs) | BYO LLM (tested Qwen2.5-0.5B) | Apache 2.0 (upstream README; the venv keeps the git install from its MIT days) | $0 · local |
@@ -48,6 +48,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | proprietary API | metered · $5.3e-6/q ‡ |
 | [Kev 4B](https://openrouter.ai/jaredpalmer/kev-4b) (`jaredpalmer/kev-4b` via OpenRouter) | cloud decision engine (same System One contract as local Kev, hosted) | 4B | proprietary API | metered · $1.5e-6/q † |
 | [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
+| [Solar Decide Flash](https://openrouter.ai/upstage/solar-decide-flash) (`upstage/solar-decide-flash` via OpenRouter) | cloud typed-decision engine (Solar Decide's low-latency sibling on the same Upstage System One endpoint and Solar Mini 4 base, added 2026-10-08: same choice/score/noul contract, output tokens free) | undisclosed · Solar Mini 4 base | proprietary API | metered · $1.8e-5/q † |
 | [Clef](https://developers.cloudflare.com/workers-ai/models/clef/) / [Clef-flash](https://developers.cloudflare.com/workers-ai/models/clef-flash/) (`clef` / `clef-flash` on Cloudflare Workers AI) | cloud typed-decision engines (Cloudflare's Jev-API-compatible decision models over frozen Qwen3.8-27B / Qwen3.5-9B + rank-256 routing adapters: choice/score/noul probabilities from one non-autoregressive scoring pass, vision-capable state, 64k context) | 27B / 9B | API metered · Apache 2.0 weights on HF | metered · $2.3e-5 / $8.6e-6/q |
 | [GLiDE](https://fastino.ai/) (`fastino/GLiDE` on the Fastino API) | cloud typed-decision engine (Fastino's "thinking decision model": one fast scoring pass plus adaptive reasoning when the leading option is uncertain; choice/score/noul with calibrated probabilities, 40k context, thinking tokens priced $0) | undisclosed | API metered · research tier | metered · $1.2e-5/q |
 | [GLiNER2.5](https://github.com/fastino-ai/GLiNER2) base / multi (`fastino/gliner2.5-base-v1` / `fastino/gliner2.5-multi-v1` on the Fastino API) | cloud extractors — the hosted twins of the local GLiNER2.5-base / multi checkpoints (NER + classification per text over the chat-completions endpoint; the small checkpoint has no hosted twin) | 194M / 287M | API metered · Apache 2.0 weights | metered · $3.9e-7/q |
@@ -62,8 +63,9 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 
 † Non-ZDR endpoints: these providers may retain request data (OpenRouter's
 account privacy settings gate this — the account used here allows them).
-Solar Decide is the one † system with a ZDR Upstage endpoint on
-OpenRouter; the runs here used default routing, so it stays non-ZDR.
+Solar Decide and Solar Decide Flash are the † systems with a ZDR
+Upstage endpoint on OpenRouter; the runs here used default routing, so
+both stay non-ZDR.
 The Decisions family splits: Perplexity's Deciders and Together's Tev1
 report `retainsPrompts: false` (no †), while one of d1's providers and
 Mercury's :free tier retain prompts, so they carry the †.
@@ -106,7 +108,7 @@ slots of one causal forward over an assistant JSON skeleton — the
 causal-forward letter-logit cousin of the GGUF letter-logit LLMs and
 so1's logprob harness, with a per-checkpoint calibration temperature),
 cloud Jev / Kev 4B /
-Upstage's Solar Decide (the Solar Mini 4 MoE behind the same System One
+Upstage's Solar Decide and its low-latency Flash sibling (the Solar Mini 4 MoE behind the same System One
 contract — calibrated choice probabilities and score/noul read straight
 off the option logits, no generation) /
 Fastino's GLiDE (the GLiNER maker's hosted "thinking decision model" —
@@ -170,7 +172,7 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 72 systems)
+## Mixed-pool spectrum benchmark (all 73 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -192,6 +194,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a | |
 | Jev (cloud) | 93.8% | 0.018 | n/a | |
 | D1 (OpenRouter) † | 93.8% | 0.031 | n/a | |
+| Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a | |
 | Decider V1 27B (OpenRouter) | 93.8% | 0.075 | n/a | |
 | Decider V1.1 27B (OpenRouter) | 93.8% | 0.080 | n/a | |
 | Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a | |
@@ -331,9 +334,16 @@ Takeaways:
   request like kev, but Solar's tokenizer runs long on English (~8.7k
   input tokens per batched request), so it bills ~$1.8e-5/question —
   12× kev-4b, still 110× below cohere 4-fast.
+- **Solar Decide Flash debuts at 93.8%** — Upstage's low-latency
+  sibling (added 2026-10-08, the day it was benched) sits one question
+  behind Solar Decide, level with cloud Jev, D1 and both Deciders, and
+  is the fastest Upstage row at 0.069 s/q (vs Solar's 0.308). Same
+  Solar tokenizer, same $0.05/M input: the identical $0.00087 run cost
+  buys the 4.5× speedup, not a cheaper row. It also joins the 100%
+  multilingual club on arrival (below).
 - **winnow e4b ties qwen3-reranker-8b at 87.5% — the best systems
   behind the hosted leaders (GLiDE, Clef, TypeLLM's pair, Solar
-  Decide, Jev) of all 60** — and winnow is local and free (the metered
+  Decide, Jev) of all 73** — and winnow is local and free (the metered
   reranker needs OpenRouter; one more datapoint for rerankers doubling
   as decision engines — bge locally reaches 72.9%, Kev/OpenThai level,
   where the same rerankers sit near zero on JevBench's leaderboard).
@@ -470,6 +480,7 @@ TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 | Clef-flash (Workers AI) | $0.00041 | $0.00078 | $0.0000086 |
 | GLiDE (Fastino) | $0.00057 | $0.00071 | $0.0000120 |
 | Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
+| Solar Decide Flash (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Clef (Workers AI) | $0.0011 | $0.0021 | $0.000023 |
 | qwen3-reranker-8b † | $0.0032 | $0.0036 | $0.0000667 |
 | TypeLLM thinking (hosted) † | $0.0048 | $0.0048 | $0.00010 |
@@ -555,6 +566,7 @@ systems answer the same 54 texts.
 | Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
 | jevk5 4B (Ollaya) | 100% | 100% | 100% | **100%** |
 | Solar Decide (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| Solar Decide Flash (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | Clef (Workers AI) | 100% | 100% | 100% | **100%** |
 | Clef-flash (Workers AI) | 100% | 100% | 100% | **100%** |
 | GLiDE (Fastino) | 100% | 100% | 100% | **100%** |
@@ -665,6 +677,10 @@ Highlights:
   the Solar Mini 4 backbone is built Korean/English/Japanese-first, and
   the breadth shows even outside that trio (0.885 s/text, one request
   per text on this suite).
+- **Solar Decide Flash joined the 100% club on arrival too** — perfect
+  on all 54 texts like its full-size sibling (0.841 vs 0.885 s/text,
+  one request per text); on the English mixed pool it trades one
+  question for a 4.5× faster answer.
 - **jevk5 4B is the first local system at 100% multilingual** — perfect
   on all 54 texts including Sinhala, matching cloud Jev; its sibling
   winnow e4b follows at 98% (100% Sinhala, one Icelandic miss), ahead
@@ -685,10 +701,10 @@ Highlights:
 - GLiNER2.5-multi is perfect through Ukrainian but drops on Welsh/Sinhala
   (89% overall — still the best local *encoder*); gliclass-large transfers
 surprisingly well for an English-family release (81%, 100% Chinese,
-  joint-best local Sinhala 67%); 100%-on-Sinhala is shared by twelve
-  systems — Jev, jevk5 4B, winnow e4b, Solar Decide, Clef, Clef-flash,
-  GLiDE, both TypeLLM entries, hosted Kev 4B, Span-01 and
-  Intern-Decision 0.8B.
+  joint-best local Sinhala 67%); 100%-on-Sinhala is shared by thirteen
+  systems — Jev, jevk5 4B, winnow e4b, Solar Decide, Solar Decide
+  Flash, Clef, Clef-flash, GLiDE, both TypeLLM entries, hosted Kev 4B,
+  Span-01 and Intern-Decision 0.8B.
 - **GLiNER-X's multilingual rows are census rows, not a multilingual
   result** — the mT5-encoder family is NER-only (the card claims token
   classification and trains on NER synthetic data), so all three sizes
@@ -1028,7 +1044,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
 # imports rlcd in-process and needs the transformers-5 agent-jev interpreter:
 C:/venvs/agent-jev/Scripts/python bench_spectrum.py --system "Verdict 151M (local)"
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 72 systems →
+                                         # 9 languages, all 73 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-small
@@ -1082,11 +1098,13 @@ MoJev, nanodiff (v1/v2 checkpoint radio), Lumma (0.15B/0.6B/4B
 checkpoint dropdown), Julia,
 Intern-Decision (0.8B/2B/4B checkpoint dropdown), K2-Type, Decision 2.0 (Kai/Eos/Sol checkpoint dropdown), so1 (choice plus a
 yes_no/scale section),
-Jev (cloud), and hosted decision APIs (all sixteen systems: Kev 4B,
-Solar Decide, Span-01/Lite and seven rerankers via OpenRouter — one
+Jev (cloud), and hosted decision APIs (all twenty-five systems: Kev 4B,
+Solar Decide and its Flash sibling, the five Decisions family arrivals,
+Span-01/Lite and seven rerankers via OpenRouter — one
 metered API request per click, needs `OPENROUTER_API_KEY` — plus Clef /
 Clef-flash on Cloudflare Workers AI — needs a one-time `cf auth login`
-or a Workers AI token in `.env` — Fastino's GLiDE — needs
+or a Workers AI token in `.env` — Fastino's GLiDE and the three hosted
+GLiNER twins — needs
 `FASTINO_API_KEY` in `.env` — and TypeLLM's two entries — needs
 `TYPELLM_API_KEY` in `.env`; its demo also takes an image, the API's
 vision input), plus **Ollaya** (the five daemon-served
@@ -1286,7 +1304,7 @@ LFM2.5-RLCD 350M, nanodiff 350M); the rest:
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 72 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 73 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
