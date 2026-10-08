@@ -1,16 +1,1276 @@
 {
+  "by_language": {
+    "AgentJev 0.6B (local)": {
+      "Chinese": 0.8333,
+      "French": 0.8333,
+      "Icelandic": 0.1667,
+      "Sinhala": 0.1667,
+      "Spanish": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 0.8333,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.3333
+    },
+    "Certo 421M": {
+      "Chinese": 0.3333,
+      "French": 0.1667,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.1667,
+      "Spanish": 0.3333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.1667,
+      "Vietnamese": 0.1667,
+      "Welsh": 0.5
+    },
+    "Clef (Workers AI)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "Clef-flash (Workers AI)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "D1 (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Decider V1 27B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Decider V1.1 27B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Decision 2.0 Eos 0.8B": {
+      "Chinese": 0.8333,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.6667,
+      "Spanish": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.5
+    },
+    "Decision 2.0 Kai 0.6B": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.5,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 0.8333,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.5
+    },
+    "Decision 2.0 Sol 2B": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.5,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.3333
+    },
+    "GLiDE (Fastino)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "GLiFormer-base": {
+      "Chinese": 0.8333,
+      "French": 0.8333,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.6667,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiFormer-large": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.8333,
+      "Vietnamese": 0.5,
+      "Welsh": 0.3333
+    },
+    "GLiNER-X-base": {
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER-X-large": {
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.1667,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER-X-small": {
+      "Spanish": 0.3333,
+      "French": 0.3333,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.1667,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER2.5-Decide": {
+      "Chinese": 0.8333,
+      "French": 1.0,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 0.6667,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.3333
+    },
+    "GLiNER2.5-Decide (Fastino)": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.6667,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER2.5-base": {
+      "Chinese": 0.8333,
+      "French": 1.0,
+      "Icelandic": 0.1667,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.6667,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.3333
+    },
+    "GLiNER2.5-base (Fastino)": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.6667,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.1667,
+      "Welsh": 0.3333
+    },
+    "GLiNER2.5-multi": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 0.3333,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.6667
+    },
+    "GLiNER2.5-multi (Fastino)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.3333,
+      "Icelandic": 1.0,
+      "Welsh": 0.6667
+    },
+    "GLiNER2.5-small": {
+      "Chinese": 0.5,
+      "French": 0.5,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 0.6667,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.0,
+      "Welsh": 0.1667
+    },
+    "GTE-rerank-ModernBERT-base": {
+      "Chinese": 0.6667,
+      "French": 0.3333,
+      "Icelandic": 0.5,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.5,
+      "Welsh": 0.3333
+    },
+    "Intern-Decision 0.8B": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 1.0,
+      "Spanish": 0.8333,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.6667
+    },
+    "Intern-Decision 2B": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.6667,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.8333
+    },
+    "Intern-Decision 4B": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 0.8333,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "Jev": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "JevK5-Lite": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.3333,
+      "Spanish": 1.0,
+      "Turkish": 0.8333,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.3333
+    },
+    "Julia 1 144M": {
+      "Chinese": 0.6667,
+      "French": 0.6667,
+      "Icelandic": 0.5,
+      "Sinhala": 0.6667,
+      "Spanish": 0.3333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.5,
+      "Welsh": 0.5
+    },
+    "K2-Type 0.9B (local)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.6667,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 0.8333,
+      "Vietnamese": 1.0,
+      "Welsh": 0.3333
+    },
+    "Kev 0.8B (local)": {
+      "Chinese": 0.8333,
+      "French": 1.0,
+      "Icelandic": 0.5,
+      "Sinhala": 0.6667,
+      "Spanish": 1.0,
+      "Turkish": 0.8333,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.3333
+    },
+    "Kev 4B (OpenRouter)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.8333
+    },
+    "LFM2.5-RLCD 350M": {
+      "Chinese": 0.5,
+      "French": 1.0,
+      "Icelandic": 0.1667,
+      "Sinhala": 0.0,
+      "Spanish": 0.8333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.6667,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.1667
+    },
+    "Laya Router": {
+      "Chinese": 1.0,
+      "French": 0.8333,
+      "Icelandic": 0.5,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.5
+    },
+    "Laya typed-decisions": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 1.0,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.5,
+      "Vietnamese": 0.5,
+      "Welsh": 0.3333
+    },
+    "Lumma-fev 0.15B": {
+      "Chinese": 0.5,
+      "French": 0.3333,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.3333
+    },
+    "Lumma-fev 0.6B": {
+      "Chinese": 0.3333,
+      "French": 0.3333,
+      "Icelandic": 0.5,
+      "Sinhala": 0.5,
+      "Spanish": 0.1667,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.1667,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.3333
+    },
+    "Lumma-fev 4B": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.8333,
+      "Sinhala": 0.8333,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "Mercury Decide (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "MoJev 0.85B": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.5,
+      "Sinhala": 0.5,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.5
+    },
+    "OpenThai 0.8B (local)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.3333,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.5
+    },
+    "Solar Decide (OpenRouter)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "Span-01": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.8333
+    },
+    "Span-01 Lite": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.6667,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.5
+    },
+    "Tev1 4B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "TypeLLM (hosted)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "TypeLLM thinking (hosted)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Verdict 151M (local)": {
+      "Chinese": 0.3333,
+      "French": 0.6667,
+      "Icelandic": 0.0,
+      "Sinhala": 0.0,
+      "Spanish": 0.5,
+      "Turkish": 0.0,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.0,
+      "Welsh": 0.1667
+    },
+    "bge-reranker-v2-m3": {
+      "Chinese": 0.6667,
+      "French": 0.6667,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.6667,
+      "Spanish": 0.6667,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.6667,
+      "Vietnamese": 0.6667,
+      "Welsh": 0.6667
+    },
+    "cohere-rerank-4-fast (OpenRouter)": {
+      "Chinese": 0.8333,
+      "French": 0.6667,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 0.6667,
+      "Turkish": 0.5,
+      "Ukrainian": 0.6667,
+      "Vietnamese": 0.6667,
+      "Welsh": 0.3333
+    },
+    "cohere-rerank-4-pro (OpenRouter)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.5,
+      "Sinhala": 0.8333,
+      "Spanish": 1.0,
+      "Turkish": 0.8333,
+      "Ukrainian": 0.8333,
+      "Vietnamese": 1.0,
+      "Welsh": 0.5
+    },
+    "cohere-rerank-v3.5 (OpenRouter)": {
+      "Chinese": 0.8333,
+      "French": 0.5,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.5,
+      "Spanish": 0.6667,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.6667,
+      "Vietnamese": 0.5,
+      "Welsh": 0.8333
+    },
+    "decider 0.8B (local)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.5,
+      "Sinhala": 0.5,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 0.5
+    },
+    "decision 0.75B (Ollaya)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.8333,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.6667
+    },
+    "gliclass-base": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.5,
+      "Sinhala": 0.5,
+      "Spanish": 0.8333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.6667,
+      "Vietnamese": 1.0,
+      "Welsh": 0.1667
+    },
+    "gliclass-edge": {
+      "Chinese": 0.3333,
+      "French": 0.6667,
+      "Icelandic": 0.1667,
+      "Sinhala": 0.1667,
+      "Spanish": 0.5,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.1667,
+      "Welsh": 0.3333
+    },
+    "gliclass-large": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.6667,
+      "Sinhala": 0.6667,
+      "Spanish": 1.0,
+      "Turkish": 0.8333,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.3333
+    },
+    "gliclass-modern-base": {
+      "Chinese": 0.1667,
+      "French": 0.6667,
+      "Icelandic": 0.1667,
+      "Sinhala": 0.5,
+      "Spanish": 0.5,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.5
+    },
+    "jevk5 4B (Ollaya)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 1.0,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "mxbai-rerank-base-v2": {
+      "Chinese": 0.5,
+      "French": 0.6667,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.5,
+      "Spanish": 0.5,
+      "Turkish": 0.5,
+      "Ukrainian": 0.5,
+      "Vietnamese": 0.5,
+      "Welsh": 0.3333
+    },
+    "nanodiff 350M": {
+      "Chinese": 0.3333,
+      "French": 0.1667,
+      "Icelandic": 0.5,
+      "Sinhala": 0.3333,
+      "Spanish": 0.3333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.3333
+    },
+    "nanodiff 350M v2": {
+      "Spanish": 0.3333,
+      "French": 0.5,
+      "Chinese": 0.3333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "nemotron-rerank-vl-1b (OpenRouter)": {
+      "Chinese": 0.5,
+      "French": 0.3333,
+      "Icelandic": 0.5,
+      "Sinhala": 0.3333,
+      "Spanish": 0.6667,
+      "Turkish": 0.1667,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.5,
+      "Welsh": 0.3333
+    },
+    "nli deberta-v3-large (Ollaya)": {
+      "Chinese": 1.0,
+      "French": 0.8333,
+      "Icelandic": 0.5,
+      "Sinhala": 0.3333,
+      "Spanish": 0.8333,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.8333,
+      "Vietnamese": 0.8333,
+      "Welsh": 0.3333
+    },
+    "nli modernbert-large (Ollaya)": {
+      "Chinese": 0.6667,
+      "French": 0.6667,
+      "Icelandic": 0.5,
+      "Sinhala": 0.3333,
+      "Spanish": 0.5,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.5,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.3333
+    },
+    "qwen3-reranker-8b (OpenRouter)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.8333,
+      "Sinhala": 0.8333,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    },
+    "so1 (Qwen2.5-0.5B)": {
+      "Chinese": 0.3333,
+      "French": 0.3333,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.3333,
+      "Spanish": 0.5,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.5,
+      "Welsh": 0.3333
+    },
+    "von": {
+      "Chinese": 0.6667,
+      "French": 0.8333,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.5,
+      "Spanish": 0.6667,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.3333,
+      "Welsh": 0.3333
+    },
+    "voyage-rerank-2.5 (OpenRouter)": {
+      "Chinese": 0.8333,
+      "French": 0.8333,
+      "Icelandic": 0.8333,
+      "Sinhala": 0.5,
+      "Spanish": 0.8333,
+      "Turkish": 0.6667,
+      "Ukrainian": 1.0,
+      "Vietnamese": 0.6667,
+      "Welsh": 0.5
+    },
+    "voyage-rerank-2.5-lite (OpenRouter)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.3333,
+      "Sinhala": 0.5,
+      "Spanish": 0.8333,
+      "Turkish": 0.8333,
+      "Ukrainian": 0.3333,
+      "Vietnamese": 0.6667,
+      "Welsh": 0.3333
+    },
+    "winnow e4b (Ollaya)": {
+      "Chinese": 1.0,
+      "French": 1.0,
+      "Icelandic": 0.8333,
+      "Sinhala": 1.0,
+      "Spanish": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Vietnamese": 1.0,
+      "Welsh": 1.0
+    }
+  },
+  "by_tier": {
+    "AgentJev 0.6B (local)": {
+      "medium": 0.8333,
+      "popular": 0.8333,
+      "rare": 0.2222
+    },
+    "Certo 421M": {
+      "medium": 0.2778,
+      "popular": 0.2778,
+      "rare": 0.3333
+    },
+    "Clef (Workers AI)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 1.0
+    },
+    "Clef-flash (Workers AI)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 1.0
+    },
+    "D1 (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Decider V1 27B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Decider V1.1 27B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Decision 2.0 Eos 0.8B": {
+      "medium": 0.8889,
+      "popular": 0.8889,
+      "rare": 0.6111
+    },
+    "Decision 2.0 Kai 0.6B": {
+      "medium": 0.8333,
+      "popular": 0.9444,
+      "rare": 0.4444
+    },
+    "Decision 2.0 Sol 2B": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.5
+    },
+    "GLiDE (Fastino)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 1.0
+    },
+    "GLiFormer-base": {
+      "medium": 0.4444,
+      "popular": 0.8333,
+      "rare": 0.3333
+    },
+    "GLiFormer-large": {
+      "medium": 0.6111,
+      "popular": 0.9444,
+      "rare": 0.3333
+    },
+    "GLiNER-X-base": {
+      "popular": 0.3333,
+      "medium": 0.2778,
+      "rare": 0.3333
+    },
+    "GLiNER-X-large": {
+      "popular": 0.3333,
+      "medium": 0.3333,
+      "rare": 0.2778
+    },
+    "GLiNER-X-small": {
+      "popular": 0.3333,
+      "medium": 0.2778,
+      "rare": 0.3333
+    },
+    "GLiNER2.5-Decide": {
+      "medium": 0.8333,
+      "popular": 0.8889,
+      "rare": 0.3333
+    },
+    "GLiNER2.5-Decide (Fastino)": {
+      "popular": 0.8889,
+      "medium": 0.8333,
+      "rare": 0.3333
+    },
+    "GLiNER2.5-base": {
+      "medium": 0.5,
+      "popular": 0.8889,
+      "rare": 0.2778
+    },
+    "GLiNER2.5-base (Fastino)": {
+      "popular": 0.8889,
+      "medium": 0.5,
+      "rare": 0.2778
+    },
+    "GLiNER2.5-multi": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.6667
+    },
+    "GLiNER2.5-multi (Fastino)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.6667
+    },
+    "GLiNER2.5-small": {
+      "medium": 0.2222,
+      "popular": 0.5556,
+      "rare": 0.2778
+    },
+    "GTE-rerank-ModernBERT-base": {
+      "medium": 0.3333,
+      "popular": 0.6111,
+      "rare": 0.3889
+    },
+    "Intern-Decision 0.8B": {
+      "medium": 0.9444,
+      "popular": 0.9444,
+      "rare": 0.7778
+    },
+    "Intern-Decision 2B": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.7222
+    },
+    "Intern-Decision 4B": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.9444
+    },
+    "Jev": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 1.0
+    },
+    "JevK5-Lite": {
+      "medium": 0.8889,
+      "popular": 1.0,
+      "rare": 0.4444
+    },
+    "Julia 1 144M": {
+      "medium": 0.4444,
+      "popular": 0.5556,
+      "rare": 0.5556
+    },
+    "K2-Type 0.9B (local)": {
+      "medium": 0.9444,
+      "popular": 1.0,
+      "rare": 0.5556
+    },
+    "Kev 0.8B (local)": {
+      "medium": 0.8889,
+      "popular": 0.9444,
+      "rare": 0.5
+    },
+    "Kev 4B (OpenRouter)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.9444
+    },
+    "LFM2.5-RLCD 350M": {
+      "medium": 0.6667,
+      "popular": 0.7778,
+      "rare": 0.1111
+    },
+    "Laya Router": {
+      "medium": 0.9444,
+      "popular": 0.8889,
+      "rare": 0.4444
+    },
+    "Laya typed-decisions": {
+      "medium": 0.4444,
+      "popular": 1.0,
+      "rare": 0.3333
+    },
+    "Lumma-fev 0.15B": {
+      "medium": 0.3333,
+      "popular": 0.3889,
+      "rare": 0.3333
+    },
+    "Lumma-fev 0.6B": {
+      "medium": 0.3889,
+      "popular": 0.2778,
+      "rare": 0.4444
+    },
+    "Lumma-fev 4B": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.8889
+    },
+    "Mercury Decide (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "MoJev 0.85B": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.5
+    },
+    "OpenThai 0.8B (local)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.5
+    },
+    "Solar Decide (OpenRouter)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 1.0
+    },
+    "Span-01": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.9444
+    },
+    "Span-01 Lite": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.6111
+    },
+    "Tev1 4B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "TypeLLM (hosted)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "TypeLLM thinking (hosted)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Verdict 151M (local)": {
+      "medium": 0.1111,
+      "popular": 0.5,
+      "rare": 0.0556
+    },
+    "bge-reranker-v2-m3": {
+      "medium": 0.6667,
+      "popular": 0.6667,
+      "rare": 0.6667
+    },
+    "cohere-rerank-4-fast (OpenRouter)": {
+      "medium": 0.6111,
+      "popular": 0.7222,
+      "rare": 0.3333
+    },
+    "cohere-rerank-4-pro (OpenRouter)": {
+      "medium": 0.8889,
+      "popular": 1.0,
+      "rare": 0.6111
+    },
+    "cohere-rerank-v3.5 (OpenRouter)": {
+      "medium": 0.6111,
+      "popular": 0.6667,
+      "rare": 0.6667
+    },
+    "decider 0.8B (local)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.5
+    },
+    "decision 0.75B (Ollaya)": {
+      "medium": 0.9444,
+      "popular": 1.0,
+      "rare": 0.7222
+    },
+    "gliclass-base": {
+      "medium": 0.6667,
+      "popular": 0.9444,
+      "rare": 0.3889
+    },
+    "gliclass-edge": {
+      "medium": 0.2222,
+      "popular": 0.5,
+      "rare": 0.2222
+    },
+    "gliclass-large": {
+      "medium": 0.8889,
+      "popular": 1.0,
+      "rare": 0.5556
+    },
+    "gliclass-modern-base": {
+      "medium": 0.3333,
+      "popular": 0.4445,
+      "rare": 0.3889
+    },
+    "jevk5 4B (Ollaya)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 1.0
+    },
+    "mxbai-rerank-base-v2": {
+      "medium": 0.5,
+      "popular": 0.5556,
+      "rare": 0.3889
+    },
+    "nanodiff 350M": {
+      "medium": 0.3889,
+      "popular": 0.2778,
+      "rare": 0.3889
+    },
+    "nanodiff 350M v2": {
+      "popular": 0.3889,
+      "medium": 0.2778,
+      "rare": 0.3333
+    },
+    "nemotron-rerank-vl-1b (OpenRouter)": {
+      "medium": 0.3333,
+      "popular": 0.5,
+      "rare": 0.3889
+    },
+    "nli deberta-v3-large (Ollaya)": {
+      "medium": 0.7778,
+      "popular": 0.8889,
+      "rare": 0.3889
+    },
+    "nli modernbert-large (Ollaya)": {
+      "medium": 0.3889,
+      "popular": 0.6111,
+      "rare": 0.3889
+    },
+    "qwen3-reranker-8b (OpenRouter)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.8889
+    },
+    "so1 (Qwen2.5-0.5B)": {
+      "medium": 0.3889,
+      "popular": 0.3889,
+      "rare": 0.3333
+    },
+    "von": {
+      "medium": 0.3333,
+      "popular": 0.7222,
+      "rare": 0.3889
+    },
+    "voyage-rerank-2.5 (OpenRouter)": {
+      "medium": 0.7778,
+      "popular": 0.8333,
+      "rare": 0.6111
+    },
+    "voyage-rerank-2.5-lite (OpenRouter)": {
+      "medium": 0.6111,
+      "popular": 0.9444,
+      "rare": 0.3889
+    },
+    "winnow e4b (Ollaya)": {
+      "medium": 1.0,
+      "popular": 1.0,
+      "rare": 0.9444
+    }
+  },
+  "latency": {
+    "AgentJev 0.6B (local)": 1.019,
+    "Certo 421M": 0.715,
+    "Clef (Workers AI)": 0.796,
+    "Clef-flash (Workers AI)": 0.636,
+    "D1 (OpenRouter)": 0.754,
+    "Decider V1 27B (OpenRouter)": 0.673,
+    "Decider V1.1 27B (OpenRouter)": 0.705,
+    "Decision 2.0 Eos 0.8B": 1.36,
+    "Decision 2.0 Kai 0.6B": 0.859,
+    "Decision 2.0 Sol 2B": 2.459,
+    "GLiDE (Fastino)": 1.143,
+    "GLiFormer-base": 0.242,
+    "GLiFormer-large": 0.717,
+    "GLiNER-X-base": 0.106,
+    "GLiNER-X-large": 0.252,
+    "GLiNER-X-small": 0.231,
+    "GLiNER2.5-Decide": 0.443,
+    "GLiNER2.5-Decide (Fastino)": 0.864,
+    "GLiNER2.5-base": 0.172,
+    "GLiNER2.5-base (Fastino)": 0.899,
+    "GLiNER2.5-multi": 0.237,
+    "GLiNER2.5-multi (Fastino)": 0.82,
+    "GLiNER2.5-small": 0.078,
+    "GTE-rerank-ModernBERT-base": 0.181,
+    "Intern-Decision 0.8B": 1.657,
+    "Intern-Decision 2B": 3.012,
+    "Intern-Decision 4B": 8.373,
+    "Jev": 0.017,
+    "JevK5-Lite": 0.457,
+    "Julia 1 144M": 0.064,
+    "K2-Type 0.9B (local)": 0.791,
+    "Kev 0.8B (local)": 1.715,
+    "Kev 4B (OpenRouter)": 0.675,
+    "LFM2.5-RLCD 350M": 0.507,
+    "Laya Router": 0.139,
+    "Laya typed-decisions": 1.184,
+    "Lumma-fev 0.15B": 0.309,
+    "Lumma-fev 0.6B": 0.772,
+    "Lumma-fev 4B": 3.654,
+    "Mercury Decide (OpenRouter)": 0.439,
+    "MoJev 0.85B": 5.53,
+    "OpenThai 0.8B (local)": 0.998,
+    "Solar Decide (OpenRouter)": 0.885,
+    "Span-01": 0.401,
+    "Span-01 Lite": 0.409,
+    "Tev1 4B (OpenRouter)": 0.57,
+    "TypeLLM (hosted)": 1.111,
+    "TypeLLM thinking (hosted)": 2.073,
+    "Verdict 151M (local)": 0.179,
+    "bge-reranker-v2-m3": 0.318,
+    "cohere-rerank-4-fast (OpenRouter)": 0.371,
+    "cohere-rerank-4-pro (OpenRouter)": 0.413,
+    "cohere-rerank-v3.5 (OpenRouter)": 0.411,
+    "decider 0.8B (local)": 7.877,
+    "decision 0.75B (Ollaya)": 0.769,
+    "gliclass-base": 0.183,
+    "gliclass-edge": 0.041,
+    "gliclass-large": 0.501,
+    "gliclass-modern-base": 0.113,
+    "jevk5 4B (Ollaya)": 7.131,
+    "mxbai-rerank-base-v2": 1.252,
+    "nanodiff 350M": 12.223,
+    "nanodiff 350M v2": 11.689,
+    "nemotron-rerank-vl-1b (OpenRouter)": 4.446,
+    "nli deberta-v3-large (Ollaya)": 0.405,
+    "nli modernbert-large (Ollaya)": 0.42,
+    "qwen3-reranker-8b (OpenRouter)": 0.506,
+    "so1 (Qwen2.5-0.5B)": 0.281,
+    "von": 0.289,
+    "voyage-rerank-2.5 (OpenRouter)": 0.363,
+    "voyage-rerank-2.5-lite (OpenRouter)": 0.358,
+    "winnow e4b (Ollaya)": 8.689
+  },
+  "laya_routing": {
+    "Chinese": {
+      "multilingual": 6
+    },
+    "French": {
+      "english": 1,
+      "multilingual": 5
+    },
+    "Icelandic": {
+      "english": 1,
+      "multilingual": 5
+    },
+    "Sinhala": {
+      "multilingual": 6
+    },
+    "Spanish": {
+      "english": 2,
+      "multilingual": 4
+    },
+    "Turkish": {
+      "multilingual": 6
+    },
+    "Ukrainian": {
+      "multilingual": 6
+    },
+    "Vietnamese": {
+      "multilingual": 6
+    },
+    "Welsh": {
+      "english": 6
+    }
+  },
   "meta": {
     "date": "2026-09-20 11:24",
     "device": "CPU",
-    "texts_per_language": 6,
     "labels": [
       "positive",
       "negative",
       "neutral"
     ],
-    "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)",
     "notes": [
-      "All 60 systems answer the same 54 texts.",
+      "All 72 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -88,1214 +1348,221 @@
       "Decision 2.0 Sol 2B recorded 2026-10-03 13:25, 160s, CPU",
       "GLiDE (Fastino) recorded 2026-10-03 19:45, 62s, CPU",
       "TypeLLM (hosted) recorded 2026-10-04 23:57, 60s, CPU",
-      "TypeLLM thinking (hosted) recorded 2026-10-04 23:59, 112s, CPU"
-    ]
-  },
-  "by_language": {
-    "GLiNER2.5-multi": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.3333,
-      "Icelandic": 1.0,
-      "Welsh": 0.6667
-    },
-    "Laya Router": {
-      "Spanish": 0.8333,
-      "French": 0.8333,
-      "Chinese": 1.0,
-      "Vietnamese": 0.8333,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.5,
-      "Welsh": 0.5
-    },
-    "Jev": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "GLiFormer-large": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.5,
-      "Turkish": 0.5,
-      "Ukrainian": 0.8333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "GLiNER2.5-small": {
-      "Spanish": 0.6667,
-      "French": 0.5,
-      "Chinese": 0.5,
-      "Vietnamese": 0.0,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.1667
-    },
-    "GLiNER2.5-base": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.5,
-      "Ukrainian": 0.6667,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.1667,
-      "Welsh": 0.3333
-    },
-    "GLiFormer-base": {
-      "Spanish": 0.8333,
-      "French": 0.8333,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.6667,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "gliclass-edge": {
-      "Spanish": 0.5,
-      "French": 0.6667,
-      "Chinese": 0.3333,
-      "Vietnamese": 0.1667,
-      "Turkish": 0.1667,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.1667,
-      "Icelandic": 0.1667,
-      "Welsh": 0.3333
-    },
-    "gliclass-modern-base": {
-      "Spanish": 0.5,
-      "French": 0.6667,
-      "Chinese": 0.1667,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.5,
-      "Icelandic": 0.1667,
-      "Welsh": 0.5
-    },
-    "gliclass-base": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.6667,
-      "Sinhala": 0.5,
-      "Icelandic": 0.5,
-      "Welsh": 0.1667
-    },
-    "gliclass-large": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.8333,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.6667,
-      "Welsh": 0.3333
-    },
-    "so1 (Qwen2.5-0.5B)": {
-      "Spanish": 0.5,
-      "French": 0.3333,
-      "Chinese": 0.3333,
-      "Vietnamese": 0.5,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "von": {
-      "Spanish": 0.6667,
-      "French": 0.8333,
-      "Chinese": 0.6667,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.5,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "Laya typed-decisions": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.5,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.5,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "Kev 0.8B (local)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.8333,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.5,
-      "Welsh": 0.3333
-    },
-    "AgentJev 0.6B (local)": {
-      "Spanish": 0.8333,
-      "French": 0.8333,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.8333,
-      "Ukrainian": 0.8333,
-      "Sinhala": 0.1667,
-      "Icelandic": 0.1667,
-      "Welsh": 0.3333
-    },
-    "decider 0.8B (local)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.5,
-      "Icelandic": 0.5,
-      "Welsh": 0.5
-    },
-    "OpenThai 0.8B (local)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.6667,
-      "Welsh": 0.5
-    },
-    "Verdict 151M (local)": {
-      "Spanish": 0.5,
-      "French": 0.6667,
-      "Chinese": 0.3333,
-      "Vietnamese": 0.0,
-      "Turkish": 0.0,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.0,
-      "Icelandic": 0.0,
-      "Welsh": 0.1667
-    },
-    "GLiNER2.5-Decide": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.6667,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "JevK5-Lite": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.8333,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.6667,
-      "Welsh": 0.3333
-    },
-    "LFM2.5-RLCD 350M": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 0.5,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.5,
-      "Ukrainian": 0.6667,
-      "Sinhala": 0.0,
-      "Icelandic": 0.1667,
-      "Welsh": 0.1667
-    },
-    "GTE-rerank-ModernBERT-base": {
-      "Spanish": 0.8333,
-      "French": 0.3333,
-      "Chinese": 0.6667,
-      "Vietnamese": 0.5,
-      "Turkish": 0.1667,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.5,
-      "Welsh": 0.3333
-    },
-    "bge-reranker-v2-m3": {
-      "Spanish": 0.6667,
-      "French": 0.6667,
-      "Chinese": 0.6667,
-      "Vietnamese": 0.6667,
-      "Turkish": 0.6667,
-      "Ukrainian": 0.6667,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.6667,
-      "Welsh": 0.6667
-    },
-    "mxbai-rerank-base-v2": {
-      "Spanish": 0.5,
-      "French": 0.6667,
-      "Chinese": 0.5,
-      "Vietnamese": 0.5,
-      "Turkish": 0.5,
-      "Ukrainian": 0.5,
-      "Sinhala": 0.5,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "Certo 421M": {
-      "Spanish": 0.3333,
-      "French": 0.1667,
-      "Chinese": 0.3333,
-      "Vietnamese": 0.1667,
-      "Turkish": 0.5,
-      "Ukrainian": 0.1667,
-      "Sinhala": 0.1667,
-      "Icelandic": 0.3333,
-      "Welsh": 0.5
-    },
-    "MoJev 0.85B": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.5,
-      "Icelandic": 0.5,
-      "Welsh": 0.5
-    },
-    "nanodiff 350M": {
-      "Spanish": 0.3333,
-      "French": 0.1667,
-      "Chinese": 0.3333,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.5,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.5,
-      "Welsh": 0.3333
-    },
-    "Kev 4B (OpenRouter)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 0.8333
-    },
-    "Span-01": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 0.8333
-    },
-    "Span-01 Lite": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.6667,
-      "Welsh": 0.5
-    },
-    "qwen3-reranker-8b (OpenRouter)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.8333,
-      "Icelandic": 0.8333,
-      "Welsh": 1.0
-    },
-    "voyage-rerank-2.5-lite (OpenRouter)": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.6667,
-      "Turkish": 0.8333,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.5,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "voyage-rerank-2.5 (OpenRouter)": {
-      "Spanish": 0.8333,
-      "French": 0.8333,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.6667,
-      "Turkish": 0.6667,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.5,
-      "Icelandic": 0.8333,
-      "Welsh": 0.5
-    },
-    "cohere-rerank-4-pro (OpenRouter)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 0.8333,
-      "Ukrainian": 0.8333,
-      "Sinhala": 0.8333,
-      "Icelandic": 0.5,
-      "Welsh": 0.5
-    },
-    "cohere-rerank-4-fast (OpenRouter)": {
-      "Spanish": 0.6667,
-      "French": 0.6667,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.6667,
-      "Turkish": 0.5,
-      "Ukrainian": 0.6667,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "cohere-rerank-v3.5 (OpenRouter)": {
-      "Spanish": 0.6667,
-      "French": 0.5,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.5,
-      "Turkish": 0.6667,
-      "Ukrainian": 0.6667,
-      "Sinhala": 0.5,
-      "Icelandic": 0.6667,
-      "Welsh": 0.8333
-    },
-    "nemotron-rerank-vl-1b (OpenRouter)": {
-      "Spanish": 0.6667,
-      "French": 0.3333,
-      "Chinese": 0.5,
-      "Vietnamese": 0.5,
-      "Turkish": 0.1667,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.5,
-      "Welsh": 0.3333
-    },
-    "nli deberta-v3-large (Ollaya)": {
-      "Spanish": 0.8333,
-      "French": 0.8333,
-      "Chinese": 1.0,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.6667,
-      "Ukrainian": 0.8333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.5,
-      "Welsh": 0.3333
-    },
-    "nli modernbert-large (Ollaya)": {
-      "Spanish": 0.5,
-      "French": 0.6667,
-      "Chinese": 0.6667,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.5,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.5,
-      "Welsh": 0.3333
-    },
-    "decision 0.75B (Ollaya)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.8333,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.8333,
-      "Icelandic": 0.6667,
-      "Welsh": 0.6667
-    },
-    "jevk5 4B (Ollaya)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "winnow e4b (Ollaya)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 0.8333,
-      "Welsh": 1.0
-    },
-    "Julia 1 144M": {
-      "Spanish": 0.3333,
-      "French": 0.6667,
-      "Chinese": 0.6667,
-      "Vietnamese": 0.5,
-      "Turkish": 0.5,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.5,
-      "Welsh": 0.5
-    },
-    "Lumma-fev 0.15B": {
-      "Spanish": 0.3333,
-      "French": 0.3333,
-      "Chinese": 0.5,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.3333,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
-      "Welsh": 0.3333
-    },
-    "Lumma-fev 0.6B": {
-      "Spanish": 0.1667,
-      "French": 0.3333,
-      "Chinese": 0.3333,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.6667,
-      "Ukrainian": 0.1667,
-      "Sinhala": 0.5,
-      "Icelandic": 0.5,
-      "Welsh": 0.3333
-    },
-    "Lumma-fev 4B": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.8333,
-      "Icelandic": 0.8333,
-      "Welsh": 1.0
-    },
-    "Intern-Decision 0.8B": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.8333,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 0.6667,
-      "Welsh": 0.6667
-    },
-    "Intern-Decision 2B": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.6667,
-      "Welsh": 0.8333
-    },
-    "Intern-Decision 4B": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.8333,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "Solar Decide (OpenRouter)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "Clef (Workers AI)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "Clef-flash (Workers AI)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "K2-Type 0.9B (local)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 0.8333,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.6667,
-      "Welsh": 0.3333
-    },
-    "Decision 2.0 Kai 0.6B": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.8333,
-      "Ukrainian": 0.8333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.5,
-      "Welsh": 0.5
-    },
-    "Decision 2.0 Eos 0.8B": {
-      "Spanish": 0.8333,
-      "French": 1.0,
-      "Chinese": 0.8333,
-      "Vietnamese": 0.8333,
-      "Turkish": 0.8333,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.6667,
-      "Icelandic": 0.6667,
-      "Welsh": 0.5
-    },
-    "Decision 2.0 Sol 2B": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 0.5,
-      "Icelandic": 0.6667,
-      "Welsh": 0.3333
-    },
-    "GLiDE (Fastino)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "TypeLLM (hosted)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    },
-    "TypeLLM thinking (hosted)": {
-      "Spanish": 1.0,
-      "French": 1.0,
-      "Chinese": 1.0,
-      "Vietnamese": 1.0,
-      "Turkish": 1.0,
-      "Ukrainian": 1.0,
-      "Sinhala": 1.0,
-      "Icelandic": 1.0,
-      "Welsh": 1.0
-    }
-  },
-  "by_tier": {
-    "GLiNER2.5-multi": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.6667
-    },
-    "Laya Router": {
-      "popular": 0.8889,
-      "medium": 0.9444,
-      "rare": 0.4444
-    },
-    "Jev": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    },
-    "GLiFormer-large": {
-      "popular": 0.9444,
-      "medium": 0.6111,
-      "rare": 0.3333
-    },
-    "GLiNER2.5-small": {
-      "popular": 0.5556,
-      "medium": 0.2222,
-      "rare": 0.2778
-    },
-    "GLiNER2.5-base": {
-      "popular": 0.8889,
-      "medium": 0.5,
-      "rare": 0.2778
-    },
-    "GLiFormer-base": {
-      "popular": 0.8333,
-      "medium": 0.4444,
-      "rare": 0.3333
-    },
-    "gliclass-edge": {
-      "popular": 0.5,
-      "medium": 0.2222,
-      "rare": 0.2222
-    },
-    "gliclass-modern-base": {
-      "popular": 0.4445,
-      "medium": 0.3333,
-      "rare": 0.3889
-    },
-    "gliclass-base": {
-      "popular": 0.9444,
-      "medium": 0.6667,
-      "rare": 0.3889
-    },
-    "gliclass-large": {
-      "popular": 1.0,
-      "medium": 0.8889,
-      "rare": 0.5556
-    },
-    "so1 (Qwen2.5-0.5B)": {
-      "popular": 0.3889,
-      "medium": 0.3889,
-      "rare": 0.3333
-    },
-    "von": {
-      "popular": 0.7222,
-      "medium": 0.3333,
-      "rare": 0.3889
-    },
-    "Laya typed-decisions": {
-      "popular": 1.0,
-      "medium": 0.4444,
-      "rare": 0.3333
-    },
-    "Kev 0.8B (local)": {
-      "popular": 0.9444,
-      "medium": 0.8889,
-      "rare": 0.5
-    },
-    "AgentJev 0.6B (local)": {
-      "popular": 0.8333,
-      "medium": 0.8333,
-      "rare": 0.2222
-    },
-    "decider 0.8B (local)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.5
-    },
-    "OpenThai 0.8B (local)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.5
-    },
-    "Verdict 151M (local)": {
-      "popular": 0.5,
-      "medium": 0.1111,
-      "rare": 0.0556
-    },
-    "GLiNER2.5-Decide": {
-      "popular": 0.8889,
-      "medium": 0.8333,
-      "rare": 0.3333
-    },
-    "JevK5-Lite": {
-      "popular": 1.0,
-      "medium": 0.8889,
-      "rare": 0.4444
-    },
-    "LFM2.5-RLCD 350M": {
-      "popular": 0.7778,
-      "medium": 0.6667,
-      "rare": 0.1111
-    },
-    "GTE-rerank-ModernBERT-base": {
-      "popular": 0.6111,
-      "medium": 0.3333,
-      "rare": 0.3889
-    },
-    "bge-reranker-v2-m3": {
-      "popular": 0.6667,
-      "medium": 0.6667,
-      "rare": 0.6667
-    },
-    "mxbai-rerank-base-v2": {
-      "popular": 0.5556,
-      "medium": 0.5,
-      "rare": 0.3889
-    },
-    "Certo 421M": {
-      "popular": 0.2778,
-      "medium": 0.2778,
-      "rare": 0.3333
-    },
-    "MoJev 0.85B": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.5
-    },
-    "nanodiff 350M": {
-      "popular": 0.2778,
-      "medium": 0.3889,
-      "rare": 0.3889
-    },
-    "Kev 4B (OpenRouter)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.9444
-    },
-    "Span-01": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.9444
-    },
-    "Span-01 Lite": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.6111
-    },
-    "qwen3-reranker-8b (OpenRouter)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.8889
-    },
-    "voyage-rerank-2.5-lite (OpenRouter)": {
-      "popular": 0.9444,
-      "medium": 0.6111,
-      "rare": 0.3889
-    },
-    "voyage-rerank-2.5 (OpenRouter)": {
-      "popular": 0.8333,
-      "medium": 0.7778,
-      "rare": 0.6111
-    },
-    "cohere-rerank-4-pro (OpenRouter)": {
-      "popular": 1.0,
-      "medium": 0.8889,
-      "rare": 0.6111
-    },
-    "cohere-rerank-4-fast (OpenRouter)": {
-      "popular": 0.7222,
-      "medium": 0.6111,
-      "rare": 0.3333
-    },
-    "cohere-rerank-v3.5 (OpenRouter)": {
-      "popular": 0.6667,
-      "medium": 0.6111,
-      "rare": 0.6667
-    },
-    "nemotron-rerank-vl-1b (OpenRouter)": {
-      "popular": 0.5,
-      "medium": 0.3333,
-      "rare": 0.3889
-    },
-    "nli deberta-v3-large (Ollaya)": {
-      "popular": 0.8889,
-      "medium": 0.7778,
-      "rare": 0.3889
-    },
-    "nli modernbert-large (Ollaya)": {
-      "popular": 0.6111,
-      "medium": 0.3889,
-      "rare": 0.3889
-    },
-    "decision 0.75B (Ollaya)": {
-      "popular": 1.0,
-      "medium": 0.9444,
-      "rare": 0.7222
-    },
-    "jevk5 4B (Ollaya)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    },
-    "winnow e4b (Ollaya)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.9444
-    },
-    "Julia 1 144M": {
-      "popular": 0.5556,
-      "medium": 0.4444,
-      "rare": 0.5556
-    },
-    "Lumma-fev 0.15B": {
-      "popular": 0.3889,
-      "medium": 0.3333,
-      "rare": 0.3333
-    },
-    "Lumma-fev 0.6B": {
-      "popular": 0.2778,
-      "medium": 0.3889,
-      "rare": 0.4444
-    },
-    "Lumma-fev 4B": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.8889
-    },
-    "Intern-Decision 0.8B": {
-      "popular": 0.9444,
-      "medium": 0.9444,
-      "rare": 0.7778
-    },
-    "Intern-Decision 2B": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.7222
-    },
-    "Intern-Decision 4B": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.9444
-    },
-    "Solar Decide (OpenRouter)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    },
-    "Clef (Workers AI)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    },
-    "Clef-flash (Workers AI)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    },
-    "K2-Type 0.9B (local)": {
-      "popular": 1.0,
-      "medium": 0.9444,
-      "rare": 0.5556
-    },
-    "Decision 2.0 Kai 0.6B": {
-      "popular": 0.9444,
-      "medium": 0.8333,
-      "rare": 0.4444
-    },
-    "Decision 2.0 Eos 0.8B": {
-      "popular": 0.8889,
-      "medium": 0.8889,
-      "rare": 0.6111
-    },
-    "Decision 2.0 Sol 2B": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 0.5
-    },
-    "GLiDE (Fastino)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    },
-    "TypeLLM (hosted)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    },
-    "TypeLLM thinking (hosted)": {
-      "popular": 1.0,
-      "medium": 1.0,
-      "rare": 1.0
-    }
-  },
-  "latency": {
-    "GLiNER2.5-multi": 0.237,
-    "Laya Router": 0.139,
-    "Jev": 0.017,
-    "GLiFormer-large": 0.717,
-    "GLiNER2.5-small": 0.078,
-    "GLiNER2.5-base": 0.172,
-    "GLiFormer-base": 0.242,
-    "gliclass-edge": 0.041,
-    "gliclass-modern-base": 0.113,
-    "gliclass-base": 0.183,
-    "gliclass-large": 0.501,
-    "so1 (Qwen2.5-0.5B)": 0.281,
-    "von": 0.289,
-    "Laya typed-decisions": 1.184,
-    "Kev 0.8B (local)": 1.715,
-    "AgentJev 0.6B (local)": 1.019,
-    "decider 0.8B (local)": 7.877,
-    "OpenThai 0.8B (local)": 0.998,
-    "Verdict 151M (local)": 0.179,
-    "GLiNER2.5-Decide": 0.443,
-    "JevK5-Lite": 0.457,
-    "LFM2.5-RLCD 350M": 0.507,
-    "GTE-rerank-ModernBERT-base": 0.181,
-    "bge-reranker-v2-m3": 0.318,
-    "mxbai-rerank-base-v2": 1.252,
-    "Certo 421M": 0.715,
-    "MoJev 0.85B": 5.53,
-    "nanodiff 350M": 12.223,
-    "Kev 4B (OpenRouter)": 0.675,
-    "Span-01": 0.401,
-    "Span-01 Lite": 0.409,
-    "qwen3-reranker-8b (OpenRouter)": 0.506,
-    "voyage-rerank-2.5-lite (OpenRouter)": 0.358,
-    "voyage-rerank-2.5 (OpenRouter)": 0.363,
-    "cohere-rerank-4-pro (OpenRouter)": 0.413,
-    "cohere-rerank-4-fast (OpenRouter)": 0.371,
-    "cohere-rerank-v3.5 (OpenRouter)": 0.411,
-    "nemotron-rerank-vl-1b (OpenRouter)": 4.446,
-    "nli deberta-v3-large (Ollaya)": 0.405,
-    "nli modernbert-large (Ollaya)": 0.42,
-    "decision 0.75B (Ollaya)": 0.769,
-    "jevk5 4B (Ollaya)": 7.131,
-    "winnow e4b (Ollaya)": 8.689,
-    "Julia 1 144M": 0.064,
-    "Lumma-fev 0.15B": 0.309,
-    "Lumma-fev 0.6B": 0.772,
-    "Lumma-fev 4B": 3.654,
-    "Intern-Decision 0.8B": 1.657,
-    "Intern-Decision 2B": 3.012,
-    "Intern-Decision 4B": 8.373,
-    "Solar Decide (OpenRouter)": 0.885,
-    "Clef (Workers AI)": 0.796,
-    "Clef-flash (Workers AI)": 0.636,
-    "K2-Type 0.9B (local)": 0.791,
-    "Decision 2.0 Kai 0.6B": 0.859,
-    "Decision 2.0 Eos 0.8B": 1.36,
-    "Decision 2.0 Sol 2B": 2.459,
-    "GLiDE (Fastino)": 1.143,
-    "TypeLLM (hosted)": 1.111,
-    "TypeLLM thinking (hosted)": 2.073
-  },
-  "laya_routing": {
-    "Spanish": {
-      "multilingual": 4,
-      "english": 2
-    },
-    "French": {
-      "multilingual": 5,
-      "english": 1
-    },
-    "Chinese": {
-      "multilingual": 6
-    },
-    "Vietnamese": {
-      "multilingual": 6
-    },
-    "Turkish": {
-      "multilingual": 6
-    },
-    "Ukrainian": {
-      "multilingual": 6
-    },
-    "Sinhala": {
-      "multilingual": 6
-    },
-    "Icelandic": {
-      "multilingual": 5,
-      "english": 1
-    },
-    "Welsh": {
-      "english": 6
-    }
-  },
-  "timing": {
-    "von": "Model download and loading excluded; first forward pass included.",
-    "Laya Router": "Model download and loading excluded; first forward pass included.",
-    "Laya typed-decisions": "Model download and loading excluded; first forward pass included.",
-    "Kev 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "AgentJev 0.6B (local)": "Model download and loading excluded; first forward pass included.",
-    "decider 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "OpenThai 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Verdict 151M (local)": "Model download and loading excluded; first forward pass included.",
-    "GLiNER2.5-Decide": "Model download and loading excluded; first forward pass included.",
-    "JevK5-Lite": "Model download and loading excluded; first forward pass included.",
-    "LFM2.5-RLCD 350M": "Model download and loading excluded; first forward pass included.",
-    "GTE-rerank-ModernBERT-base": "Model download and loading excluded; first forward pass included.",
-    "bge-reranker-v2-m3": "Model download and loading excluded; first forward pass included.",
-    "mxbai-rerank-base-v2": "Model download and loading excluded; first forward pass included.",
-    "Certo 421M": "Model download and loading excluded; first forward pass included.",
-    "MoJev 0.85B": "Model download and loading excluded; first forward pass included.",
-    "nanodiff 350M": "Model download and loading excluded; first forward pass included.",
-    "Kev 4B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "Span-01": "Model download and loading excluded; first forward pass included.",
-    "Span-01 Lite": "Model download and loading excluded; first forward pass included.",
-    "qwen3-reranker-8b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "voyage-rerank-2.5-lite (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "voyage-rerank-2.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "cohere-rerank-4-pro (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "cohere-rerank-4-fast (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "cohere-rerank-v3.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "nemotron-rerank-vl-1b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "Jev": "Model download and loading excluded; first forward pass included.",
-    "nli deberta-v3-large (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "nli modernbert-large (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "decision 0.75B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "jevk5 4B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "winnow e4b (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Julia 1 144M": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Lumma-fev 0.15B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Lumma-fev 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Lumma-fev 4B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Intern-Decision 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Intern-Decision 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Intern-Decision 4B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Solar Decide (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "Clef (Workers AI)": "Model download and loading excluded; first forward pass included.",
-    "Clef-flash (Workers AI)": "Model download and loading excluded; first forward pass included.",
-    "K2-Type 0.9B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Decision 2.0 Kai 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Decision 2.0 Eos 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Decision 2.0 Sol 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "GLiDE (Fastino)": "Model download and loading excluded; first forward pass included.",
-    "TypeLLM (hosted)": "Model download and loading excluded; first forward pass included.",
-    "TypeLLM thinking (hosted)": "Model download and loading excluded; first forward pass included."
+      "TypeLLM thinking (hosted) recorded 2026-10-04 23:59, 112s, CPU",
+      "nanodiff 350M v2 recorded 2026-10-05 20:49, 644s, CPU",
+      "GLiNER2.5-base (Fastino) recorded 2026-10-05 21:23, 49s, CPU",
+      "GLiNER2.5-multi (Fastino) recorded 2026-10-05 21:24, 44s, CPU",
+      "GLiNER2.5-Decide (Fastino) recorded 2026-10-05 21:24, 47s, CPU",
+      "GLiNER-X-small recorded 2026-10-05 22:59, 58s, CPU",
+      "GLiNER-X-base recorded 2026-10-05 22:59, 23s, CPU",
+      "GLiNER-X-large recorded 2026-10-05 23:00, 36s, CPU",
+      "Decider V1 27B (OpenRouter) recorded 2026-10-07 22:14, 36s, CPU",
+      "Decider V1.1 27B (OpenRouter) recorded 2026-10-07 22:15, 38s, CPU",
+      "D1 (OpenRouter) recorded 2026-10-07 22:16, 41s, CPU",
+      "Tev1 4B (OpenRouter) recorded 2026-10-07 22:16, 31s, CPU",
+      "Mercury Decide (OpenRouter) recorded 2026-10-07 22:16, 24s, CPU"
+    ],
+    "texts_per_language": 6,
+    "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
   },
   "provenance": {
     "von": {
+      "backend": "option-marker",
       "model": "wfzyx/von-1.0",
       "model_revision": "fbc0196efa4fa1825557a8d5adad464fa1e872bb",
-      "sdk_revision": "a94aa368ff4dcc58cdfd569cf0b4b1ae7d592d54",
-      "backend": "option-marker"
+      "sdk_revision": "a94aa368ff4dcc58cdfd569cf0b4b1ae7d592d54"
     }
   },
+  "timing": {
+    "AgentJev 0.6B (local)": "Model download and loading excluded; first forward pass included.",
+    "Certo 421M": "Model download and loading excluded; first forward pass included.",
+    "Clef (Workers AI)": "Model download and loading excluded; first forward pass included.",
+    "Clef-flash (Workers AI)": "Model download and loading excluded; first forward pass included.",
+    "D1 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Decider V1 27B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Decider V1.1 27B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Decision 2.0 Eos 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 2.0 Kai 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 2.0 Sol 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "GLiDE (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "GLiNER-X-base": "Model download and loading excluded; first forward pass included.",
+    "GLiNER-X-large": "Model download and loading excluded; first forward pass included.",
+    "GLiNER-X-small": "Model download and loading excluded; first forward pass included.",
+    "GLiNER2.5-Decide": "Model download and loading excluded; first forward pass included.",
+    "GLiNER2.5-Decide (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "GLiNER2.5-base (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "GLiNER2.5-multi (Fastino)": "Model download and loading excluded; first forward pass included.",
+    "GTE-rerank-ModernBERT-base": "Model download and loading excluded; first forward pass included.",
+    "Intern-Decision 0.8B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Intern-Decision 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Intern-Decision 4B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Jev": "Model download and loading excluded; first forward pass included.",
+    "JevK5-Lite": "Model download and loading excluded; first forward pass included.",
+    "Julia 1 144M": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "K2-Type 0.9B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Kev 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Kev 4B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "LFM2.5-RLCD 350M": "Model download and loading excluded; first forward pass included.",
+    "Laya Router": "Model download and loading excluded; first forward pass included.",
+    "Laya typed-decisions": "Model download and loading excluded; first forward pass included.",
+    "Lumma-fev 0.15B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Lumma-fev 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Lumma-fev 4B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Mercury Decide (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "MoJev 0.85B": "Model download and loading excluded; first forward pass included.",
+    "OpenThai 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Solar Decide (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Span-01": "Model download and loading excluded; first forward pass included.",
+    "Span-01 Lite": "Model download and loading excluded; first forward pass included.",
+    "Tev1 4B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "TypeLLM (hosted)": "Model download and loading excluded; first forward pass included.",
+    "TypeLLM thinking (hosted)": "Model download and loading excluded; first forward pass included.",
+    "Verdict 151M (local)": "Model download and loading excluded; first forward pass included.",
+    "bge-reranker-v2-m3": "Model download and loading excluded; first forward pass included.",
+    "cohere-rerank-4-fast (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "cohere-rerank-4-pro (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "cohere-rerank-v3.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "decider 0.8B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "decision 0.75B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "jevk5 4B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "mxbai-rerank-base-v2": "Model download and loading excluded; first forward pass included.",
+    "nanodiff 350M": "Model download and loading excluded; first forward pass included.",
+    "nanodiff 350M v2": "Model download and loading excluded; first forward pass included.",
+    "nemotron-rerank-vl-1b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "nli deberta-v3-large (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "nli modernbert-large (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "qwen3-reranker-8b (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "von": "Model download and loading excluded; first forward pass included.",
+    "voyage-rerank-2.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "voyage-rerank-2.5-lite (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "winnow e4b (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
+  },
   "usage": {
-    "Jev": {
-      "paid_requests": 1,
-      "cost_usd": 0.0,
-      "input_tokens": 6430
-    },
-    "Kev 4B (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.000106,
-      "input_tokens": 2527
-    },
-    "cohere-rerank-4-pro (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.135,
-      "input_tokens": 0
-    },
-    "cohere-rerank-4-fast (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.108,
-      "input_tokens": 0
-    },
-    "cohere-rerank-v3.5 (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.054,
-      "input_tokens": 0
-    },
-    "voyage-rerank-2.5 (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.000287,
-      "input_tokens": 0
-    },
-    "voyage-rerank-2.5-lite (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.000115,
-      "input_tokens": 0
-    },
-    "Span-01": {
-      "paid_requests": 54,
-      "cost_usd": 4e-05,
-      "input_tokens": 1990
-    },
-    "qwen3-reranker-8b (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.003577,
-      "input_tokens": 0
-    },
-    "Span-01 Lite": {
-      "paid_requests": 54,
-      "cost_usd": 0.0,
-      "input_tokens": 1990
-    },
-    "nemotron-rerank-vl-1b (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.0,
-      "input_tokens": 0
-    },
-    "Solar Decide (OpenRouter)": {
-      "paid_requests": 54,
-      "cost_usd": 0.001019,
-      "input_tokens": 20385,
-      "total_tokens": 0,
-      "cost_reported": true,
-      "input_tokens_reported": true
-    },
     "Clef (Workers AI)": {
-      "paid_requests": 54,
+      "cost_reported": false,
       "cost_usd": 0.0,
       "input_tokens": 8683,
-      "total_tokens": 0,
-      "cost_reported": false,
-      "input_tokens_reported": true
+      "input_tokens_reported": true,
+      "paid_requests": 54,
+      "total_tokens": 0
     },
     "Clef-flash (Workers AI)": {
-      "paid_requests": 54,
+      "cost_reported": false,
       "cost_usd": 0.0,
       "input_tokens": 8683,
+      "input_tokens_reported": true,
+      "paid_requests": 54,
+      "total_tokens": 0
+    },
+    "D1 (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000163,
+      "input_tokens": 4074,
       "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Decider V1 27B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000254,
+      "input_tokens": 6349,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Decider V1.1 27B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000127,
+      "input_tokens": 6349,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "GLiDE (Fastino)": {
+      "cost_reported": false,
+      "cost_usd": 0.0,
+      "input_tokens": 4741,
+      "input_tokens_reported": true,
+      "paid_requests": 54,
+      "total_tokens": 0
+    },
+    "GLiNER2.5-Decide (Fastino)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 1048,
+      "total_tokens": 2233,
       "cost_reported": false,
       "input_tokens_reported": true
     },
-    "GLiDE (Fastino)": {
+    "GLiNER2.5-base (Fastino)": {
       "paid_requests": 54,
       "cost_usd": 0.0,
-      "input_tokens": 4741,
-      "total_tokens": 0,
+      "input_tokens": 1048,
+      "total_tokens": 2039,
       "cost_reported": false,
       "input_tokens_reported": true
+    },
+    "GLiNER2.5-multi (Fastino)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 1048,
+      "total_tokens": 2045,
+      "cost_reported": false,
+      "input_tokens_reported": true
+    },
+    "Jev": {
+      "cost_usd": 0.0,
+      "input_tokens": 6430,
+      "paid_requests": 1
+    },
+    "Kev 4B (OpenRouter)": {
+      "cost_usd": 0.000106,
+      "input_tokens": 2527,
+      "paid_requests": 54
+    },
+    "Mercury Decide (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 3804,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Solar Decide (OpenRouter)": {
+      "cost_reported": true,
+      "cost_usd": 0.001019,
+      "input_tokens": 20385,
+      "input_tokens_reported": true,
+      "paid_requests": 54,
+      "total_tokens": 0
+    },
+    "Span-01": {
+      "cost_usd": 4e-05,
+      "input_tokens": 1990,
+      "paid_requests": 54
+    },
+    "Span-01 Lite": {
+      "cost_usd": 0.0,
+      "input_tokens": 1990,
+      "paid_requests": 54
+    },
+    "Tev1 4B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000269,
+      "input_tokens": 6403,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
     },
     "TypeLLM (hosted)": {
       "paid_requests": 54,
@@ -1316,6 +1583,41 @@
       "cost_reported": false,
       "input_tokens_reported": true,
       "thinking_tokens_reported": true
+    },
+    "cohere-rerank-4-fast (OpenRouter)": {
+      "cost_usd": 0.108,
+      "input_tokens": 0,
+      "paid_requests": 54
+    },
+    "cohere-rerank-4-pro (OpenRouter)": {
+      "cost_usd": 0.135,
+      "input_tokens": 0,
+      "paid_requests": 54
+    },
+    "cohere-rerank-v3.5 (OpenRouter)": {
+      "cost_usd": 0.054,
+      "input_tokens": 0,
+      "paid_requests": 54
+    },
+    "nemotron-rerank-vl-1b (OpenRouter)": {
+      "cost_usd": 0.0,
+      "input_tokens": 0,
+      "paid_requests": 54
+    },
+    "qwen3-reranker-8b (OpenRouter)": {
+      "cost_usd": 0.003577,
+      "input_tokens": 0,
+      "paid_requests": 54
+    },
+    "voyage-rerank-2.5 (OpenRouter)": {
+      "cost_usd": 0.000287,
+      "input_tokens": 0,
+      "paid_requests": 54
+    },
+    "voyage-rerank-2.5-lite (OpenRouter)": {
+      "cost_usd": 0.000115,
+      "input_tokens": 0,
+      "paid_requests": 54
     }
   }
 }

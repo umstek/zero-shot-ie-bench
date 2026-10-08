@@ -19,15 +19,21 @@ from .decision_format import (MASK, PROMPT_LEN, RESPONSE_LEN,
 
 CKPT = ("pngwn/nanodiff-350m-typed-decisions-lam1::"
         "nanodiff-350m-typed-decisions-lam1.pt")
+# the v2 retrain of the same typed-decision recipe (step 3000; its embedded
+# run args say lam=1.0, seed 1337 -- the same run the empty
+# pngwn/nanodiff-350m-typed-decisions-v2-lam1 repo was meant to publish).
+# Same architecture and state-dict layout as v1, loadable unchanged.
+CKPT_V2 = ("pngwn/nanodiff-350m-typed-decisions-v2::"
+           "nanodiff-350m-typed-decisions-v2.pt")
 ARCH = dict(n_layer=16, n_head=20, n_embd=1280, block_size=512)
 QUESTION = {"sentiment": "What is the overall sentiment of this text?",
             "topic": "Which topic category does this text belong to?"}
 LETTERS = "ABCDEFGHIJ"
 
 
-def load_model(device):
+def load_model(device, ckpt=CKPT):
     from huggingface_hub import hf_hub_download
-    repo, _, fn = CKPT.partition("::")
+    repo, _, fn = ckpt.partition("::")
     ckpt = hf_hub_download(repo_id=repo, filename=fn)
     blob = torch.load(ckpt, map_location="cpu", weights_only=False)
     model = NanoDiff(Config(**ARCH, dtype="bfloat16"))

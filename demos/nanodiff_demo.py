@@ -14,10 +14,11 @@ Sample texts are shared with the other demos so outputs compare directly.
 
 Tour (interactive):
     .venv/Scripts/python demos/nanodiff_demo.py
+    .venv/Scripts/python demos/nanodiff_demo.py --v2   # the v2 retrain
 
 Web-UI runner (the app's nanodiff tab spawns this like von_demo.py and
 talks JSON over stdin/stdout):
-    .venv/Scripts/python demos/nanodiff_demo.py --serve
+    .venv/Scripts/python demos/nanodiff_demo.py --serve [--v2]
     stdin:  {"texts": [str, ...], "task": str, "labels": [str, ...]}
     stdout: {"results": [{"choice": str | None,
                           "probabilities": {label: float}}, ...]}
@@ -75,12 +76,12 @@ def _alias_vendored_nanodiff() -> None:
     sys.modules.setdefault("nanodiff.config", vendored_config)
 
 
-def load():
-    from engines.nanodiff_engine.runner import load_model
+def load(v2: bool = False):
+    from engines.nanodiff_engine.runner import CKPT, CKPT_V2, load_model
 
     _alias_vendored_nanodiff()
     t0 = time.perf_counter()
-    model, _ = load_model("cpu")
+    model, _ = load_model("cpu", CKPT_V2 if v2 else CKPT)
     # stderr: in --serve mode stdout must stay pure JSON for the web UI
     print(f"Loaded in {time.perf_counter() - t0:.1f}s", file=sys.stderr)
     return model
@@ -95,7 +96,7 @@ def decide_one(model, text: str, question: str, labels: list[str]) -> dict:
 
 
 # ------------------------------------------------------------------ runner
-def serve() -> None:
+def serve(v2: bool = False) -> None:
     payload = json.loads(sys.stdin.read())
     try:
         # one question per task word, same phrasing the benchmarks use
@@ -103,7 +104,7 @@ def serve() -> None:
              if payload["task"] == "sentiment"
              else f"Which {payload['task']} category does this text "
                   "belong to?")
-        model = load()
+        model = load(v2)
         results = [decide_one(model, text, q, payload["labels"])
                    for text in payload["texts"]]
         # ASCII-escaped JSON survives Windows pipes using legacy code pages.
@@ -113,13 +114,16 @@ def serve() -> None:
 
 
 # -------------------------------------------------------------------- tour
-def tour() -> None:
+def tour(v2: bool = False) -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    print("Loading pngwn/nanodiff-350m-typed-decisions-lam1 (350M diffusion "
-          "LM; first run downloads the checkpoint)...")
-    model = load()
+    print("Loading pngwn/nanodiff-350m-typed-decisions-"
+          + ("v2 (350M diffusion LM; the v2 retrain, first run downloads "
+             "the checkpoint)..." if v2 else
+             "lam1 (350M diffusion LM; first run downloads the "
+             "checkpoint)..."))
+    model = load(v2)
 
     # ---------------------------------------------------------------- 1
     banner("1. One bidirectional forward - every option scored at once")
@@ -177,10 +181,11 @@ def tour() -> None:
 
 
 def main() -> None:
+    v2 = "--v2" in sys.argv
     if "--serve" in sys.argv:
-        serve()
+        serve(v2)
     else:
-        tour()
+        tour(v2)
 
 
 if __name__ == "__main__":
