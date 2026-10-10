@@ -18,8 +18,6 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.6B"
     .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 4B"
-    .venv-von/Scripts/python bench_multilingual.py \
-        --system "Julia 1 144M"
     .venv-von/Scripts/python bench_multilingual.py --system "Intern-Decision 0.8B"
     .venv-von/Scripts/python bench_multilingual.py --system "Intern-Decision 2B"
     .venv-von/Scripts/python bench_multilingual.py --system "Intern-Decision 4B"
@@ -27,14 +25,6 @@ per invocation (results merge into the shared file):
     .venv-von/Scripts/python bench_multilingual.py --system "Decision 2.0 Kai 0.6B"
     .venv-von/Scripts/python bench_multilingual.py --system "Decision 2.0 Eos 0.8B"
     .venv-von/Scripts/python bench_multilingual.py --system "Decision 2.0 Sol 2B"
-
-GLiNER-X (Knowledgator's mT5-encoder multilingual family) needs its own
-venv — the classic gliner package with the stanza extra resolves
-transformers 5.x, incompatible with the main venv's pinned 4.57.6
-(see README setup for `.venv-glinerx`):
-    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-small
-    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-base
-    .venv-glinerx/Scripts/python bench_multilingual.py --system GLiNER-X-large
 
 Jev is a paid API: it runs all 54 texts as one batched request.
 Kev 0.8B needs its local server running first (System One contract):
@@ -48,9 +38,7 @@ decider 0.8B and OpenThai 0.8B serve the System One contract as well
 (shared agent-jev venv): DECIDER_MODEL=Mapika/decider-0.8b DECIDER_DEVICE=cpu
 <py> -m uvicorn decider.serve:app --port 8018, respectively
 OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne <py> -m uvicorn
-openthai_systemone.server:app --port 8029. Verdict 151M runs in-process
-from the Verdict-open-jev checkout (VERDICT_HOME, default C:\src\verdict)
-under the agent-jev venv python.
+openthai_systemone.server:app --port 8029.
 
 OpenRouter-hosted systems need OPENROUTER_API_KEY in .env; their providers
 are not ZDR - they may retain request data (Solar Decide additionally has
@@ -366,24 +354,31 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
 # results files line up
 D1_LOCAL = {"D1 3B (local)": "d1-3b",
             "D1-omni 600M (local)": "d1-omni-600m"}
-# LFM2.5-RLCD 350M and nanodiff 350M (v1/v2) were culled from the
-# roster 2026-10-10: below the 12/12 trial bar (TRIALS.md carries their
-# recorded data). Their dispatch branches stay below, so re-listing a
-# name here re-benches it.
-ALL_SYSTEMS = (list(GLINER) + list(FASTINO_EXTRACTORS)
-               + list(GLIFORMER) + list(GLICLASS) + list(GLINER_X)
-               + list(RERANKERS) + list(NEMOTRON_RERANKERS)
-               + list(OPENROUTER_SYSTEMONE)
-               + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
-               + list(FASTINO_MODELS) + list(TYPELLM_MODELS)
-               + ["Certo 421M", "MoJev 0.85B", "Laya Router",
-                  "Laya typed-decisions", "von", "JevK5-Lite",
-                  "so1 (Qwen2.5-0.5B)", "Jev",
-                  "Kev 0.8B (local)", "AgentJev 0.6B (local)",
-                  "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                  "Verdict 151M (local)", "K2-Type 0.9B (local)"]
-               + list(OLLAYA) + list(LUMMA) + list(JULIA)
-               + list(INTERN_DECISION) + list(DECISION2) + list(D1_LOCAL))
+# CULLED holds the systems below the 12/12 trial bar or at/below the
+# culled level — LFM2.5-RLCD and the nanodiff pair are gone from the
+# lists entirely; the nine below are filtered out at the end. TRIALS.md
+# carries their recorded data, and the dispatch branches stay, so
+# removing a name from CULLED re-benches it.
+CULLED = {"Certo 421M", "Verdict 151M (local)", "Julia 1 144M",
+          "GLiNER-X-small", "GLiNER-X-base", "GLiNER-X-large",
+          "nemotron-rerank-vl-1b (OpenRouter)", "so1 (Qwen2.5-0.5B)",
+          "gliclass-edge"}
+ALL_SYSTEMS = [n for n in (
+    list(GLINER) + list(FASTINO_EXTRACTORS)
+    + list(GLIFORMER) + list(GLICLASS) + list(GLINER_X)
+    + list(RERANKERS) + list(NEMOTRON_RERANKERS)
+    + list(OPENROUTER_SYSTEMONE)
+    + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
+    + list(FASTINO_MODELS) + list(TYPELLM_MODELS)
+    + ["Certo 421M", "MoJev 0.85B", "Laya Router",
+       "Laya typed-decisions", "von", "JevK5-Lite",
+       "so1 (Qwen2.5-0.5B)", "Jev",
+       "Kev 0.8B (local)", "AgentJev 0.6B (local)",
+       "decider 0.8B (local)", "OpenThai 0.8B (local)",
+       "Verdict 151M (local)", "K2-Type 0.9B (local)"]
+    + list(OLLAYA) + list(LUMMA) + list(JULIA)
+    + list(INTERN_DECISION) + list(DECISION2) + list(D1_LOCAL))
+    if n not in CULLED]
 
 
 def make_classifier(name: str, tracker=None):

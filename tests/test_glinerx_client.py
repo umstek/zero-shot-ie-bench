@@ -33,15 +33,15 @@ class RegistryTests(unittest.TestCase):
         for name in MODELS:
             self.assertTrue(name.startswith("GLiNER-X-"))
 
-    def test_every_model_is_registered_in_both_benchmarks(self):
+    def test_every_model_is_wired_but_culled_from_the_roster(self):
         import bench_multilingual
         import bench_spectrum
 
         for name in MODELS:
-            self.assertIn(name, bench_spectrum.ALL_SYSTEMS)
-            self.assertIn(name, bench_multilingual.ALL_SYSTEMS)
             self.assertIn(name, bench_spectrum.GLINER_X)
             self.assertIn(name, bench_multilingual.GLINER_X)
+            self.assertNotIn(name, bench_spectrum.ALL_SYSTEMS)
+            self.assertNotIn(name, bench_multilingual.ALL_SYSTEMS)
 
 
 class MappingTests(unittest.TestCase):

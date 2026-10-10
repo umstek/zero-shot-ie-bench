@@ -10,7 +10,7 @@ plot accuracy along the difficulty spectrum.
 
 Run from the MAIN venv for most systems, from .venv-von for von,
 JevK5-Lite, MoJev 0.85B, the Lumma-Fev family,
-Julia 1, the Intern-Decision family, K2-Type 0.9B and the Decision 2.0
+the Intern-Decision family, K2-Type 0.9B and the Decision 2.0
 family:
     python bench_spectrum.py --system GLiNER2.5-base
     ...
@@ -20,8 +20,6 @@ family:
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.15B"
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.6B"
     .venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 4B"
-    .venv-von/Scripts/python bench_spectrum.py \
-        --system "Julia 1 144M"
     .venv-von/Scripts/python bench_spectrum.py --system "Intern-Decision 0.8B"
     .venv-von/Scripts/python bench_spectrum.py --system "Intern-Decision 2B"
     .venv-von/Scripts/python bench_spectrum.py --system "Intern-Decision 4B"
@@ -29,14 +27,6 @@ family:
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Kai 0.6B"
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Eos 0.8B"
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Sol 2B"
-
-GLiNER-X (Knowledgator's mT5-encoder multilingual family) needs its own
-venv — the classic gliner package with the stanza extra resolves
-transformers 5.x, incompatible with the main venv's pinned 4.57.6
-(see README setup for `.venv-glinerx`):
-    .venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-small
-    .venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-base
-    .venv-glinerx/Scripts/python bench_spectrum.py --system GLiNER-X-large
 
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
@@ -51,10 +41,6 @@ installed in the shared agent-jev venv):
         decider.serve:app --host 127.0.0.1 --port 8018
     OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne <py> -m uvicorn \
         openthai_systemone.server:app --host 127.0.0.1 --port 8029
-Verdict 151M runs in-process from the Verdict-open-jev checkout
-(VERDICT_HOME, default C:\src\verdict) under the agent-jev venv python:
-    C:/venvs/agent-jev/Scripts/python bench_spectrum.py \
-        --system "Verdict 151M (local)"
 
 Ollaya systems need the local Ollaya daemon (TypeSafe System One contract
 on :11435; install from https://ollaya.dev/download, then `ollaya serve`
@@ -168,8 +154,8 @@ RERANKERS = {
 # pair without the trained markers). It still loads in the MAIN venv:
 # the remote code is version-adaptive (transformers >=4.44 incl. 5.x)
 # and runs under the pinned 4.57.6 (one benign unrecognized-rope_theta
-# warning). Request shape measured on the 48-question mixed pool
-# (2026-10-05): the house (instruction, bare-label) pairs the other
+# warning). Request shape measured on the 48-question mixed pool:
+# the house (instruction, bare-label) pairs the other
 # rerankers score collapse it to 9/24 sentiment, raw text + bare labels
 # 26/48, raw text + the house label descriptions as the passage wins at
 # 31/48 - the same call the Ollaya NLI branch made (bare-label criteria
@@ -183,7 +169,7 @@ NEMOTRON_RERANKERS = {
 # Solar Mini 4 (35B MoE / 3B active, 524K context; answers choice with
 # probabilities, score rubrics, noul - but rejects an explicit
 # criteria: null on noul, omit the field instead). Solar Decide Flash
-# (added 2026-10-08) is its low-latency sibling on the same contract
+# is its low-latency sibling on the same contract
 # ($0.05/M input, output free). typesafe/jev-1.13 also lives there (and
 # on the newer POST /api/alpha/decisions router - both answer this
 # account's key; the old RBAC gate is gone) but is already benched
@@ -197,7 +183,8 @@ NEMOTRON_RERANKERS = {
 # retains prompts -> non-ZDR), Together's Tev1 4B experimental (SFT of
 # Qwen3.5-4B, $0.042/M) and Inception's Mercury Decide on the :free tier
 # (diffusion LM, $0; the free-tier provider retains prompts -> non-ZDR).
-# Microsoft's Decision-1 and Nace.AI's Drex v1.5 joined 2026-10-09:
+# Microsoft's Decision-1 and Nace.AI's Drex v1.5 are served on the
+# same OpenRouter contract:
 # Decision-1 is a Qwen3.5-9B post-train served from Azure ($0.042/M,
 # 33K ctx, closed weights updated continually under a fixed API shape);
 # Drex v1.5 rides a MiMo-V2.6-Distill-Qwen-9B backbone ($0.04/M, 131K
@@ -208,7 +195,7 @@ NEMOTRON_RERANKERS = {
 # endpoints satisfy the data policy).
 # openai/gpt-6-luna-decisions ($0.10/M) is NOT benchmarked: OpenAI's
 # endpoint retains prompts and this account enforces ZDR, so OpenRouter
-# refuses to route to it (re-verified 2026-10-10, same refusal).
+# refuses to route to it.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
@@ -232,7 +219,7 @@ OR_SYSTEMONE_CHOICE = {name for name in OPENROUTER_SYSTEMONE
 # backbone (64k ctx, vision), Clef-flash a Qwen3.5-9B one (~39 ms median,
 # self-reported); same System One contract, and unlike the OpenRouter
 # systems Cloudflare commits to not reading/storing/training on requests.
-# Clef-omni (added 2026-10-09) is the MoE member: a Qwen3-Omni-30B-A3B
+# Clef-omni is the MoE member: a Qwen3-Omni-30B-A3B
 # fine-tune (30B total / 3B active) whose Decisions API also takes audio
 # and video state inputs ($0.15/M input; HF weights open, but ~60 GB bf16
 # keeps the local twin off this machine) — the benches send text only
@@ -326,25 +313,31 @@ DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
 # files line up across benchmarks
 D1_LOCAL = {"D1 3B (local)": "d1-3b",
             "D1-omni 600M (local)": "d1-omni-600m"}
-# LFM2.5-RLCD 350M and nanodiff 350M (v1/v2) were culled from the
-# roster 2026-10-10: below the 12/12 trial bar (TRIALS.md carries their
-# recorded data). Their dispatch branches stay below, so re-listing a
-# name here re-benches it.
-ALL_SYSTEMS = (list(EXTRACTORS) + list(FASTINO_EXTRACTORS)
-               + list(GLICLASS) + list(GLINER_X) + list(RERANKERS)
-               + list(NEMOTRON_RERANKERS)
-               + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
-               + list(CLEF_MODELS) + list(FASTINO_MODELS)
-               + list(TYPELLM_MODELS)
-               + ["Certo 421M", "MoJev 0.85B",
-                  "Laya (local)", "Laya typed-decisions", "Jev",
-                  "Kev 0.8B (local)", "AgentJev 0.6B (local)",
-                  "decider 0.8B (local)", "OpenThai 0.8B (local)",
-                  "Verdict 151M (local)", "von", "JevK5-Lite",
-                  "so1 (Qwen2.5-0.5B)"]
-               + list(OLLAYA) + list(LUMMA) + list(JULIA)
-               + list(INTERN_DECISION) + list(K2TYPE) + list(DECISION2)
-               + list(D1_LOCAL))
+# CULLED holds the systems below the 12/12 trial bar or at/below the
+# culled level — LFM2.5-RLCD and the nanodiff pair are gone from the
+# lists entirely; the nine below are filtered out at the end. TRIALS.md
+# carries their recorded data, and the dispatch branches stay, so
+# removing a name from CULLED re-benches it.
+CULLED = {"Certo 421M", "Verdict 151M (local)", "Julia 1 144M",
+          "GLiNER-X-small", "GLiNER-X-base", "GLiNER-X-large",
+          "nemotron-rerank-vl-1b (OpenRouter)", "so1 (Qwen2.5-0.5B)",
+          "gliclass-edge"}
+ALL_SYSTEMS = [n for n in (
+    list(EXTRACTORS) + list(FASTINO_EXTRACTORS)
+    + list(GLICLASS) + list(GLINER_X) + list(RERANKERS)
+    + list(NEMOTRON_RERANKERS)
+    + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
+    + list(CLEF_MODELS) + list(FASTINO_MODELS)
+    + list(TYPELLM_MODELS)
+    + ["Certo 421M", "MoJev 0.85B",
+       "Laya (local)", "Laya typed-decisions", "Jev",
+       "Kev 0.8B (local)", "AgentJev 0.6B (local)",
+       "decider 0.8B (local)", "OpenThai 0.8B (local)",
+       "Verdict 151M (local)", "von", "JevK5-Lite",
+       "so1 (Qwen2.5-0.5B)"]
+    + list(OLLAYA) + list(LUMMA) + list(JULIA)
+    + list(INTERN_DECISION) + list(K2TYPE) + list(DECISION2)
+    + list(D1_LOCAL)) if n not in CULLED]
 
 # local servers speaking the System One wire format: one JevClient pattern,
 # different ports. decider and OpenThai lazy-load their weights on the first
