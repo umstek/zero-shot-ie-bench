@@ -199,13 +199,13 @@ class ServeTests(unittest.TestCase):
 
 
 class RegistryTests(unittest.TestCase):
-    def test_julia_is_registered_in_both_benchmarks(self):
+    def test_julia_is_wired_but_culled_from_the_roster(self):
         import bench_multilingual
         import bench_spectrum
 
-        self.assertIn("Julia 1 144M", bench_spectrum.ALL_SYSTEMS)
-        self.assertIn("Julia 1 144M", bench_multilingual.ALL_SYSTEMS)
         self.assertIn("Julia 1 144M", bench_multilingual.JULIA)
+        self.assertNotIn("Julia 1 144M", bench_spectrum.ALL_SYSTEMS)
+        self.assertNotIn("Julia 1 144M", bench_multilingual.ALL_SYSTEMS)
 
     def test_registry_entries_share_the_model_id(self):
         import bench_multilingual
