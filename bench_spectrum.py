@@ -114,8 +114,8 @@ import time
 
 from bench import NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, spans_of
 from bench_graded import NER, SENTIMENT, TOPIC
-from engines import (decision2_client, glinerx_client, intern_decision_client,
-                     julia_client, k2type_client)
+from engines import (d1_client, decision2_client, glinerx_client,
+                     intern_decision_client, julia_client, k2type_client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
 RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -198,9 +198,18 @@ NEMOTRON_RERANKERS = {
 # retains prompts -> non-ZDR), Together's Tev1 4B experimental (SFT of
 # Qwen3.5-4B, $0.042/M) and Inception's Mercury Decide on the :free tier
 # (diffusion LM, $0; the free-tier provider retains prompts -> non-ZDR).
+# Microsoft's Decision-1 and Nace.AI's Drex v1.5 joined 2026-10-09:
+# Decision-1 is a Qwen3.5-9B post-train served from Azure ($0.042/M,
+# 33K ctx, closed weights updated continually under a fixed API shape);
+# Drex v1.5 rides a MiMo-V2.6-Distill-Qwen-9B backbone ($0.04/M, 131K
+# ctx) with open weights (Nace.AI Open RAIL-M) and an Apache-2.0 runtime
+# adapted from Kev — the local twin needs Nace's llama.cpp/Ollaya forks
+# (9B fp32 also overflows this machine), so the row here is hosted.
+# Both route under this account's enforced ZDR (Azure and DeepInfra
+# endpoints satisfy the data policy).
 # openai/gpt-6-luna-decisions ($0.10/M) is NOT benchmarked: OpenAI's
 # endpoint retains prompts and this account enforces ZDR, so OpenRouter
-# refuses to route to it.
+# refuses to route to it (re-verified 2026-10-10, same refusal).
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
@@ -212,6 +221,8 @@ OPENROUTER_SYSTEMONE = {
     "D1 (OpenRouter)": "liquid/d1",
     "Tev1 4B (OpenRouter)": "togethercomputer/tev1-4b-experimental",
     "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
+    "Microsoft Decision-1 (OpenRouter)": "microsoft/microsoft-decision-1",
+    "Drex v1.5 (OpenRouter)": "nace-ai/drex-v1.5",
 }
 # the choice-question subset: every OpenRouter System One model except
 # the two Span behavior scorers, whose noul branch in main() runs first
@@ -221,10 +232,15 @@ OR_SYSTEMONE_CHOICE = {name for name in OPENROUTER_SYSTEMONE
 # values are the body "model" selectors). Clef rides a frozen Qwen3.8-27B
 # backbone (64k ctx, vision), Clef-flash a Qwen3.5-9B one (~39 ms median,
 # self-reported); same System One contract, and unlike the OpenRouter
-# systems Cloudflare commits to not reading/storing/training on requests
+# systems Cloudflare commits to not reading/storing/training on requests.
+# Clef-omni (added 2026-10-09) is the MoE member: a Qwen3-Omni-30B-A3B
+# fine-tune (30B total / 3B active) whose Decisions API also takes audio
+# and video state inputs ($0.15/M input; HF weights open, but ~60 GB bf16
+# keeps the local twin off this machine) — the benches send text only
 CLEF_MODELS = {
     "Clef (Workers AI)": "clef",
     "Clef-flash (Workers AI)": "clef-flash",
+    "Clef-omni (Workers AI)": "clef-omni",
 }
 # Fastino's hosted GLiDE decision model (engines/fastino_client.py;
 # values are the body "model" selectors). One fast pass plus adaptive
@@ -264,7 +280,8 @@ OPENROUTER_RERANKERS = {
 }
 # served by the local Ollaya daemon over the same System One contract
 # (engines/ollaya_client.py): MoritzLaurer NLI classifiers, vLLM Semantic
-# Router "decision", the full JevK5 4B GGUF and Winnow E4B GGUF
+# Router "decision", the full JevK5 4B and Winnow E4B GGUFs, Madani's
+# Decima pair, logitlab's snap1-2b, Codekins' Arbiter and Txoka's Credence
 OLLAYA = OLLAYA_MODELS
 # FrontiersMind's Lumma-Fev typed-decision family, in-process via the
 # lumma-fev package (.venv-von: transformers >=5.4,<6); the 9b sibling is
@@ -300,6 +317,16 @@ K2TYPE = {"K2-Type 0.9B (local)": k2type_client.MODEL_ID}
 DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
+# LiquidAI's open d1 (engines/d1_client.py loads the local C:\src\d1-3B /
+# d1-omni-600M snapshots through the card's trust_remote_code route under
+# .venv-von): d1-3B is the open-weights sibling of the hosted liquid/d1 row
+# above — 3.12B on LFM2.5-VL-3B, one forward over state+questions, zero
+# output tokens — and d1-omni-600M is the 587M encoder-trunk omni (text /
+# images / speech; the benches exercise the text path). Weights under the
+# LFM Open License v1.0; same names as bench_multilingual.py so results
+# files line up across benchmarks
+D1_LOCAL = {"D1 3B (local)": "d1-3b",
+            "D1-omni 600M (local)": "d1-omni-600m"}
 ALL_SYSTEMS = (list(EXTRACTORS) + list(FASTINO_EXTRACTORS)
                + list(GLICLASS) + list(GLINER_X) + list(RERANKERS)
                + list(NEMOTRON_RERANKERS)
@@ -314,7 +341,8 @@ ALL_SYSTEMS = (list(EXTRACTORS) + list(FASTINO_EXTRACTORS)
                   "Verdict 151M (local)", "von", "JevK5-Lite",
                   "LFM2.5-RLCD 350M", "so1 (Qwen2.5-0.5B)"]
                + list(OLLAYA) + list(LUMMA) + list(JULIA)
-               + list(INTERN_DECISION) + list(K2TYPE) + list(DECISION2))
+               + list(INTERN_DECISION) + list(K2TYPE) + list(DECISION2)
+               + list(D1_LOCAL))
 
 # local servers speaking the System One wire format: one JevClient pattern,
 # different ports. decider and OpenThai lazy-load their weights on the first
@@ -1116,6 +1144,39 @@ def main() -> None:
             cls_preds.extend(out["answers"][f"t{i}"].get("choice")
                              for i in range(len(texts)))
             cls_lat.extend([dt / len(texts)] * len(texts))
+    elif name in D1_LOCAL:
+        # LiquidAI's open d1, in-process (engines/d1_client.py loads the
+        # local C:\src\d1-* snapshots via the card's trust_remote_code
+        # AutoModel route): one system_one() per task packs every text as
+        # its own question over the shared state — d1's native shape (the
+        # state is read once for all questions) — latency = dt / n.
+        # Classification only - fixed option menus in, one label out, no
+        # span extraction, so no NER answers. Described criteria, the
+        # option descriptions the decision head scores (the card's own
+        # examples use them). The bench runs under .venv-von.
+        from engines.jev_client import choice
+
+        engine = d1_client.load_engine(D1_LOCAL[name])
+        # one untimed predict pays torch's first-pass init (kernel
+        # dispatch, allocator warm-up) before the timed section
+        engine.predict({"task": "warmup"},
+                       {"w": choice('Sentiment of "good"?',
+                                    {"positive": None, "negative": None})})
+        INSTR = {"sentiment": 'What is the overall sentiment of this text: "{text}"',
+                 "topic": 'Which topic category does this text belong to: "{text}"'}
+        for task in ("sentiment", "topic"):
+            texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
+            labels = dict(SENTIMENT_LABELS if task == "sentiment"
+                          else TOPIC_LABELS)
+            questions = {
+                f"t{i}": choice(INSTR[task].format(text=t), labels)
+                for i, t in enumerate(texts)}
+            t1 = time.perf_counter()
+            out = engine.predict({"task": task}, questions)
+            dt = time.perf_counter() - t1
+            cls_preds.extend(out["answers"][f"t{i}"].get("choice")
+                             for i in range(len(texts)))
+            cls_lat.extend([dt / len(texts)] * len(texts))
     elif name == "nanodiff 350M":
         # diffusion-LM decision model: engines/nanodiff_engine vendors the NanoDiff
         # class (BY571/nanoDiff) and the pngwn typed-decision format; one
@@ -1167,13 +1228,13 @@ def main() -> None:
 
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
     # only the local System One servers, Ollaya's first-request model load,
-    # and the first-pass init of Lumma, Julia, Intern-Decision, K2-Type and
-    # the Decision 2.0 family get the untimed warm-up; the hosted endpoints
-    # are stateless, so every request is timed
+    # and the first-pass init of Lumma, Julia, Intern-Decision, K2-Type,
+    # the Decision 2.0 family and the D1 pair get the untimed warm-up; the
+    # hosted endpoints are stateless, so every request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai", "K2-Type",
                                 "Decision 2.0"))
                or name in OLLAYA or name in LUMMA or name in JULIA
-               or name in INTERN_DECISION)
+               or name in INTERN_DECISION or name in D1_LOCAL)
               and name != "Kev 4B (OpenRouter)")
     entry = {
         "recorded": time.strftime("%Y-%m-%d %H:%M"),

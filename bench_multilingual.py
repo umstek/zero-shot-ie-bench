@@ -268,6 +268,8 @@ OPENROUTER_SYSTEMONE = {
     "D1 (OpenRouter)": "liquid/d1",
     "Tev1 4B (OpenRouter)": "togethercomputer/tev1-4b-experimental",
     "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
+    "Microsoft Decision-1 (OpenRouter)": "microsoft/microsoft-decision-1",
+    "Drex v1.5 (OpenRouter)": "nace-ai/drex-v1.5",
 }
 # the choice-question subset (the Span scorers answer noul only - their
 # make_one() branch claims them first)
@@ -279,6 +281,7 @@ OR_SYSTEMONE_CHOICE = {name for name in OPENROUTER_SYSTEMONE
 CLEF_MODELS = {
     "Clef (Workers AI)": "clef",
     "Clef-flash (Workers AI)": "clef-flash",
+    "Clef-omni (Workers AI)": "clef-omni",
 }
 # Fastino's hosted GLiDE decision model (see bench_spectrum.py for the
 # notes; engines/fastino_client.py); same names across benchmarks so
@@ -313,8 +316,8 @@ OPENROUTER_RERANKERS = {
 # name -> tag map and the client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
-from engines import (decision2_client, glinerx_client, intern_decision_client,
-                     julia_client, k2type_client)
+from engines import (d1_client, decision2_client, glinerx_client,
+                     intern_decision_client, julia_client, k2type_client)
 
 OLLAYA = OLLAYA_MODELS
 # Knowledgator's GLiNER-X multilingual family (mT5 encoder backbone; see
@@ -358,6 +361,12 @@ K2TYPE = {"K2-Type 0.9B (local)": k2type_client.MODEL_ID}
 DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
+# LiquidAI's open d1 (engines/d1_client.py loads the local C:\src\d1-3B /
+# d1-omni-600M snapshots; see bench_spectrum.py for the notes — d1-3B
+# lists 17 languages, d1-omni-600M 16); same names across benchmarks so
+# results files line up
+D1_LOCAL = {"D1 3B (local)": "d1-3b",
+            "D1-omni 600M (local)": "d1-omni-600m"}
 ALL_SYSTEMS = (list(GLINER) + list(FASTINO_EXTRACTORS)
                + list(GLIFORMER) + list(GLICLASS) + list(GLINER_X)
                + list(RERANKERS) + list(NEMOTRON_RERANKERS)
@@ -373,7 +382,7 @@ ALL_SYSTEMS = (list(GLINER) + list(FASTINO_EXTRACTORS)
                   "decider 0.8B (local)", "OpenThai 0.8B (local)",
                   "Verdict 151M (local)", "K2-Type 0.9B (local)"]
                + list(OLLAYA) + list(LUMMA) + list(JULIA)
-               + list(INTERN_DECISION) + list(DECISION2))
+               + list(INTERN_DECISION) + list(DECISION2) + list(D1_LOCAL))
 
 
 def make_classifier(name: str, tracker=None):
@@ -917,6 +926,35 @@ def run_decision2(texts, size):
     return preds, statistics.mean(lat)
 
 
+def run_d1_local(texts, model):
+    """LiquidAI's open d1, in-process (engines/d1_client.py loads the
+    local C:\\src\\d1-3B / d1-omni-600M snapshots on the CPU through the
+    card's trust_remote_code AutoModel route): same per-text request shape
+    as run_decision2 (string instructions with the text restated,
+    described criteria - the option descriptions the decision head
+    scores), one predict() per text so latency is comparable with the
+    other local models."""
+    from engines import d1_client
+    from engines.jev_client import choice
+
+    engine = d1_client.load_engine(model)
+    # one untimed predict pays torch's first-pass init before the timed
+    # loop, like the other in-process engines
+    engine.predict({"task": "warmup"},
+                   {"w": choice('Sentiment of "good"?',
+                                {"positive": None, "negative": None})})
+    preds, lat = [], []
+    for text in texts:
+        question = choice(
+            f'What is the overall sentiment of this text: "{text}"',
+            dict(SENTIMENT_LABELS))
+        t0 = time.perf_counter()
+        out = engine.predict({"task": "sentiment"}, {"q": question})
+        lat.append(time.perf_counter() - t0)
+        preds.append(out["answers"]["q"].get("choice"))
+    return preds, statistics.mean(lat)
+
+
 def run_systemone(texts, port: int, model: str):
     """Local System One server (Kev/decider/OpenThai), one request per text
     so latency is comparable with the other local models. String
@@ -1078,6 +1116,8 @@ def main() -> None:
         preds, lat = run_k2type(texts)
     elif name in DECISION2:
         preds, lat = run_decision2(texts, DECISION2[name])
+    elif name in D1_LOCAL:
+        preds, lat = run_d1_local(texts, D1_LOCAL[name])
     elif name in OR_SYSTEMONE_CHOICE:
         from engines.openrouter_client import UsageTracker
 
@@ -1146,13 +1186,13 @@ def main() -> None:
         notes[0] = (f"All {len(out['by_language'])} systems answer "
                     "the same 54 texts.")
     # only the local System One servers, Ollaya's first-request model load,
-    # and the first-pass init of Lumma, Julia, Intern-Decision, K2-Type and
-    # the Decision 2.0 family get the untimed warm-up; the hosted endpoints
-    # are stateless, so every request is timed
+    # and the first-pass init of Lumma, Julia, Intern-Decision, K2-Type,
+    # the Decision 2.0 family and the D1 pair get the untimed warm-up; the
+    # hosted endpoints are stateless, so every request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai", "K2-Type",
                                 "Decision 2.0"))
                or name in OLLAYA or name in LUMMA or name in JULIA
-               or name in INTERN_DECISION)
+               or name in INTERN_DECISION or name in D1_LOCAL)
               and name != "Kev 4B (OpenRouter)")
     out.setdefault("timing", {})[name] = (
         "Model download and loading excluded; "

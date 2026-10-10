@@ -2,7 +2,7 @@
 
 Ollaya (https://ollaya.dev, Apache-2.0 runtime) serves open decision models
 behind TypeSafe's System One wire format on a local daemon (default
-127.0.0.1:11435). This repo benchmarks five of them through
+127.0.0.1:11435). This repo benchmarks ten of them through
 engines/ollaya_client.py:
 
   nli / nli:modernbert-large  MoritzLaurer zero-shot NLI classifiers
@@ -17,6 +17,18 @@ engines/ollaya_client.py:
                               demo_jevk5 in .venv-von).
   winnow:e4b                  EldanRing Winnow, fine-tuned from Gemma 4 E4B
                               (Q8_0 GGUF on llama.cpp).
+  decima / decima:small       A. M. Madani's Decima pair (321M mmBERT /
+                              122M multilingual-e5-small encoders +
+                              order-invariant late-interaction option
+                              scorer, ordinal score head).
+  snap                        logitlab's snap1-2b (MiniCPM5-2B fine-tune,
+                              Q8_0 on llama.cpp).
+  arbiter                     Codekins' Arbiter (Gemma 3 4B IT + LoRA,
+                              fixed 24-slot head; noul + choice <=16
+                              options + 6-level score).
+  credence                    Txoka's Credence v1 (MiCA refinements of
+                              Winnow-E4B, two Q8_0 checkpoints trading
+                              accuracy vs calibration).
 
 Prerequisite: the daemon running (`ollaya serve`, CLI from
 https://ollaya.dev/download) and each model pulled once (`ollaya pull nli`,
@@ -25,7 +37,7 @@ https://ollaya.dev/download) and each model pulled once (`ollaya pull nli`,
 Sample texts are shared with the other demos so outputs compare directly.
 
 Tour:
-    .venv/Scripts/python demos/ollaya_demo.py            # all five models
+    .venv/Scripts/python demos/ollaya_demo.py            # all ten models
     .venv/Scripts/python demos/ollaya_demo.py --models nli,decision
 """
 
@@ -61,7 +73,9 @@ SENTIMENT = {
 # the tour's model order (subset via --models)
 TOUR = ["nli deberta-v3-large (Ollaya)", "nli modernbert-large (Ollaya)",
         "decision 0.75B (Ollaya)", "jevk5 4B (Ollaya)",
-        "winnow e4b (Ollaya)"]
+        "winnow e4b (Ollaya)", "decima 321M (Ollaya)",
+        "decima small 122M (Ollaya)", "snap 2B (Ollaya)",
+        "arbiter 4B (Ollaya)", "credence 7.5B (Ollaya)"]
 
 
 def banner(title: str) -> None:

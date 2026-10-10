@@ -824,6 +824,116 @@
       "Sinhala": 1.0,
       "Icelandic": 1.0,
       "Welsh": 1.0
+    },
+    "Clef-omni (Workers AI)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 0.8333,
+      "Welsh": 1.0
+    },
+    "Microsoft Decision-1 (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Drex v1.5 (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 0.8333,
+      "Welsh": 1.0
+    },
+    "D1 3B (local)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 0.8333
+    },
+    "decima 321M (Ollaya)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 1.0
+    },
+    "decima small 122M (Ollaya)": {
+      "Spanish": 0.6667,
+      "French": 0.6667,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.5,
+      "Turkish": 0.6667,
+      "Ukrainian": 0.8333,
+      "Sinhala": 0.8333,
+      "Icelandic": 0.6667,
+      "Welsh": 0.5
+    },
+    "D1-omni 600M (local)": {
+      "Spanish": 0.8333,
+      "French": 0.8333,
+      "Chinese": 0.8333,
+      "Vietnamese": 0.3333,
+      "Turkish": 0.3333,
+      "Ukrainian": 0.5,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.3333
+    },
+    "snap 2B (Ollaya)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.8333,
+      "Icelandic": 0.8333,
+      "Welsh": 0.5
+    },
+    "arbiter 4B (Ollaya)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 0.8333,
+      "Welsh": 0.8333
+    },
+    "credence 7.5B (Ollaya)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 0.8333,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -1191,6 +1301,56 @@
       "popular": 1.0,
       "medium": 1.0,
       "rare": 1.0
+    },
+    "Clef-omni (Workers AI)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
+    },
+    "Microsoft Decision-1 (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Drex v1.5 (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
+    },
+    "D1 3B (local)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.7222
+    },
+    "decima 321M (Ollaya)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.7778
+    },
+    "decima small 122M (Ollaya)": {
+      "popular": 0.7222,
+      "medium": 0.6667,
+      "rare": 0.6667
+    },
+    "D1-omni 600M (local)": {
+      "popular": 0.8333,
+      "medium": 0.3889,
+      "rare": 0.3333
+    },
+    "snap 2B (Ollaya)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.7222
+    },
+    "arbiter 4B (Ollaya)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.8889
+    },
+    "credence 7.5B (Ollaya)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
     }
   },
   "latency": {
@@ -1266,7 +1426,17 @@
     "voyage-rerank-2.5 (OpenRouter)": 0.363,
     "voyage-rerank-2.5-lite (OpenRouter)": 0.358,
     "winnow e4b (Ollaya)": 8.689,
-    "Solar Decide Flash (OpenRouter)": 0.841
+    "Solar Decide Flash (OpenRouter)": 0.841,
+    "Clef-omni (Workers AI)": 0.343,
+    "Microsoft Decision-1 (OpenRouter)": 0.631,
+    "Drex v1.5 (OpenRouter)": 0.833,
+    "D1 3B (local)": 9.093,
+    "decima 321M (Ollaya)": 0.22,
+    "decima small 122M (Ollaya)": 0.105,
+    "D1-omni 600M (local)": 0.71,
+    "snap 2B (Ollaya)": 3.542,
+    "arbiter 4B (Ollaya)": 4.686,
+    "credence 7.5B (Ollaya)": 6.994
   },
   "laya_routing": {
     "Chinese": {
@@ -1309,7 +1479,7 @@
       "neutral"
     ],
     "notes": [
-      "All 75 systems answer the same 54 texts.",
+      "All 85 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -1402,7 +1572,17 @@
       "Mercury Decide (OpenRouter) recorded 2026-10-07 22:16, 24s, CPU",
       "mxbai-rerank-large-v2 recorded 2026-10-05 23:56, 249s, CPU",
       "nemotron-rerank-1b-v2 recorded 2026-10-05 23:58, 74s, CPU",
-      "Solar Decide Flash (OpenRouter) recorded 2026-10-08 23:00, 45s, CPU"
+      "Solar Decide Flash (OpenRouter) recorded 2026-10-08 23:00, 45s, CPU",
+      "Clef-omni (Workers AI) recorded 2026-10-10 10:40, 19s, CPU",
+      "Microsoft Decision-1 (OpenRouter) recorded 2026-10-10 10:40, 34s, CPU",
+      "Drex v1.5 (OpenRouter) recorded 2026-10-10 10:41, 45s, CPU",
+      "D1 3B (local) recorded 2026-10-10 11:10, 515s, CPU",
+      "decima 321M (Ollaya) recorded 2026-10-10 11:17, 12s, CPU",
+      "decima small 122M (Ollaya) recorded 2026-10-10 11:17, 6s, CPU",
+      "D1-omni 600M (local) recorded 2026-10-10 11:18, 53s, CPU",
+      "snap 2B (Ollaya) recorded 2026-10-10 11:21, 195s, CPU",
+      "arbiter 4B (Ollaya) recorded 2026-10-10 12:03, 256s, CPU",
+      "credence 7.5B (Ollaya) recorded 2026-10-10 12:18, 383s, CPU"
     ],
     "texts_per_language": 6,
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
@@ -1478,7 +1658,17 @@
     "voyage-rerank-2.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "voyage-rerank-2.5-lite (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "winnow e4b (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Solar Decide Flash (OpenRouter)": "Model download and loading excluded; first forward pass included."
+    "Solar Decide Flash (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Clef-omni (Workers AI)": "Model download and loading excluded; first forward pass included.",
+    "Microsoft Decision-1 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Drex v1.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "D1 3B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "decima 321M (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "decima small 122M (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "D1-omni 600M (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "snap 2B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "arbiter 4B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "credence 7.5B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
   },
   "usage": {
     "Clef (Workers AI)": {
@@ -1666,6 +1856,36 @@
       "paid_requests": 54,
       "cost_usd": 0.001019,
       "input_tokens": 20385,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Clef-omni (Workers AI)": {
+      "paid_requests": 54,
+      "cost_usd": 0.0,
+      "input_tokens": 8824,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": false,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Microsoft Decision-1 (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000149,
+      "input_tokens": 3553,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Drex v1.5 (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000101,
+      "input_tokens": 2527,
       "total_tokens": 0,
       "thinking_tokens": 0,
       "cost_reported": true,
