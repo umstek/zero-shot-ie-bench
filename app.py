@@ -69,6 +69,19 @@ def get_jev_client():
 
 
 # --------------------------------------------------------------- charts
+def _accuracy_domain(series):
+    """[floor, 100] for an accuracy axis whose data stays clear of zero
+    (min >= 10 and spread >= 2): floor sits 6% of the spread under the
+    data, rounded down to a multiple of 5. None means keep [0, 100].
+    Every accuracy-axis chart (bars, spectrum, scatters, the isometric
+    projection) applies this one rule."""
+    lo, hi = float(series.min()), float(series.max())
+    if lo >= 10 and hi - lo >= 2:
+        floor = lo - (hi - lo) * 0.06
+        return floor - floor % 5, 100.0
+    return None
+
+
 def hbar_chart(df: pd.DataFrame, value: str, title: str,
                value_title: str, descending: bool = True,
                log: bool = False):
@@ -93,18 +106,16 @@ def hbar_chart(df: pd.DataFrame, value: str, title: str,
         df = df.assign(**{"_floor": floor})
         log_extra = {"x2": alt.X2("_floor:Q")}
     else:
+        dom = (_accuracy_domain(df[value]) if value.endswith("%")
+               else None)
         top = df[value].max() * 1.12
-        if (value.endswith("%") and df[value].min() >= 10
-                and df[value].max() - df[value].min() >= 2):
-            # no data near zero: start the axis at a round floor under
-            # the data so the spread stays readable — and anchor the
-            # bars there like the log branch, since a bar baseline
-            # defaults to zero and would overflow past the axis
-            floor = df[value].min() - (df[value].max()
-                                       - df[value].min()) * 0.06
-            floor = floor - floor % 5
-            df = df.assign(**{"_floor": floor})
-            xscale = alt.Scale(domain=[floor, min(top, 102.0)], zero=False)
+        if dom:
+            # no data near zero: start the axis at the floor so the
+            # spread stays readable — and anchor the bars there like
+            # the log branch, since a bar baseline defaults to zero
+            # and would overflow past the axis
+            df = df.assign(**{"_floor": dom[0]})
+            xscale = alt.Scale(domain=[dom[0], min(top, 102.0)], zero=False)
             log_extra = {"x2": alt.X2("_floor:Q")}
         else:
             xscale = alt.Scale(domain=[0, top])
@@ -217,17 +228,21 @@ def _scatter_label_layers(df: pd.DataFrame):
     Packing runs in canvas pixel space via an affine data-to-pixel mapping
     calibrated against actual vl-convert renders of single-point probes
     (residuals < 0.2 px) for the axis config tradeoff_scatter builds:
-    log x over [min*0.8, max*1.2], y over [0, 100]. The plot area then
+    log x over [min*0.8, max*1.2], y over the _accuracy_domain floor
+    (or [0, 100]). The plot area then
     starts at (43.4, 9.5) inside the canvas; the chart title shifts
     everything down uniformly and needs no adjustment."""
     dmin = math.log10(df["s per question"].min() * 0.8)
     slope = _SCATTER_W / (math.log10(df["s per question"].max() * 1.2) - dmin)
+    acc_dom = _accuracy_domain(df["Accuracy %"])
+    ylo, yspan = (acc_dom[0], acc_dom[1] - acc_dom[0]) if acc_dom \
+        else (0.0, 100.0)
 
     def px_(v):
         return 43.4 + (math.log10(v) - dmin) * slope
 
     def py_(acc):
-        return 9.5 + (100 - acc) / 100 * _SCATTER_H
+        return 9.5 + (ylo + yspan - acc) / yspan * _SCATTER_H
 
     pts = sorted(((px_(v), py_(acc), str(name))
                   for v, acc, name in zip(df["s per question"],
@@ -297,7 +312,10 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
     xscale = alt.Scale(type="log",
                        domain=[df["s per question"].min() * 0.8,
                                df["s per question"].max() * 1.2])
-    yscale = alt.Scale(domain=[0, 100])
+    acc_dom = _accuracy_domain(df["Accuracy %"])
+    ylo, yspan = (acc_dom[0], acc_dom[1] - acc_dom[0]) if acc_dom \
+        else (0.0, 100.0)
+    yscale = alt.Scale(domain=acc_dom or [0, 100])
     points = (
         alt.Chart(df, title=title)
         .mark_circle(size=90)
@@ -344,7 +362,7 @@ def tradeoff_scatter(df: pd.DataFrame, title: str):
                 seg_rows.append({  # elbow column -> label center
                     "s per question": data_x(x0 + col), "Accuracy %": a,
                     "_x2": data_x(x0 + col),
-                    "_y2": a - (dy - 1) / _SCATTER_H * 100})
+                    "_y2": a - (dy - 1) * yspan / _SCATTER_H})
             rules.append(
                 alt.Chart(pd.DataFrame(seg_rows))
                 .mark_rule(stroke="#999999", strokeWidth=0.6)
@@ -378,7 +396,10 @@ def cost_scatter(df: pd.DataFrame, title: str):
     plot["$ per question"] = plot["$ per question"].clip(lower=floor)
     dmax = float(plot["$ per question"].max()) * 6  # right-side label room
     xscale = alt.Scale(type="log", domain=[floor, dmax])
-    yscale = alt.Scale(domain=[0, 100])
+    acc_dom = _accuracy_domain(plot["Accuracy %"])
+    ylo, yspan = (acc_dom[0], acc_dom[1] - acc_dom[0]) if acc_dom \
+        else (0.0, 100.0)
+    yscale = alt.Scale(domain=acc_dom or [0, 100])
     log_span = math.log10(dmax) - math.log10(floor)
 
     def px(v: float) -> float:
@@ -391,7 +412,7 @@ def cost_scatter(df: pd.DataFrame, title: str):
                      .str.replace(" (hosted)", "", regex=False))
     plot["_side"], plot["_dy"] = "right", -13
     pts = [(px(row["$ per question"]),
-            (100 - row["Accuracy %"]) / 100 * _COST_H,
+            (ylo + yspan - row["Accuracy %"]) / yspan * _COST_H,
             row["Label"])
            for _, row in plot.iterrows()]
     # every marker is an obstacle for every label (radius ~5.4 px, padded);
@@ -565,13 +586,17 @@ def _cost_speed_geometry(df: pd.DataFrame):
     cost_floor = float(df["$ per question"].min()) * 0.45  # headroom
     cost_top = float(df["$ per question"].max()) * 6       # label room
     lat_top = float(df["Latency s"].max()) * 1.15
+    acc_dom = _accuracy_domain(df["Accuracy %"])
+    acc_lo, acc_span = (acc_dom[0], acc_dom[1] - acc_dom[0]) if acc_dom \
+        else (0.0, 100.0)
     log_lo, log_hi = math.log10(cost_floor), math.log10(cost_top)
 
     def cube(cost, lat, acc):
         c = (math.log10(cost) - log_lo) / (log_hi - log_lo)
+        a = (acc - acc_lo) / acc_span
         return (min(max(c, 0.0), 1.0),
                 min(max(lat / lat_top, 0.0), 1.0),
-                min(max(acc / 100.0, 0.0), 1.0))
+                min(max(a, 0.0), 1.0))
 
     # fit the projected unit cube into the canvas; the left pad holds
     # the accuracy tick labels, both side pads hold system labels
@@ -647,7 +672,9 @@ def _cost_speed_geometry(df: pd.DataFrame):
         labels_lat.append((p[0] + pl[0] * 24, p[1] + pl[1] * 24,
                            f"{v:.1f}"))
     for acc in range(20, 101, 20):
-        p = px((0.0, 0.0, acc / 100))
+        if not acc_lo < acc <= acc_lo + acc_span:
+            continue
+        p = px((0.0, 0.0, (acc - acc_lo) / acc_span))
         ticks.append((p, (p[0] - 7, p[1])))
         labels_acc.append((p[0] - 13, p[1], str(acc)))
 
@@ -857,10 +884,8 @@ def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
     would erase the earlier one."""
     dashes = [[1, 0], [6, 3], [2, 2], [10, 2, 2, 2], [8, 8],
               [3, 1, 3, 4], [12, 2, 4, 2], [1, 3]]
-    # start the y axis at the data floor when nothing lands near zero
-    # (hbar_chart applies the same rule to its % axes)
-    ymin = df[y_title].min()
-    yscale = (alt.Scale(domain=[ymin - 2, 100]) if ymin >= 10
+    dom = _accuracy_domain(df[y_title])
+    yscale = (alt.Scale(domain=dom) if dom
               else alt.Scale(domain=[0, 100]))
     return (
         alt.Chart(df, title=title)
