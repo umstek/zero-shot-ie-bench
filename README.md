@@ -1346,6 +1346,7 @@ graduates, so all stayed trials:
 | `anthonym21/qwen3-0.6b-rlcd-decision` (eve-rlcd's RLCD recipe on Qwen3-0.6B, 2026-10-10) | 11/12 easy at 2.2 s/q — beats its integrated LFM2.5-RLCD sibling's 10/12 trial score, below the 12/12 graduates |
 | `shgao/rsi-jev-v6.1-vl-4b` (RSI-Jev, 2026-10-10; `rsi-jev serve` speaks the Jev wire API so the repo's JevClient runs it) | 10/12 easy at 3.3 s/q — Decision Index 0.3 public 50.98 on its card, but the mini-pool ties LFM2.5-RLCD's trial at 5× the latency |
 | `Manavarya09/verdict` "Verdict-MM" (verdictml, 118M multilingual e5, 2026-10-10) | 9/12 easy at 0.090 s/q — the fastest trial by far, weakest of the sweep; conformal abstention noted on the card |
+| `nandakishorm/vega-08b-public-intents` (frozen Qwen3.5-0.8B feeding a 57 MB particle-settling "physics engine", 2026-10-10; no relation to Decision 2.0's Vega-27B) | 9/12 easy at 0.45 s/q CPU fp32 — its conformal abstain flagged every miss (17/17 on the non-abstained answers) but accuracy stays below the graduates; the shipped adapters never gated on and the repo carries no license |
 
 ## Repo layout
 
