@@ -69,7 +69,15 @@ class CostSpeedGeometryTest(unittest.TestCase):
         # 1e-5..1e-3 decades and the 0.1..0.4 s ticks must appear
         self.assertGreaterEqual(len(g["labels_cost"]), 3)
         self.assertGreaterEqual(len(g["labels_lat"]), 3)
-        self.assertEqual(len(g["labels_acc"]), 5)  # 20..100 by 20
+        # accuracy ticks are the 20-multiples inside the (possibly
+        # truncated) accuracy domain: the fixture's 83.3..97.9 span
+        # floors the pole at 80, so only the 100 tick remains — 20/60
+        # disappeared with the empty 0-80 stretch
+        dom = app._accuracy_domain(FRAME["Accuracy %"])
+        expected_acc = [a for a in range(20, 101, 20)
+                        if dom and dom[0] < a <= dom[1]]
+        self.assertEqual([int(l[2]) for l in g["labels_acc"]],
+                         expected_acc)
 
     def test_leader_line_to_accuracy_pole(self):
         # one faint leader per marker, from the dot to the accuracy
