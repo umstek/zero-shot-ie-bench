@@ -32,7 +32,7 @@ REQUEST_LIMIT_TOKENS = 32_000  # jev-latest request ceiling
 # as measured input tokens × this price (app.derived_cost); System One
 # answers in one forward pass — no output tokens — so input pricing is
 # the whole cost (the same rule the README's cost table applies to the
-# Clef pair)
+# Clef family)
 INPUT_USD_PER_MTOK = 0.042
 
 
