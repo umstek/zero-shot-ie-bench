@@ -149,7 +149,7 @@ and the repo header counts 88 systems / 85 benchmarked.
 | Microsoft Decision-1 (OpenRouter) | 91.7% · 0.065 s/q | 100% (100/100/100) | $2.1e-6/q; Azure endpoint passed the ZDR routing probe |
 | Drex v1.5 (OpenRouter) | 93.8% · 0.075 s/q | 98.1% (100/100/94) | $1.4e-6/q — leanest prompts of the hosted field |
 | d1-3B (local) | 83.3% · 5.818 s/q | 90.7% (100/100/72) | image stop 0.987 in the demo; engines/d1_client.py |
-| d1-omni-600M (local) | 83.3% · 0.227 s/q | 51.8% (83/39/33) | ties its 25× larger sibling on English; English-centric card reads true; SAPI 16 kHz speech stop in demos/d1_demo.py |
+| d1-omni-600M (local) | 83.3% · 0.227 s/q | 51.8% (83/39/33) | ties its 5× larger sibling on English at ~25× the speed; English-centric card reads true; SAPI 16 kHz speech stop in demos/d1_demo.py |
 | decima 321M (Ollaya) | 83.3% · 0.256 s/q | 92.6% (100/100/78) | best rare tier of any local system under 4B |
 | decima small 122M (Ollaya) | 83.3% · 0.103 s/q | 68.5% (72/67/67) | fastest row on the board |
 | snap 2B (Ollaya) | 81.2% · 2.995 s/q | 90.7% (100/100/72) | beyond its English+Italian card |

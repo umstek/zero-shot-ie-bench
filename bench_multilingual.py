@@ -1186,13 +1186,13 @@ def main() -> None:
         notes[0] = (f"All {len(out['by_language'])} systems answer "
                     "the same 54 texts.")
     # only the local System One servers, Ollaya's first-request model load,
-    # and the first-pass init of Lumma, Julia, Intern-Decision, K2-Type and
-    # the Decision 2.0 family get the untimed warm-up; the hosted endpoints
-    # are stateless, so every request is timed
+    # and the first-pass init of Lumma, Julia, Intern-Decision, K2-Type,
+    # the Decision 2.0 family and the D1 pair get the untimed warm-up; the
+    # hosted endpoints are stateless, so every request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai", "K2-Type",
                                 "Decision 2.0"))
                or name in OLLAYA or name in LUMMA or name in JULIA
-               or name in INTERN_DECISION)
+               or name in INTERN_DECISION or name in D1_LOCAL)
               and name != "Kev 4B (OpenRouter)")
     out.setdefault("timing", {})[name] = (
         "Model download and loading excluded; "

@@ -300,8 +300,8 @@ Takeaways:
   Txoka's **credence 7.5B** closes the quartet at 85.4% spectrum with a
   98.1% multilingual run whose 94% rare tier ties winnow's — the card's
   "neither checkpoint beats original Winnow on every metric" caveat
-  reads true on the pool (87.5% vs 85.4%) even as its rare scripts edge
-  ahead.
+  reads true on the pool (87.5% vs 85.4%) even as its rare scripts draw
+  level (94% = 94%).
 - **The Decisions family arrives: Decider V1/V1.1, d1 and Mercury land
   at 89.6–93.8%, Tev1 trails at 79.2%** — OpenRouter grew a dedicated
   "decisions" output-modality class (same `/v1/systemone` contract,
@@ -393,7 +393,7 @@ Takeaways:
 - Best local classifier is now arbiter 4B at 89.6% (Codekins' Gemma 3
   + LoRA behind Ollaya); before it, GLiNER2.5-Decide held the title at
   85.4% (still the best local NER-capable classifier, 61% exact) —
-  winnow e4b matched that accuracy without span output; best local
+  winnow e4b beats that accuracy (87.5%) without span output; best local
   sarcasm reader: gliclass-large; speed king: gliclass-edge at 16
   ms/question; most robust extractor: GLiNER2.5-multi.
 - The Ollaya NLI pair spans the pack: deberta-v3-large lands at 83.3%

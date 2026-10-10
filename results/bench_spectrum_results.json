@@ -8863,7 +8863,7 @@
       ],
       "cls_accuracy": 0.8333,
       "cls_mean_latency_s": 5.818,
-      "timing": "Model download and loading excluded; first forward pass included."
+      "timing": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
     },
     "decima 321M (Ollaya)": {
       "recorded": "2026-10-10 11:14",
@@ -9287,7 +9287,7 @@
       ],
       "cls_accuracy": 0.8333,
       "cls_mean_latency_s": 0.227,
-      "timing": "Model download and loading excluded; first forward pass included."
+      "timing": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
     },
     "arbiter 4B (Ollaya)": {
       "recorded": "2026-10-10 11:59",

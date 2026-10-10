@@ -112,12 +112,25 @@ class D1Engine:
                 "input_tokens": out["usage"]["input_tokens"]}
 
     def predict_batch(self, requests: list) -> list:
-        """The card's packed no-padding batch: [(state, questions), ...]
-        (a third tuple element is accepted as the images list)."""
-        packed = [tuple(r) if len(r) == 3 else (r[0], r[1], None)
-                  for r in requests]
-        if not any(imgs for _, _, imgs in packed):
-            packed = [(state, qs) for state, qs, _ in packed]
+        """The card's packed no-padding batch: [(state, questions), ...];
+        a third tuple element is the images list, a fourth the audio
+        array (d1-omni-600M only) — 4-element requests pass through
+        verbatim so their audio is never silently dropped."""
+        packed = []
+        for r in requests:
+            if len(r) == 2:
+                packed.append(tuple(r))
+            elif len(r) == 3:
+                packed.append((r[0], r[1], r[2] or None))
+            else:
+                packed.append(tuple(r))
+        # the card's batch accepts 2- or 3-element items; collapse to
+        # plain (state, questions) pairs only when no row carries media —
+        # images in slot 3, audio in slot 4 (the omni-only tail)
+        if not any(len(p) > 2 and (p[2] or (len(p) > 3
+                                            and p[3] is not None))
+                   for p in packed):
+            packed = [p[:2] for p in packed]
         out = self._model.system_one_batch(packed)
         return [{"answers": row["answers"], "model": self.name,
                  "input_tokens": row["usage"]["input_tokens"]}

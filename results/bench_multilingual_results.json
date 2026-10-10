@@ -1662,10 +1662,10 @@
     "Clef-omni (Workers AI)": "Model download and loading excluded; first forward pass included.",
     "Microsoft Decision-1 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "Drex v1.5 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "D1 3B (local)": "Model download and loading excluded; first forward pass included.",
+    "D1 3B (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "decima 321M (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "decima small 122M (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "D1-omni 600M (local)": "Model download and loading excluded; first forward pass included.",
+    "D1-omni 600M (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "snap 2B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "arbiter 4B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "credence 7.5B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
