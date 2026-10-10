@@ -93,7 +93,21 @@ def hbar_chart(df: pd.DataFrame, value: str, title: str,
         df = df.assign(**{"_floor": floor})
         log_extra = {"x2": alt.X2("_floor:Q")}
     else:
-        xscale = alt.Scale(domain=[0, df[value].max() * 1.12])
+        top = df[value].max() * 1.12
+        if (value.endswith("%") and df[value].min() >= 10
+                and df[value].max() - df[value].min() >= 2):
+            # no data near zero: start the axis at a round floor under
+            # the data so the spread stays readable — and anchor the
+            # bars there like the log branch, since a bar baseline
+            # defaults to zero and would overflow past the axis
+            floor = df[value].min() - (df[value].max()
+                                       - df[value].min()) * 0.06
+            floor = floor - floor % 5
+            df = df.assign(**{"_floor": floor})
+            xscale = alt.Scale(domain=[floor, min(top, 102.0)], zero=False)
+            log_extra = {"x2": alt.X2("_floor:Q")}
+        else:
+            xscale = alt.Scale(domain=[0, top])
     return (
         alt.Chart(df, title=title)
         .mark_bar()
@@ -843,6 +857,11 @@ def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
     would erase the earlier one."""
     dashes = [[1, 0], [6, 3], [2, 2], [10, 2, 2, 2], [8, 8],
               [3, 1, 3, 4], [12, 2, 4, 2], [1, 3]]
+    # start the y axis at the data floor when nothing lands near zero
+    # (hbar_chart applies the same rule to its % axes)
+    ymin = df[y_title].min()
+    yscale = (alt.Scale(domain=[ymin - 2, 100]) if ymin >= 10
+              else alt.Scale(domain=[0, 100]))
     return (
         alt.Chart(df, title=title)
         .mark_line(point=True, strokeWidth=2)
@@ -850,8 +869,7 @@ def spectrum_line(df: pd.DataFrame, y_title: str, title: str):
             x=alt.X("Question difficulty ≤:Q", scale=alt.Scale(domain=[0, 1]),
                     title="Question difficulty ≤ (fraction of systems "
                           "that failed it)"),
-            y=alt.Y(f"{y_title}:Q", scale=alt.Scale(domain=[0, 100]),
-                    title=y_title),
+            y=alt.Y(f"{y_title}:Q", scale=yscale, title=y_title),
             color=alt.Color("System:N",
                             legend=alt.Legend(columns=2,
                                               labelFontSize=11)),
