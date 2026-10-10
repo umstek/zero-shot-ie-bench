@@ -1323,35 +1323,23 @@ From the [Decision Index 0.2](https://huggingface.co/spaces/multimodalart/jev-de
 where Jev scores 51.67; borrowed, not measured here): `decision` 17.49
 with ECE 0.083, `kev:0.8b` 13.26, `decider:2b` 26.11.
 
-### Trial-pool runs, not promoted
+### Trial pool
 
-A sweep of the community "All about Jev" catalog (1,619 entries → 9
-plausible candidates, four of them unrunnable or gated) tried each
-runnable one on two fixed mini-pools from this repo's graded questions —
-12 easy-tier and 16 hard-tier classification, plus NER where supported.
-Measured here, but on trial pools — not the 48-question spectrum. Four
-graduated to the full benchmark (GLiNER2.5-Decide, JevK5-Lite,
-LFM2.5-RLCD 350M, nanodiff 350M); the rest. A second sweep (2026-10-10,
-the [decision-model sweep](docs/research/2026-10-10-decision-model-sweep.md)
-over the catalog's new arrivals) tried three more; none beat the 12/12
-graduates, so all stayed trials:
-
-| System | Trial result |
-|---|---|
-| `Quazim0t0/Byrne-Jev-79M` | 9/12 easy, 7/16 hard — dominated by the systems above |
-| Dohnuts 0.8B (iACE, from-scratch) | unrunnable — its released runtime hardcodes CUDA (flash-linear-attention[rocm], `.to("cuda")`); no CPU path |
-| `tasksource/modernbert-tasksource-jev` | unrunnable — its `modernjev` package is unpublished, source links 404, card says "preview, not ready to use" |
-| `shreyanbr/system-one-gold` | unrunnable — requires a `systemone` engine package and calibration file that are not published |
-| `idlabs/jev-typed-decisions-causal-0.6b` | gated on HF (401) |
-| `anthonym21/qwen3-0.6b-rlcd-decision` (eve-rlcd's RLCD recipe on Qwen3-0.6B, 2026-10-10) | 11/12 easy at 2.2 s/q — beats its integrated LFM2.5-RLCD sibling's 10/12 trial score, below the 12/12 graduates |
-| `shgao/rsi-jev-v6.1-vl-4b` (RSI-Jev, 2026-10-10; `rsi-jev serve` speaks the Jev wire API so the repo's JevClient runs it) | 10/12 easy at 3.3 s/q — Decision Index 0.3 public 50.98 on its card, but the mini-pool ties LFM2.5-RLCD's trial at 5× the latency |
-| `Manavarya09/verdict` "Verdict-MM" (verdictml, 118M multilingual e5, 2026-10-10) | 9/12 easy at 0.090 s/q — the fastest trial by far, weakest of the sweep; conformal abstention noted on the card |
-| `nandakishorm/vega-08b-public-intents` (frozen Qwen3.5-0.8B feeding a 57 MB particle-settling "physics engine", 2026-10-10; no relation to Decision 2.0's Vega-27B) | 9/12 easy at 0.45 s/q CPU fp32 — its conformal abstain flagged every miss (17/17 on the non-abstained answers) but accuracy stays below the graduates; the shipped adapters never gated on and the repo carries no license |
+New candidates don't go straight onto the spectra: every new system —
+hosted or community — is first screened on a fixed 12-question mini-pool
+from this repo's graded questions (one warm-up, per-question timing, the
+same engine clients and phrasing as the benchmark; 12/12 graduates).
+Failed, unrunnable and gated candidates are recorded with their numbers
+in [TRIALS.md](TRIALS.md) — the data is kept, out of these tables' way.
+Four candidates have graduated so far: GLiNER2.5-Decide and JevK5-Lite
+(both 12/12), plus the first sweep's LFM2.5-RLCD 350M and nanodiff 350M
+(exceptions benched before the 12/12 bar was tightened).
 
 ## Repo layout
 
 | File | What it is |
 |---|---|
+| `TRIALS.md` | the trial-pool gate every new candidate passes (12-question mini-pool, 12/12 graduates) — the committed record of graduates, failures and unrunnables |
 | `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_glirel.py` / `demos/demo_gliner_relex.py` / `demos/demo_relik.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
 | `demos/demo_gliformer.py` stop 7 | `parse_pdf`: entity extraction over a pymupdf-drawn two-page ticket PDF (words + boxes + rendered page image; card-size pages — A4 at the encoder's fixed 144 dpi wants ~8 GB CPU RAM) |
 | `demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
