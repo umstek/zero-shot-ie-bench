@@ -1,9 +1,10 @@
 """Offline registry tests for the OpenRouter Decisions family.
 
-The five Decisions arrivals (Perplexity Decider V1 / V1.1, Liquid d1,
-Together Tev1 4B, Inception Mercury Decide) must be registered under the
-same names and model ids in both benchmark drivers and the demo app, and
-must sit in the choice-question subset - a name drift would silently
+The Decisions arrivals (Perplexity Decider V1 / V1.1, Liquid d1,
+Together Tev1 4B, Inception Mercury Decide; extended 2026-10-09 by
+Microsoft Decision-1 and Nace.AI's Drex v1.5) must be registered under
+the same names and model ids in both benchmark drivers and the demo app,
+and must sit in the choice-question subset - a name drift would silently
 drop a system from one benchmark, and a Span-style scorer left in the
 choice set would get questions it cannot answer.
 """
@@ -20,6 +21,8 @@ NEW_DECISIONS = {
     "D1 (OpenRouter)": "liquid/d1",
     "Tev1 4B (OpenRouter)": "togethercomputer/tev1-4b-experimental",
     "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
+    "Microsoft Decision-1 (OpenRouter)": "microsoft/microsoft-decision-1",
+    "Drex v1.5 (OpenRouter)": "nace-ai/drex-v1.5",
 }
 
 

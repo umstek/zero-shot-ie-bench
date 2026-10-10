@@ -1,5 +1,5 @@
 """app.derived_cost: measured tokens × published list price for the
-providers whose usage block reports tokens but no $ (the Clef pair,
+providers whose usage block reports tokens but no $ (the Clef family,
 Jev, GLiDE, TypeLLM), and cost_summary_frame putting Jev on the cost
 axis."""
 
@@ -26,6 +26,14 @@ class DerivedCostTest(unittest.TestCase):
         self.assertAlmostEqual(
             app.derived_cost("Clef-flash (Workers AI)", usage),
             4600 * 0.09 / 1_000_000)
+
+    def test_clef_omni_derived_at_its_own_price(self):
+        # the MoE member bills $0.15/M input (not the pair's 0.24/0.09),
+        # so a shared-price bug would surface here
+        self.assertAlmostEqual(
+            app.derived_cost("Clef-omni (Workers AI)",
+                             {"input_tokens": 4600}),
+            4600 * 0.15 / 1_000_000)
 
     def test_glide_derived_from_measured_tokens(self):
         # GLiDE's recorded spectrum row: 3,833 input tokens × $0.15/M

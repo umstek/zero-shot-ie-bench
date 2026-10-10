@@ -28,6 +28,27 @@ hosts the small ONNX/llama.cpp runner pieces):
       EldanRing Winnow, fine-tuned from Gemma 4 E4B IT (Q8_0 GGUF on
       llama.cpp); Ollaya builds the author's prompt and reads the option
       letters' logits.
+  ``decima`` / ``decima:small``
+      A. M. Madani's Decima (2026-10-05): multilingual late-interaction
+      scorers - the state and each option encode separately, every option
+      reads the state, so option order never changes the answer; ordinal
+      head for scores. base 2.0 = 321M mmBERT (100+ languages, 512 ctx);
+      small 1.1 = 122M multilingual-e5-small, the fastest model Ollaya
+      runs on a CPU. Needs the 0.11+ daemon (this repo runs 0.12.1).
+  ``snap``
+      logitlab's snap1-2b: MiniCPM5-2B fine-tuned on emnlmn's snap-engine
+      prompt (Q8_0 GGUF on llama.cpp, 8k ctx, English+Italian); one option
+      letter per option read from next-token probabilities, no
+      calibration. Needs the 0.10+ daemon.
+  ``arbiter``
+      Codekins' Arbiter (Zyot Lab): Gemma 3 4B IT + LoRA with a fixed
+      24-slot head (4.3B Q8_0); noul, choice of up to 16 options and
+      scores of exactly 6 levels, multilingual.
+  ``credence``
+      Txoka's Credence v1: MiCA refinements of Winnow-E4B (7.5B Q8_0) -
+      one checkpoint trades public accuracy, one calibration; the vision
+      tags add Winnow's unchanged projector. Neither beats the original
+      Winnow on every metric; benched for the family tree.
 
 The server must be running before any call: ``ollaya serve`` (CLI from
 https://ollaya.dev/download; default port 11435). OLLAYA_BASE_URL overrides
@@ -55,6 +76,11 @@ MODELS = {
     "decision 0.75B (Ollaya)": "decision",
     "jevk5 4B (Ollaya)": "jevk5",
     "winnow e4b (Ollaya)": "winnow:e4b",
+    "decima 321M (Ollaya)": "decima",
+    "decima small 122M (Ollaya)": "decima:small",
+    "snap 2B (Ollaya)": "snap",
+    "arbiter 4B (Ollaya)": "arbiter",
+    "credence 7.5B (Ollaya)": "credence",
 }
 
 

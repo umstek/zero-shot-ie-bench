@@ -24,8 +24,9 @@ Credentials — no dashboard token needed:
      the benches just work.
 
 Cloudflare states Workers AI does not read, store, or train on Clef
-requests (unlike the non-ZDR OpenRouter systems); input bills at
-$0.24/M tokens (a 128-token probe ~= $0.00003).
+requests (unlike the non-ZDR OpenRouter systems); input bills per
+model — $0.24/$0.09/$0.15 per M tokens for clef/clef-flash/clef-omni
+(a 128-token probe ~= $0.00001-0.00003).
 
 No third-party deps on purpose: urllib only.
 """
@@ -42,11 +43,17 @@ from datetime import datetime, timezone
 MODELS = {
     "clef": "@cf/cloudflare/clef",          # Qwen3.8-27B, 64k ctx, vision
     "clef-flash": "@cf/cloudflare/clef-flash",  # Qwen3.5-9B, ~39 ms median
+    # 30B MoE / 3B active on Qwen3-Omni-30B-A3B (added 2026-10-09): same
+    # System One questions, plus audio[]/videos[] state inputs (up to 4
+    # clips x 8 MiB / 300 s and 2 x 16 MiB / 60 s @ 2 fps) alongside the
+    # Clef images[] extension — ask() only sends state+questions, so the
+    # benches ride the text path unchanged
+    "clef-omni": "@cf/cloudflare/clef-omni",
 }
 # Workers AI list prices, $ per 1M input tokens. The response usage block
-# reports tokens but no $, so cost charts derive the Clef pair's cost as
+# reports tokens but no $, so cost charts derive the Clef family's cost as
 # measured input tokens × these prices (the README's cost-table rule)
-INPUT_USD_PER_MTOK = {"clef": 0.24, "clef-flash": 0.09}
+INPUT_USD_PER_MTOK = {"clef": 0.24, "clef-flash": 0.09, "clef-omni": 0.15}
 API_BASE = "https://api.cloudflare.com/client/v4"
 
 

@@ -1,11 +1,11 @@
-"""Interactive demo + benchmarks for seventy-eight zero-shot IE/classification
-systems across thirty-nine families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for eighty-eight zero-shot IE/classification
+systems across forty-three families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiNER-X (spawned into .venv-glinerx), GLiClass, Rerankers, Laya, von,
 JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
-nanodiff (v1 + v2), Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, so1, Jev (cloud),
-OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the seventy-five
+nanodiff (v1 + v2), Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, d1
+(d1-3B + d1-omni), so1, Jev (cloud), OpenRouter (hosted) and the Ollaya
+local daemon; benchmark tabs hold the measured numbers for the eighty-five
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
 seven rerankers) and Fastino's hosted GLiNER twins included.
@@ -169,7 +169,7 @@ def derived_cost(system: str, usage: dict):
 def cost_summary_frame(systems: dict, n_q: int) -> pd.DataFrame:
     """(System, Accuracy %, $ per question, Latency s) for the metered hosted
     systems: provider-reported cost, else derived tokens × list price
-    for the providers that report tokens but no $ (the Clef pair,
+    for the providers that report tokens but no $ (the Clef family,
     Jev, GLiDE, TypeLLM — input + thinking tokens — and the hosted
     GLiNER twins) — so they chart with the metered systems instead of
     dropping off the price charts. $0 free tiers (Span-01 Lite,
@@ -347,7 +347,7 @@ _COST_W, _COST_H = 860, 420
 def cost_scatter(df: pd.DataFrame, title: str):
     """Accuracy vs cost per question for the metered hosted systems
     (callers filter to provider-reported cost > 0, else derived
-    tokens × list price for the Clef pair and Jev; free tiers stay
+    tokens × list price for the Clef family and Jev; free tiers stay
     off a cost axis). Labels are placed by a
     greedy pixel-space collision search (est. 6.5 px/char, same yardstick
     as the tradeoff packer): left-aligned off the marker, flipping side
@@ -443,7 +443,7 @@ def cost_scatter(df: pd.DataFrame, title: str):
 def cost_bars(df: pd.DataFrame, title: str):
     """Cost per classification question, ranked cheapest-first,
     for the metered hosted systems (free tiers stay off a cost axis;
-    the Clef pair's and Jev's bars are derived tokens × list price).
+    the Clef family's and Jev's bars are derived tokens × list price).
     Log axis;
     the floor clip is a guard in case a $0 row ever slips
     through, printing "$0 (free tier)"."""
@@ -975,7 +975,7 @@ def build_classification_tab():
                            "tokens bill at their own price)")
         # the cost charts carry metered systems only: $0 free tiers
         # (Span-01 Lite, Nemotron) stay in the table above but not on a
-        # cost axis; the Clef pair, Jev, GLiDE, TypeLLM and the hosted
+        # cost axis; the Clef family, Jev, GLiDE, TypeLLM and the hosted
         # GLiNER twins chart at derived cost (cost_summary_frame)
         cost_summary = cost_summary_frame(systems, n_q)
         if len(cost_summary):
@@ -1217,15 +1217,19 @@ def build_compare_tab():
     import gradio as gr
 
     gr.Markdown("""
-## Feature comparison — twenty-seven families
+## Feature comparison — the local families
 
 GLiNER 2.5 = small/base/multi + decision-tuned Decide checkpoints ·
 GLiClass = edge/modern-base/base/large · Lumma = 0.15B/0.6B/4B ·
 Intern-Decision = 0.8B/2B/4B · Decision 2.0 = Kai 0.6B/Eos 0.8B/Sol 2B —
-per-size scores live in the benchmark tabs. The four Ollaya families
-run on the local Ollaya daemon (`ollaya serve`, System One contract
-on :11435); Lumma, Julia, Intern-Decision, K2-Type and Decision 2.0 spawn one-shot
-`demos/*_demo.py --serve` runners under `.venv-von`.
+per-size scores live in the benchmark tabs. The Ollaya systems (ten
+daemon-served models) run on the local Ollaya daemon (`ollaya serve`,
+System One contract on :11435); Lumma, Julia, Intern-Decision, K2-Type,
+d1 and Decision 2.0 spawn one-shot
+`demos/*_demo.py --serve` runners under `.venv-von`. The 2026-10 sweep
+arrivals (D1, the Ollaya Decima/snap/Arbiter/Credence quintet, hosted
+Decision-1/Drex/Clef-omni) chart in the benchmark tabs; the README's
+feature table carries their full rows.
 
 | | GLiNER 2.5 | GLiFormer | GLiNER-X | GLiClass | Rerankers | Laya | von | so1 | Jev | Kev | AgentJev | decider | OpenThai | Verdict | JevK5-Lite | LFM2.5-RLCD | Certo | MoJev | nanodiff | nanodiff v2 | NLI (Ollaya) | decision (Ollaya) | JevK5 4B (Ollaya) | winnow (Ollaya) | Lumma | Julia | Intern-Decision | K2-Type | Decision 2.0 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---| --- |---|---|---|---|---|---|---|---|---|
@@ -1906,7 +1910,7 @@ def build_jev_tab():
 
 
 # -------------------------------------------------- Ollaya (local) tab
-# The five Ollaya-served systems (same names and tags as bench_spectrum.py;
+# The ten Ollaya-served systems (same names and tags as bench_spectrum.py;
 # the map lives in engines/ollaya_client.py). Needs the local daemon
 # running (`ollaya serve`, default port 11435) and each model pulled once.
 # Unlike the Jev tab this sends ONE REQUEST PER LINE: the state is the text
@@ -1924,8 +1928,10 @@ def build_ollaya_tab():
             "(`http://127.0.0.1:11435`)\n"
             "Same System One contract as the Jev tab, but local and free: "
             "MoritzLaurer NLI classifiers, vLLM Semantic Router `decision`, "
-            "the full JevK5 4B and Winnow E4B (all pulled from their "
-            "authors' HF repos). Needs `ollaya serve` running and each "
+            "the full JevK5 4B, Winnow E4B, Madani's Decima pair "
+            "(multilingual late-interaction), logitlab's snap1-2b, "
+            "Codekins' Arbiter and Txoka's Credence (all pulled from "
+            "their authors' repos). Needs `ollaya serve` running and each "
             "model pulled once (`ollaya pull <tag>` — see README). One "
             "request per line — the state is the text, and labels with "
             "descriptions score best.")
@@ -1988,11 +1994,11 @@ def build_ollaya_tab():
 # The OpenRouter-hosted systems (same names and model ids as
 # bench_spectrum.py): ten System One decision engines — Kev, Solar
 # Decide and its Flash sibling plus the Decisions family (Perplexity
-# Decider V1/V1.1, Liquid d1,
+# Decider V1/V1.1, Liquid d1, Microsoft Decision-1, Nace Drex,
 # Together Tev1, Inception Mercury) answer one choice question, Span-01
 # scores one noul question per label — and seven rerank endpoints used as
 # decision engines via argmax over per-label relevance. Plus Cloudflare's
-# Clef / Clef-flash on Workers AI (engines/clef_client.py: cf CLI session
+# three Clef models on Workers AI (engines/clef_client.py: cf CLI session
 # token or CLOUDFLARE_AUTH_TOKEN), same choice-question mapping, and
 # Fastino's GLiDE (System One contract) plus the hosted GLiNER twins
 # (chat-completions endpoint with a classifications schema)
@@ -2011,6 +2017,8 @@ OPENROUTER_SYSTEMONE = {
     "D1 (OpenRouter)": "liquid/d1",
     "Tev1 4B (OpenRouter)": "togethercomputer/tev1-4b-experimental",
     "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
+    "Microsoft Decision-1 (OpenRouter)": "microsoft/microsoft-decision-1",
+    "Drex v1.5 (OpenRouter)": "nace-ai/drex-v1.5",
 }
 # the choice-question subset (the Span scorers answer noul only - the
 # noul branch below claims them first)
@@ -2029,6 +2037,7 @@ OPENROUTER_RERANKERS = {
 CLEF_MODELS = {
     "Clef (Workers AI)": "clef",
     "Clef-flash (Workers AI)": "clef-flash",
+    "Clef-omni (Workers AI)": "clef-omni",
 }
 # values are engines/fastino_client.py body-model selectors: "glide"
 # rides /v1/systemone, the hosted GLiNER twins ride chat completions
@@ -2049,11 +2058,12 @@ def build_openrouter_tab():
 
     with gr.Tab("Hosted decision APIs"):
         gr.Markdown("### The hosted systems, live\n"
-                    "The twenty-five hosted systems from the benchmark "
+                    "The twenty-eight hosted systems from the benchmark "
                     "tabs: Kev 4B, Solar Decide, its Flash sibling and "
-                    "the five Decisions "
+                    "the seven Decisions "
                     "family arrivals (Perplexity Decider V1/V1.1, Liquid "
-                    "d1, Together Tev1, Inception Mercury) answer one "
+                    "d1, Together Tev1, Inception Mercury, Microsoft "
+                    "Decision-1, Nace Drex v1.5) answer one "
                     "choice question, Span-01 / Span-01 Lite "
                     "score one noul question per label, the three "
                     "Fastino-hosted GLiNER twins answer like their local "
@@ -3239,6 +3249,74 @@ def build_k2type_tab():
         kt_button.click(run_k2type, [kt_text, kt_labels, kt_task], kt_out)
 
 
+# ----------------------------------------------------------------- d1 tab
+def build_d1_tab():
+    import gradio as gr
+    import subprocess
+
+    with gr.Tab("d1 (local)"):
+        gr.Markdown("### LiquidAI open d1 — typed decisions, one forward "
+                    "pass\n"
+                    "The open-weights branch of the line behind the hosted "
+                    "`liquid/d1`: a state (text, JSON, or images — and on "
+                    "d1-omni-600M a voice clip) plus named typed questions "
+                    "(choice/score/noul) are answered from the model's "
+                    "distribution over the options in ONE forward pass — "
+                    "zero output tokens, no generation. LFM Open License "
+                    "v1.0. It runs from the local `C:/src/d1-3B` / "
+                    "`C:/src/d1-omni-600M` snapshots in `.venv-von` "
+                    "(engines/d1_client.py loads the card's "
+                    "trust_remote_code AutoModel route on the CPU): each "
+                    "click spawns `demos/d1_demo.py --serve`, which loads "
+                    "the weights once and answers every line in that "
+                    "single process (see README).")
+        d1_model = gr.Radio(
+            ["d1-3B", "d1-omni-600M"], value="d1-3B",
+            label="Checkpoint (3.12B on LFM2.5-VL-3B vs the 587M "
+                  "text+image+speech omni)")
+        d1_text = gr.Textbox(
+            label="Texts (one per line)",
+            value="The food was cold and the waiter was rude.\n"
+                  "This is the best laptop I have ever owned.\n"
+                  "The meeting is scheduled for 3 PM.", lines=5)
+        d1_labels = gr.Textbox(label="Labels (comma-separated)",
+                               value="positive, negative, neutral")
+        d1_task = gr.Textbox(label="Task word (phrases the question)",
+                             value="sentiment")
+        d1_button = gr.Button("Decide", variant="primary")
+        d1_out = gr.JSON(label="Per line: choice, probabilities, "
+                               "confidence")
+
+        def run_d1(checkpoint, texts_block, labels_csv, task):
+            texts = [line.strip() for line in texts_block.splitlines()
+                     if line.strip()]
+            labels = parse_labels(labels_csv)
+            if not texts or not labels:
+                return {"error": "provide text lines and labels"}
+            if len(set(labels)) < 2:
+                return {"error": "provide at least two distinct labels"}
+            helper = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "demos", "d1_demo.py")
+            try:
+                proc = subprocess.run(
+                    [VON_PY, helper, "--serve"],
+                    input=json.dumps({"texts": texts, "task": task,
+                                      "labels": labels,
+                                      "model": checkpoint.lower()}),
+                    capture_output=True, text=True, timeout=600)
+                payload = json.loads(proc.stdout)
+            except Exception as exc:
+                return {"error": str(exc)}
+            if "error" in payload:
+                return payload
+            return {f"{i + 1}. {text[:40]}…": row
+                    for i, (text, row)
+                    in enumerate(zip(texts, payload["results"]))}
+
+        d1_button.click(run_d1, [d1_model, d1_text, d1_labels, d1_task],
+                        d1_out)
+
+
 # ------------------------------------------------------- Decision 2.0 tab
 def build_decision2_tab():
     import gradio as gr
@@ -3460,21 +3538,21 @@ def main() -> None:
                     "GLiClass, Rerankers "
                     "(three cross-encoders as decision engines), Laya, "
                     "von, JevK5-Lite, LFM2.5-RLCD, Certo, MoJev, nanodiff, "
-                    "Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0, so1, the "
+                    "Lumma, Julia, Intern-Decision, K2-Type, d1, Decision 2.0, so1, the "
                     "cloud Jev, "
-                    "the eleven "
-                    "OpenRouter-hosted systems, the two Clef models on "
+                    "the nineteen "
+                    "OpenRouter-hosted systems, the three Clef models on "
                     "Cloudflare Workers AI, Fastino's GLiDE, TypeLLM's "
                     "two entries and the hosted "
                     "GLiNER twins (base, multi, Decide — the same "
                     "checkpoints the GLiNER tab runs locally) and the "
-                    "five Ollaya-served "
+                    "ten Ollaya-served "
                     "decision models. The "
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 75 systems across "
-                    "thirty-nine families.")
+                    "measured numbers for all 85 systems across "
+                    "forty-three families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
         build_glirel_tab()
@@ -3494,6 +3572,7 @@ def main() -> None:
         build_julia_tab()
         build_intern_decision_tab()
         build_k2type_tab()
+        build_d1_tab()
         build_decision2_tab()
         build_so1_tab()
         build_jev_tab()
