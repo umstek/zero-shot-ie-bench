@@ -714,7 +714,7 @@ Highlights:
   rare tier, level with winnow's own 98/94.
 - **TypeLLM joins the 100% club in both modes** — perfect on all 54
   texts plain (1.11 s/text) and with per-question thinking (2.07
-  s/text), matching GLiDE and the Clef pair: the underlying
+  s/text), matching GLiDE, Clef and Clef-flash: the underlying
   Qwen3.8-27B carries the rare scripts, and thinking's 9,237 reasoning
   tokens buy no extra accuracy here — the plain constrained picks are
   already perfect.

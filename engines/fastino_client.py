@@ -29,7 +29,7 @@ pricing page; GET /v1/base-models agrees). 40k context, served on one B200,
 and the model catalog flags it ZDR. The response usage block reports tokens
 but no $, so cost charts derive GLiDE's cost as measured input tokens x
 that price (app.derived_cost) - the same rule the README's cost table
-applies to the Clef pair and Jev.
+applies to the Clef family and Jev.
 
 The hosted GLiNER models are the same open-weight checkpoints this repo
 benches locally through the gliner2 package (fastino/gliner2.5-*-v1,
