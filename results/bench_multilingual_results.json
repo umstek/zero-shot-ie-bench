@@ -363,17 +363,6 @@
       "Vietnamese": 1.0,
       "Welsh": 0.8333
     },
-    "LFM2.5-RLCD 350M": {
-      "Chinese": 0.5,
-      "French": 1.0,
-      "Icelandic": 0.1667,
-      "Sinhala": 0.0,
-      "Spanish": 0.8333,
-      "Turkish": 0.5,
-      "Ukrainian": 0.6667,
-      "Vietnamese": 0.8333,
-      "Welsh": 0.1667
-    },
     "Laya Router": {
       "Chinese": 1.0,
       "French": 0.8333,
@@ -669,28 +658,6 @@
       "Turkish": 0.5,
       "Ukrainian": 0.5,
       "Vietnamese": 0.5,
-      "Welsh": 0.3333
-    },
-    "nanodiff 350M": {
-      "Chinese": 0.3333,
-      "French": 0.1667,
-      "Icelandic": 0.5,
-      "Sinhala": 0.3333,
-      "Spanish": 0.3333,
-      "Turkish": 0.5,
-      "Ukrainian": 0.3333,
-      "Vietnamese": 0.3333,
-      "Welsh": 0.3333
-    },
-    "nanodiff 350M v2": {
-      "Spanish": 0.3333,
-      "French": 0.5,
-      "Chinese": 0.3333,
-      "Vietnamese": 0.3333,
-      "Turkish": 0.1667,
-      "Ukrainian": 0.3333,
-      "Sinhala": 0.3333,
-      "Icelandic": 0.3333,
       "Welsh": 0.3333
     },
     "nemotron-rerank-vl-1b (OpenRouter)": {
@@ -1102,11 +1069,6 @@
       "popular": 1.0,
       "rare": 0.9444
     },
-    "LFM2.5-RLCD 350M": {
-      "medium": 0.6667,
-      "popular": 0.7778,
-      "rare": 0.1111
-    },
     "Laya Router": {
       "medium": 0.9444,
       "popular": 0.8889,
@@ -1241,16 +1203,6 @@
       "medium": 0.5,
       "popular": 0.5556,
       "rare": 0.3889
-    },
-    "nanodiff 350M": {
-      "medium": 0.3889,
-      "popular": 0.2778,
-      "rare": 0.3889
-    },
-    "nanodiff 350M v2": {
-      "popular": 0.3889,
-      "medium": 0.2778,
-      "rare": 0.3333
     },
     "nemotron-rerank-vl-1b (OpenRouter)": {
       "medium": 0.3333,
@@ -1387,7 +1339,6 @@
     "K2-Type 0.9B (local)": 0.791,
     "Kev 0.8B (local)": 1.715,
     "Kev 4B (OpenRouter)": 0.675,
-    "LFM2.5-RLCD 350M": 0.507,
     "Laya Router": 0.139,
     "Laya typed-decisions": 1.184,
     "Lumma-fev 0.15B": 0.309,
@@ -1415,8 +1366,6 @@
     "gliclass-modern-base": 0.113,
     "jevk5 4B (Ollaya)": 7.131,
     "mxbai-rerank-base-v2": 1.252,
-    "nanodiff 350M": 12.223,
-    "nanodiff 350M v2": 11.689,
     "nemotron-rerank-vl-1b (OpenRouter)": 4.446,
     "nli deberta-v3-large (Ollaya)": 0.405,
     "nli modernbert-large (Ollaya)": 0.42,
