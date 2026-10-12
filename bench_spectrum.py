@@ -10,8 +10,8 @@ plot accuracy along the difficulty spectrum.
 
 Run from the MAIN venv for most systems, from .venv-von for von,
 JevK5-Lite, MoJev 0.85B, the Lumma-Fev family,
-the Intern-Decision family, K2-Type 0.9B and the Decision 2.0
-family:
+the Intern-Decision family, K2-Type 0.9B, the Decision 2.0
+family and the Decision 3.0 family:
     python bench_spectrum.py --system GLiNER2.5-base
     ...
     .venv-von/Scripts/python bench_spectrum.py --system von
@@ -27,6 +27,9 @@ family:
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Kai 0.6B"
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Eos 0.8B"
     .venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Sol 2B"
+    .venv-von/Scripts/python bench_spectrum.py --system "Decision 3.0 Edge 0.6B"
+    .venv-von/Scripts/python bench_spectrum.py --system "Decision 3.0 Lite 0.85B"
+    .venv-von/Scripts/python bench_spectrum.py --system "Decision 3.0 Nano 2B"
 
 Kev 0.8B needs its local server running first (System One contract):
     cd ../kev && uv run --extra serve python -m kev.serve \
@@ -99,7 +102,7 @@ import time
 
 from bench import NER_LABELS, SENTIMENT_LABELS, TOPIC_LABELS, spans_of
 from bench_graded import NER, SENTIMENT, TOPIC
-from engines import (d1_client, decision2_client, glinerx_client,
+from engines import (d1_client, d3_client, decision2_client, glinerx_client,
                      intern_decision_client, julia_client, k2type_client)
 from engines.ollaya_client import MODELS as OLLAYA_MODELS
 
@@ -303,6 +306,18 @@ K2TYPE = {"K2-Type 0.9B (local)": k2type_client.MODEL_ID}
 DECISION2 = {"Decision 2.0 Kai 0.6B": "kai-0.6b",
              "Decision 2.0 Eos 0.8B": "eos-0.8b",
              "Decision 2.0 Sol 2B": "sol-2b"}
+# vLLM Semantic Router's Decision 3.0 family ("Towards Open Multimodal
+# Foundation Decision Models", released 2026-10-10 — the successor to
+# Decision 2.0 above), in-process via the self-verifying runtime shipped
+# inside each HF snapshot (engines/d3_client.py loads the local
+# C:\src\d3-* snapshots: bf16 backbone + fp32 255-way code-readout head
+# on the CPU); same names as bench_multilingual.py so results files line
+# up across benchmarks. The mini 4.5B / flash 8.4B / d3 26.1B sizes stay
+# out (download size and per-question cost on this box, the Decision 2.0
+# Nox/Lux/Vega line)
+D3 = {"Decision 3.0 Edge 0.6B": "edge",
+      "Decision 3.0 Lite 0.85B": "lite",
+      "Decision 3.0 Nano 2B": "nano"}
 # LiquidAI's open d1 (engines/d1_client.py loads the local C:\src\d1-3B /
 # d1-omni-600M snapshots through the card's trust_remote_code route under
 # .venv-von): d1-3B is the open-weights sibling of the hosted liquid/d1 row
@@ -337,7 +352,7 @@ ALL_SYSTEMS = [n for n in (
        "so1 (Qwen2.5-0.5B)"]
     + list(OLLAYA) + list(LUMMA) + list(JULIA)
     + list(INTERN_DECISION) + list(K2TYPE) + list(DECISION2)
-    + list(D1_LOCAL)) if n not in CULLED]
+    + list(D3) + list(D1_LOCAL)) if n not in CULLED]
 
 # local servers speaking the System One wire format: one JevClient pattern,
 # different ports. decider and OpenThai lazy-load their weights on the first
@@ -1139,6 +1154,46 @@ def main() -> None:
             cls_preds.extend(out["answers"][f"t{i}"].get("choice")
                              for i in range(len(texts)))
             cls_lat.extend([dt / len(texts)] * len(texts))
+    elif name in D3:
+        # vLLM Semantic Router's Decision 3.0 family (Decision 2.0's
+        # successor, "Towards Open Multimodal Foundation Decision
+        # Models"), in-process via the self-verifying runtime shipped
+        # inside each HF snapshot (engines/d3_client.py loads the local
+        # C:\src\d3-* snapshots; bf16 Qwen3.5 backbone, fp32 255-way
+        # code-readout head on the CPU, one forward per question). One
+        # predict() per task packs all 24 texts as one-request questions
+        # - the family's native many-questions shape (each question its
+        # own forward over the shared state, batched 8 to a padded
+        # pass), the same batching the other System One engines get;
+        # latency = dt / n. Classification only - fixed option menus in,
+        # one label out, no span extraction, so no NER answers. The
+        # house shape (state {"task": ...}, text restated in the
+        # instructions, described criteria) matches the Decision 2.0
+        # branch, whose request-shape probe tied every variant at 8/8 -
+        # carried over unchanged for the 2.0-vs-3.0 comparison.
+        from engines.jev_client import choice
+
+        engine = d3_client.load_engine(D3[name])
+        # one untimed predict pays torch's first-pass init (kernel
+        # dispatch, allocator warm-up) before the timed section
+        engine.predict({"task": "warmup"},
+                       {"w": choice('Sentiment of "good"?',
+                                    {"positive": None, "negative": None})})
+        INSTR = {"sentiment": 'What is the overall sentiment of this text: "{text}"',
+                 "topic": 'Which topic category does this text belong to: "{text}"'}
+        for task in ("sentiment", "topic"):
+            texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
+            labels = dict(SENTIMENT_LABELS if task == "sentiment"
+                          else TOPIC_LABELS)
+            questions = {
+                f"t{i}": choice(INSTR[task].format(text=t), labels)
+                for i, t in enumerate(texts)}
+            t1 = time.perf_counter()
+            out = engine.predict({"task": task}, questions)
+            dt = time.perf_counter() - t1
+            cls_preds.extend(out["answers"][f"t{i}"].get("choice")
+                             for i in range(len(texts)))
+            cls_lat.extend([dt / len(texts)] * len(texts))
     elif name in D1_LOCAL:
         # LiquidAI's open d1, in-process (engines/d1_client.py loads the
         # local C:\src\d1-* snapshots via the card's trust_remote_code
@@ -1224,10 +1279,11 @@ def main() -> None:
     correct = [p == q["gold"] for p, q in zip(cls_preds, CLS_QUESTIONS)]
     # only the local System One servers, Ollaya's first-request model load,
     # and the first-pass init of Lumma, Julia, Intern-Decision, K2-Type,
-    # the Decision 2.0 family and the D1 pair get the untimed warm-up; the
-    # hosted endpoints are stateless, so every request is timed
+    # the Decision 2.0 and Decision 3.0 families and the D1 pair get the
+    # untimed warm-up; the hosted endpoints are stateless, so every
+    # request is timed
     warmed = ((name.startswith(("Kev", "decider", "OpenThai", "K2-Type",
-                                "Decision 2.0"))
+                                "Decision 2.0", "Decision 3.0"))
                or name in OLLAYA or name in LUMMA or name in JULIA
                or name in INTERN_DECISION or name in D1_LOCAL)
               and name != "Kev 4B (OpenRouter)")
