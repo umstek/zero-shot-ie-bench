@@ -802,6 +802,39 @@
       "Sinhala": 1.0,
       "Icelandic": 0.8333,
       "Welsh": 1.0
+    },
+    "Decision 3.0 Edge 0.6B": {
+      "Spanish": 0.8333,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 0.8333,
+      "Turkish": 0.5,
+      "Ukrainian": 0.8333,
+      "Sinhala": 0.3333,
+      "Icelandic": 0.3333,
+      "Welsh": 0.1667
+    },
+    "Decision 3.0 Lite 0.85B": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 0.5
+    },
+    "Decision 3.0 Nano 2B": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.6667,
+      "Icelandic": 0.6667,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -1159,6 +1192,21 @@
       "popular": 1.0,
       "medium": 1.0,
       "rare": 0.9444
+    },
+    "Decision 3.0 Edge 0.6B": {
+      "popular": 0.9444,
+      "medium": 0.7222,
+      "rare": 0.2778
+    },
+    "Decision 3.0 Lite 0.85B": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.6111
+    },
+    "Decision 3.0 Nano 2B": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.7778
     }
   },
   "latency": {
@@ -1232,7 +1280,10 @@
     "D1-omni 600M (local)": 0.71,
     "snap 2B (Ollaya)": 3.542,
     "arbiter 4B (Ollaya)": 4.686,
-    "credence 7.5B (Ollaya)": 6.994
+    "credence 7.5B (Ollaya)": 6.994,
+    "Decision 3.0 Edge 0.6B": 2.651,
+    "Decision 3.0 Lite 0.85B": 5.889,
+    "Decision 3.0 Nano 2B": 14.771
   },
   "laya_routing": {
     "Chinese": {
@@ -1275,7 +1326,7 @@
       "neutral"
     ],
     "notes": [
-      "All 85 systems answer the same 54 texts.",
+      "All 76 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -1378,7 +1429,10 @@
       "D1-omni 600M (local) recorded 2026-10-10 11:18, 53s, CPU",
       "snap 2B (Ollaya) recorded 2026-10-10 11:21, 195s, CPU",
       "arbiter 4B (Ollaya) recorded 2026-10-10 12:03, 256s, CPU",
-      "credence 7.5B (Ollaya) recorded 2026-10-10 12:18, 383s, CPU"
+      "credence 7.5B (Ollaya) recorded 2026-10-10 12:18, 383s, CPU",
+      "Decision 3.0 Edge 0.6B recorded 2026-10-12 08:53, 158s, CPU",
+      "Decision 3.0 Lite 0.85B recorded 2026-10-12 08:58, 333s, CPU",
+      "Decision 3.0 Nano 2B recorded 2026-10-12 09:12, 821s, CPU"
     ],
     "texts_per_language": 6,
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
@@ -1457,7 +1511,10 @@
     "D1-omni 600M (local)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "snap 2B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "arbiter 4B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "credence 7.5B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
+    "credence 7.5B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 3.0 Edge 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 3.0 Lite 0.85B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decision 3.0 Nano 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
   },
   "usage": {
     "Clef (Workers AI)": {
@@ -1677,4 +1734,4 @@
       "thinking_tokens_reported": false
     }
   }
-}
+}
