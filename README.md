@@ -42,7 +42,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [JevK5 4B](https://huggingface.co/alibiserikbay/JevK5-GGUF) (`jevk5` via Ollaya, Q8_0 GGUF) | local decision LLM (the full JevK5 v0.3 on llama.cpp; letters' logits, one pass per question) | 4B | Apache 2.0 | $0 · local |
 | [Winnow E4B](https://huggingface.co/EldanRing/Winnow-E4B) (`winnow:e4b` via Ollaya, Q8_0 GGUF) | local decision LLM (EldanRing, fine-tuned from Gemma 4 E4B on llama.cpp; option letters' logits) | E4B (8 GB Q8_0) | Apache 2.0 | $0 · local |
 | [Decima](https://ollaya.dev/library/decima) (`decima` / `decima:small`) · [snap](https://ollaya.dev/library/snap) (`snap`) · [Arbiter](https://ollaya.dev/library/arbiter) (`arbiter`) · [Credence](https://ollaya.dev/library/credence) (`credence`), all via Ollaya | local decision models (Madani's Decima pair: mmBERT / multilingual-e5-small encoders + a late-interaction option scorer — order-invariant — and an ordinal score head, billed as fastest on CPU; logitlab's snap1-2b: MiniCPM5-2B fine-tune, Q8_0 on llama.cpp; Codekins' Arbiter: Gemma 3 4B IT + LoRA behind a fixed 24-slot head, noul + choice ≤16 options + 6-level score; Txoka's Credence v1: MiCA refinements of Winnow-E4B, two Q8_0 checkpoints trading accuracy vs calibration) | 122M / 321M / 2B / 4.3B / 7.5B | Apache-2.0 runtime; per-model weight licenses on the Ollaya catalog pages | $0 · local |
-| [Jev](https://www.typesafe.ai/) (`jev-latest` via System One API) | cloud typed-decision engine (choice/score/noul) | closed | proprietary API | metered · $5.3e-6/q ‡ |
+| [Jev](https://www.typesafe.ai/) (`jev-1.13.0` pinned via System One API — `jev-latest` moves with TypeSafe's releases) | cloud typed-decision engine (choice/score/noul; danger-zone headers opt into image `assets` on 1.13/1.14, a 262k long-context mode, and 1.14's `box` detection — wired in `engines/jev_client.py`, demoed in `demos/jev_image_demo.py`, benched text-only) | closed | proprietary API | metered · $5.3e-6/q ‡ |
 | [Kev 4B](https://openrouter.ai/jaredpalmer/kev-4b) (`jaredpalmer/kev-4b` via OpenRouter) | cloud decision engine (same System One contract as local Kev, hosted) | 4B | proprietary API | metered · $1.5e-6/q † |
 | [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
 | [Solar Decide Flash](https://openrouter.ai/upstage/solar-decide-flash) (`upstage/solar-decide-flash` via OpenRouter) | cloud typed-decision engine (Solar Decide's low-latency sibling on the same Upstage System One endpoint and Solar Mini 4 base: same choice/score/noul contract, output tokens free) | undisclosed · Solar Mini 4 base | proprietary API | metered · $1.8e-5/q † |
@@ -50,7 +50,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [GLiDE](https://fastino.ai/) (`fastino/GLiDE` on the Fastino API) | cloud typed-decision engine (Fastino's "thinking decision model": one fast scoring pass plus adaptive reasoning when the leading option is uncertain; choice/score/noul with calibrated probabilities, 40k context, thinking tokens priced $0) | undisclosed | API metered · research tier | metered · $1.2e-5/q |
 | [GLiNER2.5](https://github.com/fastino-ai/GLiNER2) base / multi (`fastino/gliner2.5-base-v1` / `fastino/gliner2.5-multi-v1` on the Fastino API) | cloud extractors — the hosted twins of the local GLiNER2.5-base / multi checkpoints (NER + classification per text over the chat-completions endpoint; the small checkpoint has no hosted twin) | 194M / 287M | API metered · Apache 2.0 weights | metered · $3.9e-7/q |
 | [GLiNER2.5-Decide](https://huggingface.co/fastino/GLiNER2.5-Decide) (`fastino/GLiNER-2.5-Decide` on the Fastino API — hosted id hyphenated, HF repo not) | cloud decision encoder — the hosted twin of the local decision-tuned sibling (classification primary, extraction still supported; rides the chat-completions schema, not GLiDE's System One endpoint) | 340M | API metered · Apache 2.0 weights | metered · $3.9e-7/q |
-| [TypeLLM](https://typellm.ai/) (`typellm-latest` on the TypeLLM API) | cloud type-safe generation harness (SGLang constrained decoding over a hosted Qwen3.8-27B: JSON-Schema fields answered by one-token enum picks, optional per-question thinking at its own price; vision-capable, up to 8 images per request) | 27B | Apache 2.0 (harness) · proprietary API | metered · $2.6e-6 plain / $1.0e-4 thinking /q † |
+| [TypeLLM](https://typellm.ai/) (`typellm-latest` on the TypeLLM API) | cloud type-safe generation harness (SGLang constrained decoding over a hosted Qwen3.8-27B: JSON-Schema fields answered by one-token enum picks — up to 512 values since v0.6.9, plus described `choices` and `box`/array-of-boxes detection since v0.7.x; optional per-question thinking at its own price; vision-capable, up to 8 images per request; the October releases also speak Jev's `/v1/systemone`) | 27B | Apache 2.0 (harness) · proprietary API | metered · $2.6e-6 plain / $6.1e-5 thinking /q † |
 | [Span-01](https://openrouter.ai/respan/span-01) / [Span-01 Lite](https://openrouter.ai/respan/span-01-lite) (`respan/span-01*`) | cloud behavior scorer (one noul probability per label, argmax = decision) | closed | proprietary API | metered · $9.0e-7/q · Lite free † |
 | [Decider](https://openrouter.ai/perplexity/pplx-decider-v1-27b) [V1](https://openrouter.ai/perplexity/pplx-decider-v1-27b) / [V1.1](https://openrouter.ai/perplexity/pplx-decider-v1.1-27b) 27B (`perplexity/pplx-decider-*`) | cloud decision model (Perplexity's Decisions-API entry: typed probabilistic answers — choice with per-option probabilities, noul, score rubrics — up to 128 questions per request; text/JSON state, image modality listed but not live yet) | 27B | proprietary API | metered · $4.4e-6 (V1) / $2.2e-6 (V1.1) /q |
 | [Decision-1](https://openrouter.ai/microsoft/microsoft-decision-1) (`microsoft/microsoft-decision-1`) | cloud decision model (Microsoft's Model Foundry entry: Qwen3.5-9B post-trained for single-pass scoring, "updated continually while the API shape stays the same"; Azure is the only endpoint and it satisfies this account's enforced ZDR) | 9B | proprietary API | metered · $2.1e-6/q |
@@ -191,16 +191,16 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 |---|---|---|---|---|
 | Clef (Workers AI) | **97.9%** | 0.052 | n/a | |
 | GLiDE (Fastino) | **97.9%** | 0.056 | n/a | |
-| TypeLLM thinking (hosted) † | **97.9%** | 0.383 | n/a | |
-| TypeLLM (hosted) † | 95.8% | 0.050 | n/a | |
+| TypeLLM (hosted) † | 95.8% | 0.057 | n/a | |
 | Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a | |
-| Jev (cloud) | 93.8% | 0.018 | n/a | |
+| Jev (cloud, jev-1.13.0) | 93.8% | 0.018 | n/a | |
 | D1 (OpenRouter) † | 93.8% | 0.031 | n/a | |
 | Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a | |
 | Decider V1 27B (OpenRouter) | 93.8% | 0.075 | n/a | |
 | Decider V1.1 27B (OpenRouter) | 93.8% | 0.080 | n/a | |
 | Drex v1.5 (OpenRouter) | 93.8% | 0.075 | n/a | |
 | Microsoft Decision-1 (OpenRouter) | 91.7% | 0.065 | n/a | |
+| TypeLLM thinking (hosted) † | 91.7% | 0.338 | n/a | |
 | Decision 3.0 Nano 2B (local) | 91.7% | 9.376 | n/a | |
 | Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a | |
 | Clef-omni (Workers AI) | 89.6% | 0.040 | n/a | |
@@ -305,18 +305,31 @@ Takeaways:
   All five join the 100% multilingual club on arrival (below);
   gpt-6-luna-decisions sits this one out (OpenAI's endpoint retains
   prompts, blocked by the account's ZDR enforcement — noted below).
-- **TypeLLM lands 95.8% plain, 97.9% with thinking** — the type-safe
-  generation harness (constrained enum answers over a hosted
-  Qwen3.8-27B) joins the 97.9% lead in its thinking mode, and the two
-  runs bracket the thinking trade cleanly: per-question reasoning fixes
-  both plain-mode misses (the mixed "slow service, good dessert"
-  sentiment and the government-AI-strategy topic) but flips the
-  startup-AI-pitch question to `business`. Thinking bills 9,376 tokens
-  on the 48-question run at $0.50/M — ~39× its input cost — so the
-  accurate mode runs $1.0e-4/q against the plain mode's $2.6e-6/q (the
-  cheapest hosted decision here after kev-4b and Span-01), at 0.383 vs
-  0.050 s/question. Both entries batch each 24-question task into one
-  request and join the 100% multilingual club (below).
+- **TypeLLM's October retune flips the thinking story: plain now beats
+  thinking, 95.8% vs 91.7%** — the type-safe generation harness
+  (constrained enum answers over a hosted Qwen3.8-27B) was re-benched
+  2026-10-17 after the v0.6.x → v0.7.x releases (512-value enums,
+  described `choices`, box detection, a Jev-compatible `/v1/systemone`).
+  Plain mode is bit-for-bit its old self — all 48 answers identical,
+  2,507 input tokens, 0.057 s/question — but thinking dropped 97.9% →
+  91.7%: its reasoning shrank 9,376 → 5,530 tokens on the same pool and
+  three answers flipped with it (the awards-listing sentiment reads
+  `positive` instead of `neutral`, the football-club share price reads
+  `sports`, the console-sales topic reads `business`). Cheaper reasoning
+  ($6.1e-5/q, down from $1.0e-4) but worse picks — thinking is no longer
+  the accurate mode here. Both entries still batch each 24-question task
+  into one request and still hold the 100% multilingual club (below).
+- **Jev's row now pins `jev-1.13.0`** — TypeSafe shipped Jev 1.14 on
+  2026-10-14 (danger-zone image `assets` on both versions, the `box`
+  question type and a 262k long-context mode) and `jev-latest` flips to
+  it around 2026-10-21. The trial gate ran it first (TRIALS.md): 10/12
+  on the first-12 pool, deterministic on a re-run, against the
+  incumbent's recorded 11/12 — both new misses in the mixed-sentiment
+  medium tier — so 1.14 doesn't get a benchmark row and both benches pin
+  `jev-1.13.0` so the alias flip can't silently change the recorded
+  row. The danger-zone additions are wired regardless
+  (`engines/jev_client.py`) and demoed in
+  `demos/jev_image_demo.py`; re-trial when a 1.14.x ships.
 - **GLiDE ties Clef's 97.9% lead on arrival** — Fastino's "thinking
   decision model" (released Sep 30, three days before this run) matches
   the top of the table in its first bench here. Its single miss is the
@@ -369,8 +382,8 @@ Takeaways:
   buys the 4.5× speedup, not a cheaper row. It also joins the 100%
   multilingual club on arrival (below).
 - **winnow e4b ties qwen3-reranker-8b at 87.5%** — behind arbiter, the
-  best of the rest behind the hosted leaders (GLiDE, Clef, TypeLLM's
-  pair, Solar Decide, Jev) — and winnow is local and free (the metered
+  best of the rest behind the hosted leaders (GLiDE, Clef, TypeLLM
+  plain, Solar Decide, Jev) — and winnow is local and free (the metered
   reranker needs OpenRouter; one more datapoint for rerankers doubling
   as decision engines — bge locally reaches 72.9%, Kev/OpenThai level,
   where the same rerankers sit near zero on JevBench's leaderboard).
@@ -482,8 +495,8 @@ TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 | Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Solar Decide Flash (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Clef (Workers AI) | $0.0011 | $0.0021 | $0.000023 |
+| TypeLLM thinking (hosted) † | $0.0029 | $0.0027 | $0.000061 |
 | qwen3-reranker-8b † | $0.0032 | $0.0036 | $0.0000667 |
-| TypeLLM thinking (hosted) † | $0.0048 | $0.0048 | $0.00010 |
 | cohere-rerank-v3.5 † | $0.048 | $0.054 | $0.0010 |
 | cohere-rerank-4-fast † | $0.096 | $0.108 | $0.0020 |
 | cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
@@ -502,8 +515,9 @@ GLiDE: 3,833 / 4,741 input tokens × $0.15/1M — its usage block also
 reports thinking `output_tokens`, priced $0 so they add nothing;
 TypeLLM: input + thinking tokens at $0.05 + $0.50 per M — plain
 2,507 / 3,487 input with no thinking, thinking mode 3,226 / 4,291
-input plus 9,376 / 9,237 thinking, so reasoning is ~97% of that
-mode's bill; the hosted GLiNER twins: 864 / 1,048 input tokens ×
+input plus 5,530 / 4,901 thinking (re-benched 2026-10-17; the retuned
+reasoning is ~94% of that mode's spectrum bill and ~92% of its
+multilingual one), the hosted GLiNER twins: 864 / 1,048 input tokens ×
 $0.03/1M over 66 spectrum requests each — 48 classification + 18
 NER, one request per question),
 and marked "≈ derived" in the UI. What
@@ -563,7 +577,7 @@ systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
-| Jev (cloud) | **100%** | **100%** | **100%** | **100%** |
+| Jev (cloud, jev-1.13.0) | **100%** | **100%** | **100%** | **100%** |
 | jevk5 4B (Ollaya) | 100% | 100% | 100% | **100%** |
 | Solar Decide (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | Solar Decide Flash (OpenRouter) † | 100% | 100% | 100% | **100%** |
@@ -659,12 +673,13 @@ Highlights:
   but the omni 600M collapses to 51.8%, and snap 2B lands 90.7% well
   beyond its English+Italian card; credence 7.5B posts 98.1% with a 94%
   rare tier, level with winnow's own 98/94.
-- **TypeLLM joins the 100% club in both modes** — perfect on all 54
-  texts plain (1.11 s/text) and with per-question thinking (2.07
-  s/text), matching GLiDE, Clef and Clef-flash: the underlying
-  Qwen3.8-27B carries the rare scripts, and thinking's 9,237 reasoning
-  tokens buy no extra accuracy here — the plain constrained picks are
-  already perfect.
+- **TypeLLM holds the 100% club in both modes through the retune** —
+  still perfect on all 54 texts plain (0.862 s/text, was 1.11) and with
+  per-question thinking (1.423 s/text, was 2.07), matching GLiDE, Clef
+  and Clef-flash: the underlying Qwen3.8-27B carries the rare scripts,
+  and thinking's now-4,901 reasoning tokens (was 9,237) still buy no
+  extra accuracy here — the plain constrained picks are already
+  perfect.
 - **GLiDE joins the 100% club on arrival** — perfect on all 54 texts,
   Sinhala/Icelandic/Welsh included (1.14 s/text, one request per text;
   the whole 54-text run bills ~$0.00071). Fastino markets GLiDE as an
@@ -752,7 +767,7 @@ surprisingly well for an English-family release (81%, 100% Chinese,
 | Text embeddings | ❌ | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ✅ multi twin (89% over 9 langs here, = local) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | ✅ 78% over 9 langs | ✅ 83% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% | 65–93% over 9 langs by size (Nano 93%); rare tier 28–78% | ✅ 91% (3B, 17-lang card; omni 52%) | ✅ 93% (321M; small 69%) | snap 91%, Arbiter 96% (89% rare); Credence 98% (94% rare — ties winnow's best local rare tier) | ✅ 100% over 9 langs (six of seven; Decision-1 perfect, Drex/Clef-omni 98%) |
 | Runs offline / data local | ✅ | ❌ (Fastino API, ZDR) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Image input | ❌ | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) | ❌ | ❌ | ✅ (vision tower in every snapshot, images + videos on the same system_one call; benched text-only here) | ✅ (LFM2.5-VL tower in both checkpoints, demos/d1_demo.py; omni adds 16 kHz speech state) | ❌ | ❌ (Credence ships a vision-tagged variant) | ❌ (Decider lists image modality; text/JSON state only so far — Clef-omni accepts images[]/audio[]/videos[] state, audio/video untested here) |
+| Image input | ❌ | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ✅ (danger-zone `assets` behind `TypeSafe-Danger-Zone-Images: true` on 1.13 and 1.14, benched text-only — `demos/jev_image_demo.py`; 1.14-only `box` detection) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) | ❌ | ❌ | ✅ (vision tower in every snapshot, images + videos on the same system_one call; benched text-only here) | ✅ (LFM2.5-VL tower in both checkpoints, demos/d1_demo.py; omni adds 16 kHz speech state) | ❌ | ❌ (Credence ships a vision-tagged variant) | ❌ (Decider lists image modality; text/JSON state only so far — Clef-omni accepts images[]/audio[]/videos[] state, audio/video untested here) |
 | Cost | free | $0.03/1M input (output $0) | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | $0.02–$0.15/1M input, decisions free; Mercury on the :free tier |
 | License | Apache 2.0 | Apache 2.0 weights; metered hosted API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | MIT (engine; Qwen base-model license on encoder weights) | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) | Apache 2.0 | Apache 2.0 | Apache 2.0 | LFM Open License v1.0 | per-model on the Ollaya catalog (runtime Apache 2.0) | per-model on the Ollaya catalog (runtime Apache 2.0) | proprietary API (Tev1's data recipe + training code are open; Drex weights Open RAIL-M, runtime Apache 2.0) |
 | Batch shape | per text | per text, one request (all labels in the schema) | per text (batch_size) | per text, all labels | per text, one pair per label | all questions, one pass | per text | all questions, one request | all questions, one request | all questions, one request | all questions, one request | all questions, one request | per text, all heads + labels | per text, all packed candidates | per text, one pair per option | per text, one row per question | per text, one request per question | per text, one request per question | per text, all questions one forward | per text, all questions one forward | per text, all questions one forward | per text, all questions one forward | per request (all questions one call, one forward per question, batched 8 per pass) | per text, trunk + question branches one forward | per text, all options one pass | per text, one request per question | all questions, one request (spectrum batches 24) |
@@ -1341,12 +1356,12 @@ with their full recorded data and charts in TRIALS.md.
 | `demos/glinerx_demo.py` | GLiNER-X tour (`--tour`: multilingual NER + the NER-only classification caveat) + one-shot runner (JSON over stdin) inside `.venv-glinerx`, spawned by its web-UI tab |
 | `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK pipeline, parametrized so the tour can load the joint NER+relation sibling (two relik 1.0.7 load fixes; the benched default is forwarded verbatim) |
 | `engines/glinerx_client.py` | registry + loader for the GLiNER-X family through the classic `gliner` package with the stanza extra (.venv-glinerx; the loader names the venv when the stack is missing) plus the vendor multitask classification mapping (prompt + single-label reduction) and the per-language stanza-splitter warm-up — with the probe notes that established the checkpoints are NER-only |
-| `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server) |
+| `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server; versioned model pinning, `extra_headers`, `assets`/`image_asset()` and the `box` builder for the danger-zone features, `last_model` provenance) |
 | `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
 | `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Solar Decide, Span-01, six rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
 | `engines/clef_client.py` | dependency-free client for the Clef / Clef-flash decision models on Cloudflare Workers AI (same System One contract behind the v4 REST envelope; cf CLI session token with auto-refresh, or `CLOUDFLARE_AUTH_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in repo-root `.env`) |
 | `engines/fastino_client.py` | dependency-free client for Fastino's hosted models: the GLiDE decision model (same System One contract, flat payload) plus the hosted GLiNER twins (the local GLiNER2.5 base/multi/Decide checkpoints over the OpenAI-compatible chat-completions endpoint with a `schema` body; `FASTINO_API_KEY` in repo-root `.env`) |
-| `engines/typellm_client.py` | dependency-free client for TypeLLM's hosted API (JSON-Schema enum questions via POST /v1/generate, images as base64 data URIs; `TYPELLM_API_KEY` in repo-root `.env`) |
+| `engines/typellm_client.py` | dependency-free client for TypeLLM's hosted API (JSON-Schema enum questions — up to 512 values — plus `choices`/`box`/`boxes` builders via POST /v1/generate, images as base64 data URIs; `TYPELLM_API_KEY` in repo-root `.env`) |
 | `engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |

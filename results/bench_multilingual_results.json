@@ -1250,8 +1250,8 @@
     "Span-01": 0.401,
     "Span-01 Lite": 0.409,
     "Tev1 4B (OpenRouter)": 0.57,
-    "TypeLLM (hosted)": 1.111,
-    "TypeLLM thinking (hosted)": 2.073,
+    "TypeLLM (hosted)": 0.862,
+    "TypeLLM thinking (hosted)": 1.423,
     "bge-reranker-v2-m3": 0.318,
     "cohere-rerank-4-fast (OpenRouter)": 0.371,
     "cohere-rerank-4-pro (OpenRouter)": 0.413,
@@ -1432,7 +1432,9 @@
       "credence 7.5B (Ollaya) recorded 2026-10-10 12:18, 383s, CPU",
       "Decision 3.0 Edge 0.6B recorded 2026-10-12 08:53, 158s, CPU",
       "Decision 3.0 Lite 0.85B recorded 2026-10-12 08:58, 333s, CPU",
-      "Decision 3.0 Nano 2B recorded 2026-10-12 09:12, 821s, CPU"
+      "Decision 3.0 Nano 2B recorded 2026-10-12 09:12, 821s, CPU",
+      "TypeLLM (hosted) recorded 2026-10-17 12:28, 47s, CPU",
+      "TypeLLM thinking (hosted) recorded 2026-10-17 12:29, 77s, CPU"
     ],
     "texts_per_language": 6,
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
@@ -1658,7 +1660,7 @@
       "cost_usd": 0.0,
       "input_tokens": 4291,
       "total_tokens": 0,
-      "thinking_tokens": 9237,
+      "thinking_tokens": 4901,
       "cost_reported": false,
       "input_tokens_reported": true,
       "thinking_tokens_reported": true
@@ -1733,5 +1735,9 @@
       "input_tokens_reported": true,
       "thinking_tokens_reported": false
     }
+  },
+  "model": {
+    "TypeLLM (hosted)": "typellm-latest",
+    "TypeLLM thinking (hosted)": "typellm-latest"
   }
 }

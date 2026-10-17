@@ -89,6 +89,7 @@ per-question predictions included, in `_trials/culled/`.
 
 | System | Trial result |
 |---|---|
+| `jev-1.14.0` (TypeSafe's Jev 1.14, released 2026-10-14; trialed 2026-10-17) | 10/12 at 0.023 s/q, deterministic on a re-run — below the bar, and below the incumbent: the same first-12 holds jev-1.13.0's recorded 11/12. Both new misses are the mixed-sentiment medium tier (the "great camera, but…" and "slow service, good dessert" reads flip to neutral), where 1.13 missed only the dessert text. The 1.14 release notes claim "small, subtle improvements to everything, largest gain multilingual" — the pool can't see multilingual; re-trial when the alias flips or a 1.14.x ships. Until then the benchmark's Jev row pins jev-1.13.0 (the benches' JEV_MODELS) so the ~2026-10-21 jev-latest move cannot silently change it. 1.14's danger-zone additions (images on both versions, the box type 1.14-only) are wired in engines/jev_client.py and demoed in demos/jev_image_demo.py regardless |
 | `Quazim0t0/Byrne-Jev-79M` | 9/12 easy, 7/16 hard (hard-tier pool) |
 | Dohnuts 0.8B (iACE, from-scratch) | unrunnable — its released runtime hardcodes CUDA (flash-linear-attention[rocm], `.to("cuda")`); no CPU path |
 | `tasksource/modernbert-tasksource-jev` | unrunnable — its `modernjev` package is unpublished, source links 404, card says "preview, not ready to use" |
