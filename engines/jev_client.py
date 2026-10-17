@@ -107,10 +107,24 @@ def box(instructions) -> dict:
 def image_asset(path) -> dict:
     """One assets-map entry: the image file base64-encoded (PNG/JPEG,
     280-1568 px per side — the API rejects rather than resizes). The
-    caller picks the reference string the entry is keyed under and
-    writes it into the state, instructions or criteria."""
+    MIME type comes from the platform resolver and anything besides
+    PNG/JPEG raises here — mislabeling, say, a WebP as jpg would only
+    fail later, after the upload. The caller picks the reference string
+    the entry is keyed under and writes it into the state, instructions
+    or criteria."""
+    import mimetypes
+
     path = str(path)
-    fmt = "png" if path.lower().endswith(".png") else "jpg"
+    mime = mimetypes.guess_type(path)[0]
+    if mime == "image/png":
+        fmt = "png"
+    elif mime == "image/jpeg":
+        fmt = "jpg"
+    else:
+        raise ValueError(
+            f"image_asset: {path!r} is {mime or 'an unrecognized type'} — "
+            "Jev's assets accept PNG and JPEG still images only"
+        )
     with open(path, "rb") as fh:
         data = base64.b64encode(fh.read()).decode("ascii")
     return {"type": "image", "format": fmt, "data_base64": data}

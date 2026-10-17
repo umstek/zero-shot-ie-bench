@@ -46,9 +46,20 @@ from pathlib import Path
 from engines.jev_client import (DANGER_IMAGES_HEADERS, JevClient, box,
                                 choice, image_asset, noul)
 
-# the drawn mug's rectangle, fractional image coordinates (x0, y0, x1, y1)
-# - the box answer's ground truth to print against
+# the drawn mug's BODY rectangle, fractional image coordinates
+# (x0, y0, x1, y1) - x fractions of the width, y fractions of the
+# height (Jev's box edges are height fractions vertically). The printed
+# ground truth expands this to the full mug, handle included.
 MUG_FRACTIONS = (0.30, 0.45, 0.55, 0.80)
+
+
+def mug_truth() -> tuple[float, float, float, float]:
+    """The full-mug bounding box (left, top, right, bottom) in fractions:
+    the body rectangle plus the handle's rightward reach. The handle is
+    drawn a sixth of the body width out and half a body width wide."""
+    x0, y0, x1, _ = MUG_FRACTIONS
+    body_w = x1 - x0
+    return (x0, y0, x1 + body_w / 6 + body_w / 2, MUG_FRACTIONS[3])
 
 
 def build_scene(directory=None) -> str:
@@ -72,8 +83,11 @@ def build_scene(directory=None) -> str:
                     int(width * 0.95), int(height * 0.82)), fill="#4c7a3f")
     draw.ellipse((int(width * 0.74), int(height * 0.38),
                   int(width * 0.99), int(height * 0.62)), fill="#5d9149")
-    # the red mug (body + handle) at MUG_FRACTIONS
-    x0, y0, x1, y1 = (int(width * f) for f in MUG_FRACTIONS)
+    # the red mug (body + handle); x from width, y from height, so the
+    # fractional MUG_FRACTIONS land where they claim
+    fx0, fy0, fx1, fy1 = MUG_FRACTIONS
+    x0, y0, x1, y1 = (int(width * fx0), int(height * fy0),
+                      int(width * fx1), int(height * fy1))
     draw.rectangle((x0, y0, x1, y1), fill="#b3392e")
     draw.ellipse((x0, y0, x1, y0 + (y1 - y0) // 6), fill="#8f2b23")
     handle_x0 = x1 + (x1 - x0) // 6
@@ -93,9 +107,10 @@ def main() -> None:
     args = parser.parse_args()
 
     scene_path = build_scene()
-    print(f"scene: {scene_path} (mug drawn at x "
+    print(f"scene: {scene_path} (mug body at x "
           f"{MUG_FRACTIONS[0]:.2f}-{MUG_FRACTIONS[2]:.2f}, y "
-          f"{MUG_FRACTIONS[1]:.2f}-{MUG_FRACTIONS[3]:.2f})")
+          f"{MUG_FRACTIONS[1]:.2f}-{MUG_FRACTIONS[3]:.2f}, handle "
+          "reaching further right)")
 
     client = JevClient(model=args.model,
                        extra_headers=DANGER_IMAGES_HEADERS)
@@ -121,7 +136,7 @@ def main() -> None:
           f"{answers['mug_present'].get('noul')}")
     found = answers["mug_box"].get("box") or {}
     if found:
-        x0, y0, x1, y1 = MUG_FRACTIONS
+        left, top, right, bottom = mug_truth()
         print("mug_box     -> left {:.2f} right {:.2f} top {:.2f} "
               "bottom {:.2f} (confidence {:.2f})".format(
                   found.get("left", float("nan")),
@@ -130,7 +145,8 @@ def main() -> None:
                   found.get("bottom", float("nan")),
                   answers["mug_box"].get("confidence", float("nan"))))
         print("drawn truth -> left {:.2f} right {:.2f} top {:.2f} "
-              "bottom {:.2f}".format(x0, x1, y0, y1))
+              "bottom {:.2f} (full mug, handle included)".format(
+                  left, right, top, bottom))
 
 
 if __name__ == "__main__":
