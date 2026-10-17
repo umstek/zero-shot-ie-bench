@@ -21,9 +21,11 @@ API rejects rather than resizes - the scene is 640x480).
 
 The box question is 1.14-only, so the demo defaults to jev-1.14.0
 (pass --model to override; on 1.13 the request itself fails on the box
-row). The benchmark's Jev row stays pinned to jev-1.13.0 - 1.14 failed
-the trial gate (TRIALS.md); this demo exercises what the newer release
-unlocked, not a benchmarked path.
+row). 1.14 first failed the 12-question trial gate, but a full-suite
+parity run (45/48 mixed pool = the incumbent's recorded score, 54/54
+multilingual) overturned the miss on 2026-10-17 and the benchmark's
+Jev row now pins jev-1.14.0 - this demo exercises the danger zone of
+the version the bench records.
 
 Run (paid API, one request; TYPESAFE_API_KEY in env or repo .env):
     .venv/Scripts/python demos/jev_image_demo.py

@@ -238,15 +238,16 @@ CLEF_MODELS = {
 # local System One servers, hence the batched classify_batched path
 FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
 # TypeSafe's Jev, measured through the TypeSafe API directly. The row
-# pins the versioned jev-1.13.0 — the id that answered the original
-# run — because jev-latest moves to jev-1.14.0 ~2026-10-21 and the
-# alias flip must not silently change the row; the answering model id
-# lands in the results entry via the response's "model" field. Jev 1.14
-# itself (released 2026-10-14) TRIALED 10/12 on the first-12 pool on
-# 2026-10-17 (1.13 recorded 11/12 on the same questions — the successor
-# regresses on the mixed-sentiment tier), so it stays out of the bench
-# under the universal trial gate; see TRIALS.md
-JEV_MODELS = {"Jev": "jev-1.13.0"}
+# pins the versioned jev-1.14.0 because jev-latest moves with TypeSafe's
+# releases and the alias flip must not silently change the row; the
+# answering model id lands in the results entry via the response's
+# "model" field. 1.14 first TRIALED 10/12 on the first-12 gate (1.13
+# recorded 11/12) on 2026-10-17, but a user-directed full-suite run the
+# same day showed parity — 45/48 here (1.13's recorded 45/48; a
+# one-for-one trade: it newly misses the "great camera, but..." mixed
+# sentiment and newly fixes the central-bank topic) and 54/54
+# multilingual — so the row moved to 1.14 (see TRIALS.md)
+JEV_MODELS = {"Jev": "jev-1.14.0"}
 # TypeLLM's hosted type-safe generation API (engines/typellm_client.py;
 # single public model typellm-latest, so the value selects the variant:
 # thinking off, or per-question reasoning at $0.50/M on top of input's

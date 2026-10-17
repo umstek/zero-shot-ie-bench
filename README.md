@@ -42,7 +42,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [JevK5 4B](https://huggingface.co/alibiserikbay/JevK5-GGUF) (`jevk5` via Ollaya, Q8_0 GGUF) | local decision LLM (the full JevK5 v0.3 on llama.cpp; letters' logits, one pass per question) | 4B | Apache 2.0 | $0 · local |
 | [Winnow E4B](https://huggingface.co/EldanRing/Winnow-E4B) (`winnow:e4b` via Ollaya, Q8_0 GGUF) | local decision LLM (EldanRing, fine-tuned from Gemma 4 E4B on llama.cpp; option letters' logits) | E4B (8 GB Q8_0) | Apache 2.0 | $0 · local |
 | [Decima](https://ollaya.dev/library/decima) (`decima` / `decima:small`) · [snap](https://ollaya.dev/library/snap) (`snap`) · [Arbiter](https://ollaya.dev/library/arbiter) (`arbiter`) · [Credence](https://ollaya.dev/library/credence) (`credence`), all via Ollaya | local decision models (Madani's Decima pair: mmBERT / multilingual-e5-small encoders + a late-interaction option scorer — order-invariant — and an ordinal score head, billed as fastest on CPU; logitlab's snap1-2b: MiniCPM5-2B fine-tune, Q8_0 on llama.cpp; Codekins' Arbiter: Gemma 3 4B IT + LoRA behind a fixed 24-slot head, noul + choice ≤16 options + 6-level score; Txoka's Credence v1: MiCA refinements of Winnow-E4B, two Q8_0 checkpoints trading accuracy vs calibration) | 122M / 321M / 2B / 4.3B / 7.5B | Apache-2.0 runtime; per-model weight licenses on the Ollaya catalog pages | $0 · local |
-| [Jev](https://www.typesafe.ai/) (`jev-1.13.0` pinned via System One API — `jev-latest` moves with TypeSafe's releases) | cloud typed-decision engine (choice/score/noul; danger-zone headers opt into image `assets` on 1.13/1.14, a 262k long-context mode, and 1.14's `box` detection — wired in `engines/jev_client.py`, demoed in `demos/jev_image_demo.py`, benched text-only) | closed | proprietary API | metered · $5.3e-6/q ‡ |
+| [Jev](https://www.typesafe.ai/) (`jev-1.14.0` pinned via System One API — `jev-latest` moves with TypeSafe's releases) | cloud typed-decision engine (choice/score/noul; danger-zone headers opt into image `assets`, a 262k long-context mode and 1.14's `box` detection — wired in `engines/jev_client.py`, demoed in `demos/jev_image_demo.py`, benched text-only) | closed | proprietary API | metered · $5.3e-6/q ‡ |
 | [Kev 4B](https://openrouter.ai/jaredpalmer/kev-4b) (`jaredpalmer/kev-4b` via OpenRouter) | cloud decision engine (same System One contract as local Kev, hosted) | 4B | proprietary API | metered · $1.5e-6/q † |
 | [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
 | [Solar Decide Flash](https://openrouter.ai/upstage/solar-decide-flash) (`upstage/solar-decide-flash` via OpenRouter) | cloud typed-decision engine (Solar Decide's low-latency sibling on the same Upstage System One endpoint and Solar Mini 4 base: same choice/score/noul contract, output tokens free) | undisclosed · Solar Mini 4 base | proprietary API | metered · $1.8e-5/q † |
@@ -193,7 +193,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | GLiDE (Fastino) | **97.9%** | 0.056 | n/a | |
 | TypeLLM (hosted) † | 95.8% | 0.057 | n/a | |
 | Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a | |
-| Jev (cloud, jev-1.13.0) | 93.8% | 0.018 | n/a | |
+| Jev (cloud, jev-1.14.0) | 93.8% | 0.015 | n/a | |
 | D1 (OpenRouter) † | 93.8% | 0.031 | n/a | |
 | Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a | |
 | Decider V1 27B (OpenRouter) | 93.8% | 0.075 | n/a | |
@@ -319,17 +319,23 @@ Takeaways:
   ($6.1e-5/q, down from $1.0e-4) but worse picks — thinking is no longer
   the accurate mode here. Both entries still batch each 24-question task
   into one request and still hold the 100% multilingual club (below).
-- **Jev's row now pins `jev-1.13.0`** — TypeSafe shipped Jev 1.14 on
-  2026-10-14 (danger-zone image `assets` on both versions, the `box`
-  question type and a 262k long-context mode) and `jev-latest` flips to
-  it around 2026-10-21. The trial gate ran it first (TRIALS.md): 10/12
-  on the first-12 pool, deterministic on a re-run, against the
-  incumbent's recorded 11/12 — both new misses in the mixed-sentiment
-  medium tier — so 1.14 doesn't get a benchmark row and both benches pin
-  `jev-1.13.0` so the alias flip can't silently change the recorded
-  row. The danger-zone additions are wired regardless
-  (`engines/jev_client.py`) and demoed in
-  `demos/jev_image_demo.py`; re-trial when a 1.14.x ships.
+- **Jev 1.14: gate miss overturned by a full-pool run — the row now
+  pins `jev-1.14.0`** — TypeSafe shipped Jev 1.14 on 2026-10-14
+  (danger-zone image `assets`, the `box` question type, a 262k
+  long-context mode) and `jev-latest` flips to it around 2026-10-21.
+  The 12-question trial gate failed it first (10/12 vs the incumbent's
+  recorded 11/12, deterministic), but a full-suite run the same day
+  showed the miss was a mini-pool artifact: 1.14 matches 1.13's
+  recorded 45/48 on the mixed pool — the two versions differ on
+  exactly 2 of 48 questions, trading one for one (1.14 newly misses
+  the "great camera, but…" mixed sentiment, newly fixes the
+  central-bank topic) — and holds the 100% multilingual club at ~2×
+  1.13's batch speed (0.010 vs 0.017 s/text), on identical token
+  counts. The gate caught the traded loss but not the traded win; the
+  row moved to 1.14 and stays pinned to a versioned id either way so
+  the alias flip can't silently change it. The danger-zone surface is
+  wired (`engines/jev_client.py`) and demoed live in
+  `demos/jev_image_demo.py`.
 - **GLiDE ties Clef's 97.9% lead on arrival** — Fastino's "thinking
   decision model" (released Sep 30, three days before this run) matches
   the top of the table in its first bench here. Its single miss is the
@@ -577,7 +583,7 @@ systems answer the same 54 texts.
 
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
-| Jev (cloud, jev-1.13.0) | **100%** | **100%** | **100%** | **100%** |
+| Jev (cloud, jev-1.14.0) | **100%** | **100%** | **100%** | **100%** |
 | jevk5 4B (Ollaya) | 100% | 100% | 100% | **100%** |
 | Solar Decide (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | Solar Decide Flash (OpenRouter) † | 100% | 100% | 100% | **100%** |

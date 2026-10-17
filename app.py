@@ -33,7 +33,7 @@ SYSTEMS = {
     "GLiNER 2.5": "fastino/gliner2.5-base-v1",
     "GLiFormer": "knowledgator/gliformer-large-v1",
 }
-JEV = "Jev (cloud, jev-1.13.0)"
+JEV = "Jev (cloud, jev-1.14.0)"
 SAMPLE_TEXT = (
     "Apple CEO Tim Cook announced the iPhone 15 in Cupertino yesterday. "
     "Alice works for Acme in Paris."
@@ -67,8 +67,9 @@ def get_jev_client():
     from engines.jev_client import JevClient
 
     # pinned like the benchmark rows: jev-latest moves with TypeSafe's
-    # releases (1.14 failed the trial gate 2026-10-17, TRIALS.md)
-    return JevClient(model="jev-1.13.0")
+    # releases (1.14 promoted 2026-10-17 after a full-suite parity run
+    # overturned its gate miss - TRIALS.md)
+    return JevClient(model="jev-1.14.0")
 
 
 # --------------------------------------------------------------- charts
@@ -1902,11 +1903,12 @@ def build_jev_tab():
     import gradio as gr
 
     with gr.Tab("Jev (cloud)"):
-        gr.Markdown("### Jev — TypeSafe AI System One (`jev-1.13.0`)\n"
+        gr.Markdown("### Jev — TypeSafe AI System One (`jev-1.14.0`)\n"
                     "One **batched** request classifies every line. The "
                     "model is pinned to the benchmarked version "
-                    "(`jev-latest` moves with TypeSafe's releases; 1.14 "
-                    "failed the trial gate — TRIALS.md). Needs "
+                    "(`jev-latest` moves with TypeSafe's releases; 1.14's "
+                    "gate miss was overturned by a full-suite parity run — "
+                    "TRIALS.md). Needs "
                     "`TYPESAFE_API_KEY` (env var or `.env` in the repo "
                     "root — see README). "
                     "Paid API — each click is a request.")

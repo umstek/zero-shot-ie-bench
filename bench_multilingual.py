@@ -283,12 +283,11 @@ FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
 # Same names across benchmarks so results files line up
 TYPELLM_MODELS = {"TypeLLM (hosted)": False,
                   "TypeLLM thinking (hosted)": True}
-# TypeSafe's Jev, the row pinned to the versioned jev-1.13.0 that
-# answered the original run (jev-latest moves to jev-1.14.0 ~2026-10-21;
-# see bench_spectrum.py's JEV_MODELS note). 1.14's largest claimed gain
-# is multilingual, but it trialed 10/12 on the universal first-12 gate
-# (1.13: 11/12) on 2026-10-17, so it stays out of the bench — TRIALS.md
-JEV_MODELS = {"Jev": "jev-1.13.0"}
+# TypeSafe's Jev, the row pinned to the versioned jev-1.14.0 (jev-latest
+# moves with TypeSafe's releases; see bench_spectrum.py's JEV_MODELS
+# note for the 2026-10-17 story: gate miss 10/12, full-suite parity
+# override — 54/54 here at ~2x 1.13's batch speed). TRIALS.md
+JEV_MODELS = {"Jev": "jev-1.14.0"}
 # Fastino's hosted GLiNER twins (see bench_spectrum.py for the notes;
 # engines/fastino_client.py): same names as the local GLINER entries'
 # hosted-available checkpoints, one API request per text like a local

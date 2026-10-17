@@ -7,6 +7,18 @@ per-question timing. 12/12 graduates to the benchmark. Everyone else is
 here — the good ones are in the README, the rest is this file, data
 kept. Raw artifacts in `_trials/` (gitignored).
 
+**2026-10-17 override — jev-1.14.0.** Failed the gate (10/12 vs the
+incumbent's recorded 11/12, deterministic on a re-run), but a
+user-directed full-suite run the same day showed parity with the
+recorded jev-1.13.0 row: 45/48 on the mixed pool (1.13's recorded
+45/48; the two versions differ on exactly 2 of 48 questions, trading
+one for one — 1.14 newly misses the "great camera, but…" mixed
+sentiment, newly fixes the central-bank topic) and 54/54 multilingual
+at ~2× 1.13's batch speed, same token counts on identical prompts. The
+gate caught the traded loss but not the traded win — a 12-question
+all-sentiment slice can't see a topic fix. The recorded row moved to
+jev-1.14.0 (`_trials/trial_12_jev114_full.py`).
+
 ## Culled from the benchmark
 
 LFM2.5-RLCD and the nanodiff pair failed the 12/12 trial; the other
@@ -89,7 +101,6 @@ per-question predictions included, in `_trials/culled/`.
 
 | System | Trial result |
 |---|---|
-| `jev-1.14.0` (TypeSafe's Jev 1.14, released 2026-10-14; trialed 2026-10-17) | 10/12 at 0.023 s/q, deterministic on a re-run — below the bar, and below the incumbent: the same first-12 holds jev-1.13.0's recorded 11/12. Both new misses are the mixed-sentiment medium tier (the "great camera, but…" and "slow service, good dessert" reads flip to neutral), where 1.13 missed only the dessert text. The 1.14 release notes claim "small, subtle improvements to everything, largest gain multilingual" — the pool can't see multilingual; re-trial when the alias flips or a 1.14.x ships. Until then the benchmark's Jev row pins jev-1.13.0 (the benches' JEV_MODELS) so the ~2026-10-21 jev-latest move cannot silently change it. 1.14's danger-zone additions (images on both versions, the box type 1.14-only) are wired in engines/jev_client.py and demoed in demos/jev_image_demo.py regardless |
 | `Quazim0t0/Byrne-Jev-79M` | 9/12 easy, 7/16 hard (hard-tier pool) |
 | Dohnuts 0.8B (iACE, from-scratch) | unrunnable — its released runtime hardcodes CUDA (flash-linear-attention[rocm], `.to("cuda")`); no CPU path |
 | `tasksource/modernbert-tasksource-jev` | unrunnable — its `modernjev` package is unpublished, source links 404, card says "preview, not ready to use" |
