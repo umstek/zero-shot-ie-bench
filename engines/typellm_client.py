@@ -10,18 +10,29 @@ constrained pick:
      "thinking": true, "thinking_budget": 1024, ...}
 
 At most 64 questions and 8 base64 data:image/... URIs per call; enums
-hold at most 24 values. The response arrives flat: {id, model,
-result: {name: value}, thinking: {name: str}, usage: {input_tokens,
-thinking_tokens}, elapsed} - usage reports tokens but no $, so cost
-charts derive TypeLLM's cost as measured tokens x the published prices
-(app.derived_cost): input $0.05/M, thinking $0.50/M, answer tokens free.
+hold at most 512 values (v0.6.9, 2026-10-10 - was 24). The response
+arrives flat: {id, model, result: {name: value}, thinking: {name: str},
+usage: {input_tokens, thinking_tokens}, elapsed} - usage reports tokens
+but no $, so cost charts derive TypeLLM's cost as measured tokens x the
+published prices (app.derived_cost): input $0.05/M, thinking $0.50/M,
+answer tokens free.
 
 TypeLLM (github.com/TypeLLM/TypeLLM, Apache 2.0) is a type-safe
 generation harness over autoregressive LLMs - inspired by TypeSafe AI's
 Jev, schema-guaranteed outputs via SGLang constrained decoding - and the
 hosted API answers as typellm-latest (their Qwen3.8-27B deployment;
-vision-capable, hence the images field). GET /v1/models lists the public
-models a key can use.
+vision-capable, hence the images field). Besides /v1/generate the
+service also hosts Jev- and OpenAI-Decisions-compatible endpoints
+(POST /v1/systemone and /v1/decisions), each billed as a generate call.
+GET /v1/models lists the public models a key can use.
+
+The October 2026 releases (v0.6.x-v0.7.2) added, on the question side:
+`choices` (enum values carrying descriptions), probability averaging
+over option orders (`permutations`, on by default with
+return_probabilities - v0.6.4), confidence-conditional `when` fields
+(v0.6.7), and image bounding boxes (v0.7.1/0.7.2): a `box` question
+finds one target in an image, an array of boxes every match - answers
+are {top, bottom, left, right} fractions of the image, 0-1.
 
 The API's own Python client (pip `typellm`) retries a 429, a 5xx other
 than 504 and a connection error up to twice; generate() here does the
@@ -54,9 +65,11 @@ DEFAULT_MODEL = "typellm-latest"
 INPUT_USD_PER_MTOK = 0.05
 THINKING_USD_PER_MTOK = 0.50
 # the API's own ceilings (docs/api): the `timeout` request field maxes at
-# 90 s and one call carries at most 64 questions
+# 90 s, one call carries at most 64 questions, and an enum holds at most
+# 512 values (v0.6.9, 2026-10-10 — the cap was 24 before)
 MAX_TIMEOUT_S = 90
 MAX_QUESTIONS = 64
+MAX_ENUM_VALUES = 512
 # Retry-After is advisory: a far-future or clock-skewed date must not
 # stall a bench run, so honor it only up to this many seconds
 MAX_RETRY_AFTER_S = 60.0
@@ -91,14 +104,20 @@ def models(timeout: int = 30) -> dict:
 
 def enum_question(instructions: str, values: list, thinking: bool = False,
                   thinking_budget: int = 1024,
-                  return_probabilities: bool = False) -> dict:
+                  return_probabilities: bool = False,
+                  permutations: bool | None = None) -> dict:
     """A choice question: one constrained pick among `values` (at most
-    24). thinking=True spends reasoning tokens first ($0.50/M; budget
-    caps them, 4096 max). return_probabilities=True answers with
-    {"value", "probabilities"} instead of the bare value (demos; the
-    benches take the bare pick like every other system)."""
-    if not 2 <= len(values) <= 24:
-        raise ValueError(f"enum needs 2-24 values, got {len(values)}")
+    512 - MAX_ENUM_VALUES). thinking=True spends reasoning tokens first
+    ($0.50/M; budget caps them, 4096 max). return_probabilities=True
+    answers with {"value", "probabilities"} instead of the bare value
+    (demos; the benches take the bare pick like every other system).
+    permutations=None leaves the field unset - since v0.6.4 the API
+    averages probabilities over a balanced set of option orders
+    whenever return_probabilities is on; False reads the options once,
+    in the order written."""
+    if not 2 <= len(values) <= MAX_ENUM_VALUES:
+        raise ValueError(f"enum needs 2-{MAX_ENUM_VALUES} values, got "
+                         f"{len(values)}")
     question = {"type": "string", "enum": list(values),
                 "instructions": instructions}
     if thinking:
@@ -106,6 +125,40 @@ def enum_question(instructions: str, values: list, thinking: bool = False,
         question["thinking_budget"] = thinking_budget
     if return_probabilities:
         question["return_probabilities"] = True
+    if permutations is not None:
+        question["permutations"] = permutations
+    return question
+
+
+def choices_question(instructions: str, descriptions: dict) -> dict:
+    """A choice question whose options carry descriptions (the API's
+    `choices` key - the enum-with-criteria shape; the value picked comes
+    back bare, like enum_question)."""
+    if not 2 <= len(descriptions) <= MAX_ENUM_VALUES:
+        raise ValueError(f"choices needs 2-{MAX_ENUM_VALUES} options, got "
+                         f"{len(descriptions)}")
+    return {"type": "string",
+            "choices": [{"value": value, "description": desc}
+                        for value, desc in descriptions.items()],
+            "instructions": instructions}
+
+
+def box_question(instructions: str) -> dict:
+    """One bounding box in the request's image (v0.7.1): instructions
+    name the target ("the coffee mug in the photo"); the answer is
+    {top, bottom, left, right} fractions 0-1. Needs at least one image
+    on the call."""
+    return {"type": "box", "instructions": instructions}
+
+
+def boxes_question(instructions: str, max_items: int | None = None) -> dict:
+    """Every match in the image, one box each (v0.7.2): an array of
+    boxes - every dog, every line item, every signature. The answer is
+    a list of {top, bottom, left, right} fraction dicts."""
+    question = {"type": "array", "items": {"type": "box"},
+                "instructions": instructions}
+    if max_items is not None:
+        question["maxItems"] = max_items
     return question
 
 
