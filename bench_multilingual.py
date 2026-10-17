@@ -283,6 +283,12 @@ FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
 # Same names across benchmarks so results files line up
 TYPELLM_MODELS = {"TypeLLM (hosted)": False,
                   "TypeLLM thinking (hosted)": True}
+# TypeSafe's Jev, the row pinned to the versioned jev-1.13.0 that
+# answered the original run (jev-latest moves to jev-1.14.0 ~2026-10-21;
+# see bench_spectrum.py's JEV_MODELS note). 1.14's largest claimed gain
+# is multilingual, but it trialed 10/12 on the universal first-12 gate
+# (1.13: 11/12) on 2026-10-17, so it stays out of the bench — TRIALS.md
+JEV_MODELS = {"Jev": "jev-1.13.0"}
 # Fastino's hosted GLiNER twins (see bench_spectrum.py for the notes;
 # engines/fastino_client.py): same names as the local GLINER entries'
 # hosted-available checkpoints, one API request per text like a local
@@ -381,10 +387,10 @@ ALL_SYSTEMS = [n for n in (
     + list(RERANKERS) + list(NEMOTRON_RERANKERS)
     + list(OPENROUTER_SYSTEMONE)
     + list(OPENROUTER_RERANKERS) + list(CLEF_MODELS)
-    + list(FASTINO_MODELS) + list(TYPELLM_MODELS)
+    + list(FASTINO_MODELS) + list(TYPELLM_MODELS) + list(JEV_MODELS)
     + ["Certo 421M", "MoJev 0.85B", "Laya Router",
        "Laya typed-decisions", "von", "JevK5-Lite",
-       "so1 (Qwen2.5-0.5B)", "Jev",
+       "so1 (Qwen2.5-0.5B)",
        "Kev 0.8B (local)", "AgentJev 0.6B (local)",
        "decider 0.8B (local)", "OpenThai 0.8B (local)",
        "Verdict 151M (local)", "K2-Type 0.9B (local)"]
@@ -761,10 +767,11 @@ def run_laya_typed(texts):
     return preds, statistics.mean(lat)
 
 
-def run_jev(texts, tracker=None):
-    from engines.jev_client import JevClient, choice
+def run_jev(texts, tracker=None, model=None, meta=None):
+    from engines.jev_client import DEFAULT_MODEL, JevClient, choice
 
-    client = JevClient(usage_sink=tracker.add if tracker else None)
+    client = JevClient(model=model or DEFAULT_MODEL,
+                       usage_sink=tracker.add if tracker else None)
     questions = {
         f"t{i}": choice(
             {"task": "sentiment classification of this text",
@@ -775,6 +782,8 @@ def run_jev(texts, tracker=None):
     payload = client.ask({"task": "sentiment classification",
                           "labels": SENTIMENT_LABELS}, questions)
     dt = time.perf_counter() - t0
+    if meta is not None:
+        meta["model"] = payload.get("model") or client.last_model
     return ([payload["answers"][f"t{i}"].get("choice")
              for i in range(len(texts))], dt / len(texts))
 
@@ -853,7 +862,7 @@ def run_glide(texts, tracker=None):
     return preds, statistics.mean(lat)
 
 
-def run_typellm(texts, thinking, tracker=None):
+def run_typellm(texts, thinking, tracker=None, meta=None):
     """TypeLLM's hosted API (engines/typellm_client.py): same per-text
     request shape as run_glide (house context state, text restated in the
     instructions, stateless endpoint), one request per text so latency is
@@ -872,6 +881,8 @@ def run_typellm(texts, thinking, tracker=None):
                        usage_sink=tracker.add if tracker else None)
         lat.append(time.perf_counter() - t0)
         preds.append(out["result"].get("q"))
+        if meta is not None:
+            meta["model"] = out.get("model")
     return preds, statistics.mean(lat)
 
 
@@ -1105,6 +1116,7 @@ def main() -> None:
 
     laya_routes = None
     tracker = None  # set by the hosted branches; locals stay untracked
+    meta = None     # answering-model id off the response (Jev, TypeLLM)
     print(f"{name}: 54 texts (9 languages x 6) ...")
     t0 = time.perf_counter()
     if (name in GLINER or name in GLIFORMER or name in GLICLASS
@@ -1178,12 +1190,15 @@ def main() -> None:
         from engines.openrouter_client import UsageTracker
 
         tracker = UsageTracker()
-        preds, lat = run_typellm(texts, TYPELLM_MODELS[name], tracker)
-    elif name == "Jev":
+        meta = {}
+        preds, lat = run_typellm(texts, TYPELLM_MODELS[name], tracker,
+                                 meta)
+    elif name in JEV_MODELS:
         from engines.openrouter_client import UsageTracker
 
         tracker = UsageTracker()
-        preds, lat = run_jev(texts, tracker)
+        meta = {}
+        preds, lat = run_jev(texts, tracker, JEV_MODELS[name], meta)
     elif name in OLLAYA:
         preds, lat = run_ollaya(texts, OLLAYA[name])
     else:
@@ -1221,6 +1236,10 @@ def main() -> None:
     if tracker and tracker.requests:
         # measured provider accounting for the hosted run (54 texts)
         out.setdefault("usage", {})[name] = tracker.as_dict()
+    if meta and meta.get("model"):
+        # the versioned id that answered (Jev and TypeLLM repeat it on
+        # every response; their aliases move with releases)
+        out.setdefault("model", {})[name] = meta["model"]
     notes = out.setdefault("meta", {}).setdefault("notes", [])
     if notes and notes[0].startswith("All "):
         notes[0] = (f"All {len(out['by_language'])} systems answer "

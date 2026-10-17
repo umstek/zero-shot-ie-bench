@@ -33,7 +33,7 @@ SYSTEMS = {
     "GLiNER 2.5": "fastino/gliner2.5-base-v1",
     "GLiFormer": "knowledgator/gliformer-large-v1",
 }
-JEV = "Jev (cloud, jev-latest)"
+JEV = "Jev (cloud, jev-1.13.0)"
 SAMPLE_TEXT = (
     "Apple CEO Tim Cook announced the iPhone 15 in Cupertino yesterday. "
     "Alice works for Acme in Paris."
@@ -66,7 +66,9 @@ def tile_highlights(text: str, spans: list[tuple[int, int, str]]):
 def get_jev_client():
     from engines.jev_client import JevClient
 
-    return JevClient()
+    # pinned like the benchmark rows: jev-latest moves with TypeSafe's
+    # releases (1.14 failed the trial gate 2026-10-17, TRIALS.md)
+    return JevClient(model="jev-1.13.0")
 
 
 # --------------------------------------------------------------- charts
@@ -1900,8 +1902,11 @@ def build_jev_tab():
     import gradio as gr
 
     with gr.Tab("Jev (cloud)"):
-        gr.Markdown("### Jev — TypeSafe AI System One (`jev-latest`)\n"
-                    "One **batched** request classifies every line. Needs "
+        gr.Markdown("### Jev — TypeSafe AI System One (`jev-1.13.0`)\n"
+                    "One **batched** request classifies every line. The "
+                    "model is pinned to the benchmarked version "
+                    "(`jev-latest` moves with TypeSafe's releases; 1.14 "
+                    "failed the trial gate — TRIALS.md). Needs "
                     "`TYPESAFE_API_KEY` (env var or `.env` in the repo "
                     "root — see README). "
                     "Paid API — each click is a request.")
@@ -1949,6 +1954,7 @@ def build_jev_tab():
             } for i, text in enumerate(texts)}
             answers["_usage"] = payload.get("usage")
             answers["_latency_s"] = payload.get("_latency_s")
+            answers["_model"] = payload.get("model") or client.last_model
             return answers
 
         jev_button.click(run_jev, [jev_text, jev_labels, jev_task], jev_table)
@@ -2219,6 +2225,7 @@ def build_openrouter_tab():
                             out["probabilities"] = answer["probabilities"]
                     if payload.get("thinking", {}).get("q"):
                         out["thinking"] = payload["thinking"]["q"]
+                    out["model"] = payload.get("model", "typellm-latest")
                     out["usage"] = payload.get("usage")
                     out["elapsed_s"] = payload.get("elapsed")
                     return out
