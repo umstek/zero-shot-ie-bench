@@ -112,6 +112,54 @@ class ResponseGateTests(unittest.TestCase):
         self.assertEqual(sleeps, [])
 
 
+class QuestionBuilderTests(unittest.TestCase):
+    """The enum ceiling moved with the API: 24 until v0.6.8, 512 since
+    v0.6.9 (2026-10-10) — the client must track the live contract."""
+
+    def test_enum_accepts_512_values(self):
+        values = [f"v{i}" for i in range(512)]
+        question = tlc.enum_question("pick", values)
+        self.assertEqual(len(question["enum"]), 512)
+
+    def test_enum_rejects_513_values(self):
+        with self.assertRaises(ValueError) as ctx:
+            tlc.enum_question("pick", [f"v{i}" for i in range(513)])
+        self.assertIn("512", str(ctx.exception))
+
+    def test_enum_still_needs_two_values(self):
+        with self.assertRaises(ValueError):
+            tlc.enum_question("pick", ["only"])
+        with self.assertRaises(ValueError):
+            tlc.enum_question("pick", [])
+
+    def test_permutations_left_unset_by_default(self):
+        question = tlc.enum_question("pick", ["a", "b"],
+                                     return_probabilities=True)
+        self.assertNotIn("permutations", question)
+        question = tlc.enum_question("pick", ["a", "b"],
+                                     return_probabilities=True,
+                                     permutations=False)
+        self.assertIs(question["permutations"], False)
+
+    def test_box_and_boxes_question_shapes(self):
+        self.assertEqual(tlc.box_question("the mug in the photo"),
+                         {"type": "box",
+                          "instructions": "the mug in the photo"})
+        boxes = tlc.boxes_question("every line item", max_items=40)
+        self.assertEqual(boxes["items"], {"type": "box"})
+        self.assertEqual(boxes["maxItems"], 40)
+
+    def test_choices_question_carries_descriptions(self):
+        question = tlc.choices_question(
+            "topic", {"sports": "Match reports.", "tech": "Gadgets."})
+        self.assertEqual(
+            question["choices"],
+            [{"value": "sports", "description": "Match reports."},
+             {"value": "tech", "description": "Gadgets."}])
+        with self.assertRaises(ValueError):
+            tlc.choices_question("topic", {})
+
+
 class RetryAfterTests(unittest.TestCase):
     def test_delay_seconds_pass_through(self):
         self.assertEqual(tlc._retry_after_seconds("2.5"), 2.5)

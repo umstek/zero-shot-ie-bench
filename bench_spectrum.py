@@ -237,6 +237,17 @@ CLEF_MODELS = {
 # at $0, so only input bills ($0.15/M). Rides /v1/systemone like the
 # local System One servers, hence the batched classify_batched path
 FASTINO_MODELS = {"GLiDE (Fastino)": "glide"}
+# TypeSafe's Jev, measured through the TypeSafe API directly. The row
+# pins the versioned jev-1.14.0 because jev-latest moves with TypeSafe's
+# releases and the alias flip must not silently change the row; the
+# answering model id lands in the results entry via the response's
+# "model" field. 1.14 first TRIALED 10/12 on the first-12 gate (1.13
+# recorded 11/12) on 2026-10-17, but a user-directed full-suite run the
+# same day showed parity — 45/48 here (1.13's recorded 45/48; a
+# one-for-one trade: it newly misses the "great camera, but..." mixed
+# sentiment and newly fixes the central-bank topic) and 54/54
+# multilingual — so the row moved to 1.14 (see TRIALS.md)
+JEV_MODELS = {"Jev": "jev-1.14.0"}
 # TypeLLM's hosted type-safe generation API (engines/typellm_client.py;
 # single public model typellm-latest, so the value selects the variant:
 # thinking off, or per-question reasoning at $0.50/M on top of input's
@@ -343,9 +354,9 @@ ALL_SYSTEMS = [n for n in (
     + list(NEMOTRON_RERANKERS)
     + list(OPENROUTER_SYSTEMONE) + list(OPENROUTER_RERANKERS)
     + list(CLEF_MODELS) + list(FASTINO_MODELS)
-    + list(TYPELLM_MODELS)
+    + list(TYPELLM_MODELS) + list(JEV_MODELS)
     + ["Certo 421M", "MoJev 0.85B",
-       "Laya (local)", "Laya typed-decisions", "Jev",
+       "Laya (local)", "Laya typed-decisions",
        "Kev 0.8B (local)", "AgentJev 0.6B (local)",
        "decider 0.8B (local)", "OpenThai 0.8B (local)",
        "Verdict 151M (local)", "von", "JevK5-Lite",
@@ -391,7 +402,8 @@ def classify_extractor(model_id: str, gliformer: bool):
 
 
 def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
-                     tracker=None, model_id: str | None = None):
+                     tracker=None, model_id: str | None = None,
+                     meta: dict | None = None):
     """Laya, Jev, AgentJev, or a local System One server (Kev, decider,
     OpenThai): one batched call per task, preds mapped back per question.
     The locals serve the same wire format as Jev on their own ports and get
@@ -399,8 +411,11 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
     its own /api/evaluate contract (port 8149) with label descriptions as
     option semantics. model_id selects the checkpoint for the hosted
     System One engines ("or-systemone": kev-4b, solar-decide; "clef":
-    clef, clef-flash; "fastino": glide - single model, selector unused)
-    and the thinking flag for "typellm" (single public model).
+    clef, clef-flash; "fastino": glide - single model, selector unused;
+    "jev": the pinned versioned Jev id) and the thinking flag for
+    "typellm" (single public model). meta, when given, receives the
+    answering model id off the response (Jev and TypeLLM both repeat
+    it) for the results entry.
     (Ollaya systems do NOT batch here: their decision layers build the
     premise from the state, so each text is its own request - see the
     dedicated branch in main().)"""
@@ -496,6 +511,8 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
             out = generate(json.dumps({"task": task}), questions,
                            timeout=90,
                            usage_sink=tracker.add if tracker else None)
+            if meta is not None:
+                meta["model"] = out.get("model")
             return [out["result"].get(f"t{i}") for i in range(len(texts))]
     elif client_kind == "agentjev":
         from engines.agentjev_client import ask
@@ -509,13 +526,25 @@ def classify_batched(client_kind: str, repo: str = "convaiinnovations/laya",
             out = ask({"task": task}, questions)
             return [out[f"t{i}"]["value"] for i in range(len(texts))]
     elif client_kind == "jev":
-        from engines.jev_client import JevClient
+        from engines.jev_client import (DEFAULT_MODEL, JevClient, choice)
 
-        client = JevClient(usage_sink=tracker.add if tracker else None)
+        # model_id is the pinned versioned id (JEV_MODELS) - jev-latest
+        # moves with TypeSafe's releases, so a row must name its version
+        client = JevClient(model=model_id or DEFAULT_MODEL,
+                           usage_sink=tracker.add if tracker else None)
 
         def run_task(task: str, texts: list[str]) -> list:
             labels = SENTIMENT_LABELS if task == "sentiment" else TOPIC_LABELS
-            return client.classify(texts, dict(labels), task=task)
+            questions = {
+                f"t{i}": choice({"task": f"{task} of this text", "text": t},
+                                dict(labels))
+                for i, t in enumerate(texts)}
+            out = client.ask({"task": task, "labels": dict(labels)},
+                             questions)
+            if meta is not None:
+                meta["model"] = out.get("model") or client.last_model
+            return [out["answers"][f"t{i}"].get("choice")
+                    for i in range(len(texts))]
     else:
         raise SystemExit(f"unknown client kind {client_kind!r}")
     return run_task
@@ -696,6 +725,7 @@ def main() -> None:
     ner_ok: list[bool] | None = None
     ner_lat: list[float] = []
     tracker = None  # set by the hosted branches; locals stay untracked
+    meta = None     # answering-model id off the response (Jev, TypeLLM)
 
     if (name in EXTRACTORS or name in GLICLASS
             or name in FASTINO_EXTRACTORS or name in GLINER_X):
@@ -790,9 +820,10 @@ def main() -> None:
             t1 = time.perf_counter()
             cls_preds.append(cls_one(q["text"], q["task"]))
             cls_lat.append(time.perf_counter() - t1)
-    elif (name in ("Laya (local)", "Laya typed-decisions", "Jev",
-                   "Kev 0.8B (local)", "AgentJev 0.6B (local)",
-                   "decider 0.8B (local)", "OpenThai 0.8B (local)")
+    elif (name in ("Laya (local)", "Laya typed-decisions")
+          or name in JEV_MODELS
+          or name in ("Kev 0.8B (local)", "AgentJev 0.6B (local)",
+                      "decider 0.8B (local)", "OpenThai 0.8B (local)")
           or name in OR_SYSTEMONE_CHOICE
           or name in CLEF_MODELS or name in FASTINO_MODELS
           or name in TYPELLM_MODELS):
@@ -810,19 +841,24 @@ def main() -> None:
                 else "clef" if name in CLEF_MODELS
                 else "fastino" if name in FASTINO_MODELS
                 else "typellm" if name in TYPELLM_MODELS
-                else "jev" if name == "Jev" else None)
+                else "jev" if name in JEV_MODELS else None)
         if kind is None:   # unmapped names must never reach a cloud API
             raise SystemExit(f"unwired system {name!r} — add a kind mapping")
-        tracker = (UsageTracker() if name == "Jev"
+        tracker = (UsageTracker() if name in JEV_MODELS
                    or name in OR_SYSTEMONE_CHOICE
                    or name in CLEF_MODELS or name in FASTINO_MODELS
                    or name in TYPELLM_MODELS
                    else None)
+        # the answering model id off the response lands in the results
+        # entry for the alias-carrying engines (Jev, TypeLLM)
+        meta = {} if kind in ("jev", "typellm") else None
         run_task = classify_batched(kind, repo=repo, tracker=tracker,
                                     model_id=OPENROUTER_SYSTEMONE.get(name)
                                     or CLEF_MODELS.get(name)
                                     or FASTINO_MODELS.get(name)
-                                    or TYPELLM_MODELS.get(name))
+                                    or TYPELLM_MODELS.get(name)
+                                    or JEV_MODELS.get(name),
+                                    meta=meta)
         for task in ("sentiment", "topic"):
             texts = [q["text"] for q in CLS_QUESTIONS if q["task"] == task]
             t1 = time.perf_counter()
@@ -1302,6 +1338,10 @@ def main() -> None:
     if tracker and tracker.requests:
         # measured provider accounting for the hosted run (48 questions)
         entry["usage"] = tracker.as_dict()
+    if meta and meta.get("model"):
+        # the versioned id that answered (Jev and TypeLLM repeat it on
+        # every response; their aliases move with releases)
+        entry["model"] = meta["model"]
     if ner_ok is not None:
         entry["ner_exact"] = ner_ok
         entry["ner_exact_rate"] = round(sum(ner_ok) / len(ner_ok), 4)

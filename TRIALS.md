@@ -7,6 +7,18 @@ per-question timing. 12/12 graduates to the benchmark. Everyone else is
 here — the good ones are in the README, the rest is this file, data
 kept. Raw artifacts in `_trials/` (gitignored).
 
+**2026-10-17 override — jev-1.14.0.** Failed the gate (10/12 vs the
+incumbent's recorded 11/12, deterministic on a re-run), but a
+user-directed full-suite run the same day showed parity with the
+recorded jev-1.13.0 row: 45/48 on the mixed pool (1.13's recorded
+45/48; the two versions differ on exactly 2 of 48 questions, trading
+one for one — 1.14 newly misses the "great camera, but…" mixed
+sentiment, newly fixes the central-bank topic) and 54/54 multilingual
+at ~2× 1.13's batch speed, same token counts on identical prompts. The
+gate caught the traded loss but not the traded win — a 12-question
+all-sentiment slice can't see a topic fix. The recorded row moved to
+jev-1.14.0 (`_trials/trial_12_jev114_full.py`).
+
 ## Culled from the benchmark
 
 LFM2.5-RLCD and the nanodiff pair failed the 12/12 trial; the other
