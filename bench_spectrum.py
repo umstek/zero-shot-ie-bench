@@ -212,6 +212,9 @@ OPENROUTER_SYSTEMONE = {
     "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
     "Microsoft Decision-1 (OpenRouter)": "microsoft/microsoft-decision-1",
     "Drex v1.5 (OpenRouter)": "nace-ai/drex-v1.5",
+    "Decider V1.2 27B (OpenRouter)": "perplexity/pplx-decider-v1.2",
+    "Decider Flash V1.2 (OpenRouter)": "perplexity/pplx-decider-flash-v1.2",
+    "D1-ultra (OpenRouter)": "liquid/d1-ultra",
 }
 # the choice-question subset: every OpenRouter System One model except
 # the two Span behavior scorers, whose noul branch in main() runs first
