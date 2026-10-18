@@ -43,6 +43,23 @@ here). `scaledown/extract` (1M-ctx description-driven entity
 extraction, not the decisions lane) still needs its own trial mapping.
 Round record: docs/research/2026-10-18-openrouter-hosted-round.md.
 
+**Same-day overturn — "the gate is wrong, run all."** User-directed
+full pools flipped every verdict. The 48-question mixed pool:
+d1-ultra **95.8%** (46/48, 0.027 s/q — beside TypeLLM plain and Solar
+Decide at the hosted lead, two misses on the whole pool), Decider V1.2
+**93.8%** (45/48, 0.044 s/q — the incumbents' tier, at $1.0e-6/q a
+fifth of V1's price and half of Jev's), Flash V1.2 **85.4%** (41/48,
+$1.1e-6/q). The gate's shared misses were run-shape noise: the
+full-pool runs answer the same first-12 slice 12/12 (Flash keeps one).
+Multilingual: V1.2 and d1-ultra **54/54** (100% on every tier), Flash
+**53/54** (one Sinhala miss; 100/100/94.4 by tier). Costs measured on
+both runs (README cost table): V1.2 $0.000048/$0.000124, Flash
+$0.000051/$0.000062, d1-ultra $0.000106/$0.000171 for the 48-q/54-text
+suites. All three promoted to the README tables and the
+spectrum/multilingual/app registries; per-endpoint data-retention
+policy probes returned no policy field, so d1-ultra carries the † from
+Liquid's routing and the Deciders keep the family's no-†.
+
 ## Culled from the benchmark
 
 LFM2.5-RLCD and the nanodiff pair failed the 12/12 trial; the other

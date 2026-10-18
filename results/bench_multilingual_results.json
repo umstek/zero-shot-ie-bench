@@ -835,6 +835,39 @@
       "Sinhala": 0.6667,
       "Icelandic": 0.6667,
       "Welsh": 1.0
+    },
+    "Decider V1.2 27B (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "Decider Flash V1.2 (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 0.8333,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
+    },
+    "D1-ultra (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -1207,6 +1240,21 @@
       "popular": 1.0,
       "medium": 1.0,
       "rare": 0.7778
+    },
+    "Decider V1.2 27B (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
+    },
+    "Decider Flash V1.2 (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 0.9444
+    },
+    "D1-ultra (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
     }
   },
   "latency": {
@@ -1283,7 +1331,10 @@
     "credence 7.5B (Ollaya)": 6.994,
     "Decision 3.0 Edge 0.6B": 2.651,
     "Decision 3.0 Lite 0.85B": 5.889,
-    "Decision 3.0 Nano 2B": 14.771
+    "Decision 3.0 Nano 2B": 14.771,
+    "Decider V1.2 27B (OpenRouter)": 0.686,
+    "Decider Flash V1.2 (OpenRouter)": 0.571,
+    "D1-ultra (OpenRouter)": 0.611
   },
   "laya_routing": {
     "Chinese": {
@@ -1326,7 +1377,7 @@
       "neutral"
     ],
     "notes": [
-      "All 76 systems answer the same 54 texts.",
+      "All 79 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -1435,7 +1486,10 @@
       "Decision 3.0 Nano 2B recorded 2026-10-12 09:12, 821s, CPU",
       "TypeLLM (hosted) recorded 2026-10-17 12:28, 47s, CPU",
       "TypeLLM thinking (hosted) recorded 2026-10-17 12:29, 77s, CPU",
-      "Jev recorded 2026-10-17 13:59, 1s, CPU"
+      "Jev recorded 2026-10-17 13:59, 1s, CPU",
+      "Decider V1.2 27B (OpenRouter) recorded 2026-10-18 20:50, 37s, CPU",
+      "Decider Flash V1.2 (OpenRouter) recorded 2026-10-18 20:50, 31s, CPU",
+      "D1-ultra (OpenRouter) recorded 2026-10-18 20:51, 33s, CPU"
     ],
     "texts_per_language": 6,
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
@@ -1517,7 +1571,10 @@
     "credence 7.5B (Ollaya)": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Decision 3.0 Edge 0.6B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
     "Decision 3.0 Lite 0.85B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
-    "Decision 3.0 Nano 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed."
+    "Decision 3.0 Nano 2B": "Model download and loading excluded; one untimed warm-up question pays the server's lazy weight load first - timed latencies are warmed.",
+    "Decider V1.2 27B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "Decider Flash V1.2 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "D1-ultra (OpenRouter)": "Model download and loading excluded; first forward pass included."
   },
   "usage": {
     "Clef (Workers AI)": {
@@ -1735,6 +1792,36 @@
       "paid_requests": 54,
       "cost_usd": 0.000101,
       "input_tokens": 2527,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Decider V1.2 27B (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000124,
+      "input_tokens": 6187,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "Decider Flash V1.2 (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 6.2e-05,
+      "input_tokens": 6187,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "D1-ultra (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000171,
+      "input_tokens": 4074,
       "total_tokens": 0,
       "thinking_tokens": 0,
       "cost_reported": true,

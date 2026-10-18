@@ -10,8 +10,9 @@ for slugs/endpoints/pricing/context), the SSR decisions catalog page
 decisions-modality models the public `/api/v1/models` catalog omits),
 org pages, the MarkTechPost Oct-17 roundup of 20 Jev alternatives, HF
 model cards, and docs.typesafe.ai (no new TypeSafe model; jev-1.14.0
-from 2026-10-14 remains newest). Research + gate probes only; no full
-pool.
+from 2026-10-14 remains newest). Research + gate probes, then — after
+the gate's verdicts were overruled — full spectrum and multilingual
+suites on the three decisions-lane arrivals (recorded below).
 
 ## Verified on OpenRouter (endpoints API, 2026-10-18)
 
@@ -62,7 +63,17 @@ also reads neutral. None clears the 12/12 gate, but the jev-1.14.0
 override (TRIALS.md) is the standing caution that this all-sentiment
 slice under-sees hosted models — the benched hosted incumbents
 (Decider V1/V1.1, d1) all recorded 93.8% on the full 48-question mixed
-pool. Full-pool runs are a user call.
+pool.
+
+**Superseded the same day — "the gate is wrong, run all."** The
+user-directed full pools flipped every verdict: d1-ultra 95.8%
+(46/48, 0.027 s/q — beside TypeLLM plain and Solar Decide at the hosted
+lead), Decider V1.2 93.8% (45/48, 0.044 s/q, $1.0e-6/q), Flash V1.2
+85.4% (41/48, $1.1e-6/q); the full-pool runs answer the gate's shared
+misses correctly (first-12 slice 12/12; Flash keeps one). Multilingual:
+V1.2 and d1-ultra 54/54, Flash 53/54. All three are promoted to the
+README tables and the bench/app registries; TRIALS.md keeps the full
+record.
 
 ## On the catalog but unresolved
 
@@ -115,10 +126,12 @@ OpenRouter:
 
 ## Next steps
 
-- Full-pool runs for the three gate passers — a user call, cf. the
-  jev-1.14.0 override.
-- Probe data-retention policy on the new endpoints before any recorded
-  row († bookkeeping in the README).
+- ~~Full-pool runs for the three gate passers~~ — done the same day;
+  all three promoted (see the superseding note above).
+- ~~Probe data-retention policy on the new endpoints~~ — the endpoints
+  API returns no `policy` field for any of the three; d1-ultra carries
+  the † from Liquid's routing, the Deciders keep the Perplexity
+  family's no-†.
 - Resolve the respan Oct-16 entry.
 - If the extraction lane grows, map `scaledown/extract` onto the NER
   pool trial.
