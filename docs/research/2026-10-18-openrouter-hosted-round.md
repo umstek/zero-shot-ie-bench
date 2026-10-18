@@ -47,7 +47,8 @@ suites on the three decisions-lane arrivals (recorded below).
 
 `_trials/trial_13_openrouter_oct18.py` — the standard fixed 12-question
 mini-pool, one warm-up + one batched request per model, whole
-three-model run ≈ $9.2e-5:
+three model batches ≈ $9.2e-5 (the three warm-up calls are untracked —
+the trial script meters only the batched requests):
 
 | Model | Gate | Latency/q | Batch cost |
 |---|---|---|---|
@@ -75,13 +76,16 @@ V1.2 and d1-ultra 54/54, Flash 53/54. All three are promoted to the
 README tables and the bench/app registries; TRIALS.md keeps the full
 record.
 
-## On the catalog but unresolved
+## The respan Oct-16 entry — resolved as Span-02
 
-An unnamed **respan** entry dated 2026-10-16 at $0.01/M input sits on
-the SSR decisions catalog; the respan org page lists only Span-01
-($0.02/M) and the two Lite/free variants. Could be a repriced endpoint
-or a new variant — no slug resolved. Check before the next Span-01
-re-run.
+The SSR decisions catalog carried an unnamed **respan** entry dated
+2026-10-16 at $0.01/M input while the org page showed only the three
+Span-01 models. Resolved 2026-10-18 (CodeRabbit's review web query,
+then verified via the endpoints API): it is
+[`respan/span-02`](https://openrouter.ai/respan/span-02) — 131,072 ctx,
+$0.01/M input, text + images. A bench candidate for the Span-01 noul
+mapping (note the wiring: the registries' `Span-01` prefix test decides
+the noul branch, so a `Span-02` name needs that filter widened).
 
 ## Hosted, off OpenRouter (own APIs only)
 
@@ -126,12 +130,13 @@ OpenRouter:
 
 ## Next steps
 
-- ~~Full-pool runs for the three gate passers~~ — done the same day;
+- ~~Full-pool runs for the three arrivals~~ — done the same day;
   all three promoted (see the superseding note above).
 - ~~Probe data-retention policy on the new endpoints~~ — the endpoints
   API returns no `policy` field for any of the three; d1-ultra carries
   the † from Liquid's routing, the Deciders keep the Perplexity
   family's no-†.
-- Resolve the respan Oct-16 entry.
+- ~~Resolve the respan Oct-16 entry~~ — it is `respan/span-02`
+  (verified above); benching it is the open follow-up.
 - If the extraction lane grows, map `scaledown/extract` onto the NER
   pool trial.

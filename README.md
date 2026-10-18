@@ -1312,7 +1312,7 @@ otherwise — d1-ultra 95.8%, Decider V1.2 93.8%, Flash V1.2 85.4% on the
 mixed pool, 54/54 / 54/54 / 53/54 multilingual — so all three are rows
 in the tables above now (TRIALS.md keeps the overturn;
 docs/research/2026-10-18-openrouter-hosted-round.md the round). Still
-unbenched from that catalog wave:
+unbenched from that wave of arrivals:
 
 | System | OpenRouter id | Why not run yet |
 |---|---|---|
