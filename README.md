@@ -1280,6 +1280,25 @@ Blocked by the account's data policy:
 |---|---|
 | `openai/gpt-6-luna-decisions` | GPT-6 Luna behind OpenAI's Decisions API entry on OpenRouter ($0.10/M input, decisions free, 1.05M context) — its only endpoint reports `retainsPrompts: true`, and this account enforces ZDR, so OpenRouter refuses to route to it; running it would mean weakening the account's privacy settings |
 
+New on OpenRouter's decisions catalog (listed 2026-10-15/16), screened
+on the 12-question trial gate but not full-pool benched — the gate
+column is measured here, everything else is borrowed or card-stated
+(gate data in TRIALS.md, round record in
+docs/research/2026-10-18-openrouter-hosted-round.md):
+
+| System | OpenRouter id | Gate |
+|---|---|---|
+| [Decider V1.2](https://openrouter.ai/perplexity/pplx-decider-v1.2) / [Decider Flash V1.2](https://openrouter.ai/perplexity/pplx-decider-flash-v1.2) | `perplexity/pplx-decider-v1.2` · `perplexity/pplx-decider-flash-v1.2` — 262k ctx, $0.02 / $0.01 per M input (half / a quarter of Jev's price); Perplexity's card claims 85.71% on its 11-task panel vs Jev's 84.51% | 9/12 · 10/12 |
+| [d1-ultra](https://openrouter.ai/liquid/d1-ultra) | `liquid/d1-ultra` — 32k ctx, $0.042 per M input, output free; Liquid's step up from the benched `liquid/d1` row | 10/12 |
+| [ScaleDown Extract](https://openrouter.ai/scaledown/extract) | `scaledown/extract` — 1M ctx, $0.04 per M; description-driven entity extraction over a `provider.options.scaledown.entities` payload, not the decisions lane; no trial mapping yet | — |
+
+All gate misses are the mixed-sentiment family above. New hosted
+systems with no OpenRouter listing (own APIs only): meraGPT's Decider 1
+($0.04/M, 4k ctx, 10-label cap), Standard Thinking's Standard One
+(3B/8B, hosted + open weights), AWS Strands Labs' Strands Decider 2B
+(Apache-2.0, AWS-distributed), and razorback16's free
+OpenJev-DiffusionGemma-26B endpoint (100M-token cap).
+
 Not a typed-decision engine, so out of scope for the Jev-activity
 comparison (the one other model on Ollaya's list we checked):
 [qwen3guard](https://ollaya.dev/library/qwen3guard) is a safety guard —

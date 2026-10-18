@@ -19,6 +19,30 @@ gate caught the traded loss but not the traded win — a 12-question
 all-sentiment slice can't see a topic fix. The recorded row moved to
 jev-1.14.0 (`_trials/trial_12_jev114_full.py`).
 
+**2026-10-18 gate — OpenRouter's Oct-16 arrivals.** The three new
+decisions-lane slugs screened on the same fixed mini-pool
+(`_trials/trial_13_openrouter_oct18.py`, one warm-up + one batched
+12-question request each):
+
+| System | Slug | Gate | Latency/q | Batch cost |
+|---|---|---|---|---|
+| [Decider V1.2 27B](https://openrouter.ai/perplexity/pplx-decider-v1.2) | `perplexity/pplx-decider-v1.2` | 9/12 | 0.131 s | $2.1e-5 |
+| [Decider Flash V1.2](https://openrouter.ai/perplexity/pplx-decider-flash-v1.2) | `perplexity/pplx-decider-flash-v1.2` | 10/12 | 0.140 s | $2.8e-5 |
+| [d1-ultra](https://openrouter.ai/liquid/d1-ultra) | `liquid/d1-ultra` | 10/12 | 0.058 s | $4.3e-5 |
+
+All three miss the same two mixed-sentiment questions (the "great
+camera, but…" family the jev-1.14.0 override above describes — the
+conceding clause reads as neutral) and the two 10/12s also fix "Not the
+cheapest option, but easily the most reliable", where V1.2 drops it to
+neutral too. None clears the 12/12 bar, but that override is also the
+caution: the slice is all-sentiment, and the benched hosted incumbents
+(Decider V1/V1.1, d1) all recorded 93.8% on the full mixed pool.
+Full-pool runs are a user call; Perplexity's card claims V1.2 beats Jev
+on its own 11-task panel (85.71% vs 84.51% — borrowed, not measured
+here). `scaledown/extract` (1M-ctx description-driven entity
+extraction, not the decisions lane) still needs its own trial mapping.
+Round record: docs/research/2026-10-18-openrouter-hosted-round.md.
+
 ## Culled from the benchmark
 
 LFM2.5-RLCD and the nanodiff pair failed the 12/12 trial; the other
