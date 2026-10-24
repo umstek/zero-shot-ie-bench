@@ -30,6 +30,7 @@ deployments:
   notes: Ties the 93.8% incumbents tier (45/48) at $1.0e-6/q - a fifth of V1's price, half of Jev's -
     and holds 54/54 multilingual. V1.2 lifts context to 262k (per the card). The V1.2/Flash endpoints
     expose no per-endpoint retention policy, so the family's no-† carries.
+  display: Decider V1.2 27B (OpenRouter)
 notes: Same family caveats (image listed, not live; languages = measured baseline).
 v0:
   benched: true

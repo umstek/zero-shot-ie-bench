@@ -31,6 +31,7 @@ deployments:
     used as a decision engine: score one (instruction, label) pair per label, argmax. Non-ZDR (†) - ZDR-enforcing
     account settings exclude every rerank endpoint. Measured $6.7e-5/q - the rerankers bill by pair, so
     they are the expensive end of the hosted field.'
+  display: qwen3-reranker-8b (OpenRouter)
 notes: 'used_as classify on the deployment: the native track is rerank, borrowed as a classifier via argmax
   (docs/plan/02). README records the served endpoint under a proprietary API with no open-weights link
   - open_weights false. claims.languages is the v0-measured baseline (96% on the 9-language suite).'

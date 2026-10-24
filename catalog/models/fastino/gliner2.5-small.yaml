@@ -40,6 +40,7 @@ deployments:
     pin. Fastest local system in v0 (43 ms/question). ram_gb estimated (74M fp32, no overhead). No hosted
     twin: Fastino deliberately does not host the small checkpoint (404 ''not a recognised model id'' on
     the chat-completions endpoint).'
+  display: GLiNER2.5-small
 notes: HF repo fastino/gliner2.5-small-v1 (in links.card). ram_gb is estimated from the 74M size.
 v0:
   benched: true

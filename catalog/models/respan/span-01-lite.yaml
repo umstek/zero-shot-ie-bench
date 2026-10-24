@@ -28,6 +28,7 @@ deployments:
   adapter: openrouter.systemone
   notes: Span-01's free-tier sibling, same noul-per-label behavior scoring. Billed $0 on both v0 runs
     (the plain id is priced $0.0, same as a :free twin). Non-ZDR (†).
+  display: Span-01 Lite
 notes: Size closed, params_b null.
 v0:
   benched: true

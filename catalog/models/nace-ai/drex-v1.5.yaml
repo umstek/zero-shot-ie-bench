@@ -31,6 +31,7 @@ deployments:
     rank 1). 131K ctx per the v0 bench notes; the DeepInfra endpoint satisfies the account's ZDR (no †).
     $0.04/M input; measured $1.4e-6/q with the leanest prompts of the hosted field (1.7k tokens for the
     whole 48-question run). Ties the Decider tier at 93.8%.
+  display: Drex v1.5 (OpenRouter)
 notes: 'Open weights, but no local deployment: the fp32 twin needs ~36 GB (the v0 box has 31.4) and GGUF
   serving waits on Nace''s llama.cpp/Ollaya fork - benched hosted only.'
 v0:

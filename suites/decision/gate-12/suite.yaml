@@ -1,0 +1,12 @@
+id: decision/gate-12
+version: 1
+track: decision
+languages:
+- en
+scorer: exact-choice
+items_license: null
+notes: 'The v0 trial gate: literally the first 12 questions of the mixed pool (sentiment
+  easy 8 + sentiment medium first 4) - the CLS_POOL of _trials/trial_common.py, called
+  the first-12 gate at legacy/bench_spectrum.py:256 and in the README trial entries.
+  Items are the same mp-001..mp-012 rows as decision/mixed-pool v1, identical content
+  (a subset view, not new questions).'

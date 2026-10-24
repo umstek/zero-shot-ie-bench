@@ -1,0 +1,15 @@
+id: decision/mixed-pool
+version: 1
+track: decision
+languages:
+- en
+scorer: exact-choice
+items_license: null
+notes: 'v0 mixed classification pool: 24 sentiment + 24 topic questions, flattened
+  tier-major (easy, medium, hard) from bench_graded.SENTIMENT and bench_graded.TOPIC
+  exactly as legacy/bench_spectrum.py CLS_QUESTIONS (lines 113-118); item ids mp-001..mp-048
+  follow that order. Option lists are the label sets from legacy/bench.py (SENTIMENT_LABELS
+  lines 47-51, TOPIC_LABELS lines 80-85); gold is the label string the bench scored
+  against. bench_graded''s easy/medium/hard groups are question-authoring tiers, not
+  catalog language tiers, so item tier is null. No license is stated for the question
+  items anywhere in the repo, so items_license is null.'

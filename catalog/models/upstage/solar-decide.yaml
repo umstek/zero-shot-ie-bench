@@ -34,6 +34,7 @@ deployments:
     probabilities, no prose, output tokens free, 524K context. Non-ZDR (†) - default routing; a ZDR Upstage
     endpoint exists on OpenRouter. Batches each 24-question task into one request; Solar''s tokenizer
     runs long on English (~8.7k tokens per batched request), landing at $1.8e-5/q measured.'
+  display: Solar Decide (OpenRouter)
 notes: 'params_b is the Solar Mini 4 MoE total (3B active). claims.languages: the Solar Mini 4 backbone
   is built Korean/English/Japanese-first (README).'
 v0:

@@ -30,6 +30,7 @@ deployments:
   notes: 'The value pick of the v0 Decisions arrivals: same 5,273 input tokens as V1 at half the list
     price ($0.02 vs $0.04/M - measured $2.2e-6/q, the cheapest paid Decisions arrival). retainsPrompts:
     false (no †).'
+  display: Decider V1.1 27B (OpenRouter)
 notes: Same family caveats as pplx-decider-v1 (image listed, not live; languages = measured baseline).
 v0:
   benched: true

@@ -1,0 +1,1 @@
+{"item_id": "ml-002", "lang": "vi", "tier": "medium", "input": {"text": "Tôi rất hài lòng với chiếc điện thoại mới; pin dùng được cả ngày.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "positive"}

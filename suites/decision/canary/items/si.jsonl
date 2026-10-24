@@ -1,0 +1,1 @@
+{"item_id": "ml-001", "lang": "si", "tier": "rare", "input": {"text": "මෙම අවන්හලේ ආහාර රසවත් ය, සේවකයෝ ද ඉතා හිතවත් ය.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "positive"}

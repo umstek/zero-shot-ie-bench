@@ -29,6 +29,7 @@ deployments:
   adapter: openrouter.systemone
   notes: 'The budget pick: 85.4% on the mixed pool at $1.1e-6/q (53/54 multilingual, one Sinhala miss).
     No per-endpoint retention policy exposed - the family''s no-† carries.'
+  display: Decider Flash V1.2 (OpenRouter)
 notes: Same family caveats (image listed, not live; languages = measured baseline).
 v0:
   benched: true

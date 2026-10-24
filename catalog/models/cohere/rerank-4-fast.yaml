@@ -29,6 +29,7 @@ deployments:
   used_as: classify
   notes: The fast tier of Cohere Rerank 4, same argmax mapping. Non-ZDR (†). Measured $2.0e-3/q (~2.5
     search units per request).
+  display: cohere-rerank-4-fast (OpenRouter)
 notes: The README gives no separate card link for this tier (links.card null). Size closed - params_b
   null.
 v0:

@@ -29,6 +29,7 @@ deployments:
   used_as: classify
   notes: The cheaper lite tier of Voyage's rerank-2.5, same (instruction, label) argmax mapping. Non-ZDR
     (†). Measured $1.4e-6/q.
+  display: voyage-rerank-2.5-lite (OpenRouter)
 notes: The README gives no separate card link for the lite tier (links.card null). Size closed - params_b
   null. claims.languages is the v0-measured baseline (65% on the 9-language suite).
 v0:

@@ -1,0 +1,1 @@
+{"item_id": "ml-005", "lang": "cy", "tier": "rare", "input": {"text": "Mae'r trên i'r brifddinas yn gadael am saith y bore.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "neutral"}

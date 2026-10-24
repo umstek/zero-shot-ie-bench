@@ -1,0 +1,6 @@
+{"item_id": "ml-001", "lang": "zh", "tier": "popular", "input": {"text": "这家餐厅的菜品很美味，员工也非常友好。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "positive"}
+{"item_id": "ml-002", "lang": "zh", "tier": "popular", "input": {"text": "我对新手机非常满意；电池能用一整天。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "positive"}
+{"item_id": "ml-003", "lang": "zh", "tier": "popular", "input": {"text": "公交车又挤又慢，我到得很晚。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "negative"}
+{"item_id": "ml-004", "lang": "zh", "tier": "popular", "input": {"text": "这部电影又长又无聊；我后悔看了它。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "negative"}
+{"item_id": "ml-005", "lang": "zh", "tier": "popular", "input": {"text": "开往首都的火车早上七点发车。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "neutral"}
+{"item_id": "ml-006", "lang": "zh", "tier": "popular", "input": {"text": "这本书于2019年出版，共300页。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "neutral"}

@@ -33,6 +33,7 @@ deployments:
     or CLOUDFLARE_AUTH_TOKEN + CLOUDFLARE_ACCOUNT_ID). Frozen Qwen3.8-27B backbone, 64k ctx, vision-capable.
     ZDR: Cloudflare commits to not reading/storing/training on Clef requests. Reports tokens but no $
     - derived $2.3e-5/q at $0.24/M input.'
+  display: Clef (Workers AI)
 notes: Weights are Apache 2.0 on HF, so the system is locally runnable in principle; no local engine or
   runner island exists in v0. claims.languages is the v0-measured baseline (Clef measured 100% on the
   9-language suite).
