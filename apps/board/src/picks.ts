@@ -25,13 +25,17 @@ function startedAt(run: RunWithTrack): number {
   return Date.parse(run.started_at);
 }
 
-/** Latest status=ok run with a measured accuracy, per deployment. */
-export function latestRunByDeployment(runs: RunWithTrack[]): Map<string, RunWithTrack> {
-  const latest = new Map<string, RunWithTrack>();
+/** Latest usable run per (deployment, SUITE) — suites are not comparable, so
+ *  a fresh mixed-pool run must never shadow a multilingual result (and
+ *  vice versa). Failed/deferred runs never rank. */
+export function latestRunByDeploymentAndSuite(runs: RunWithTrack[]): Map<string, RunWithTrack> {
+  const latest = new Map<string, RunWithTrack>(); // key: deployment + "\u0000" + suite
   for (const run of runs) {
-    if (run.track !== "decision" || run.status !== "ok" || run.accuracy == null) continue;
-    const prev = latest.get(run.deployment);
-    if (!prev || startedAt(run) > startedAt(prev)) latest.set(run.deployment, run);
+    if (run.track !== "decision" || run.status === "failed" || run.status === "deferred") continue;
+    if (run.accuracy == null) continue;
+    const key = `${run.deployment}\u0000${run.suite}`;
+    const prev = latest.get(key);
+    if (!prev || startedAt(run) > startedAt(prev)) latest.set(key, run);
   }
   return latest;
 }
@@ -41,9 +45,15 @@ interface Candidate {
   run: RunWithTrack;
 }
 
-function candidates(latest: Map<string, RunWithTrack>, byId: Map<string, Deployment>): Candidate[] {
+function candidates(
+  latest: Map<string, RunWithTrack>,
+  byId: Map<string, Deployment>,
+  suite?: string,
+): Candidate[] {
   const rows: Candidate[] = [];
-  for (const [depId, run] of latest) {
+  for (const [key, run] of latest) {
+    if (suite && run.suite !== suite) continue;
+    const depId = key.split("\u0000")[0] ?? "";
     const deployment = byId.get(depId);
     if (deployment) rows.push({ deployment, run });
   }
@@ -66,12 +76,15 @@ function rareLanguageScore(run: RunWithTrack): { mean: number; parts: string[] }
 }
 
 export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pick[] {
-  const latest = latestRunByDeployment(runs);
+  const latest = latestRunByDeploymentAndSuite(runs);
   const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
-  const pool = candidates(latest, byId);
+  const mixedPool = candidates(latest, byId, "decision/mixed-pool");
+  const anyDecision = candidates(latest, byId);
 
-  // Cheapest ≥90%: sort by cost per item (run cost ÷ items), accuracy as tiebreak.
-  const cheapest = pool
+  // Cheapest ≥90%: the advertised threshold is enforced BEFORE ranking;
+  // cost per item (run cost ÷ items), accuracy as tiebreak.
+  const cheapest = mixedPool
+    .filter((c) => (c.run.accuracy ?? 0) >= 0.9)
     .map((c) => ({ ...c, perItem: c.run.cost_usd / Math.max(c.run.items, 1) }))
     .sort((a, b) => a.perItem - b.perItem || (b.run.accuracy ?? 0) - (a.run.accuracy ?? 0))
     .slice(0, TOP_N)
@@ -85,7 +98,7 @@ export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pic
     }));
 
   // Fastest local on CPU: catalog requires.accel === "cpu", ranked by measured p50.
-  const fastestLocal = pool
+  const fastestLocal = mixedPool
     .filter(
       (c) =>
         c.deployment.kind === "local" &&
@@ -114,7 +127,7 @@ export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pic
     });
 
   // Best rare-language: mean accuracy over the rare tier (≥2 languages measured).
-  const rare = pool
+  const rare = candidates(latest, byId, "decision/multilingual-pool")
     .map((c) => ({ ...c, score: rareLanguageScore(c.run) }))
     .filter((c) => c.score != null)
     .sort((a, b) => (b.score?.mean ?? 0) - (a.score?.mean ?? 0))
@@ -127,7 +140,7 @@ export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pic
     }));
 
   // Best open-weights.
-  const openWeights = pool
+  const openWeights = mixedPool
     .filter((c) => c.deployment.open_weights)
     .sort((a, b) => (b.run.accuracy ?? 0) - (a.run.accuracy ?? 0))
     .slice(0, TOP_N)
@@ -141,7 +154,7 @@ export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pic
     }));
 
   // ZDR-safe only.
-  const zdrSafe = pool
+  const zdrSafe = mixedPool
     .filter((c) => c.deployment.zdr_safe === true)
     .sort((a, b) => (b.run.accuracy ?? 0) - (a.run.accuracy ?? 0))
     .slice(0, TOP_N)

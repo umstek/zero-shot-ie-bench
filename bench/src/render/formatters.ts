@@ -34,8 +34,17 @@ const secs = (ms: number | null): string => {
   return `${(ms / 1000).toFixed(3).replace(/0+$/, "").replace(/\.$/, ".0")}`;
 };
 
-const latestRun = (runs: RunAggregate[], deployment: string, suite: string) =>
-  runs.find((r) => r.deployment === deployment && r.suite === suite) ?? null;
+/** the NEWEST usable run for (deployment, suite): rebenches replace rows,
+ *  failed/deferred runs never masquerade as scores */
+const latestRun = (runs: RunAggregate[], deployment: string, suite: string) => {
+  let best: RunAggregate | null = null;
+  for (const r of runs) {
+    if (r.deployment !== deployment || r.suite !== suite) continue;
+    if (r.status === "failed" || r.status === "deferred") continue;
+    if (!best || r.started_at > best.started_at) best = r;
+  }
+  return best;
+};
 
 // | System | Classification | s/question | NER exact | s/question |
 // v0 rules (empirical, gated by scripts/acceptance-phase2.ts): accuracy desc

@@ -44,6 +44,40 @@ type Totals = {
   errors: number;
 };
 
+/** normalize a provider usage block into run-item fields; cost keys vary
+ *  (openrouter: {cost}, others report tokens only) — tokens always ride */
+function usageOf(usage: unknown): {
+  cost_usd: number;
+  tokens: { in: number | null; out: number | null } | null;
+} {
+  if (typeof usage !== "object" || usage === null) {
+    return { cost_usd: 0, tokens: null };
+  }
+  const u = usage as Record<string, unknown>;
+  const cost =
+    typeof u.cost === "number"
+      ? u.cost
+      : typeof u.cost_usd === "number"
+        ? (u.cost_usd as number)
+        : 0;
+  const tokens =
+    typeof u.input_tokens === "number" || typeof u.output_tokens === "number"
+      ? {
+          in: typeof u.input_tokens === "number" ? (u.input_tokens as number) : null,
+          out: typeof u.output_tokens === "number" ? (u.output_tokens as number) : null,
+        }
+      : null;
+  return { cost_usd: cost, tokens };
+}
+
+/** status from the item rows: all-error = failed, some-error = partial */
+function statusOf(items: ReadonlyArray<{ error: string | null }>): "ok" | "partial" | "failed" {
+  const errors = items.filter((i) => typeof i.error === "string").length;
+  if (errors === 0) return "ok";
+  if (errors >= items.length) return "failed";
+  return "partial";
+}
+
 function totalsOf(
   items: ReadonlyArray<{
     correct: boolean | null;
@@ -140,6 +174,9 @@ async function runDeployment(
         const result = response.results.find((r) => r.item_id === item.item_id);
         const prediction = result?.prediction ?? null;
         const scored = scorer.scoreItem(item, prediction);
+        // the provider's own accounting is the measured cost — never $0 for
+        // metered endpoints (usage.cost when present; tokens always recorded)
+        const usage = usageOf(response.usage);
         writer.push({
           item_id: item.item_id,
           lang: item.lang,
@@ -150,8 +187,8 @@ async function runDeployment(
           prob: result?.prob ?? null,
           latency_ms: Math.round(latencyMs),
           compute_ms: response.compute_ms || null,
-          cost_usd: 0,
-          usage: null,
+          cost_usd: usage.cost_usd,
+          usage: usage.tokens,
           error: result?.error ?? null,
         });
       } catch (err) {
@@ -175,7 +212,10 @@ async function runDeployment(
         throw err;
       }
     }
-    const written = await writer.write({ status: "ok", totals: totalsOf(writer.snapshot()) });
+    const written = await writer.write({
+      status: statusOf(writer.snapshot()),
+      totals: totalsOf(writer.snapshot()),
+    });
     console.log(`run ${writer.runId} written (${written.metaPath})`);
     return;
   }
@@ -228,7 +268,13 @@ async function runDeployment(
     console.log(`deferred run written (${written.metaPath})`);
     return;
   }
-  const served = info.models.find((m: { model_id: string }) => m.model_id === model.id);
+  // wire model_id: the catalog model id, except a model with several
+  // deployments on one runner (laya's two modes) is addressed by deployment id
+  const wireId =
+    model.deployments.filter((d) => d.runner === deployment.runner).length > 1
+      ? deployment.id
+      : model.id;
+  const served = info.models.find((m: { model_id: string }) => m.model_id === wireId);
   const writer = new RunWriter(identity, {
     kind: "local",
     machine,
@@ -237,7 +283,7 @@ async function runDeployment(
   for (const item of suite.items) {
     try {
       const { response, latencyMs } = await sendTrack(end, suite.meta.track, {
-        model_id: model.id,
+        model_id: wireId,
         items: [{ item_id: item.item_id, input: item.input, question: item.question }],
       });
       const result = response.results.find((r) => r.item_id === item.item_id);
@@ -279,7 +325,7 @@ async function runDeployment(
     }
   }
   const written = await writer.write({
-    status: "ok",
+    status: statusOf(writer.snapshot()),
     served_version: served?.version ?? null,
     totals: totalsOf(writer.snapshot()),
   });

@@ -16,6 +16,38 @@ const current = readFileSync(join(repoRoot, "README.md"), "utf8");
 const targetTables = parseTables(v0);
 const generatedTables = parseTables(current);
 
+// Post-migration semantics: rebenched deployments legitimately drift (the
+// first nerf/improvement data points) — their rows are exempt; every row
+// still on its legacy-v0 run must reproduce v0 exactly.
+const deployments = JSON.parse(
+  readFileSync(join(repoRoot, "build", "deployments.json"), "utf8"),
+) as Array<{ deployment_id: string; display?: string }>;
+const runs = JSON.parse(
+  readFileSync(join(repoRoot, "build", "decision.runs.json"), "utf8"),
+) as Array<{ deployment: string; source: string }>;
+const rebenched = new Set(runs.filter((r) => r.source === "bench").map((r) => r.deployment));
+const exemptRows = new Set(
+  deployments
+    .filter((d) => rebenched.has(d.deployment_id))
+    .map((d) => (d.display ?? "").replace(" †", "")),
+);
+const NAME_ALIASES: Record<string, string> = {
+  "Jev (cloud)": "Jev (cloud, jev-1.14.0)", // the cost table's shorter name
+};
+const isExempt = (rowName: string) => {
+  const bare0 = rowName.replace(" †", "").replace(" ‡", "").trim();
+  const bare = NAME_ALIASES[bare0] ?? bare0;
+  for (const ex of exemptRows) {
+    if (
+      ex &&
+      (bare === ex || bare.startsWith(`${ex} (`) || ex.startsWith(`${bare} (`) || bare.includes(ex))
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
+
 // compare by matching headings; report every missing/extra/differing table
 const byHeading = (ts: MdTable[]) => new Map(ts.map((t) => [t.heading, t]));
 const target = byHeading(targetTables);
@@ -35,27 +67,40 @@ const compare = (t: MdTable, g: MdTable | undefined, label: string) => {
     failures++;
     return;
   }
-  if (t.rows.length !== g.rows.length) {
-    console.error(
-      `FAIL [${label}] "${t.heading}": ${t.rows.length} target rows vs ${g.rows.length} generated`,
-    );
-    failures++;
-    return;
-  }
-  for (let r = 0; r < t.rows.length; r++) {
-    const tr = t.rows[r] ?? [];
-    const gr = g.rows[r] ?? [];
+  // name-keyed, order-insensitive: rebenched rows legitimately re-sort, so
+  // positions can shift — every non-exempt target row must still exist with
+  // identical cells
+  const genByName = new Map(g.rows.map((r) => [r[0] ?? "", r]));
+  let compared = 0;
+  let skipped = 0;
+  for (const tr of t.rows) {
+    const name = tr[0] ?? "";
+    if (isExempt(name)) {
+      skipped++;
+      continue;
+    }
+    const gr = genByName.get(name);
+    if (!gr) {
+      console.error(
+        `FAIL [${label}] "${t.heading}": target row "${name}" missing from generated table`,
+      );
+      failures++;
+      continue;
+    }
     for (let c = 0; c < Math.max(tr.length, gr.length); c++) {
       if ((tr[c] ?? "") !== (gr[c] ?? "")) {
         console.error(
-          `FAIL [${label}] "${t.heading}" row ${r + 1} col ${c + 1}: target "${tr[c] ?? ""}" != generated "${gr[c] ?? ""}"`,
+          `FAIL [${label}] "${t.heading}" "${name}" col ${c + 1}: target "${tr[c] ?? ""}" != generated "${gr[c] ?? ""}"`,
         );
         failures++;
-        return; // first mismatch per table is enough to act on
+        break;
       }
     }
+    compared++;
   }
-  console.log(`OK   [${label}] "${t.heading}" (${t.rows.length} rows)`);
+  console.log(
+    `OK   [${label}] "${t.heading}" (${compared} compared, ${skipped} rebenched-skipped)`,
+  );
 };
 
 // every numeric benchmark table in the v0 README must be reproduced
