@@ -29,7 +29,7 @@ describe("openrouter.systemone adapter", () => {
       captured.c = { url, body: JSON.parse(init.body as string), headers: init.headers as never };
       return new Response(
         JSON.stringify({
-          answers: { "mp-001": { choice: { pick: "positive", probabilities: [0.9, 0.05, 0.05] } } },
+          answers: { "mp-001": { choice: "positive", probabilities: [0.9, 0.05, 0.05] } },
           usage: { total_tokens: 10 },
         }),
         { status: 200 },
@@ -40,9 +40,10 @@ describe("openrouter.systemone adapter", () => {
     expect(captured.c?.body.state).toBe("The food was delicious");
     const questions = captured.c?.body.questions as Record<
       string,
-      { choice?: { options?: string[] } }
+      { type?: string; criteria?: Record<string, string | null> }
     >;
-    expect(questions["mp-001"]?.choice?.options).toHaveLength(3);
+    expect(questions["mp-001"]?.type).toBe("choice");
+    expect(Object.keys(questions["mp-001"]?.criteria ?? {})).toHaveLength(3);
     expect(captured.c?.headers.authorization).toBe("Bearer k");
     expect(res.results[0]?.prediction).toBe("positive");
     expect(res.results[0]?.prob).toBeCloseTo(0.9);

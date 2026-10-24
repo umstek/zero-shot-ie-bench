@@ -1,0 +1,38 @@
+{
+ "run_id": "mixed-pool-mvmmk501-28mpfne5dsvwk",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "von-1.0.local",
+ "model_version": "von-1.0@fbc0196efa4fa1825557a8d5adad464fa1e872bb",
+ "served_version": "von-1.0@fbc0196efa4fa1825557a8d5adad464fa1e872bb",
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "835af6135e068dc29cd65df2542beb571540e806"
+ },
+ "started_at": "2026-10-24T16:40:29.503Z",
+ "finished_at": "2026-10-24T16:40:29.503Z",
+ "totals": {
+  "items": 48,
+  "correct": 36,
+  "cost_usd": 0,
+  "p50_ms": 133,
+  "p95_ms": 211,
+  "errors": 0
+ },
+ "source": "bench"
+}
