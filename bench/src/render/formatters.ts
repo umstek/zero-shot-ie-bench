@@ -8,14 +8,31 @@ export type DeploymentInfo = {
   model_id: string;
   display?: string;
   provider?: string;
+  dagger?: boolean;
+  zdr_safe?: boolean | null;
   kind: string;
   latest_run?: { run_id: string; suite: string };
 };
 
-const pct = (accuracy: number | null): string =>
-  accuracy === null ? "n/a" : `${(accuracy * 100).toFixed(1)}%`;
+const pct = (accuracy: number | null): string => {
+  if (accuracy === null) return "n/a";
+  // v0 printed percentages via Python's .1% (round-half-even): 81.25→81.2,
+  // 93.75→93.8 — replicate instead of JS's half-away toFixed
+  const x = (Math.round(accuracy * 100 * 1e6) / 1e6) * 10;
+  const f = Math.floor(x);
+  const diff = x - f;
+  let r: number;
+  if (diff > 0.5) r = f + 1;
+  else if (diff < 0.5) r = f;
+  else r = f % 2 === 0 ? f : f + 1;
+  return `${(r / 10).toFixed(1)}%`;
+};
 
-const secs = (ms: number | null): string => (ms === null ? "n/a" : (ms / 1000).toFixed(3));
+// v0 prints s/question with trailing zeros stripped but at least one decimal
+const secs = (ms: number | null): string => {
+  if (ms === null) return "n/a";
+  return `${(ms / 1000).toFixed(3).replace(/0+$/, "").replace(/\.$/, ".0")}`;
+};
 
 const latestRun = (runs: RunAggregate[], deployment: string, suite: string) =>
   runs.find((r) => r.deployment === deployment && r.suite === suite) ?? null;
@@ -31,35 +48,50 @@ export function mixedPoolTable(
   nerRuns: RunAggregate[],
   deployments: DeploymentInfo[],
 ): string {
-  const rows: { cells: string[]; acc: number; lat: number }[] = [];
+  const rows: { cells: string[]; acc: number; lat: number; rank: number }[] = [];
   for (const dep of deployments) {
     const cls = latestRun(decisionRuns, dep.deployment_id, "decision/mixed-pool");
     if (!cls) continue;
     const ner = latestRun(nerRuns, dep.deployment_id, "ner/graded-pool");
-    const name = dep.display ?? dep.deployment_id;
+    const fallbackName = dep.display ?? dep.deployment_id;
+    const name = cls.v0_cells?.name ?? (dep.dagger ? `${fallbackName} †` : fallbackName);
     rows.push({
       cells: [
-        dep.provider === "openrouter" ? `${name} †` : name,
+        name,
         cls.accuracy === null ? "n/a" : pct(cls.accuracy),
-        secs(cls.p50_ms),
+        cls.v0_cells?.cls_s || secs(cls.p50_ms),
         ner ? intPct(ner.accuracy) : "n/a",
-        ner ? secs(ner.p50_ms) : "",
+        ner ? ner.v0_cells?.ner_s || secs(ner.p50_ms) : "",
       ],
       acc: cls.accuracy ?? -1,
       lat: cls.p50_ms ?? Number.POSITIVE_INFINITY,
+      rank: cls.v0_rank ?? Number.MAX_SAFE_INTEGER,
     });
   }
   const bestAcc = Math.max(...rows.map((r) => r.acc));
+  // v0 bolds the overall leader(s) plus one editorial local pick (winnow
+  // e4b at 87.5% — no metric rule selects it over the 91.7% local D3 Nano,
+  // so it is carried as the v0 pick, not derived)
+  const V0_LOCAL_PICKS = new Set(["winnow e4b (Ollaya)"]);
   const nerCells = rows.map((r) => r.cells[3] ?? "");
   const bestNer = Math.max(...nerCells.map((c) => (c.endsWith("%") ? Number.parseFloat(c) : -1)));
   for (const r of rows) {
-    if (r.acc === bestAcc && r.acc >= 0) r.cells[1] = `**${r.cells[1]}**`;
+    const bareName = (r.cells[0] ?? "").replace(" †", "");
+    if (r.acc >= 0 && (r.acc === bestAcc || V0_LOCAL_PICKS.has(bareName))) {
+      r.cells[1] = `**${r.cells[1]}**`;
+    }
     const nerCell = r.cells[3] ?? "";
     if (nerCell.endsWith("%") && Number.parseFloat(nerCell) === bestNer) {
       r.cells[3] = `**${nerCell}**`;
     }
   }
-  rows.sort((a, b) => b.acc - a.acc || a.lat - b.lat);
+  rows.sort(
+    (a, b) =>
+      b.acc - a.acc ||
+      a.rank - b.rank ||
+      a.lat - b.lat ||
+      (a.cells[0] ?? "").localeCompare(b.cells[0] ?? ""),
+  );
   const header = ["System", "Classification", "s/question", "NER exact", "s/question"];
   const line = (cells: string[]) => `| ${cells.join(" | ")} |`;
   return [
@@ -100,13 +132,16 @@ export function multilingualTable(
       }
     }
     const cell = (t: string) => {
+      if (run.v0_tiers && typeof run.v0_tiers[t] === "number") {
+        return intPct(run.v0_tiers[t]);
+      }
       const agg = tierAgg[t];
       return agg && agg.scored > 0 ? intPct(agg.correct / agg.scored) : "n/a";
     };
     const name = dep.display ?? dep.deployment_id;
     rows.push({
       cells: [
-        dep.provider === "openrouter" ? `${name} †` : name,
+        dep.dagger ? `${name} †` : name,
         cell("popular"),
         cell("medium"),
         cell("rare"),
@@ -132,24 +167,47 @@ export function multilingualTable(
 }
 
 // | System | 48-q run | 54-text run | $ / question |
-// v0 rules: $/question ascending (free tiers first), † on OpenRouter rows,
-// 6-decimal run totals and 8-decimal per-question values with trailing
-// zeros trimmed.
+// Legacy (v0) rows render VERBATIM from the meta's v0_cost bookkeeping —
+// the v0 table is its own naming universe (row names differ from the other
+// tables, a ‡ on Jev, grouped same-priced siblings, hand row order) —
+// sorted by the v0 row position. Future bench rows append after them,
+// computed from measured usage, grouped when identical triples.
+type V0Cost = {
+  row: number;
+  name: string | null;
+  c48: string;
+  c54: string;
+  perq: string;
+  suppressed?: boolean;
+};
+
 export function costTable(decisionRuns: RunAggregate[], deployments: DeploymentInfo[]): string {
-  const rows: { cells: string[]; perQ: number }[] = [];
+  const legacy: { row: number; cells: string[] }[] = [];
+  const fresh: { cells: string[]; perQ: number }[] = [];
   for (const dep of deployments) {
     const mixed = latestRun(decisionRuns, dep.deployment_id, "decision/mixed-pool");
     const ml = latestRun(decisionRuns, dep.deployment_id, "decision/multilingual-pool");
+    if (dep.kind !== "hosted") continue; // v0 cost table covers hosted runs only
     if (!mixed && !ml) continue;
+    const v0cost = (mixed as { v0_cost?: V0Cost } | undefined)?.v0_cost;
+    if (v0cost && !v0cost.suppressed) {
+      legacy.push({
+        row: v0cost.row,
+        cells: [v0cost.name ?? "", v0cost.c48, v0cost.c54, v0cost.perq],
+      });
+      continue;
+    }
+    if (v0cost?.suppressed) continue; // member of a grouped v0 row
     const freeTier =
       (mixed?.cost_usd ?? 0) === 0 &&
       (ml?.cost_usd ?? 0) === 0 &&
       (mixed?.where.kind === "hosted" || ml?.where.kind === "hosted");
-    const perQuestion = mixed && mixed.cost_usd > 0 ? mixed.cost_usd / mixed.items : 0;
+    const perQuestion =
+      mixed?.v0_per_question ?? (mixed && mixed.cost_usd > 0 ? mixed.cost_usd / mixed.items : 0);
     const name = dep.display ?? dep.deployment_id;
-    rows.push({
+    fresh.push({
       cells: [
-        dep.provider === "openrouter" ? `${name} †` : name,
+        dep.dagger ? `${name} †` : name,
         mixed
           ? `$${(mixed.cost_usd ?? 0).toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`
           : "n/a",
@@ -161,8 +219,9 @@ export function costTable(decisionRuns: RunAggregate[], deployments: DeploymentI
       perQ: perQuestion,
     });
   }
-  rows.sort((a, b) => a.perQ - b.perQ || (a.cells[0] ?? "").localeCompare(b.cells[0] ?? ""));
-  const tableRows = rows.map((r) => r.cells);
+  legacy.sort((a, b) => a.row - b.row);
+  fresh.sort((a, b) => a.perQ - b.perQ || (a.cells[0] ?? "").localeCompare(b.cells[0] ?? ""));
+  const tableRows = [...legacy.map((r) => r.cells), ...fresh.map((r) => r.cells)];
   const header = ["System", "48-q run", "54-text run", "$ / question"];
   const line = (cells: string[]) => `| ${cells.join(" | ")} |`;
   return [line(header), `|${header.map(() => "---").join("|")}|`, ...tableRows.map(line)].join(

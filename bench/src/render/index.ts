@@ -3,7 +3,7 @@
 // Hand-written prose tables (system table, feature comparison, family maps)
 // stay untouched. Phase-2 gate: scripts/acceptance-phase2.ts diffs these
 // cell-for-cell against the v0-final README.
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { RunAggregate } from "@zsib/lake";
 import { parse as parseYaml } from "yaml";
@@ -29,6 +29,25 @@ const languages = parseYaml(
   readFileSync(join(repoRoot, "catalog/languages.yaml"), "utf8"),
 ) as Array<{ code: string; tier: string | null }>;
 const tierOf = Object.fromEntries(languages.map((l) => [l.code, l.tier ?? "popular"]));
+
+const providerFiles = readdirSync(join(repoRoot, "catalog/providers")).filter((f) =>
+  f.endsWith(".yaml"),
+);
+const zdrSafeOf: Record<string, boolean | null> = {};
+for (const f of providerFiles) {
+  const provider = parseYaml(readFileSync(join(repoRoot, "catalog/providers", f), "utf8")) as {
+    id: string;
+    zdr_safe: boolean | null;
+  };
+  zdrSafeOf[provider.id] = provider.zdr_safe;
+}
+for (const dep of deployments) {
+  // v0 † marker is per deployment (endpoint), with the provider flag as a
+  // fallback for anything not flagged explicitly
+  dep.dagger =
+    dep.zdr_safe === false ||
+    (dep.zdr_safe == null && dep.provider ? zdrSafeOf[dep.provider] === false : false);
+}
 
 const readme = readFileSync(join(repoRoot, "README.md"), "utf8");
 

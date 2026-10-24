@@ -195,87 +195,87 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 <!-- gen:mixed-pool -->
 | System | Classification | s/question | NER exact | s/question |
 |---|---|---|---|---|
-| Clef (Workers AI) | **97.9%** | 0.052 | n/a | |
-| GLiDE (Fastino) | **97.9%** | 0.056 | n/a | |
-| D1-ultra (OpenRouter) † | 95.8% | 0.027 | n/a | |
-| TypeLLM (hosted) † | 95.8% | 0.057 | n/a | |
-| Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a | |
-| Jev (cloud, jev-1.14.0) | 93.8% | 0.015 | n/a | |
-| GPT-6 Luna Decisions (OpenRouter) † | 93.8% | 0.025 | n/a | |
-| D1 (OpenRouter) † | 93.8% | 0.031 | n/a | |
-| Decider V1.2 27B (OpenRouter) | 93.8% | 0.044 | n/a | |
-| Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a | |
-| Decider V1 27B (OpenRouter) | 93.8% | 0.075 | n/a | |
-| Decider V1.1 27B (OpenRouter) | 93.8% | 0.080 | n/a | |
-| Drex v1.5 (OpenRouter) | 93.8% | 0.075 | n/a | |
-| Microsoft Decision-1 (OpenRouter) | 91.7% | 0.065 | n/a | |
-| TypeLLM thinking (hosted) † | 91.7% | 0.338 | n/a | |
-| Decision 3.0 Nano 2B (local) | 91.7% | 9.376 | n/a | |
-| Elephant-1 9B (OpenRouter) † | 89.6% | 0.018 | n/a | |
-| Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a | |
-| Clef-omni (Workers AI) | 89.6% | 0.040 | n/a | |
-| arbiter 4B (Ollaya) | 89.6% | 4.878 | n/a | |
-| winnow e4b (Ollaya) | **87.5%** | 8.138 | n/a | |
-| qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a | |
+| Clef (Workers AI) | **97.9%** | 0.052 | n/a |  |
+| GLiDE (Fastino) | **97.9%** | 0.056 | n/a |  |
+| D1-ultra (OpenRouter) † | 95.8% | 0.027 | n/a |  |
+| TypeLLM (hosted) † | 95.8% | 0.057 | n/a |  |
+| Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a |  |
+| Jev (cloud, jev-1.14.0) | 93.8% | 0.015 | n/a |  |
+| GPT-6 Luna Decisions (OpenRouter) † | 93.8% | 0.025 | n/a |  |
+| D1 (OpenRouter) † | 93.8% | 0.031 | n/a |  |
+| Decider V1.2 27B (OpenRouter) | 93.8% | 0.044 | n/a |  |
+| Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a |  |
+| Decider V1 27B (OpenRouter) | 93.8% | 0.075 | n/a |  |
+| Decider V1.1 27B (OpenRouter) | 93.8% | 0.080 | n/a |  |
+| Drex v1.5 (OpenRouter) | 93.8% | 0.075 | n/a |  |
+| Microsoft Decision-1 (OpenRouter) | 91.7% | 0.065 | n/a |  |
+| TypeLLM thinking (hosted) † | 91.7% | 0.338 | n/a |  |
+| Decision 3.0 Nano 2B (local) | 91.7% | 9.376 | n/a |  |
+| Elephant-1 9B (OpenRouter) † | 89.6% | 0.018 | n/a |  |
+| Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a |  |
+| Clef-omni (Workers AI) | 89.6% | 0.040 | n/a |  |
+| arbiter 4B (Ollaya) | 89.6% | 4.878 | n/a |  |
+| winnow e4b (Ollaya) | **87.5%** | 8.138 | n/a |  |
+| qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a |  |
 | GLiNER2.5-Decide | 85.4% | 0.412 | 61% | 0.476 |
 | GLiNER2.5-Decide (Fastino) | 85.4% | 0.853 | 56% | 0.832 |
-| Decider Flash V1.2 (OpenRouter) | 85.4% | 0.066 | n/a | |
-| Kev 4B (OpenRouter) † | 85.4% | 0.079 | n/a | |
-| Span-01 † | 85.4% | 0.440 | n/a | |
-| jevk5 4B (Ollaya) | 85.4% | 7.299 | n/a | |
-| credence 7.5B (Ollaya) | 85.4% | 6.775 | n/a | |
-| Intern-Decision 4B | 85.4% | 8.0 | n/a | |
+| Decider Flash V1.2 (OpenRouter) | 85.4% | 0.066 | n/a |  |
+| Kev 4B (OpenRouter) † | 85.4% | 0.079 | n/a |  |
+| Span-01 † | 85.4% | 0.440 | n/a |  |
+| jevk5 4B (Ollaya) | 85.4% | 7.299 | n/a |  |
+| credence 7.5B (Ollaya) | 85.4% | 6.775 | n/a |  |
+| Intern-Decision 4B | 85.4% | 8.0 | n/a |  |
 | GLiNER2.5-base | 83.3% | 0.111 | 61% | 0.135 |
 | GLiNER2.5-base (Fastino) | 83.3% | 0.834 | 56% | 0.856 |
-| Clef-flash (Workers AI) | 83.3% | 0.083 | n/a | |
-| decider 0.8B (local) | 83.3% | 2.144 | n/a | |
-| cohere-rerank-4-pro (OpenRouter) † | 83.3% | 0.418 | n/a | |
-| nli deberta-v3-large (Ollaya) | 83.3% | 0.369 | n/a | |
-| Decision 2.0 Kai 0.6B (local) | 83.3% | 0.640 | n/a | |
-| Decision 2.0 Sol 2B (local) | 83.3% | 2.578 | n/a | |
-| Decision 3.0 Edge 0.6B (local) | 83.3% | 2.745 | n/a | |
-| Decision 3.0 Lite 0.85B (local) | 83.3% | 5.354 | n/a | |
-| D1 3B (local) | 83.3% | 5.818 | n/a | |
-| D1-omni 600M (local) | 83.3% | 0.227 | n/a | |
-| decima 321M (Ollaya) | 83.3% | 0.256 | n/a | |
-| decima small 122M (Ollaya) | 83.3% | 0.103 | n/a | |
-| mxbai-rerank-large-v2 | 83.3% | 4.255 | n/a | |
-| gliclass-base | 81.2% | 0.110 | n/a | |
-| decision 0.75B (Ollaya) | 81.2% | 0.817 | n/a | |
-| gliclass-large | 81.2% | 0.411 | n/a | |
-| JevK5-Lite | 81.2% | 0.392 | n/a | |
-| snap 2B (Ollaya) | 81.2% | 2.995 | n/a | |
-| Intern-Decision 2B | 81.2% | 3.166 | n/a | |
+| Clef-flash (Workers AI) | 83.3% | 0.083 | n/a |  |
+| decider 0.8B (local) | 83.3% | 2.144 | n/a |  |
+| cohere-rerank-4-pro (OpenRouter) † | 83.3% | 0.418 | n/a |  |
+| nli deberta-v3-large (Ollaya) | 83.3% | 0.369 | n/a |  |
+| Decision 2.0 Kai 0.6B (local) | 83.3% | 0.640 | n/a |  |
+| Decision 2.0 Sol 2B (local) | 83.3% | 2.578 | n/a |  |
+| Decision 3.0 Edge 0.6B (local) | 83.3% | 2.745 | n/a |  |
+| Decision 3.0 Lite 0.85B (local) | 83.3% | 5.354 | n/a |  |
+| D1 3B (local) | 83.3% | 5.818 | n/a |  |
+| D1-omni 600M (local) | 83.3% | 0.227 | n/a |  |
+| decima 321M (Ollaya) | 83.3% | 0.256 | n/a |  |
+| decima small 122M (Ollaya) | 83.3% | 0.103 | n/a |  |
+| mxbai-rerank-large-v2 | 83.3% | 4.255 | n/a |  |
+| gliclass-base | 81.2% | 0.110 | n/a |  |
+| decision 0.75B (Ollaya) | 81.2% | 0.817 | n/a |  |
+| gliclass-large | 81.2% | 0.411 | n/a |  |
+| JevK5-Lite | 81.2% | 0.392 | n/a |  |
+| snap 2B (Ollaya) | 81.2% | 2.995 | n/a |  |
+| Intern-Decision 2B | 81.2% | 3.166 | n/a |  |
 | GLiNER2.5-multi | 79.2% | 0.152 | **67%** | 0.180 |
-| Tev1 4B (OpenRouter) | 79.2% | 0.081 | n/a | |
+| Tev1 4B (OpenRouter) | 79.2% | 0.081 | n/a |  |
 | GLiNER2.5-multi (Fastino) | 79.2% | 0.831 | 61% | 0.849 |
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
-| von-1.0 (option-marker) | 79.2% | 0.226 | n/a | |
-| AgentJev 0.6B (local) | 79.2% | 0.646 | n/a | |
-| Span-01 Lite † | 79.2% | 0.440 | n/a | |
-| voyage-rerank-2.5 (OpenRouter) † | 79.2% | 0.373 | n/a | |
-| Decision 2.0 Eos 0.8B (local) | 79.2% | 0.981 | n/a | |
-| Intern-Decision 0.8B | 77.1% | 1.585 | n/a | |
-| nemotron-rerank-1b-v2 | 75.0% | 0.838 | n/a | |
-| Kev 0.8B (local) | 72.9% | 0.587 | n/a | |
-| bge-reranker-v2-m3 | 72.9% | 0.339 | n/a | |
-| MoJev 0.85B | 72.9% | 3.375 | n/a | |
+| von-1.0 (option-marker) | 79.2% | 0.226 | n/a |  |
+| AgentJev 0.6B (local) | 79.2% | 0.646 | n/a |  |
+| Span-01 Lite † | 79.2% | 0.440 | n/a |  |
+| voyage-rerank-2.5 (OpenRouter) † | 79.2% | 0.373 | n/a |  |
+| Decision 2.0 Eos 0.8B (local) | 79.2% | 0.981 | n/a |  |
+| Intern-Decision 0.8B | 77.1% | 1.585 | n/a |  |
+| nemotron-rerank-1b-v2 | 75.0% | 0.838 | n/a |  |
+| Kev 0.8B (local) | 72.9% | 0.587 | n/a |  |
+| bge-reranker-v2-m3 | 72.9% | 0.339 | n/a |  |
+| MoJev 0.85B | 72.9% | 3.375 | n/a |  |
 | GLiNER2.5-small | 70.8% | 0.043 | 33% | 0.053 |
-| OpenThai 0.8B (local) | 70.8% | 0.504 | n/a | |
-| Laya typed-decisions | 70.8% | 1.243 | n/a | |
-| mxbai-rerank-base-v2 | 70.8% | 1.338 | n/a | |
-| cohere-rerank-4-fast (OpenRouter) † | 70.8% | 0.371 | n/a | |
-| Laya (local) | 68.8% | 0.143 | n/a | |
-| Lumma-fev 4B | 68.8% | 2.921 | n/a | |
-| cohere-rerank-v3.5 (OpenRouter) † | 66.7% | 0.500 | n/a | |
-| nli modernbert-large (Ollaya) | 66.7% | 0.281 | n/a | |
+| OpenThai 0.8B (local) | 70.8% | 0.504 | n/a |  |
+| Laya typed-decisions | 70.8% | 1.243 | n/a |  |
+| mxbai-rerank-base-v2 | 70.8% | 1.338 | n/a |  |
+| cohere-rerank-4-fast (OpenRouter) † | 70.8% | 0.371 | n/a |  |
+| Laya (local) | 68.8% | 0.143 | n/a |  |
+| Lumma-fev 4B | 68.8% | 2.921 | n/a |  |
+| cohere-rerank-v3.5 (OpenRouter) † | 66.7% | 0.500 | n/a |  |
+| nli modernbert-large (Ollaya) | 66.7% | 0.281 | n/a |  |
 | GLiFormer-base | 66.7% | 0.139 | 56% | 0.145 |
-| gliclass-modern-base | 66.7% | 0.051 | n/a | |
-| K2-Type 0.9B (local) | 66.7% | 0.601 | n/a | |
-| voyage-rerank-2.5-lite (OpenRouter) † | 64.6% | 0.358 | n/a | |
-| GTE-rerank-ModernBERT-base | 60.4% | 0.183 | n/a | |
-| Lumma-fev 0.15B | 56.2% | 0.256 | n/a | |
-| Lumma-fev 0.6B | 54.2% | 0.587 | n/a | |
+| gliclass-modern-base | 66.7% | 0.051 | n/a |  |
+| K2-Type 0.9B (local) | 66.7% | 0.601 | n/a |  |
+| voyage-rerank-2.5-lite (OpenRouter) † | 64.6% | 0.358 | n/a |  |
+| GTE-rerank-ModernBERT-base | 60.4% | 0.183 | n/a |  |
+| Lumma-fev 0.15B | 56.2% | 0.256 | n/a |  |
+| Lumma-fev 0.6B | 54.2% | 0.587 | n/a |  |
 <!-- /gen:mixed-pool -->
 
 Takeaways:

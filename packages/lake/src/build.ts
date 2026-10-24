@@ -81,6 +81,7 @@ const deployments = catalog.models.flatMap((model) =>
       deployment_id: deployment.id,
       model_id: model.id,
       display: deployment.display,
+      zdr_safe: deployment.zdr_safe,
       family: model.family,
       org: model.org,
       license: model.license,

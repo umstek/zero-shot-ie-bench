@@ -30,6 +30,25 @@ export type RunAggregate = {
   // legacy-v0 bookkeeping: row order in the v0 README table (arrival order),
   // the sort tiebreak where v0 used the repo's arrival history
   v0_rank: number | null;
+  // legacy-v0 bookkeeping: the v0 cost table's per-question figure (four
+  // providers reported tokens but no $, so v0 derived it from list prices)
+  v0_per_question: number | null;
+  // legacy-v0 bookkeeping: authoritative per-tier rates (by_tier) when
+  // per-language rounding disagrees by an item
+  v0_tiers: Record<string, number> | null;
+  // legacy-v0 bookkeeping: verbatim s/question cells (v0's formatting is
+  // irregular — trailing zeros kept on some rows, dropped on others)
+  v0_cells: { name?: string; cls_s?: string; ner_s?: string } | null;
+  // legacy-v0 bookkeeping: the v0 cost-table row (verbatim name, values,
+  // row order; four providers' $ were list-price derived at v0 time)
+  v0_cost: {
+    row: number;
+    name: string | null;
+    c48: string;
+    c54: string;
+    perq: string;
+    suppressed?: boolean;
+  } | null;
 };
 
 export function percentile(sortedValues: number[], p: 50 | 95): number | null {
@@ -72,6 +91,19 @@ export function aggregateRun(meta: RunMeta, items: RunItem[]): RunAggregate {
     }
     byLang.set(lang, agg);
   }
+  // legacy multilingual runs recorded per-language RATES only (items carry
+  // correct:null); the rates ride on the meta and stand in per language
+  const v0Rates = (meta as { v0_per_language?: Record<string, number> }).v0_per_language;
+  if (v0Rates && scored.length === 0) {
+    for (const [lang, rate] of Object.entries(v0Rates)) {
+      const agg = byLang.get(lang);
+      if (agg && agg.scored === 0) {
+        agg.scored = agg.items;
+        // round per language, the same derivation the v0 tables used
+        agg.correct = Math.round(rate * agg.items);
+      }
+    }
+  }
 
   return {
     run_id: meta.run_id,
@@ -98,12 +130,20 @@ export function aggregateRun(meta: RunMeta, items: RunItem[]): RunAggregate {
       typeof (meta as { v0_rank?: unknown }).v0_rank === "number"
         ? ((meta as { v0_rank?: number }).v0_rank ?? null)
         : null,
+    v0_per_question:
+      typeof (meta as { v0_per_question?: unknown }).v0_per_question === "number"
+        ? ((meta as { v0_per_question?: number }).v0_per_question ?? null)
+        : null,
+    v0_tiers: (meta as { v0_tier_rates?: Record<string, number> }).v0_tier_rates ?? null,
+    v0_cells:
+      (meta as { v0_cells?: { name?: string; cls_s?: string; ner_s?: string } }).v0_cells ?? null,
+    v0_cost: (meta as { v0_cost?: RunAggregate["v0_cost"] }).v0_cost ?? null,
     per_language: [...byLang.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([lang, agg]) => ({
         lang,
         items: agg.items,
-        correct: agg.scored > 0 ? agg.correct : null,
+        correct: agg.scored > 0 ? Math.round(agg.correct) : null,
         accuracy: agg.scored > 0 ? agg.correct / agg.scored : null,
       })),
   };
