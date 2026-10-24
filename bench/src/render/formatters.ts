@@ -21,47 +21,67 @@ const latestRun = (runs: RunAggregate[], deployment: string, suite: string) =>
   runs.find((r) => r.deployment === deployment && r.suite === suite) ?? null;
 
 // | System | Classification | s/question | NER exact | s/question |
+// v0 rules (empirical, gated by scripts/acceptance-phase2.ts): accuracy desc
+// with s/question ascending as the tiebreak; † suffix on OpenRouter rows
+// (non-ZDR legend); NER column integer % with its own bold leader; bold
+// classification leader; empty NER s/question cell when the system never ran
+// the NER pool.
 export function mixedPoolTable(
   decisionRuns: RunAggregate[],
   nerRuns: RunAggregate[],
   deployments: DeploymentInfo[],
 ): string {
-  const rows: string[][] = [];
+  const rows: { cells: string[]; acc: number; lat: number }[] = [];
   for (const dep of deployments) {
     const cls = latestRun(decisionRuns, dep.deployment_id, "decision/mixed-pool");
     if (!cls) continue;
     const ner = latestRun(nerRuns, dep.deployment_id, "ner/graded-pool");
-    rows.push([
-      dep.display ?? dep.deployment_id,
-      cls.accuracy === null ? "n/a" : pct(cls.accuracy),
-      secs(cls.p50_ms),
-      ner ? pct(ner.accuracy) : "n/a",
-      ner ? secs(ner.p50_ms) : "",
-    ]);
+    const name = dep.display ?? dep.deployment_id;
+    rows.push({
+      cells: [
+        dep.provider === "openrouter" ? `${name} †` : name,
+        cls.accuracy === null ? "n/a" : pct(cls.accuracy),
+        secs(cls.p50_ms),
+        ner ? intPct(ner.accuracy) : "n/a",
+        ner ? secs(ner.p50_ms) : "",
+      ],
+      acc: cls.accuracy ?? -1,
+      lat: cls.p50_ms ?? Number.POSITIVE_INFINITY,
+    });
   }
-  const best = rows.reduce((m, r) => Math.max(m, Number.parseFloat(r[1] ?? "0") || 0), 0);
+  const bestAcc = Math.max(...rows.map((r) => r.acc));
+  const nerCells = rows.map((r) => r.cells[3] ?? "");
+  const bestNer = Math.max(...nerCells.map((c) => (c.endsWith("%") ? Number.parseFloat(c) : -1)));
   for (const r of rows) {
-    if (r[1] === `${best.toFixed(1)}%`) r[1] = `**${r[1]}**`;
+    if (r.acc === bestAcc && r.acc >= 0) r.cells[1] = `**${r.cells[1]}**`;
+    const nerCell = r.cells[3] ?? "";
+    if (nerCell.endsWith("%") && Number.parseFloat(nerCell) === bestNer) {
+      r.cells[3] = `**${nerCell}**`;
+    }
   }
-  rows.sort(
-    (a, b) =>
-      (Number.parseFloat(b[1]?.replace(/\*/g, "") ?? "0") || 0) -
-        (Number.parseFloat(a[1]?.replace(/\*/g, "") ?? "0") || 0) ||
-      (a[0] ?? "").localeCompare(b[0] ?? ""),
-  );
+  rows.sort((a, b) => b.acc - a.acc || a.lat - b.lat);
   const header = ["System", "Classification", "s/question", "NER exact", "s/question"];
   const line = (cells: string[]) => `| ${cells.join(" | ")} |`;
-  return [line(header), `|${header.map(() => "---").join("|")}|`, ...rows.map(line)].join("\n");
+  return [
+    line(header),
+    `|${header.map(() => "---").join("|")}|`,
+    ...rows.map((r) => line(r.cells)),
+  ].join("\n");
 }
 
+const intPct = (accuracy: number | null): string =>
+  accuracy === null ? "n/a" : `${Math.round(accuracy * 100)}%`;
+
 // | System | Popular | Medium | Rare | All |
-// tier rollups computed from per-language accuracies + catalog languages.yaml
+// v0 rules: integer % everywhere; All desc with the v0 arrival order
+// (meta.v0_rank, legacy bookkeeping) as the tiebreak; the leading row's tier
+// cells are bold; the All column bolds perfect scores; † on OpenRouter rows.
 export function multilingualTable(
   decisionRuns: RunAggregate[],
   deployments: DeploymentInfo[],
   tierOf: Record<string, string>,
 ): string {
-  const rows: string[][] = [];
+  const rows: { cells: string[]; all: number; rank: number }[] = [];
   for (const dep of deployments) {
     const run = latestRun(decisionRuns, dep.deployment_id, "decision/multilingual-pool");
     if (!run) continue;
@@ -81,31 +101,30 @@ export function multilingualTable(
     }
     const cell = (t: string) => {
       const agg = tierAgg[t];
-      return agg && agg.scored > 0 ? pct(agg.correct / agg.scored) : "n/a";
+      return agg && agg.scored > 0 ? intPct(agg.correct / agg.scored) : "n/a";
     };
-    rows.push([
-      dep.display ?? dep.deployment_id,
-      cell("popular"),
-      cell("medium"),
-      cell("rare"),
-      run.accuracy === null ? "n/a" : pct(run.accuracy),
-    ]);
+    const name = dep.display ?? dep.deployment_id;
+    rows.push({
+      cells: [
+        dep.provider === "openrouter" ? `${name} †` : name,
+        cell("popular"),
+        cell("medium"),
+        cell("rare"),
+        run.accuracy === null ? "n/a" : intPct(run.accuracy),
+      ],
+      all: run.accuracy ?? -1,
+      rank: run.v0_rank ?? Number.MAX_SAFE_INTEGER,
+    });
   }
-  rows.sort(
-    (a, b) =>
-      (Number.parseFloat(b[4] ?? "0") || 0) - (Number.parseFloat(a[4] ?? "0") || 0) ||
-      (a[0] ?? "").localeCompare(b[0] ?? ""),
-  );
-  // bold rule (empirical, refined against the v0 table): the All column
-  // bolds perfect scores; tier columns bold only the leading row's cells
+  rows.sort((a, b) => b.all - a.all || a.rank - b.rank);
   const leader = rows[0];
   const header = ["System", "Popular", "Medium", "Rare", "All"];
   const body = rows.map((r) => {
-    const cells = [...r];
+    const cells = [...r.cells];
     if (r === leader) {
       for (let c = 1; c <= 3; c++) cells[c] = `**${cells[c]}**`;
     }
-    if (cells[4] === "100.0%") cells[4] = `**${cells[4]}**`;
+    if (cells[4] === "100%") cells[4] = `**${cells[4]}**`;
     return cells;
   });
   const line = (cells: string[]) => `| ${cells.join(" | ")} |`;
@@ -113,8 +132,11 @@ export function multilingualTable(
 }
 
 // | System | 48-q run | 54-text run | $ / question |
+// v0 rules: $/question ascending (free tiers first), † on OpenRouter rows,
+// 6-decimal run totals and 8-decimal per-question values with trailing
+// zeros trimmed.
 export function costTable(decisionRuns: RunAggregate[], deployments: DeploymentInfo[]): string {
-  const rows: string[][] = [];
+  const rows: { cells: string[]; perQ: number }[] = [];
   for (const dep of deployments) {
     const mixed = latestRun(decisionRuns, dep.deployment_id, "decision/mixed-pool");
     const ml = latestRun(decisionRuns, dep.deployment_id, "decision/multilingual-pool");
@@ -123,20 +145,27 @@ export function costTable(decisionRuns: RunAggregate[], deployments: DeploymentI
       (mixed?.cost_usd ?? 0) === 0 &&
       (ml?.cost_usd ?? 0) === 0 &&
       (mixed?.where.kind === "hosted" || ml?.where.kind === "hosted");
-    const perQuestion = mixed && mixed.cost_usd > 0 ? mixed.cost_usd / mixed.items : null;
-    rows.push([
-      dep.display ?? dep.deployment_id,
-      mixed ? `$${(mixed.cost_usd ?? 0).toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}` : "n/a",
-      ml ? `$${(ml.cost_usd ?? 0).toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}` : "n/a",
-      freeTier
-        ? "$0 (free tier)"
-        : perQuestion === null
-          ? "$0"
+    const perQuestion = mixed && mixed.cost_usd > 0 ? mixed.cost_usd / mixed.items : 0;
+    const name = dep.display ?? dep.deployment_id;
+    rows.push({
+      cells: [
+        dep.provider === "openrouter" ? `${name} †` : name,
+        mixed
+          ? `$${(mixed.cost_usd ?? 0).toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`
+          : "n/a",
+        ml ? `$${(ml.cost_usd ?? 0).toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}` : "n/a",
+        freeTier
+          ? "$0 (free tier)"
           : `$${perQuestion.toFixed(8).replace(/0+$/, "").replace(/\.$/, "")}`,
-    ]);
+      ],
+      perQ: perQuestion,
+    });
   }
-  rows.sort((a, b) => (a[0] ?? "").localeCompare(b[0] ?? ""));
+  rows.sort((a, b) => a.perQ - b.perQ || (a.cells[0] ?? "").localeCompare(b.cells[0] ?? ""));
+  const tableRows = rows.map((r) => r.cells);
   const header = ["System", "48-q run", "54-text run", "$ / question"];
   const line = (cells: string[]) => `| ${cells.join(" | ")} |`;
-  return [line(header), `|${header.map(() => "---").join("|")}|`, ...rows.map(line)].join("\n");
+  return [line(header), `|${header.map(() => "---").join("|")}|`, ...tableRows.map(line)].join(
+    "\n",
+  );
 }

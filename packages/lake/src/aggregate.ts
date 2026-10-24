@@ -27,6 +27,9 @@ export type RunAggregate = {
   p50_ms: number | null;
   p95_ms: number | null;
   per_language: LangMetrics[];
+  // legacy-v0 bookkeeping: row order in the v0 README table (arrival order),
+  // the sort tiebreak where v0 used the repo's arrival history
+  v0_rank: number | null;
 };
 
 export function percentile(sortedValues: number[], p: 50 | 95): number | null {
@@ -91,6 +94,10 @@ export function aggregateRun(meta: RunMeta, items: RunItem[]): RunAggregate {
     errors: items.filter((i) => typeof i.error === "string").length,
     p50_ms: percentile(latencies, 50) ?? meta.totals.p50_ms ?? null,
     p95_ms: percentile(latencies, 95) ?? meta.totals.p95_ms ?? null,
+    v0_rank:
+      typeof (meta as { v0_rank?: unknown }).v0_rank === "number"
+        ? ((meta as { v0_rank?: number }).v0_rank ?? null)
+        : null,
     per_language: [...byLang.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([lang, agg]) => ({
