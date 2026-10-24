@@ -1,0 +1,22 @@
+{
+  "name": "@zsib/playground",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zsib/bench": "workspace:*",
+    "@zsib/lake": "workspace:*",
+    "@zsib/schema": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "bun-types": "catalog:"
+  }
+}
