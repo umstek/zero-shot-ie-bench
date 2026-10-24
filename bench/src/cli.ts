@@ -99,20 +99,43 @@ async function runDeployment(
       baseUrl: provider.base_url ?? "",
       auth: authFor(provider.id, process.env as Record<string, string | undefined>),
       endpoint: deployment.endpoint,
-      model: model.versions.find((v) => v.id === deployment.version)?.api_slug ?? undefined,
+      // the pinned api_slug is the wire model only where the endpoint is a
+      // URL (typesafe); slug endpoints ARE the wire model (a :free variant
+      // api_slug would clobber it — elephant-1 taught us this)
+      model: deployment.endpoint.startsWith("http")
+        ? (model.versions.find((v) => v.id === deployment.version)?.api_slug ?? undefined)
+        : undefined,
     };
     const adapter = getAdapter(deployment.adapter);
+    // the bench owns retry policy (adapters surface AdapterError with
+    // status + retry-after): retry the rate-limit/transport class a few
+    // times, pacing to the server's retry-after when given
+    const sendWithRetry = async (itemId: string, input: unknown, question: unknown) => {
+      for (let attempt = 0; ; attempt++) {
+        try {
+          return await adapter.send(
+            { model_id: deployment.endpoint, items: [{ item_id: itemId, input, question }] },
+            ctx,
+          );
+        } catch (err) {
+          if (
+            err instanceof AdapterError &&
+            attempt < 4 &&
+            (err.status === 429 || err.status === 425 || err.status === 503 || err.retryAfterMs)
+          ) {
+            const wait = err.retryAfterMs ?? 3000;
+            await new Promise((resolve) => setTimeout(resolve, wait));
+            continue;
+          }
+          throw err;
+        }
+      }
+    };
     const writer = new RunWriter(identity, { kind: "hosted", provider: provider.id });
     for (const item of suite.items) {
       try {
         const t0 = performance.now();
-        const response = await adapter.send(
-          {
-            model_id: deployment.endpoint,
-            items: [{ item_id: item.item_id, input: item.input, question: item.question }],
-          },
-          ctx,
-        );
+        const response = await sendWithRetry(item.item_id, item.input, item.question);
         const latencyMs = performance.now() - t0;
         const result = response.results.find((r) => r.item_id === item.item_id);
         const prediction = result?.prediction ?? null;

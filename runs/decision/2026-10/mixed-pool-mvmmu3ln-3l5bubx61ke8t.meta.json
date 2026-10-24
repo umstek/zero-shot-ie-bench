@@ -1,0 +1,32 @@
+{
+ "run_id": "mixed-pool-mvmmu3ln-3l5bubx61ke8t",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "glide.fastino-systemone",
+ "model_version": "glide@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "fastino"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "835af6135e068dc29cd65df2542beb571540e806"
+ },
+ "started_at": "2026-10-24T16:48:22.065Z",
+ "finished_at": "2026-10-24T16:48:22.065Z",
+ "totals": {
+  "items": 48,
+  "correct": 43,
+  "cost_usd": 0,
+  "p50_ms": 656,
+  "p95_ms": 789,
+  "errors": 0
+ },
+ "source": "bench"
+}

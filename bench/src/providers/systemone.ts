@@ -17,32 +17,51 @@ type ResultRow = TrackResponseOut["results"][number];
 
 type MappedAnswer = Pick<ResultRow, "prediction" | "prob" | "error">;
 
-/** The bench's track-typed question → the System One question row. Choice
- *  rides {choice: {options}} (the v0 mixed-pool wire, jev_client.choice());
- *  anything else forwards untouched so noul/score questions keep their
- *  native shape. */
+/** The bench's track-typed question → the System One question row.
+ *  jev_client.choice() is the contract: {type: "choice", instructions,
+ *  criteria: {option: description|null}} — bare suite options carry null
+ *  descriptions. Anything else forwards untouched so noul/score questions
+ *  keep their native shape. */
 export function systemoneQuestion(item: TrackItem): unknown {
-  const q = item.question as { type?: string; options?: string[] } | undefined;
+  const q = item.question as
+    | { type?: string; options?: string[]; instructions?: string }
+    | undefined;
   if (q?.type === "choice" && q.options) {
-    return { choice: { options: q.options } };
+    const criteria: Record<string, string | null> = {};
+    for (const option of q.options) criteria[option] = null;
+    return {
+      type: "choice",
+      instructions: q.instructions ?? "Choose the best option.",
+      criteria,
+    };
   }
   return item.question;
 }
 
 type AnswerRow = {
-  choice?: { pick?: string; probabilities?: number[] };
+  choice?: string | { pick?: string; probabilities?: number[] };
+  probabilities?: number[];
   noul?: unknown;
   score?: unknown;
 };
 
 function mapAnswerRow(answer: unknown): MappedAnswer {
   const row = answer as AnswerRow | undefined;
+  if (typeof row?.choice === "string") {
+    // the v0 readers (jev_client/bench) read answers[name].choice directly
+    // as the picked option string
+    return {
+      prediction: row.choice,
+      prob: pickProb(row.probabilities),
+      error: null,
+    };
+  }
   if (row && typeof row.choice === "object" && row.choice !== null) {
     const pick = typeof row.choice.pick === "string" ? row.choice.pick : null;
-    const probs = row.choice.probabilities;
+    const probs = row.choice.probabilities ?? row.probabilities;
     return {
       prediction: pick,
-      prob: Array.isArray(probs) && probs.length > 0 ? Math.max(...probs) : null,
+      prob: pickProb(probs),
       error: pick === null ? "choice answer without pick" : null,
     };
   }
@@ -59,6 +78,10 @@ function mapAnswerRow(answer: unknown): MappedAnswer {
     prob: null,
     error: answer === undefined ? "no answer for item" : "unrecognized answer row",
   };
+}
+
+function pickProb(probs: number[] | undefined): number | null {
+  return Array.isArray(probs) && probs.length > 0 ? Math.max(...probs) : null;
 }
 
 /** Cloudflare's REST v4 failure envelope can ride HTTP 200

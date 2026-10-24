@@ -1,0 +1,32 @@
+{
+ "run_id": "mixed-pool-mvmmk29m-1ho7f3wddufqt",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "elephant-1.openrouter-free",
+ "model_version": "elephant-1@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "835af6135e068dc29cd65df2542beb571540e806"
+ },
+ "started_at": "2026-10-24T16:40:06.799Z",
+ "finished_at": "2026-10-24T16:40:06.799Z",
+ "totals": {
+  "items": 48,
+  "correct": 0,
+  "cost_usd": 0,
+  "p50_ms": null,
+  "p95_ms": null,
+  "errors": 48
+ },
+ "source": "bench"
+}

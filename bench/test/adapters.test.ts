@@ -63,7 +63,7 @@ function choiceItem(item_id: string, text: string, options = ["positive", "negat
   };
 }
 
-const CHOICE_ANSWER = { choice: { pick: "negative", probabilities: [0.1, 0.8, 0.1] } };
+const CHOICE_ANSWER = { choice: "negative", probabilities: [0.1, 0.8, 0.1] };
 
 describe("typesafe.systemone", () => {
   const ctx = {
@@ -93,7 +93,11 @@ describe("typesafe.systemone", () => {
     expect(calls[0]?.body.model).toBe("typesafe/jev"); // endpoint is a URL → catalog id (flagged gap)
     expect(calls[0]?.body.state).toBe("Worst customer service ever.");
     expect(calls[0]?.body.questions).toEqual({
-      "mp-001": { choice: { options: ["positive", "negative", "neutral"] } },
+      "mp-001": {
+        type: "choice",
+        instructions: "Choose the best option.",
+        criteria: { positive: null, negative: null, neutral: null },
+      },
     });
     expect(res.results[0]?.prediction).toBe("negative");
     expect(res.results[0]?.prob).toBeCloseTo(0.8);

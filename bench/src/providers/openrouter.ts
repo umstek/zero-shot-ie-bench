@@ -2,6 +2,7 @@
 // /api/v1/systemone router (same {model, state, questions} wire as TypeSafe,
 // per legacy/engines/jev_client.py + openrouter_client.py).
 import type { TrackRequestOut, TrackResponseOut } from "@zsib/schema";
+import { sendSystemone } from "./systemone.ts";
 import { type Adapter, type AdapterContext, AdapterError } from "./types.ts";
 import { mergeUsage } from "./wire.ts";
 
@@ -33,52 +34,17 @@ async function postJson(
   return { status: res.status, json, retryAfterMs };
 }
 
-/** {model, state, questions} → {model, answers, usage}; answers keyed by
- *  question id, matching the v0 JevClient wire (engines/jev_client.py). */
+/** The System One router — same {model, state, questions} wire as TypeSafe
+ *  (engines/jev_client.py is the contract), so this delegates to the shared
+ *  implementation; only the URL and bearer differ. */
 export const systemone: Adapter = {
   id: "openrouter.systemone",
-  async send(req: TrackRequestOut, ctx: AdapterContext): Promise<TrackResponseOut> {
-    const questions: Record<string, unknown> = {};
-    const states: Record<string, string> = {};
-    for (const item of req.items) {
-      states[item.item_id] = (item.input as { text?: string } | undefined)?.text ?? "";
-      const q = item.question as { type?: string; options?: string[] } | undefined;
-      if (q?.type === "choice" && q.options) {
-        questions[item.item_id] = { choice: { options: q.options } };
-      } else {
-        questions[item.item_id] = item.question;
-      }
-    }
-    // the systemone router takes ONE state per request; bench runs one item
-    // per request through this adapter unless items share a state
-    const first = req.items[0];
-    if (!first) throw new AdapterError("empty request", 400, null);
-    const { json } = await postJson(
-      `${ctx.baseUrl}/systemone`,
-      { model: req.model_id, state: states[first.item_id], questions },
-      ctx,
-    );
-    const payload = json as {
-      answers?: Record<string, { choice?: { pick?: string; probabilities?: number[] } }>;
-      usage?: unknown;
-    };
-    return {
-      model_id: req.model_id,
-      compute_ms: 0, // hosted: measured client-side by the bench, not here
-      usage: payload.usage ?? null,
-      results: req.items.map((item) => {
-        const answer = payload.answers?.[item.item_id];
-        const pick = answer?.choice?.pick ?? null;
-        const probs = answer?.choice?.probabilities ?? null;
-        return {
-          item_id: item.item_id,
-          prediction: pick,
-          prob: probs ? Math.max(...probs) : null,
-          error: pick === null && !answer ? "no answer for item" : null,
-        };
-      }),
-    };
-  },
+  send: (req, ctx) =>
+    sendSystemone(req, ctx, {
+      url: `${ctx.baseUrl}/systemone`,
+      bearer: ctx.auth.OPENROUTER_API_KEY,
+      provider: "openrouter",
+    }),
 };
 
 /** Softmax over the returned relevance scores, read at `at` — the rerank
