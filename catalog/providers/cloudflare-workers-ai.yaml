@@ -1,0 +1,14 @@
+id: cloudflare-workers-ai
+name: Cloudflare Workers AI
+kind: api
+base_url: https://api.cloudflare.com/client/v4
+auth: [CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_AUTH_TOKEN]
+docs: https://developers.cloudflare.com/workers-ai/
+zdr: null  # not stated in the v0 sources; record in observations when known
+contracts:
+  - name: clef
+    kind: systemone
+    endpoint: /accounts/<account>/ai/run/@cf/cloudflare/<model>
+    notes: Jev-API-compatible decision models (clef, clef-flash, clef-omni);
+      omni extends images[] state with audio[] and videos[]
+notes: models also have Apache-2.0 weights on HF; clef is vision-capable.

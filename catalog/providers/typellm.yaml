@@ -1,0 +1,15 @@
+id: typellm
+name: TypeLLM
+kind: api
+base_url: https://api.typellm.ai
+auth: [TYPELLM_API_KEY]
+docs: https://typellm.ai/docs/api
+zdr: null  # not stated in the v0 sources; record in observations when known
+contracts:
+  - name: generate
+    kind: typed-generation
+    endpoint: /v1/generate
+    notes: SGLang constrained decoding over hosted Qwen3.8-27B; JSON-Schema
+      fields answered by one-token enum picks; the October releases also
+      speak Jev's /v1/systemone
+notes: per-question thinking mode priced separately; vision-capable.

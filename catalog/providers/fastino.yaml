@@ -1,0 +1,17 @@
+id: fastino
+name: Fastino
+kind: api
+base_url: https://api.fastino.ai/v1
+auth: [FASTINO_API_KEY]
+docs: https://fastino.ai/
+zdr: null  # not stated in the v0 sources; record in observations when known
+contracts:
+  - name: systemone
+    kind: systemone
+    endpoint: /v1/systemone
+  - name: chat
+    kind: chat
+    endpoint: /v1/chat/completions
+    notes: GLiDE rides systemone; hosted GLiNER twins + GLiNER2.5-Decide ride
+      chat-completions (legacy/engines/fastino_client.py)
+notes: research tier pricing; thinking tokens priced $0 on GLiDE.

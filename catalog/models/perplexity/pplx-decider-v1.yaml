@@ -1,0 +1,37 @@
+id: perplexity/pplx-decider-v1
+family: pplx-decider
+org: Perplexity
+license: proprietary
+open_weights: false
+params_b: 27
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/perplexity/pplx-decider-v1-27b
+  paper: null
+versions:
+- id: pplx-decider-v1@2026-10
+  hf_revision: null
+  api_slug: perplexity/pplx-decider-v1-27b
+  released: null
+deployments:
+- id: pplx-decider-v1.openrouter
+  kind: hosted
+  version: pplx-decider-v1@2026-10
+  provider: openrouter
+  endpoint: perplexity/pplx-decider-v1-27b
+  adapter: openrouter.systemone
+  notes: 'Perplexity''s Decisions-API entry: typed probabilistic answers - choice with per-option probabilities,
+    noul, score rubrics - up to 128 questions per request. 262K ctx per the v0 bench notes. Reports retainsPrompts:
+    false (no †). $0.04/M input; measured $4.4e-6/q.'
+notes: The README row lists an image modality for the Decider family but records it as not live yet -
+  claims.modalities stays [text]. claims.languages is the v0-measured baseline (100% on the 9-language
+  suite).
+v0:
+  benched: true

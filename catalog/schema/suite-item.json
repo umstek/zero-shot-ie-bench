@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lang": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tier": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "popular",
+            "medium",
+            "rare"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "images": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "text",
+        "images"
+      ],
+      "additionalProperties": {}
+    },
+    "question": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "options"
+      ],
+      "additionalProperties": {}
+    },
+    "gold": {}
+  },
+  "required": [
+    "item_id",
+    "lang",
+    "tier",
+    "input",
+    "question",
+    "gold"
+  ],
+  "additionalProperties": {}
+}

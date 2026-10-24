@@ -1,0 +1,36 @@
+id: base-labs/elephant-1
+family: elephant
+org: Base Labs
+license: MIT (weights on HF); free API tier
+open_weights: true
+params_b: 9
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/baseten/elephant-1
+  paper: null
+versions:
+- id: elephant-1@2026-10
+  hf_revision: null
+  api_slug: baseten/elephant-1
+  released: '2026-10-20'
+deployments:
+- id: elephant-1.openrouter-free
+  kind: hosted
+  version: elephant-1@2026-10
+  provider: openrouter
+  endpoint: baseten/elephant-1:free
+  adapter: openrouter.systemone
+  notes: Base Labs' Qwen3.5-9B decision model served by Baseten on the System One contract (choice/noul/score
+    with calibrated probabilities). The plain baseten/elephant-1 slug answers no endpoints - all traffic
+    rides :free (20 req/min paced the multilingual run to 2.97 s/text). MIT weights on HF baselabs/elephant-1.
+    The free endpoint documents no retention policy, so the row carries †. Measured $0.
+notes: claims.languages is the v0-measured baseline (perfect 54/54 multilingual run).
+v0:
+  benched: true

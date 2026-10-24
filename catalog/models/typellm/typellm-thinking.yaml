@@ -1,0 +1,40 @@
+id: typellm/typellm-thinking
+family: typellm
+org: TypeLLM
+license: Apache-2.0 (harness); hosted API proprietary
+open_weights: false
+params_b: 27
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  languages: en
+status: active
+links:
+  card: https://typellm.ai/
+  paper: null
+versions:
+- id: typellm-latest@2026-10
+  hf_revision: null
+  api_slug: typellm-latest
+  released: null
+deployments:
+- id: typellm-thinking.generate
+  kind: hosted
+  version: typellm-latest@2026-10
+  provider: typellm
+  endpoint: typellm-latest
+  adapter: typellm.generate
+  notes: 'Same model, endpoint and adapter as typellm/typellm-latest with per-question thinking enabled
+    (thinking: true, thinking_budget capped 4096): reasoning tokens bill at their own $0.50/M on top of
+    input''s $0.05/M, answers free; measured $6.1e-5/q after the 2026-10-17 retune (reasoning shrank 9,376
+    -> 5,530 tokens and accuracy dropped 97.9% -> 91.7% - plain is now both cheaper and more accurate
+    on the pool). Split into its own file so each benched v0 system is one catalog row. No published data-retention
+    commitment (†).'
+notes: Same version as typellm/typellm-latest - the thinking mode is a request parameter, not a distinct
+  version or endpoint.
+v0:
+  benched: true

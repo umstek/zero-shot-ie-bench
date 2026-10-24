@@ -1,0 +1,33 @@
+id: jaredpalmer/kev-4b
+family: kev
+org: jaredpalmer
+license: proprietary
+open_weights: false
+params_b: 4
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/jaredpalmer/kev-4b
+  paper: null
+versions:
+- id: kev-4b@2026-09
+  hf_revision: null
+  api_slug: jaredpalmer/kev-4b
+  released: null
+deployments:
+- id: kev-4b.openrouter
+  kind: hosted
+  version: kev-4b@2026-09
+  provider: openrouter
+  endpoint: jaredpalmer/kev-4b
+  adapter: openrouter.systemone
+  notes: Same System One contract as local Kev, hosted (OpenRouter /api/v1/systemone, Bearer OPENROUTER_API_KEY).
+    Non-ZDR (†). Batches each 24-question task into one request; measured $1.5e-6/q.
+v0:
+  benched: true

@@ -1,0 +1,44 @@
+id: typesafe/jev
+family: jev
+org: TypeSafe
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  languages: en
+status: active
+links:
+  card: https://www.typesafe.ai/
+  paper: null
+versions:
+- id: jev-1.13.0
+  hf_revision: null
+  api_slug: jev-1.13.0
+  released: null
+- id: jev-1.14.0
+  hf_revision: null
+  api_slug: jev-1.14.0
+  released: '2026-10-14'
+deployments:
+- id: jev.typesafe-systemone
+  kind: hosted
+  version: jev-1.14.0
+  provider: typesafe
+  endpoint: https://api.typesafe.ai/v1/systemone
+  adapter: typesafe.systemone
+  notes: 'POST {model, state, questions} (Bearer TYPESAFE_API_KEY), the TypeSafe System One wire format
+    (@typesafe-ai/sdk 0.6.x). Pinned to jev-1.14.0 because the jev-latest alias flips with releases (~2026-10-21
+    for 1.14). Context ceilings 64k per request / 32k per question; 262k behind the TypeSafe-Danger-Zone-Long-Context
+    header; image assets + 1.14 box questions behind TypeSafe-Danger-Zone-Images (benched text-only).
+    Provider reports tokens but no $ - v0 cost derived: $5.3e-6/q at $0.042/M input.'
+notes: 1.13 and 1.14 both record 45/48 on the mixed pool (they trade exactly one question each way); 1.13
+  is kept as a version for the recorded history. claims.languages is the v0-measured baseline only - Jev
+  measured 100% on the 9-language suite.
+v0:
+  benched: true

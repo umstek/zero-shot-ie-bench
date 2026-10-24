@@ -1,0 +1,39 @@
+id: cloudflare/clef-omni
+family: clef
+org: Cloudflare
+license: Apache-2.0 (weights on HF; metered API)
+open_weights: true
+params_b: 30
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  - audio
+  - video
+  languages: en
+status: active
+links:
+  card: https://developers.cloudflare.com/workers-ai/models/clef-omni/
+  paper: null
+versions:
+- id: clef-omni@2026-10
+  hf_revision: null
+  api_slug: '@cf/cloudflare/clef-omni'
+  released: '2026-10-09'
+deployments:
+- id: clef-omni.workers-ai
+  kind: hosted
+  version: clef-omni@2026-10
+  provider: cloudflare-workers-ai
+  endpoint: '@cf/cloudflare/clef-omni'
+  adapter: workers-ai.clef
+  notes: 'Clef''s MoE member: Qwen3-Omni-30B-A3B fine-tune (30B total / 3B active) on the same System
+    One questions, plus audio[]/videos[] state inputs alongside the Clef images[] extension (benches ride
+    the text path). ZDR. Derived $1.4e-5/q at $0.15/M input.'
+notes: Weights are Apache 2.0 on HF, but ~60 GB bf16 towers past the v0 CPU box - the local twin was never
+  run. claims.languages is the v0-measured baseline (98% on the 9-language suite).
+v0:
+  benched: true

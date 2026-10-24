@@ -1,0 +1,36 @@
+id: microsoft/microsoft-decision-1
+family: microsoft-decision-1
+org: Microsoft
+license: proprietary
+open_weights: false
+params_b: 9
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/microsoft/microsoft-decision-1
+  paper: null
+versions:
+- id: microsoft-decision-1@2026-10
+  hf_revision: null
+  api_slug: microsoft/microsoft-decision-1
+  released: null
+deployments:
+- id: microsoft-decision-1.openrouter
+  kind: hosted
+  version: microsoft-decision-1@2026-10
+  provider: openrouter
+  endpoint: microsoft/microsoft-decision-1
+  adapter: openrouter.systemone
+  notes: 'Microsoft''s Model Foundry entry: Qwen3.5-9B post-trained for single-pass scoring. Azure is
+    the only endpoint and satisfies this account''s enforced ZDR (no †). 33K ctx per the v0 bench notes;
+    $0.042/M input; measured $2.1e-6/q. Perfect 54/54 multilingual run in v0.'
+notes: The card says updated continually while the API shape stays the same - a standing silent-change
+  risk for the version pin.
+v0:
+  benched: true

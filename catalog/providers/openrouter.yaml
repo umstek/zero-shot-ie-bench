@@ -1,0 +1,24 @@
+id: openrouter
+name: OpenRouter
+kind: api
+base_url: https://openrouter.ai/api/v1
+auth: [OPENROUTER_API_KEY]
+docs: https://openrouter.ai/docs
+zdr: varies by endpoint — account privacy settings gate retention; the
+  account used for v0 runs allows non-ZDR endpoints (README † note). Solar
+  Decide / Solar Decide Flash have a ZDR Upstage endpoint but v0 used default
+  routing. GPT-6 Luna Decisions retains prompts.
+contracts:
+  - name: systemone
+    kind: systemone
+    endpoint: /chat/completions (systemone schema via model routing)
+  - name: decisions
+    kind: systemone
+    notes: OpenRouter Decisions API entries ride the same systemone adapter
+      (openrouter.systemone, 17 deployments in v0)
+  - name: rerank
+    kind: rerank
+    notes: 7 reranker deployments in v0 (openrouter.rerank)
+notes: free tiers exist (elephant-1:free ~20 req/min; mercury-decide:free).
+  Per-endpoint price/context/ZDR metadata lands in observations/ via
+  `bench sync-metadata` (phase 4).

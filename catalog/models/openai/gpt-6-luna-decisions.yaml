@@ -1,0 +1,38 @@
+id: openai/gpt-6-luna-decisions
+family: gpt6-luna-decisions
+org: OpenAI
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/openai/gpt-6-luna-decisions
+  paper: null
+versions:
+- id: gpt-6-luna-decisions@2026-10
+  hf_revision: null
+  api_slug: openai/gpt-6-luna-decisions
+  released: null
+deployments:
+- id: gpt-6-luna-decisions.openrouter
+  kind: hosted
+  version: gpt-6-luna-decisions@2026-10
+  provider: openrouter
+  endpoint: openai/gpt-6-luna-decisions
+  adapter: openrouter.systemone
+  notes: GPT-6 Luna behind OpenAI's Decisions API on the System One contract - typed choice/noul/score
+    with probabilities, input-only billing ($0.10/M), 1.05M context. The endpoint retains prompts (†);
+    benched 2026-10-24 only after the account's OpenAI-group ZDR toggle was lifted by user direction.
+    Measured $1.3e-5/q; easy calls return degenerate probabilities (1.0/0.0, confidence 1.0) - calibration-table
+    fodder.
+notes: Size undisclosed - params_b null. claims.languages is the v0-measured baseline (perfect 54/54 multilingual
+  run).
+v0:
+  benched: true

@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "partial",
+        "failed",
+        "deferred"
+      ]
+    },
+    "deferred_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deployment": {
+      "type": "string"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "served_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "where": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "hosted"
+            },
+            "provider": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "provider"
+          ],
+          "additionalProperties": {}
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "local"
+            },
+            "machine": {
+              "type": "string"
+            },
+            "runtime": {}
+          },
+          "required": [
+            "kind",
+            "machine",
+            "runtime"
+          ],
+          "additionalProperties": {}
+        }
+      ]
+    },
+    "suite": {
+      "type": "string"
+    },
+    "suite_version": {
+      "type": "number"
+    },
+    "suite_hash": {
+      "type": "string"
+    },
+    "params": {},
+    "params_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bench": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "git_sha": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "git_sha"
+      ],
+      "additionalProperties": {}
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "finished_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "number"
+        },
+        "correct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cost_usd": {
+          "type": "number"
+        },
+        "p50_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "p95_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "errors": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "items",
+        "correct",
+        "cost_usd",
+        "p50_ms",
+        "p95_ms",
+        "errors"
+      ],
+      "additionalProperties": {}
+    },
+    "source": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "status",
+    "deferred_reason",
+    "deployment",
+    "model_version",
+    "served_version",
+    "where",
+    "suite",
+    "suite_version",
+    "suite_hash",
+    "params",
+    "params_hash",
+    "bench",
+    "started_at",
+    "finished_at",
+    "totals",
+    "source"
+  ],
+  "additionalProperties": {}
+}

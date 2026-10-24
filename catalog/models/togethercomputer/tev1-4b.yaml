@@ -1,0 +1,36 @@
+id: togethercomputer/tev1-4b
+family: tev1
+org: Together
+license: proprietary API (open recipe + training code)
+open_weights: false
+params_b: 4
+claims:
+  tracks:
+  - decision
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/togethercomputer/tev1-4b-experimental
+  paper: null
+versions:
+- id: tev1-4b@2026-10
+  hf_revision: null
+  api_slug: togethercomputer/tev1-4b-experimental
+  released: null
+deployments:
+- id: tev1-4b.openrouter
+  kind: hosted
+  version: tev1-4b@2026-10
+  provider: openrouter
+  endpoint: togethercomputer/tev1-4b-experimental
+  adapter: openrouter.systemone
+  notes: 'Experimental Qwen3.5-4B SFT choosing one of 2-24 labeled options; keeps Qwen''s next-token head,
+    and OpenRouter serves it on the systemone schema anyway. The data recipe and training code are published.
+    Reports retainsPrompts: false (no †). $0.042/M input; measured $4.8e-6/q. Trails the other Decisions
+    arrivals at 79.2%.'
+notes: Choice-only in the recorded v0 contract - claims.tracks is [decision] without score. claims.languages
+  is the v0-measured baseline (100% on the 9-language suite).
+v0:
+  benched: true

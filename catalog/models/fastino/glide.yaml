@@ -1,0 +1,38 @@
+id: fastino/glide
+family: glide
+org: Fastino
+license: metered API (research tier)
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://fastino.ai/
+  paper: null
+versions:
+- id: glide@2026-10
+  hf_revision: null
+  api_slug: fastino/GLiDE
+  released: '2026-09-30'
+deployments:
+- id: glide.fastino-systemone
+  kind: hosted
+  version: glide@2026-10
+  provider: fastino
+  endpoint: fastino/GLiDE
+  adapter: fastino.systemone
+  notes: POST https://api.fastino.ai/v1/systemone (FASTINO_API_KEY) - TypeSafe's System One wire format
+    behind Fastino's REST, flat payload. One fast scoring pass plus adaptive reasoning when the leading
+    option is uncertain; thinking output tokens are priced $0, only input bills ($0.15/M). 40k context,
+    served on one B200; Fastino's model catalog flags it ZDR. Measured $1.2e-5/q (derived from ~1.9k input
+    tokens per batched 24-question request).
+notes: No open-weights release recorded in v0 - open_weights false. Fastino markets GLiDE as an English-first
+  Decision Index model, hence claims.languages 'en' (it measured 100% on the 9-language suite anyway).
+v0:
+  benched: true

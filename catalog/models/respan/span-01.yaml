@@ -1,0 +1,36 @@
+id: respan/span-01
+family: span-01
+org: Respan
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - classify
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/respan/span-01
+  paper: null
+versions:
+- id: span-01@2026-09
+  hf_revision: null
+  api_slug: respan/span-01
+  released: null
+deployments:
+- id: span-01.openrouter
+  kind: hosted
+  version: span-01@2026-09
+  provider: openrouter
+  endpoint: respan/span-01
+  adapter: openrouter.systemone
+  notes: 'Behavior scorer addressed through OpenRouter''s /api/v1/systemone: one noul (yes-probability)
+    question per label, argmax = decision. Rejects an explicit criteria: null (omit the field) and wants
+    the text as a plain-string state (it scores conversation spans). Non-ZDR (†) - ZDR-enforcing account
+    settings exclude it. Measured $9.0e-7/q (payloads are tiny).'
+notes: Native output is one probability per label - claimed track is classify (argmax), not decision.
+  Size closed, params_b null.
+v0:
+  benched: true

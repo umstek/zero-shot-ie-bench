@@ -1,0 +1,53 @@
+id: fastino/gliner2.5-decide
+family: gliner
+org: Fastino
+license: Apache-2.0
+open_weights: true
+params_b: 0.34
+claims:
+  tracks:
+  - classify
+  - ner
+  - relation
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://huggingface.co/fastino/GLiNER2.5-Decide
+  paper: null
+versions:
+- id: gliner2.5-decide@2026-09
+  hf_revision: null
+  api_slug: null
+  released: null
+deployments:
+- id: gliner2.5-decide.local
+  kind: local
+  version: gliner2.5-decide@2026-09
+  runner: gliner
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+    batch: null
+  requires:
+    vram_gb: null
+    ram_gb: 1.4
+    accel: null
+  notes: fastino/GLiNER2.5-Decide - the decision-tuned sibling (classification primary, extraction still
+    supported) via the gliner2 AutoExtractor, transformers 4.57.x pin. Best local classifier on the v0
+    mixed pool and best local NER-capable classifier. ram_gb estimated (340M fp32, no overhead).
+- id: gliner2.5-decide.fastino-chat
+  kind: hosted
+  version: gliner2.5-decide@2026-09
+  provider: fastino
+  endpoint: fastino/GLiNER-2.5-Decide
+  adapter: fastino.chat
+  notes: Hosted twin - note the hosted id is hyphenated (fastino/GLiNER-2.5-Decide) where the HF repo
+    is not. Rides the chat-completions schema, NOT /v1/systemone, despite being a decision model (docs.fastino.ai/concepts/gliner-2-5-decide).
+    $0.03/M input, output $0; measured $3.9e-7/q. ZDR catalog.
+notes: Two v0 systems, one model (hosted twin). ram_gb is estimated from the 340M size.
+v0:
+  benched: true

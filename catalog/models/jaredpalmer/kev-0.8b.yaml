@@ -1,0 +1,44 @@
+id: jaredpalmer/kev-0.8b
+family: kev
+org: jaredpalmer
+license: Apache-2.0
+open_weights: true
+params_b: 0.8
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://github.com/jaredpalmer/kev
+  paper: null
+versions:
+- id: kev-0.8b@2026-09
+  hf_revision: null
+  api_slug: null
+  released: null
+deployments:
+- id: kev-0.8b.local-systemone
+  kind: local
+  version: kev-0.8b@2026-09
+  runner: systemone-local
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+    batch: null
+  requires:
+    vram_gb: null
+    ram_gb: 3.2
+    accel: null
+  notes: Open-weight Jev lookalike (Qwen3.5 base + LoRA/head, 9.3M trained) serving the System One contract
+    on 127.0.0.1:8009 (uv run --extra serve --project ../kev python -m kev.serve --run jaredpalmer/kev-0.8b);
+    needs transformers >=5.17, so it runs from its own clone. 4B/9B siblings exist but are impractical
+    on CPU. ram_gb estimated (0.8B fp32, no overhead).
+notes: ram_gb is estimated from the 0.8B size (4 bytes/param fp32, no overhead).
+v0:
+  benched: true

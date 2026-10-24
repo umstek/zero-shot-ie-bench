@@ -1,0 +1,56 @@
+# Task × modality definitions + metric set per track (docs/plan/02-architecture.md).
+# live = exercised by v0 runs; planned = suite + scorer to come.
+- id: classify
+  description: zero-shot text classification (choice among label descriptions) — the v0 mixed-pool and multilingual benchmarks
+  metrics:
+    primary: [accuracy]
+    secondary: [brier, ece, p50_ms, p95_ms]
+  live: true
+- id: ner
+  description: zero-shot named-entity extraction over arbitrary label sets
+  metrics:
+    primary: [span_micro_f1_strict]
+    secondary: [span_micro_f1_partial, per_label_f1]
+  live: true
+- id: rerank
+  description: cross-encoder reranking, benched as a classifier via (instruction, label) argmax
+  metrics:
+    primary: [ndcg_at_k, mrr]
+    secondary: []
+  live: true
+- id: decision
+  description: typed decisions — choice/score/noul with calibrated probabilities on the System One contract
+  metrics:
+    primary: [accuracy]
+    secondary: [brier, ece, p50_ms, p95_ms]
+  live: false
+- id: score
+  description: ordinal/rubric scoring as a typed question type
+  metrics:
+    primary: [accuracy]
+    secondary: [brier, ece, p50_ms, p95_ms]
+  live: false
+- id: relation
+  description: zero-shot relation extraction over entity pairs
+  metrics:
+    primary: [span_micro_f1_strict]
+    secondary: [span_micro_f1_partial, per_label_f1]
+  live: false
+- id: typed-extract
+  description: typed field extraction (Clairic-class engines)
+  metrics:
+    primary: [field_value_accuracy]
+    secondary: [p_null, offset_grounding_rate]
+  live: false
+- id: schema-extract
+  description: JSON-Schema-constrained extraction (Nuextract-class engines)
+  metrics:
+    primary: [field_value_accuracy]
+    secondary: [p_null, offset_grounding_rate]
+  live: false
+- id: event
+  description: event extraction with trigger + arguments (planned)
+  metrics:
+    primary: [span_micro_f1_strict]
+    secondary: [span_micro_f1_partial, per_label_f1]
+  live: false

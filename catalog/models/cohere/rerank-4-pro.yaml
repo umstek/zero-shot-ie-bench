@@ -1,0 +1,36 @@
+id: cohere/rerank-4-pro
+family: rerank-hosted
+org: Cohere
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - rerank
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/cohere/rerank-4-pro
+  paper: null
+versions:
+- id: rerank-4-pro@2026-09
+  hf_revision: null
+  api_slug: cohere/rerank-4-pro
+  released: null
+deployments:
+- id: rerank-4-pro.openrouter-rerank
+  kind: hosted
+  version: rerank-4-pro@2026-09
+  provider: openrouter
+  endpoint: cohere/rerank-4-pro
+  adapter: openrouter.rerank
+  used_as: classify
+  notes: 'Cohere-style /api/v1/rerank contract, used as a decision engine: (instruction, label) pair scores,
+    argmax. Non-ZDR (†). Bills ~2.5 search units per rerank request, so a 48-question run costs $0.12
+    - measured $2.5e-3/q, the expensive end of the hosted field.'
+notes: Size closed - params_b null. claims.languages is the v0-measured baseline (83% on the 9-language
+  suite).
+v0:
+  benched: true

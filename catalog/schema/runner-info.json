@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "runner": {
+      "type": "string"
+    },
+    "protocol": {
+      "default": "v1",
+      "type": "string"
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "model_id": {
+            "type": "string"
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "runtime": {}
+        },
+        "required": [
+          "model_id",
+          "version",
+          "runtime"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "host": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "string"
+        },
+        "ram_gb": {
+          "type": "number"
+        },
+        "gpus": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "vram_gb": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "model",
+              "vram_gb"
+            ],
+            "additionalProperties": {}
+          }
+        },
+        "os": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hostname",
+        "cpu",
+        "ram_gb",
+        "gpus",
+        "os"
+      ],
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "runner",
+    "protocol",
+    "models",
+    "host"
+  ],
+  "additionalProperties": {}
+}

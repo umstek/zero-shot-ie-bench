@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "owned",
+        "rented",
+        "ci"
+      ]
+    },
+    "cpu": {
+      "type": "string"
+    },
+    "ram_gb": {
+      "type": "number"
+    },
+    "gpus": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "vram_gb": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "model",
+          "vram_gb"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "os": {
+      "type": "string"
+    },
+    "cost_per_hour_usd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cost_basis": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "hardware_usd": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "life_hours": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "power_usd_per_hour": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "hardware_usd",
+            "life_hours",
+            "power_usd_per_hour"
+          ],
+          "additionalProperties": {}
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "fingerprint_match": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "hostname"
+      ],
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "cpu",
+    "ram_gb",
+    "gpus",
+    "os",
+    "cost_per_hour_usd",
+    "cost_basis",
+    "fingerprint_match"
+  ],
+  "additionalProperties": {}
+}

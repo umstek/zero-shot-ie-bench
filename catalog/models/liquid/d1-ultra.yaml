@@ -1,0 +1,36 @@
+id: liquid/d1-ultra
+family: d1
+org: Liquid AI
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/liquid/d1-ultra
+  paper: null
+versions:
+- id: d1-ultra@2026-10
+  hf_revision: null
+  api_slug: liquid/d1-ultra
+  released: '2026-10-15'
+deployments:
+- id: d1-ultra.openrouter
+  kind: hosted
+  version: d1-ultra@2026-10
+  provider: openrouter
+  endpoint: liquid/d1-ultra
+  adapter: openrouter.systemone
+  notes: 'The larger 2026-10-15 step-up, 32k context. Joined the hosted pool lead on arrival: 95.8% (46/48)
+    at 0.027 s/question - fastest at the top of the v0 table. Measured $2.2e-6/q; the + is inherited from
+    the same Liquid routing.'
+notes: Hosted size undisclosed - params_b null. claims.languages is the v0-measured baseline (100% on
+  the 9-language suite).
+v0:
+  benched: true
