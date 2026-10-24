@@ -60,6 +60,46 @@ spectrum/multilingual/app registries; per-endpoint data-retention
 policy probes returned no policy field, so d1-ultra carries the † from
 Liquid's routing and the Deciders keep the family's no-†.
 
+**2026-10-24 — Elephant-1 rides the free tier; luna still gated.** The
+Oct-20–24 OpenRouter arrivals screened
+(`_trials/trial_14_openrouter_oct24.py`, same fixed mini-pool):
+
+| System | Slug | Gate | Latency/q | Batch cost |
+|---|---|---|---|---|
+| [Elephant-1 9B](https://openrouter.ai/baseten/elephant-1) | `baseten/elephant-1:free` | 10/12 | 0.034 s | $0 (free tier) |
+
+Same two mixed-sentiment misses as the whole Oct-18 cohort ("great
+camera, but…", "Service was slow…, though…"), fixing "Not the cheapest
+option…". The plain `baseten/elephant-1` slug answers no endpoints
+(endpoints API returns `[]`); everything routes through `:free`.
+User-directed full pools the same hour ("the gate is wrong, run all"
+standing order): mixed pool **89.6%** (43/48, 0.018 s/q — Mercury
+Decide's tier at a third of the latency), multilingual **54/54** (100%
+on every language and tier; 2.97 s/text under the free tier's
+20-req/min pacing), both runs measured $0. Promoted to the README
+tables and the spectrum/multilingual/app registries; the free endpoint
+documents no retention policy, so the row carries the † (Mercury's
+:free precedent). `openai/gpt-6-luna-decisions` stays unbenched — the
+2026-10-24 live probe still returns "ZDR violation (account settings)"
+— and SubQ Snap 1.1 (NanoGPT only), Celeris-1 (own API) and Clairic
+(Workers AI) are not on OpenRouter at all.
+
+**Same-day unlock — luna-decisions joins after the ZDR flip.** The
+user lifted the account's OpenAI-group ZDR enforcement on
+openrouter.ai/settings/privacy (several toggles live there — global,
+per model group, per guardrail; the per-group OpenAI one was the
+blocker, and the live probe flipped from "ZDR violation (account
+settings)" to a clean answer). Full pools, gate skipped per the
+standing order: mixed pool **93.8%** (45/48, 0.025 s/q — the
+Jev/Decider tier), multilingual **54/54** (100% every language and
+tier, 0.547 s/text). Measured $0.000602/$0.000759 (6.0k/7.6k input
+tokens, output free — the Decisions API bills input only). The
+endpoint retains prompts, so the row carries the †; the account
+accepted that trade by user direction. Calibration-table observation:
+easy calls return degenerate probabilities (1.0/0.0, confidence 1.0) —
+consistent with Artificial Analysis' "every decision model is
+overconfident".
+
 ## Culled from the benchmark
 
 LFM2.5-RLCD and the nanodiff pair failed the 12/12 trial; the other

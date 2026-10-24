@@ -1,12 +1,12 @@
-"""Interactive demo + benchmarks for seventy-nine zero-shot IE/classification
-systems across thirty-six families. Live tabs: GLiNER 2.5 (with the
+"""Interactive demo + benchmarks for eighty-one zero-shot IE/classification
+systems across thirty-eight families. Live tabs: GLiNER 2.5 (with the
 decision-tuned GLiNER2.5-Decide sibling), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiNER-X (spawned into .venv-glinerx), GLiClass, Rerankers, Laya, von,
 JevK5-Lite, LFM2.5-RLCD, Certo, MoJev,
 nanodiff (v1 + v2), Lumma, Julia, Intern-Decision, K2-Type, Decision 2.0,
 Decision 3.0, d1
 (d1-3B + d1-omni), so1, Jev (cloud), OpenRouter (hosted) and the Ollaya
-local daemon; benchmark tabs hold the measured numbers for the seventy-six
+local daemon; benchmark tabs hold the measured numbers for the seventy-eight
 benchmarked systems (GLiREL, GLiNER-relex and ReLiK are demoed but not yet
 benchmarked), the OpenRouter-hosted systems (Kev 4B, Solar Decide, Span-01,
 six rerankers) and Fastino's hosted GLiNER twins included.
@@ -2075,6 +2075,8 @@ OPENROUTER_SYSTEMONE = {
     "Decider V1.2 27B (OpenRouter)": "perplexity/pplx-decider-v1.2",
     "Decider Flash V1.2 (OpenRouter)": "perplexity/pplx-decider-flash-v1.2",
     "D1-ultra (OpenRouter)": "liquid/d1-ultra",
+    "Elephant-1 9B (OpenRouter)": "baseten/elephant-1:free",
+    "GPT-6 Luna Decisions (OpenRouter)": "openai/gpt-6-luna-decisions",
 }
 # the choice-question subset (the Span scorers answer noul only - the
 # noul branch below claims them first)
@@ -3684,8 +3686,8 @@ def main() -> None:
                     "remaining local engines (Kev, "
                     "AgentJev, decider, OpenThai, Verdict) run as separate "
                     "servers or venvs; the benchmark tabs hold the "
-                    "measured numbers for all 76 systems across "
-                    "thirty-six families.")
+                    "measured numbers for all 78 systems across "
+                    "thirty-eight families.")
         build_gliner_tab(gliner)
         build_gliformer_tab(gliformer)
         build_glirel_tab()

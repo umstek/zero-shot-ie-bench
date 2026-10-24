@@ -1,7 +1,7 @@
 # zero-shot-ie-bench
 
-Seventy-nine zero-shot systems (seventy-six of them benchmarked) across
-thirty-six information-extraction and classification families —
+Eighty-one zero-shot systems (seventy-eight of them benchmarked) across
+thirty-eight information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints plus Fastino's API, plus ten
@@ -56,6 +56,8 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Decision-1](https://openrouter.ai/microsoft/microsoft-decision-1) (`microsoft/microsoft-decision-1`) | cloud decision model (Microsoft's Model Foundry entry: Qwen3.5-9B post-trained for single-pass scoring, "updated continually while the API shape stays the same"; Azure is the only endpoint and it satisfies this account's enforced ZDR) | 9B | proprietary API | metered · $2.1e-6/q |
 | [Drex v1.5](https://openrouter.ai/nace-ai/drex-v1.5) (`nace-ai/drex-v1.5`) | cloud decision model (Nace.AI's MiMo-V2.6-Distill-Qwen-9B on the System One contract; the card claims Decision Index 0.2.1 rank 1; open weights plus an Apache-2.0 runtime adapted from Kev — the local fp32 twin needs ~36 GB and GGUF serving waits on Nace's llama.cpp/Ollaya fork, so it is benched hosted) | 9B | Nace.AI Open RAIL-M weights · Apache 2.0 runtime | metered · $1.4e-6/q |
 | [d1](https://openrouter.ai/liquid/d1) / [d1-ultra](https://openrouter.ai/liquid/d1-ultra) (`liquid/d1*`) | cloud decision model (Liquid AI's structured decisions on the System One contract: choice/score/noul with calibrated probabilities; d1-ultra is the larger 2026-10-15 step-up, 32k context) | undisclosed | proprietary API | metered · $2.7e-6 (d1) / $2.2e-6 (ultra) /q † |
+| [Elephant-1 9B](https://openrouter.ai/baseten/elephant-1) (`baseten/elephant-1:free`) | cloud decision model (Base Labs' Qwen3.5-9B decision model served by Baseten on the System One contract — choice/noul/score with calibrated probabilities; the plain slug carries no endpoint, all traffic rides the free variant; MIT weights on HF `baselabs/elephant-1`) | 9B | free API tier · MIT weights on HF | $0 · free tier † |
+| [GPT-6 Luna Decisions](https://openrouter.ai/openai/gpt-6-luna-decisions) (`openai/gpt-6-luna-decisions`) | cloud decision model (GPT-6 Luna behind OpenAI's Decisions API on the System One contract — typed choice/noul/score with probabilities, input-only billing, 1.05M context; the endpoint retains prompts, and it was benched 2026-10-24 only after the account's OpenAI-group ZDR toggle was lifted by user direction) | undisclosed | proprietary API | metered · $1.3e-5/q † |
 | [Tev1 4B](https://openrouter.ai/togethercomputer/tev1-4b-experimental) (`togethercomputer/tev1-4b-experimental`) | cloud decision model (experimental Qwen3.5-4B SFT choosing one of 2–24 labeled options; keeps Qwen's next-token head, and OpenRouter serves it on the systemone schema anyway; the data recipe and training code are published) | 4B | proprietary API · open recipe | metered · $4.8e-6/q |
 | [Mercury Decide](https://openrouter.ai/inception/mercury-decide:free) (`inception/mercury-decide:free`) | cloud decision model (Inception's diffusion LM making typed decisions with calibrated probabilities, up to 14 decisions/s; same /v1/systemone schema as Jev) | undisclosed | proprietary API | free tier † |
 | [Qwen3-Reranker 8B](https://openrouter.ai/qwen/qwen3-reranker-8b) · [Voyage rerank-2.5](https://openrouter.ai/voyageai/rerank-2.5) (+lite) · [Cohere Rerank](https://openrouter.ai/cohere/rerank-4-pro) (4 Pro / 4 Fast / v3.5), all via OpenRouter | cloud rerankers (same (instruction, label) argmax mapping as the local ones) | 8B / closed / closed | proprietary API | metered · $1.4e-6–$2.5e-3/q |
@@ -177,7 +179,7 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 76 systems)
+## Mixed-pool spectrum benchmark (all 78 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -198,6 +200,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | TypeLLM (hosted) † | 95.8% | 0.057 | n/a | |
 | Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a | |
 | Jev (cloud, jev-1.14.0) | 93.8% | 0.015 | n/a | |
+| GPT-6 Luna Decisions (OpenRouter) † | 93.8% | 0.025 | n/a | |
 | D1 (OpenRouter) † | 93.8% | 0.031 | n/a | |
 | Decider V1.2 27B (OpenRouter) | 93.8% | 0.044 | n/a | |
 | Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a | |
@@ -207,6 +210,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | Microsoft Decision-1 (OpenRouter) | 91.7% | 0.065 | n/a | |
 | TypeLLM thinking (hosted) † | 91.7% | 0.338 | n/a | |
 | Decision 3.0 Nano 2B (local) | 91.7% | 9.376 | n/a | |
+| Elephant-1 9B (OpenRouter) † | 89.6% | 0.018 | n/a | |
 | Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a | |
 | Clef-omni (Workers AI) | 89.6% | 0.040 | n/a | |
 | arbiter 4B (Ollaya) | 89.6% | 4.878 | n/a | |
@@ -274,6 +278,22 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 Takeaways:
 
+- **Elephant-1 lands on the free tier; luna-decisions unlocked and
+  joins the 93.8% tier.** Baseten/Base Labs' 9B (Qwen3.5-9B, System One
+  contract) arrives at 89.6% (43/48, 0.018 s/q — Mercury Decide's tier
+  at a third of its latency) with a perfect 54/54 multilingual run,
+  both measured at $0: the plain `baseten/elephant-1` slug answers no
+  endpoints, all traffic rides `:free` (whose 20-req/min limit paced
+  the multilingual run to 2.97 s/text). The free endpoint documents no
+  retention policy, so the row carries the †. OpenAI's
+  `gpt-6-luna-decisions` (1.05M ctx, $0.10/M input-only) joined the
+  same day once the account's OpenAI-group ZDR toggle was lifted by
+  user direction: 93.8% (45/48, 0.025 s/q — the Jev/Decider tier) and
+  54/54 multilingual at 0.547 s/text, $0.0014 measured for both runs;
+  its easy calls return degenerate probabilities (1.0/0.0, confidence
+  1.0) — calibration-table fodder — and the retaining endpoint puts
+  the † on the row. SubQ Snap 1.1 (NanoGPT), Celeris-1 (own API) and
+  Cloudflare's Clairic (Workers AI) are not on OpenRouter.
 - **The OpenRouter Oct-16 arrivals: d1-ultra joins the hosted pool
   lead, and the 12-question gate takes its second same-day overturn** —
   the gate had scored these 9–10/12 (both misses mixed-sentiment), but
@@ -322,9 +342,10 @@ Takeaways:
   79.2% locals. Decider V1.1 is the value pick: same 5,273 input
   tokens as V1 at half the list price ($0.02 vs $0.04/M — $2.2e-6/q,
   the cheapest of the paid Decisions arrivals).
-  All five join the 100% multilingual club on arrival (below);
-  gpt-6-luna-decisions sits this one out (OpenAI's endpoint retains
-  prompts, blocked by the account's ZDR enforcement — noted below).
+  All five join the 100% multilingual club on arrival (below), as do
+  Elephant-1 and gpt-6-luna-decisions (benched 2026-10-24 after the
+  account's OpenAI-group ZDR toggle was lifted by user direction —
+  OpenAI's endpoint retains prompts, so its rows carry the †).
 - **TypeLLM's October retune flips the thinking story: plain now beats
   thinking, 95.8% vs 91.7%** — the type-safe generation harness
   (constrained enum answers over a hosted Qwen3.8-27B) was re-benched
@@ -502,6 +523,7 @@ TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 |---|---|---|---|
 | Span-01 Lite † | $0 | $0 | $0 (free tier) |
 | Mercury Decide (OpenRouter) † | $0 | $0 | $0 (free tier) |
+| Elephant-1 9B (OpenRouter) † | $0 | $0 | $0 (free tier) |
 | GLiNER2.5-base / -multi / -Decide (Fastino) | $0.000026 | $0.000031 | $0.00000039 |
 | Span-01 † | $0.000043 | $0.000040 | $0.0000009 |
 | Decider V1.2 27B (OpenRouter) | $0.000048 | $0.000124 | $0.0000010 |
@@ -520,6 +542,7 @@ TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 | Jev (cloud) ‡ | $0.00026 | $0.00027 | $0.0000053 |
 | Clef-flash (Workers AI) | $0.00041 | $0.00078 | $0.0000086 |
 | GLiDE (Fastino) | $0.00057 | $0.00071 | $0.0000120 |
+| GPT-6 Luna Decisions (OpenRouter) † | $0.000602 | $0.000759 | $0.0000125 |
 | Clef-omni (Workers AI) | $0.00068 | $0.0013 | $0.000014 |
 | Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Solar Decide Flash (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
@@ -623,6 +646,8 @@ systems answer the same 54 texts.
 | Microsoft Decision-1 (OpenRouter) | 100% | 100% | 100% | **100%** |
 | Decider V1.2 27B (OpenRouter) | 100% | 100% | 100% | **100%** |
 | D1-ultra (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| Elephant-1 9B (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| GPT-6 Luna Decisions (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
@@ -797,7 +822,7 @@ surprisingly well for an English-family release (81%, 100% Chinese,
 | Ordinal score rubrics | ✅ via Decide (demoed) | ✅ via Decide twin (classifications demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (demoed) | ✅ (ordinal score head) | Arbiter ✅ (6 fixed levels); snap/Credence choice-only benched | ✅ score |
 | Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ noul (demoed) | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul | ✅ noul | ✅ noul | ✅ noul (demoed) | ❌ | Arbiter ✅ noul (card); snap/Credence unbenched | ✅ noul |
 | Text embeddings | ❌ | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ✅ multi twin (89% over 9 langs here, = local) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | ✅ 78% over 9 langs | ✅ 83% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% | 65–93% over 9 langs by size (Nano 93%); rare tier 28–78% | ✅ 91% (3B, 17-lang card; omni 52%) | ✅ 93% (321M; small 69%) | snap 91%, Arbiter 96% (89% rare); Credence 98% (94% rare — ties winnow's best local rare tier) | ✅ 100% over 9 langs (six of seven; Decision-1 perfect, Drex/Clef-omni 98%) |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ✅ multi twin (89% over 9 langs here, = local) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | ✅ 78% over 9 langs | ✅ 83% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% | 65–93% over 9 langs by size (Nano 93%); rare tier 28–78% | ✅ 91% (3B, 17-lang card; omni 52%) | ✅ 93% (321M; small 69%) | snap 91%, Arbiter 96% (89% rare); Credence 98% (94% rare — ties winnow's best local rare tier) | ✅ 100% over 9 langs (eight of nine; Decision-1, Elephant-1 and luna-decisions perfect, Drex/Clef-omni 98%) |
 | Runs offline / data local | ✅ | ❌ (Fastino API, ZDR) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | Image input | ❌ | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ✅ (danger-zone `assets` behind `TypeSafe-Danger-Zone-Images: true` on 1.13 and 1.14, benched text-only — `demos/jev_image_demo.py`; 1.14-only `box` detection) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) | ❌ | ❌ | ✅ (vision tower in every snapshot, images + videos on the same system_one call; benched text-only here) | ✅ (LFM2.5-VL tower in both checkpoints, demos/d1_demo.py; omni adds 16 kHz speech state) | ❌ | ❌ (Credence ships a vision-tagged variant) | ❌ (Decider lists image modality; text/JSON state only so far — Clef-omni accepts images[]/audio[]/videos[] state, audio/video untested here) |
 | Cost | free | $0.03/1M input (output $0) | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | $0.02–$0.15/1M input, decisions free; Mercury on the :free tier |
@@ -1106,7 +1131,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (76 systems; von, JevK5-Lite,
+                                         # (78 systems; von, JevK5-Lite,
                                          # MoJev 0.85B, Lumma-Fev,
                                          # Intern-Decision, K2-Type,
                                          # Decision 2.0, Decision 3.0 and
@@ -1116,7 +1141,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # under .venv-von/Scripts/python)
 # decider/OpenThai speak plain HTTP, so any interpreter works
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 76 systems →
+                                         # 9 languages, all 78 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
@@ -1300,11 +1325,9 @@ Blocked by hardware or runtime:
 | `fastino/gliner2-{base,large,multi}-v1` | older span-architecture GLiNER 2 line, different loader |
 | `gliner-community/gliner_*-v2.5` | classic `gliner` line (LUKE-descended); a one-off CPU trial of `gliner_large-v2.5` scored 56.2% classification / 67% NER at ~0.4 s/question — dominated by GLiNER2.5-base, so not added |
 
-Blocked by the account's data policy:
-
-| System | Why not run here |
-|---|---|
-| `openai/gpt-6-luna-decisions` | GPT-6 Luna behind OpenAI's Decisions API entry on OpenRouter ($0.10/M input, decisions free, 1.05M context) — its only endpoint reports `retainsPrompts: true`, and this account enforces ZDR, so OpenRouter refuses to route to it; running it would mean weakening the account's privacy settings |
+Formerly blocked by the account's data policy: `openai/gpt-6-luna-decisions`
+(retains prompts) — benched 2026-10-24 after the account's OpenAI-group
+ZDR enforcement was lifted by user direction; its rows carry the †.
 
 The 2026-10-18 OpenRouter arrivals graduated the same day: the
 12-question gate said 9–10/12, the user-directed full pools said
@@ -1416,7 +1439,7 @@ with their full recorded data and charts in TRIALS.md.
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 76 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 78 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
