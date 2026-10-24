@@ -22,7 +22,9 @@ const req = {
 
 describe("openrouter.systemone adapter", () => {
   test("maps items to the systemone wire and answers back", async () => {
-    const captured: { c?: { url: string; body: Record<string, unknown>; headers: Record<string, string> } } = {};
+    const captured: {
+      c?: { url: string; body: Record<string, unknown>; headers: Record<string, string> };
+    } = {};
     const fetchImpl = (async (url: string, init: RequestInit) => {
       captured.c = { url, body: JSON.parse(init.body as string), headers: init.headers as never };
       return new Response(
@@ -36,7 +38,11 @@ describe("openrouter.systemone adapter", () => {
     const res = await systemone.send(req, { ...ctx, fetchImpl });
     expect(captured.c?.url).toBe("https://openrouter.test/api/v1/systemone");
     expect(captured.c?.body.state).toBe("The food was delicious");
-    expect(((captured.c?.body.questions as Record<string, { choice?: { options?: string[] } }>)["mp-001"])?.choice?.options).toHaveLength(3);
+    const questions = captured.c?.body.questions as Record<
+      string,
+      { choice?: { options?: string[] } }
+    >;
+    expect(questions["mp-001"]?.choice?.options).toHaveLength(3);
     expect(captured.c?.headers.authorization).toBe("Bearer k");
     expect(res.results[0]?.prediction).toBe("positive");
     expect(res.results[0]?.prob).toBeCloseTo(0.9);
