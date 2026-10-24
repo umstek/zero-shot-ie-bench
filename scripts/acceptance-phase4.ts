@@ -9,7 +9,7 @@ import { join } from "node:path";
 const repoRoot = join(import.meta.dir, "..");
 
 // v0 keys came from legacy/.env; the bench reads process.env
-const envFile = readFileSync(join(repoRoot, "legacy", ".env"), "utf8");
+const envFile = readFileSync(join(repoRoot, ".env"), "utf8");
 for (const line of envFile.split("\n")) {
   const m = /^([A-Z_]+)=(.*)$/.exec(line);
   const key = m?.[1];
