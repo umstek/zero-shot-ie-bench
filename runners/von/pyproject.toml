@@ -1,0 +1,71 @@
+[project]
+name = "von-runner"
+version = "0.1.0"
+description = "Local runner island for wfzyx/von-1.0: the 396M option-marker decision model on the transformers 5.x CPU stack (its own venv — the rest of the repo pins 4.57.x)."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # --- the von stack (legacy/requirements-von.txt, verbatim pins) ---
+    # PIN: the PyPI 1.0.1 wheel omits the trained option-marker backend and
+    # its default NLI loader would invent a random classifier for this
+    # checkpoint; the pinned Git revision carries the real loader. Never
+    # move this rev without re-validating predictions against legacy.
+    "von-sdk",
+    "transformers==5.17.0",
+    # torch has no line in legacy/requirements-von.txt (resolved
+    # transitively through von-sdk); current-major floor, exact version
+    # comes from the lock. The CPU index keeps Linux/docker off the CUDA
+    # wheels (this deployment is CPU-only: catalog runtime device: cpu).
+    "torch>=2",
+    # --- server + protocol (current-major floors, shared with _protocol) ---
+    "fastapi>=0.162",
+    "uvicorn>=0.54",
+    "pydantic>=2.14",
+    "runner-protocol",
+]
+
+[tool.uv]
+required-version = ">=0.13"
+
+[tool.uv.sources]
+von-sdk = { git = "https://github.com/wfzyx/von", rev = "a94aa368ff4dcc58cdfd569cf0b4b1ae7d592d54" }
+runner-protocol = { path = "../_protocol", editable = true }
+# CPU-only torch builds (Windows PyPI is CPU by default; Linux PyPI is not).
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+    "httpx>=0.28",
+    "pyrefly>=1.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# NOTE: the package is von_runner, NOT von — the von-sdk git dependency
+# installs a top-level `von` package and the island must not shadow it.
+packages = ["src/von_runner"]
+
+[tool.pyrefly]
+project-includes = ["src", "tests"]
+python-version = "3.13"
+# tests import their shared stubs from conftest (pytest puts tests/ on
+# sys.path at runtime); teach pyrefly the same import root.
+search-path = ["tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: loads the real von-1.0 weights from the local HF cache (skipped when the pinned snapshot is not cached; CI never downloads weights)",
+]
+
+[tool.ruff]
+extend = "../../ruff.toml"

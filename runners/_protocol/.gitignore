@@ -1,0 +1,2 @@
+# Local to this project; the root .gitignore covers .venv/ and __pycache__/.
+.pytest_cache/

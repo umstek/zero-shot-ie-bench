@@ -1,0 +1,100 @@
+[project]
+name = "small-decisions-runner"
+version = "0.1.0"
+description = "The catch-all local decision-model island: vLLM-SR Decision 2.0/3.0, K2-Type, MoJev, Intern-Decision in-process on the transformers 5.17 CPU stack, plus the ten Ollaya daemon models proxied over HTTP (System One contract)."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # --- the engines' validated stack (.venv-von, verbatim) ---
+    # PIN: every in-process engine in this island was validated on, and its
+    # vendored runtime demands, transformers 5.x — the vendored decision2 /
+    # d3 runtimes import Qwen3_5ForConditionalGeneration and
+    # transformers.models.qwen3_5 / masking_utils (5.x-only), the K2-Type
+    # snapshot pins transformers>=5.17,<6, the Intern-Decision snapshots
+    # pin >=5.14.1, and legacy ran k2type/d3/decision2/intern-decision/rlcd
+    # under .venv-von 5.17.0 (the catalog deployment notes say the same).
+    # This island is NOT on the main-env 4.57.x anchor: legacy
+    # requirements.txt anchors the gliner stack, and the only engine of
+    # this island that ever ran there (certo, ModernBERT) accepts 5.17.
+    "transformers==5.17.0",
+    # torch has no line in any legacy decision-engine requirements (it
+    # resolved through the venvs); current-major floor like the von island,
+    # exact version comes from the lock (2.14.x — what .venv-von validated).
+    # The CPU index keeps Linux/docker off the CUDA wheels (every catalog
+    # deployment here is device: cpu).
+    "torch>=2",
+    # the Intern-Decision snapshots' processor (Qwen3VLVideoProcessor)
+    # hard-requires torchvision at load time — the same reason .venv-von
+    # carried it for the d1 vision tower.
+    "torchvision>=0.20",
+    # the vendored LFM2.5-RLCD engine imports jsonschema at module level
+    # (schema validation before the constrained decode).
+    "jsonschema>=4.23",
+    # k2type loads the pointer head through safetensors.torch.load_file.
+    "safetensors>=0.6",
+    # the Intern-Decision snapshots' standalone inference.py imports PIL at
+    # module level (the vision tower path), and d1's image state rides PIL
+    # images — both are snapshot-resolved code this island imports.
+    "pillow>=11",
+    # snapshot availability checks + hub loads (certo, mojev, rlcd, julia).
+    "huggingface-hub>=0.34",
+    # --- server + protocol (current-major floors, shared with _protocol) ---
+    "fastapi>=0.141",
+    "uvicorn>=0.53",
+    "pydantic>=2.14",
+    "runner-protocol",
+]
+
+[tool.uv]
+required-version = ">=0.13"
+
+[tool.uv.sources]
+runner-protocol = { path = "../_protocol", editable = true }
+# CPU-only torch builds (Windows PyPI is CPU by default; Linux PyPI is not —
+# this keeps the docker image off the multi-GB CUDA wheels). torchvision
+# rides the same index so its Linux wheel matches the CPU torch build.
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+    "httpx>=0.28",
+    "pyrefly>=1.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/small_decisions"]
+
+[tool.pyrefly]
+project-includes = ["src", "tests"]
+# the vendored upstream files (certo repo, LFM2.5-RLCD HF repo, mojev
+# runtime) are third-party code kept verbatim for attribution — their
+# type discipline is upstream's, not this island's. Both slash styles:
+# the glob must match the platform's separators on Windows.
+project-excludes = [
+    "src/small_decisions/models/_vendored/**",
+    "src\\small_decisions\\models\\_vendored\\**",
+]
+python-version = "3.13"
+# tests import their shared stubs from conftest (pytest puts tests/ on
+# sys.path at runtime); teach pyrefly the same import root.
+search-path = ["tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: loads real weights from local snapshots / the HF cache (skipped where absent; CI never downloads weights)",
+]
+
+[tool.ruff]
+extend = "../../ruff.toml"
