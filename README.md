@@ -1,7 +1,7 @@
 # zero-shot-ie-bench
 
-Eighty zero-shot systems (seventy-seven of them benchmarked) across
-thirty-seven information-extraction and classification families —
+Eighty-one zero-shot systems (seventy-eight of them benchmarked) across
+thirty-eight information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints plus Fastino's API, plus ten
@@ -57,6 +57,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Drex v1.5](https://openrouter.ai/nace-ai/drex-v1.5) (`nace-ai/drex-v1.5`) | cloud decision model (Nace.AI's MiMo-V2.6-Distill-Qwen-9B on the System One contract; the card claims Decision Index 0.2.1 rank 1; open weights plus an Apache-2.0 runtime adapted from Kev — the local fp32 twin needs ~36 GB and GGUF serving waits on Nace's llama.cpp/Ollaya fork, so it is benched hosted) | 9B | Nace.AI Open RAIL-M weights · Apache 2.0 runtime | metered · $1.4e-6/q |
 | [d1](https://openrouter.ai/liquid/d1) / [d1-ultra](https://openrouter.ai/liquid/d1-ultra) (`liquid/d1*`) | cloud decision model (Liquid AI's structured decisions on the System One contract: choice/score/noul with calibrated probabilities; d1-ultra is the larger 2026-10-15 step-up, 32k context) | undisclosed | proprietary API | metered · $2.7e-6 (d1) / $2.2e-6 (ultra) /q † |
 | [Elephant-1 9B](https://openrouter.ai/baseten/elephant-1) (`baseten/elephant-1:free`) | cloud decision model (Base Labs' Qwen3.5-9B decision model served by Baseten on the System One contract — choice/noul/score with calibrated probabilities; the plain slug carries no endpoint, all traffic rides the free variant; MIT weights on HF `baselabs/elephant-1`) | 9B | free API tier · MIT weights on HF | $0 · free tier † |
+| [GPT-6 Luna Decisions](https://openrouter.ai/openai/gpt-6-luna-decisions) (`openai/gpt-6-luna-decisions`) | cloud decision model (GPT-6 Luna behind OpenAI's Decisions API on the System One contract — typed choice/noul/score with probabilities, input-only billing, 1.05M context; the endpoint retains prompts, and it was benched 2026-10-24 only after the account's OpenAI-group ZDR toggle was lifted by user direction) | undisclosed | proprietary API | metered · $1.3e-5/q † |
 | [Tev1 4B](https://openrouter.ai/togethercomputer/tev1-4b-experimental) (`togethercomputer/tev1-4b-experimental`) | cloud decision model (experimental Qwen3.5-4B SFT choosing one of 2–24 labeled options; keeps Qwen's next-token head, and OpenRouter serves it on the systemone schema anyway; the data recipe and training code are published) | 4B | proprietary API · open recipe | metered · $4.8e-6/q |
 | [Mercury Decide](https://openrouter.ai/inception/mercury-decide:free) (`inception/mercury-decide:free`) | cloud decision model (Inception's diffusion LM making typed decisions with calibrated probabilities, up to 14 decisions/s; same /v1/systemone schema as Jev) | undisclosed | proprietary API | free tier † |
 | [Qwen3-Reranker 8B](https://openrouter.ai/qwen/qwen3-reranker-8b) · [Voyage rerank-2.5](https://openrouter.ai/voyageai/rerank-2.5) (+lite) · [Cohere Rerank](https://openrouter.ai/cohere/rerank-4-pro) (4 Pro / 4 Fast / v3.5), all via OpenRouter | cloud rerankers (same (instruction, label) argmax mapping as the local ones) | 8B / closed / closed | proprietary API | metered · $1.4e-6–$2.5e-3/q |
@@ -199,6 +200,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | TypeLLM (hosted) † | 95.8% | 0.057 | n/a | |
 | Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a | |
 | Jev (cloud, jev-1.14.0) | 93.8% | 0.015 | n/a | |
+| GPT-6 Luna Decisions (OpenRouter) † | 93.8% | 0.025 | n/a | |
 | D1 (OpenRouter) † | 93.8% | 0.031 | n/a | |
 | Decider V1.2 27B (OpenRouter) | 93.8% | 0.044 | n/a | |
 | Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a | |
@@ -276,19 +278,22 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 Takeaways:
 
-- **Elephant-1 lands on the free tier; luna-decisions stays gated by
-  the account's ZDR.** Baseten/Base Labs' 9B (Qwen3.5-9B, System One
+- **Elephant-1 lands on the free tier; luna-decisions unlocked and
+  joins the 93.8% tier.** Baseten/Base Labs' 9B (Qwen3.5-9B, System One
   contract) arrives at 89.6% (43/48, 0.018 s/q — Mercury Decide's tier
   at a third of its latency) with a perfect 54/54 multilingual run,
   both measured at $0: the plain `baseten/elephant-1` slug answers no
   endpoints, all traffic rides `:free` (whose 20-req/min limit paced
   the multilingual run to 2.97 s/text). The free endpoint documents no
   retention policy, so the row carries the †. OpenAI's
-  `gpt-6-luna-decisions` (1.05M ctx, $0.10/M) remains
-  listed-but-unbenched: the 2026-10-24 live probe still returns "ZDR
-  violation (account settings)" — flipping the OpenRouter privacy
-  setting would unlock it. SubQ Snap 1.1 (NanoGPT), Celeris-1 (own
-  API) and Cloudflare's Clairic (Workers AI) are not on OpenRouter.
+  `gpt-6-luna-decisions` (1.05M ctx, $0.10/M input-only) joined the
+  same day once the account's OpenAI-group ZDR toggle was lifted by
+  user direction: 93.8% (45/48, 0.025 s/q — the Jev/Decider tier) and
+  54/54 multilingual at 0.547 s/text, $0.0014 measured for both runs;
+  its easy calls return degenerate probabilities (1.0/0.0, confidence
+  1.0) — calibration-table fodder — and the retaining endpoint puts
+  the † on the row. SubQ Snap 1.1 (NanoGPT), Celeris-1 (own API) and
+  Cloudflare's Clairic (Workers AI) are not on OpenRouter.
 - **The OpenRouter Oct-16 arrivals: d1-ultra joins the hosted pool
   lead, and the 12-question gate takes its second same-day overturn** —
   the gate had scored these 9–10/12 (both misses mixed-sentiment), but
@@ -337,9 +342,10 @@ Takeaways:
   79.2% locals. Decider V1.1 is the value pick: same 5,273 input
   tokens as V1 at half the list price ($0.02 vs $0.04/M — $2.2e-6/q,
   the cheapest of the paid Decisions arrivals).
-  All five join the 100% multilingual club on arrival (below);
-  gpt-6-luna-decisions sits this one out (OpenAI's endpoint retains
-  prompts, blocked by the account's ZDR enforcement — noted below).
+  All five join the 100% multilingual club on arrival (below), as do
+  Elephant-1 and gpt-6-luna-decisions (benched 2026-10-24 after the
+  account's OpenAI-group ZDR toggle was lifted by user direction —
+  OpenAI's endpoint retains prompts, so its rows carry the †).
 - **TypeLLM's October retune flips the thinking story: plain now beats
   thinking, 95.8% vs 91.7%** — the type-safe generation harness
   (constrained enum answers over a hosted Qwen3.8-27B) was re-benched
@@ -536,6 +542,7 @@ TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 | Jev (cloud) ‡ | $0.00026 | $0.00027 | $0.0000053 |
 | Clef-flash (Workers AI) | $0.00041 | $0.00078 | $0.0000086 |
 | GLiDE (Fastino) | $0.00057 | $0.00071 | $0.0000120 |
+| GPT-6 Luna Decisions (OpenRouter) † | $0.000602 | $0.000759 | $0.0000125 |
 | Clef-omni (Workers AI) | $0.00068 | $0.0013 | $0.000014 |
 | Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Solar Decide Flash (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
@@ -640,6 +647,7 @@ systems answer the same 54 texts.
 | Decider V1.2 27B (OpenRouter) | 100% | 100% | 100% | **100%** |
 | D1-ultra (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | Elephant-1 9B (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| GPT-6 Luna Decisions (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
@@ -1317,11 +1325,9 @@ Blocked by hardware or runtime:
 | `fastino/gliner2-{base,large,multi}-v1` | older span-architecture GLiNER 2 line, different loader |
 | `gliner-community/gliner_*-v2.5` | classic `gliner` line (LUKE-descended); a one-off CPU trial of `gliner_large-v2.5` scored 56.2% classification / 67% NER at ~0.4 s/question — dominated by GLiNER2.5-base, so not added |
 
-Blocked by the account's data policy:
-
-| System | Why not run here |
-|---|---|
-| `openai/gpt-6-luna-decisions` | GPT-6 Luna behind OpenAI's Decisions API entry on OpenRouter ($0.10/M input, decisions free, 1.05M context) — its only endpoint reports `retainsPrompts: true`, and this account enforces ZDR, so OpenRouter refuses to route to it; running it would mean weakening the account's privacy settings |
+Formerly blocked by the account's data policy: `openai/gpt-6-luna-decisions`
+(retains prompts) — benched 2026-10-24 after the account's OpenAI-group
+ZDR enforcement was lifted by user direction; its rows carry the †.
 
 The 2026-10-18 OpenRouter arrivals graduated the same day: the
 12-question gate said 9–10/12, the user-directed full pools said

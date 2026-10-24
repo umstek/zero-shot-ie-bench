@@ -84,6 +84,22 @@ documents no retention policy, so the row carries the † (Mercury's
 — and SubQ Snap 1.1 (NanoGPT only), Celeris-1 (own API) and Clairic
 (Workers AI) are not on OpenRouter at all.
 
+**Same-day unlock — luna-decisions joins after the ZDR flip.** The
+user lifted the account's OpenAI-group ZDR enforcement on
+openrouter.ai/settings/privacy (several toggles live there — global,
+per model group, per guardrail; the per-group OpenAI one was the
+blocker, and the live probe flipped from "ZDR violation (account
+settings)" to a clean answer). Full pools, gate skipped per the
+standing order: mixed pool **93.8%** (45/48, 0.025 s/q — the
+Jev/Decider tier), multilingual **54/54** (100% every language and
+tier, 0.547 s/text). Measured $0.000602/$0.000759 (6.0k/7.6k input
+tokens, output free — the Decisions API bills input only). The
+endpoint retains prompts, so the row carries the †; the account
+accepted that trade by user direction. Calibration-table observation:
+easy calls return degenerate probabilities (1.0/0.0, confidence 1.0) —
+consistent with Artificial Analysis' "every decision model is
+overconfident".
+
 ## Culled from the benchmark
 
 LFM2.5-RLCD and the nanodiff pair failed the 12/12 trial; the other
