@@ -6,6 +6,7 @@ import {
   matchMachine,
   RunnerUnavailableError,
   sendTrack,
+  type RunnerInfoOut,
 } from "./local/runner-client.ts";
 import type { AdapterContext } from "./providers/index.ts";
 import { AdapterError, getAdapter } from "./providers/index.ts";
