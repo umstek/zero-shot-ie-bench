@@ -1,11 +1,11 @@
 # Task × modality definitions + metric set per track (docs/plan/02-architecture.md).
 # live = exercised by v0 runs; planned = suite + scorer to come.
 - id: classify
-  description: zero-shot text classification (choice among label descriptions) — the v0 mixed-pool and multilingual benchmarks
+  description: zero-shot text classification (choice among label descriptions); classifiers were benched in v0 through the decision-track pools (used_as)
   metrics:
     primary: [accuracy]
     secondary: [brier, ece, p50_ms, p95_ms]
-  live: true
+  live: false
 - id: ner
   description: zero-shot named-entity extraction over arbitrary label sets
   metrics:
@@ -19,11 +19,11 @@
     secondary: []
   live: true
 - id: decision
-  description: typed decisions — choice/score/noul with calibrated probabilities on the System One contract
+  description: typed decisions — choice/score/noul with calibrated probabilities on the System One contract; the v0 mixed-pool, multilingual and gate benchmarks are choice questions
   metrics:
     primary: [accuracy]
     secondary: [brier, ece, p50_ms, p95_ms]
-  live: false
+  live: true
 - id: score
   description: ordinal/rubric scoring as a typed question type
   metrics:

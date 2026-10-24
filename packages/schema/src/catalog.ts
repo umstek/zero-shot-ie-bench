@@ -149,3 +149,8 @@ export const Language = z.looseObject({
   script: z.string().nullable(),
   tier: z.enum(["popular", "medium", "rare"]).nullable(),
 });
+export type ModelOut = z.output<typeof Model>;
+export type ProviderOut = z.output<typeof Provider>;
+export type MachineOut = z.output<typeof Machine>;
+export type TrackOut = z.output<typeof Track>;
+export type LanguageOut = z.output<typeof Language>;

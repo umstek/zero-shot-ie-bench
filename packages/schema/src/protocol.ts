@@ -59,3 +59,6 @@ export const TrackResponse = z.looseObject({
   compute_ms: z.number(),
   usage: z.unknown().nullable(),
 });
+export type RunnerInfoOut = z.output<typeof RunnerInfo>;
+export type TrackRequestOut = z.output<typeof TrackRequest>;
+export type TrackResponseOut = z.output<typeof TrackResponse>;
