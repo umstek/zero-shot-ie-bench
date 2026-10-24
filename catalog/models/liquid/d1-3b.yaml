@@ -25,7 +25,7 @@ deployments:
 - id: d1-3b.local-von
   kind: local
   version: d1-3b@2026-10
-  runner: von
+  runner: small-decisions
   runtime:
     engine: torch
     dtype: null

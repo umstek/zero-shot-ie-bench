@@ -26,7 +26,7 @@ deployments:
 - id: d1-omni-600m.local-von
   kind: local
   version: d1-omni-600m@2026-10
-  runner: von
+  runner: small-decisions
   runtime:
     engine: torch
     dtype: null
