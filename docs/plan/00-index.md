@@ -9,7 +9,7 @@ independent research, and the repo at `20e4825`.*
 | [01-requirements.md](01-requirements.md) | What you asked for (R1–R12), what's kept from GLM, and the 4 places GLM was wrong |
 | [02-architecture.md](02-architecture.md) | Dimensions (track × modality × language × deployment), run identity and history, runners, bench, board, stack table |
 | [03-folder-structure.md](03-folder-structure.md) | **The tree**, rules that stop it regrowing, where every current file goes |
-| [04-data-model.md](04-data-model.md) | YAML/JSONL shapes for catalog, machines, suites, runs, observations; Parquet collections |
+| [04-data-model.md](04-data-model.md) | YAML/JSONL shapes for catalog, machines, suites, runs, observations; built JSON collections |
 | [05-migration.md](05-migration.md) | 5 phases, one PR each, with an acceptance test per phase |
 
 ## Decisions (settled 2026-10-24; numbers stable)
@@ -17,7 +17,7 @@ independent research, and the repo at `20e4825`.*
 1. **Runners are model servers; the TS bench drives them. Decided.** One scorer, one
    run format. Benching a GPU box means installing Bun there (a single binary) next to
    uv. Rejected: a Python bench driver inside each runner.
-2. **Board = custom Vite + React + TanStack + DuckDB-WASM + ECharts. Decided.**
+2. **Board = custom Vite + React + TanStack + ECharts, filtering built JSON in memory. Decided.**
    Rejected: Evidence.dev (faster v1, but it can't carry the picks / break-even /
    planner views).
 3. **Suite media in Git LFS. Decided.** Keeps "one clone = everything runnable".
@@ -36,8 +36,7 @@ independent research, and the repo at `20e4825`.*
 
 - [uv workspaces](https://docs.astral.sh/uv/concepts/projects/workspaces/): single
   `requires-python`, not for conflicting members
-- [Bun catalogs](https://bun.com/docs/pm/catalogs), [Bun isolated installs](https://bun.com/docs/pm/isolated-installs),
-  [Bun 1.2.2 DuckDB N-API fix](https://bun.com/blog/bun-v1.2.2)
+- [Bun catalogs](https://bun.com/docs/pm/catalogs), [Bun isolated installs](https://bun.com/docs/pm/isolated-installs)
 - [Every Eval Ever paper](https://arxiv.org/pdf/2606.14516), [repo](https://github.com/evaleval/every_eval_ever)
 - [moon v2 RC (Python toolchain unstable)](https://moonrepo.dev/blog/moon-v2-rc)
 - [Gradio 6 migration guide](https://www.gradio.app/guides/gradio-6-migration-guide)

@@ -6,8 +6,9 @@ content: data, TS code, Python code, or docs.*
 
 ```
 zero-shot-ie-bench/
-├── justfile                    # THE entry point: just bench / canary / runner / build / render / board
-├── package.json                # Bun workspaces ["bench", "apps/*", "packages/*"] + `catalog:` versions
+├── package.json                # THE entry point: Bun workspaces + `catalog:` versions + scripts
+│                               #   (bun run gen / validate / typecheck / test / lint / lake / render / bench / runner / board)
+├── scripts/                    # bodies of the multi-step scripts, e.g. runner.ts (picks an island, calls uv), render.ts
 ├── bunfig.toml                 # [install] linker = "isolated"
 ├── tsconfig.base.json
 ├── biome.json
@@ -46,12 +47,12 @@ zero-shot-ie-bench/
 ├── observations/               # ── DATA: scraped, dated, append-only (price, ZDR, context, quant) ──
 │   └── <provider>/<yyyy-mm>.jsonl
 │
-├── build/                      # GITIGNORED: <track>.parquet, lake.duckdb, chart PNGs (CI artifact / board input)
+├── build/                      # GITIGNORED: <track>.runs.json, <track>.items/, deployments.json, chart PNGs (board input)
 │
 ├── packages/                   # ── TS libraries (imported, never run directly) ──
 │   ├── schema/                 #   Zod 4 source of truth for catalog / suite / run / runner-protocol shapes
 │   │   └── src/{catalog,suite,run,protocol}.ts  →  `bun run gen` writes catalog/schema/*.json
-│   └── lake/                   #   load catalog+runs, validate, aggregate metrics, write Parquet via DuckDB
+│   └── lake/                   #   load catalog+runs, validate, aggregate metrics, write JSON per track (plain TS)
 │
 ├── bench/                      # ── TS project: ALL benchmark execution (hosted in-process, local over HTTP) ──
 │   ├── package.json
@@ -70,7 +71,7 @@ zero-shot-ie-bench/
 │   └── test/
 │
 ├── apps/
-│   ├── board/                  # static decision board — Vite + React + TanStack + DuckDB-WASM + ECharts
+│   ├── board/                  # static decision board — Vite 8 + React + TanStack + ECharts, in-memory filters
 │   │   └── src/{routes/{picks,explore,model.$id,crossover,providers,planner},charts,queries}
 │   └── playground/             # try hosted (and live local) models — Bun.serve + React, keys server-side
 │       └── src/{server.ts, ui/}
@@ -85,7 +86,7 @@ zero-shot-ie-bench/
 │   ├── small-decisions/        #   d1, decision2, julia, k2type, certo, mojev, rlcd… (split further if pins clash)
 │   ├── nanodiff/               #   diffusion decision engine + its training scripts
 │   └── <island>/               #   each one:
-│       ├── pyproject.toml      #     own deps; [tool.uv.sources] runner-protocol = { path = "../_protocol", editable = true }
+│       ├── pyproject.toml      #     own deps; [tool.uv.sources] runner-protocol = { path = "../_protocol", editable = true }; [tool.pyrefly]
 │       ├── uv.lock  .python-version
 │       ├── src/<island>/{server.py, models/*.py, ui.py}
 │       ├── tests/
