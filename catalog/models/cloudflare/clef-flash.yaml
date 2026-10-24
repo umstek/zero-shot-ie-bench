@@ -1,0 +1,34 @@
+id: cloudflare/clef-flash
+family: clef
+org: Cloudflare
+license: Apache-2.0 (weights on HF; metered API)
+open_weights: true
+params_b: 9
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://developers.cloudflare.com/workers-ai/models/clef-flash/
+  paper: null
+versions:
+- id: clef-flash@2026-10
+  hf_revision: null
+  api_slug: '@cf/cloudflare/clef-flash'
+  released: null
+deployments:
+- id: clef-flash.workers-ai
+  kind: hosted
+  version: clef-flash@2026-10
+  provider: cloudflare-workers-ai
+  endpoint: '@cf/cloudflare/clef-flash'
+  adapter: workers-ai.clef
+  notes: Same System One contract behind the v4 envelope; frozen Qwen3.5-9B backbone (~39 ms median, self-reported).
+    ZDR. Derived $8.6e-6/q at $0.09/M input.
+notes: Weights are Apache 2.0 on HF; no local engine or runner island exists in v0.
+v0:
+  benched: true

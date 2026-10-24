@@ -1,0 +1,34 @@
+id: perplexity/pplx-decider-flash-v1.2
+family: pplx-decider
+org: Perplexity
+license: proprietary
+open_weights: false
+params_b: 4
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/perplexity/pplx-decider-flash-v1.2
+  paper: null
+versions:
+- id: pplx-decider-flash-v1.2@2026-10
+  hf_revision: null
+  api_slug: perplexity/pplx-decider-flash-v1.2
+  released: null
+deployments:
+- id: pplx-decider-flash-v1.2.openrouter
+  kind: hosted
+  version: pplx-decider-flash-v1.2@2026-10
+  provider: openrouter
+  endpoint: perplexity/pplx-decider-flash-v1.2
+  adapter: openrouter.systemone
+  notes: 'The budget pick: 85.4% on the mixed pool at $1.1e-6/q (53/54 multilingual, one Sinhala miss).
+    No per-endpoint retention policy exposed - the family''s no-† carries.'
+notes: Same family caveats (image listed, not live; languages = measured baseline).
+v0:
+  benched: true

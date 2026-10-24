@@ -1,0 +1,54 @@
+id: fastino/gliner2.5-base
+family: gliner
+org: Fastino
+license: Apache-2.0
+open_weights: true
+params_b: 0.194
+claims:
+  tracks:
+  - ner
+  - classify
+  - relation
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://github.com/fastino-ai/GLiNER2
+  paper: null
+versions:
+- id: gliner2.5-base@2026-09
+  hf_revision: null
+  api_slug: null
+  released: null
+deployments:
+- id: gliner2.5-base.local
+  kind: local
+  version: gliner2.5-base@2026-09
+  runner: gliner
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+    batch: null
+  requires:
+    vram_gb: null
+    ram_gb: 0.8
+    accel: null
+  notes: fastino/gliner2.5-base-v1 (default English checkpoint) via the gliner2 AutoExtractor, transformers
+    4.57.x pin. ram_gb estimated (194M fp32, no overhead).
+- id: gliner2.5-base.fastino-chat
+  kind: hosted
+  version: gliner2.5-base@2026-09
+  provider: fastino
+  endpoint: fastino/gliner2.5-base-v1
+  adapter: fastino.chat
+  notes: 'Hosted twin of the local base checkpoint: POST https://api.fastino.ai/v1/chat/completions with
+    a top-level schema body (entities/classifications), one request per question. $0.03/M input, output
+    $0; measured $3.9e-7/q - the cheapest metered row in v0. Classification answers bit-identical to the
+    local run; NER differs on one question (serving-stack wobble, not a weight change). ZDR catalog.'
+notes: 'Two v0 systems, one model: the Fastino row is the hosted twin of the same open-weight checkpoint.
+  ram_gb is estimated from the 194M size.'
+v0:
+  benched: true

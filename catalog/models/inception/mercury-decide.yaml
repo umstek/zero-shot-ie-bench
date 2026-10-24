@@ -1,0 +1,36 @@
+id: inception/mercury-decide
+family: mercury-decide
+org: Inception
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/inception/mercury-decide:free
+  paper: null
+versions:
+- id: mercury-decide@2026-10
+  hf_revision: null
+  api_slug: inception/mercury-decide:free
+  released: null
+deployments:
+- id: mercury-decide.openrouter-free
+  kind: hosted
+  version: mercury-decide@2026-10
+  provider: openrouter
+  endpoint: inception/mercury-decide:free
+  adapter: openrouter.systemone
+  notes: Inception's diffusion LM making typed decisions with calibrated probabilities, up to 14 decisions/s;
+    same /v1/systemone schema as Jev. Free tier (20 req/min); the free-tier provider retains prompts (†).
+    Measured $0 on both v0 runs.
+notes: Size undisclosed - params_b null. claims.languages is the v0-measured baseline (100% on the 9-language
+  suite).
+v0:
+  benched: true

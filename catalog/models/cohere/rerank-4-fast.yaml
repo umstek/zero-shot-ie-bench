@@ -1,0 +1,35 @@
+id: cohere/rerank-4-fast
+family: rerank-hosted
+org: Cohere
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - rerank
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: null
+  paper: null
+versions:
+- id: rerank-4-fast@2026-09
+  hf_revision: null
+  api_slug: cohere/rerank-4-fast
+  released: null
+deployments:
+- id: rerank-4-fast.openrouter-rerank
+  kind: hosted
+  version: rerank-4-fast@2026-09
+  provider: openrouter
+  endpoint: cohere/rerank-4-fast
+  adapter: openrouter.rerank
+  used_as: classify
+  notes: The fast tier of Cohere Rerank 4, same argmax mapping. Non-ZDR (†). Measured $2.0e-3/q (~2.5
+    search units per request).
+notes: The README gives no separate card link for this tier (links.card null). Size closed - params_b
+  null.
+v0:
+  benched: true

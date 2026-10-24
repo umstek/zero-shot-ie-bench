@@ -1,0 +1,35 @@
+id: voyageai/rerank-2.5-lite
+family: rerank-hosted
+org: Voyage AI
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - rerank
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: null
+  paper: null
+versions:
+- id: rerank-2.5-lite@2026-09
+  hf_revision: null
+  api_slug: voyageai/rerank-2.5-lite
+  released: null
+deployments:
+- id: rerank-2.5-lite.openrouter-rerank
+  kind: hosted
+  version: rerank-2.5-lite@2026-09
+  provider: openrouter
+  endpoint: voyageai/rerank-2.5-lite
+  adapter: openrouter.rerank
+  used_as: classify
+  notes: The cheaper lite tier of Voyage's rerank-2.5, same (instruction, label) argmax mapping. Non-ZDR
+    (†). Measured $1.4e-6/q.
+notes: The README gives no separate card link for the lite tier (links.card null). Size closed - params_b
+  null. claims.languages is the v0-measured baseline (65% on the 9-language suite).
+v0:
+  benched: true

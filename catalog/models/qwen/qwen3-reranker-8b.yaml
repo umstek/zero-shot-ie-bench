@@ -1,0 +1,38 @@
+id: qwen/qwen3-reranker-8b
+family: rerank-hosted
+org: Qwen
+license: proprietary
+open_weights: false
+params_b: 8
+claims:
+  tracks:
+  - rerank
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/qwen/qwen3-reranker-8b
+  paper: null
+versions:
+- id: qwen3-reranker-8b@2026-09
+  hf_revision: null
+  api_slug: qwen/qwen3-reranker-8b
+  released: null
+deployments:
+- id: qwen3-reranker-8b.openrouter-rerank
+  kind: hosted
+  version: qwen3-reranker-8b@2026-09
+  provider: openrouter
+  endpoint: qwen/qwen3-reranker-8b
+  adapter: openrouter.rerank
+  used_as: classify
+  notes: 'Cohere-style OpenRouter /api/v1/rerank contract ({model, query, documents} -> relevance scores),
+    used as a decision engine: score one (instruction, label) pair per label, argmax. Non-ZDR (†) - ZDR-enforcing
+    account settings exclude every rerank endpoint. Measured $6.7e-5/q - the rerankers bill by pair, so
+    they are the expensive end of the hosted field.'
+notes: 'used_as classify on the deployment: the native track is rerank, borrowed as a classifier via argmax
+  (docs/plan/02). README records the served endpoint under a proprietary API with no open-weights link
+  - open_weights false. claims.languages is the v0-measured baseline (96% on the 9-language suite).'
+v0:
+  benched: true

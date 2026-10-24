@@ -1,0 +1,45 @@
+# The multilingual pool set (legacy/bench_multilingual.py): 9 languages × 6
+# parallel texts = 54 items. English is the template source, not benched in v0.
+# Tiers per README: Popular: Spanish, French, Chinese · Medium: Vietnamese,
+# Turkish, Ukrainian · Rare: Sinhala, Icelandic, Welsh.
+- code: en
+  name: English
+  script: Latin
+  tier: null
+  note: template source language; not part of the 54 benched texts
+- code: es
+  name: Spanish
+  script: Latin
+  tier: popular
+- code: fr
+  name: French
+  script: Latin
+  tier: popular
+- code: zh
+  name: Chinese
+  script: Han
+  tier: popular
+- code: vi
+  name: Vietnamese
+  script: Latin
+  tier: medium
+- code: tr
+  name: Turkish
+  script: Latin
+  tier: medium
+- code: uk
+  name: Ukrainian
+  script: Cyrillic
+  tier: medium
+- code: si
+  name: Sinhala
+  script: Sinhala
+  tier: rare
+- code: is
+  name: Icelandic
+  script: Latin
+  tier: rare
+- code: cy
+  name: Welsh
+  script: Latin
+  tier: rare

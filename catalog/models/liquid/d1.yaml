@@ -1,0 +1,36 @@
+id: liquid/d1
+family: d1
+org: Liquid AI
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/liquid/d1
+  paper: null
+versions:
+- id: d1@2026-10
+  hf_revision: null
+  api_slug: liquid/d1
+  released: null
+deployments:
+- id: d1.openrouter
+  kind: hosted
+  version: d1@2026-10
+  provider: openrouter
+  endpoint: liquid/d1
+  adapter: openrouter.systemone
+  notes: 'Liquid AI''s structured decisions on the System One contract: choice/score/noul with calibrated
+    probabilities. $0.04/M input; measured $2.7e-6/q - at 0.031 s/question the fastest hosted decision
+    of the v0 pool. One of its providers retains prompts, so the row carries †.'
+notes: Hosted size undisclosed - params_b null. claims.languages is the v0-measured baseline (100% on
+  the 9-language suite); the open-weights sibling has a 17-language card.
+v0:
+  benched: true

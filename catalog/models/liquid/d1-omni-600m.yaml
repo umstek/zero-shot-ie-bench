@@ -1,0 +1,47 @@
+id: liquid/d1-omni-600m
+family: d1
+org: Liquid AI
+license: LFM Open License v1.0
+open_weights: true
+params_b: 0.587
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  - audio
+  languages: multilingual
+status: active
+links:
+  card: https://huggingface.co/LiquidAI/d1-omni-600M
+  paper: null
+versions:
+- id: d1-omni-600m@2026-10
+  hf_revision: null
+  api_slug: null
+  released: null
+deployments:
+- id: d1-omni-600m.local-von
+  kind: local
+  version: d1-omni-600m@2026-10
+  runner: von
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+    batch: null
+  requires:
+    vram_gb: null
+    ram_gb: 2.4
+    accel: null
+  notes: 'LiquidAI/d1-omni-600M snapshot via the same trust_remote_code route (D1_HOME; .venv-von). The
+    omni sibling: same trunk+branch scoring plus a 16 kHz mono int16 speech-state tower (the system_one
+    call takes a 4th audio arg; benches exercise the text path). Ties the 3B on English at ~25x the speed
+    but collapses off-English (51.8%) - the English-centric card reads true. ram_gb estimated (587M fp32,
+    no overhead).'
+notes: HF repo LiquidAI/d1-omni-600M (in links.card). ram_gb is estimated from the 587M size.
+v0:
+  benched: true

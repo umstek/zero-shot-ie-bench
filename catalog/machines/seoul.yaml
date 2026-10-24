@@ -1,0 +1,15 @@
+id: seoul
+kind: owned
+cpu: Intel Core Ultra 9 185H (16 cores / 22 threads)
+ram_gb: 32
+gpus: []  # Intel Arc integrated graphics only — no discrete GPU / CUDA
+os: Windows 11 Home
+# owner to fill: amortised rate per docs/plan D5 —
+# cost_per_hour_usd = (hardware ÷ expected life) + power; never $0
+cost_per_hour_usd: null
+cost_basis:
+  hardware_usd: null
+  life_hours: null
+  power_usd_per_hour: null
+fingerprint_match:
+  hostname: SEOUL

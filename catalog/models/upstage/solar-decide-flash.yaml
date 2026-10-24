@@ -1,0 +1,39 @@
+id: upstage/solar-decide-flash
+family: solar-decide
+org: Upstage
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages:
+  - en
+  - ko
+  - ja
+status: active
+links:
+  card: https://openrouter.ai/upstage/solar-decide-flash
+  paper: null
+versions:
+- id: solar-decide-flash@2026-10
+  hf_revision: null
+  api_slug: upstage/solar-decide-flash
+  released: null
+deployments:
+- id: solar-decide-flash.openrouter
+  kind: hosted
+  version: solar-decide-flash@2026-10
+  provider: openrouter
+  endpoint: upstage/solar-decide-flash
+  adapter: openrouter.systemone
+  notes: 'Solar Decide''s low-latency sibling on the same Upstage System One endpoint and Solar Mini 4
+    base: same choice/score/noul contract, output tokens free; 4.5x faster than Solar Decide at the identical
+    $0.05/M input ($0.00087 per 48-question run). Non-ZDR (†) - default routing.'
+notes: 'Size undisclosed on the card (Solar Mini 4 base) - params_b null. claims.languages: Solar Mini
+  4 backbone, built Korean/English/Japanese-first (README).'
+v0:
+  benched: true

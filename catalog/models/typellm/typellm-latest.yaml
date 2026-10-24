@@ -1,0 +1,41 @@
+id: typellm/typellm-latest
+family: typellm
+org: TypeLLM
+license: Apache-2.0 (harness); hosted API proprietary
+open_weights: false
+params_b: 27
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  languages: en
+status: active
+links:
+  card: https://typellm.ai/
+  paper: null
+versions:
+- id: typellm-latest@2026-10
+  hf_revision: null
+  api_slug: typellm-latest
+  released: null
+deployments:
+- id: typellm-latest.generate
+  kind: hosted
+  version: typellm-latest@2026-10
+  provider: typellm
+  endpoint: typellm-latest
+  adapter: typellm.generate
+  notes: 'POST https://api.typellm.ai/v1/generate (TYPELLM_API_KEY): {context, questions, images?, model?}
+    - JSON-Schema fields answered by one-token constrained enum picks (up to 512 values since v0.6.9;
+    up to 64 questions and 8 base64 images per call) over SGLang on their hosted Qwen3.8-27B. The October
+    releases also expose Jev-compatible /v1/systemone and OpenAI-Decisions-compatible /v1/decisions (each
+    billed as a generate call) - the benches use /v1/generate. Input $0.05/M, answer tokens free; measured
+    $2.6e-6/q plain. No published data-retention commitment (†).'
+notes: Version id dated to the 2026-10-17 re-bench after the v0.6.x -> v0.7.x releases (512-value enums,
+  described choices, box detection, the Jev-compatible /v1/systemone); no single release date, so 'released'
+  is null. claims.languages is the v0-measured baseline (100% on the 9-language suite).
+v0:
+  benched: true

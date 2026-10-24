@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lang": {
+      "type": "string"
+    },
+    "prediction": {},
+    "gold": {},
+    "correct": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "score": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "prob": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "latency_ms": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "compute_ms": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cost_usd": {
+      "type": "number"
+    },
+    "usage": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "in": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "out": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "in",
+            "out"
+          ],
+          "additionalProperties": {}
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "item_id",
+    "lang",
+    "prediction",
+    "gold",
+    "correct",
+    "score",
+    "prob",
+    "latency_ms",
+    "compute_ms",
+    "cost_usd",
+    "usage",
+    "error"
+  ],
+  "additionalProperties": {}
+}

@@ -1,0 +1,54 @@
+id: fastino/gliner2.5-multi
+family: gliner
+org: Fastino
+license: Apache-2.0
+open_weights: true
+params_b: 0.287
+claims:
+  tracks:
+  - ner
+  - classify
+  - relation
+  modalities:
+  - text
+  languages: multilingual
+status: active
+links:
+  card: https://github.com/fastino-ai/GLiNER2
+  paper: null
+versions:
+- id: gliner2.5-multi@2026-09
+  hf_revision: null
+  api_slug: null
+  released: null
+deployments:
+- id: gliner2.5-multi.local
+  kind: local
+  version: gliner2.5-multi@2026-09
+  runner: gliner
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+    batch: null
+  requires:
+    vram_gb: null
+    ram_gb: 1.2
+    accel: null
+  notes: fastino/gliner2.5-multi-v1 (mDeBERTa, multilingual - the largest 2.5; no 'large' exists) via
+    the gliner2 AutoExtractor, transformers 4.57.x pin. Most robust local extractor in v0. ram_gb estimated
+    (287M fp32, no overhead).
+- id: gliner2.5-multi.fastino-chat
+  kind: hosted
+  version: gliner2.5-multi@2026-09
+  provider: fastino
+  endpoint: fastino/gliner2.5-multi-v1
+  adapter: fastino.chat
+  notes: Hosted twin of the local multi checkpoint over the chat-completions schema endpoint; $0.03/M
+    input, output $0; measured $3.9e-7/q. Repeats the local run's answers exactly on classification and
+    across all nine languages. ZDR catalog.
+notes: Two v0 systems, one model (hosted twin of the same checkpoint). ram_gb is estimated from the 287M
+  size.
+v0:
+  benched: true

@@ -133,14 +133,14 @@ per-item metric fields.
 Only appended when something changed since the last observation, so the file stays
 small and every line marks a change.
 
-## Collections after the build (`build/`)
+## Collections after the build (`build/`, JSON written by `packages/lake`)
 
-| Parquet | Grain | Used by |
+| File | Grain | Used by |
 |---|---|---|
-| `<track>.items.parquet` | one row per run × item, joined with catalog dims | language heatmaps, error drill-down |
-| `<track>.runs.parquet` | one row per run with metrics per language and overall | history lines, explorer |
-| `deployments.parquet` | catalog flattened + latest observation + feasibility per machine | facets, picks, planner |
-| `observations.parquet` | all observations | price/ZDR history |
+| `<track>.items/<run-id>.json` | one row per item of one run, joined with catalog dims; **loaded lazily** per run | language heatmaps, error drill-down |
+| `<track>.runs.json` | one row per run with metrics per language and overall | history lines, explorer |
+| `deployments.json` | catalog flattened + latest observation + feasibility per machine | facets, picks, planner |
+| `observations.json` | all observations | price/ZDR history |
 
 One collection per track, as you asked (R7), so a NER F1 and a decision accuracy are
 never in the same column. The board joins them only through `deployments`.

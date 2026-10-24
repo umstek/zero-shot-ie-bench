@@ -1,0 +1,14 @@
+id: typesafe
+name: TypeSafe
+kind: api
+base_url: https://api.typesafe.ai/v1/systemone
+auth: [TYPESAFE_API_KEY]
+docs: https://www.typesafe.ai/
+zdr: null  # not stated in the v0 sources; record in observations when known
+contracts:
+  - name: systemone
+    kind: systemone
+    endpoint: /v1/systemone
+notes: serves Jev (jev-1.14.0 pinned; jev-latest moves with releases).
+  Danger-zone headers opt into image assets, 262k long-context mode and
+  box detection (legacy/engines/jev_client.py).

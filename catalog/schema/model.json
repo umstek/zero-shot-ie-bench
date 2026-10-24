@@ -1,0 +1,326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "org": {
+      "type": "string"
+    },
+    "license": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "open_weights": {
+      "type": "boolean"
+    },
+    "params_b": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "claims": {
+      "type": "object",
+      "properties": {
+        "tracks": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "modalities": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "audio",
+              "video"
+            ]
+          }
+        },
+        "languages": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "tracks",
+        "modalities",
+        "languages"
+      ],
+      "additionalProperties": {}
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "culled",
+        "retired"
+      ]
+    },
+    "links": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "paper": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "card",
+            "paper"
+          ],
+          "additionalProperties": {}
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "versions": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "hf_revision": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "api_slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "released": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "hf_revision",
+          "api_slug",
+          "released"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "deployments": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "type": "string",
+                "const": "hosted"
+              },
+              "version": {
+                "type": "string"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "endpoint": {
+                "type": "string"
+              },
+              "adapter": {
+                "type": "string"
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "version",
+              "provider",
+              "endpoint",
+              "adapter"
+            ],
+            "additionalProperties": {}
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "type": "string",
+                "const": "local"
+              },
+              "version": {
+                "type": "string"
+              },
+              "runner": {
+                "type": "string"
+              },
+              "runtime": {
+                "type": "object",
+                "properties": {
+                  "engine": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "dtype": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "quant": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "device": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "batch": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "additionalProperties": {}
+              },
+              "requires": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "vram_gb": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ram_gb": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "accel": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "version",
+              "runner",
+              "runtime",
+              "requires"
+            ],
+            "additionalProperties": {}
+          }
+        ]
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "v0": {
+      "type": "object",
+      "properties": {
+        "benched": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "id",
+    "family",
+    "org",
+    "license",
+    "open_weights",
+    "params_b",
+    "claims",
+    "status",
+    "links",
+    "versions",
+    "deployments"
+  ],
+  "additionalProperties": {}
+}

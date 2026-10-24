@@ -1,0 +1,6 @@
+[install]
+# isolated linker: each workspace gets its own node_modules — no hoisting races
+linker = "isolated"
+
+[test]
+preload = []

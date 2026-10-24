@@ -1,0 +1,37 @@
+id: nace-ai/drex-v1.5
+family: drex
+org: Nace.AI
+license: Nace.AI Open RAIL-M (weights); Apache-2.0 (runtime)
+open_weights: true
+params_b: 9
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/nace-ai/drex-v1.5
+  paper: null
+versions:
+- id: drex-v1.5@2026-10
+  hf_revision: null
+  api_slug: nace-ai/drex-v1.5
+  released: null
+deployments:
+- id: drex-v1.5.openrouter
+  kind: hosted
+  version: drex-v1.5@2026-10
+  provider: openrouter
+  endpoint: nace-ai/drex-v1.5
+  adapter: openrouter.systemone
+  notes: Nace.AI's MiMo-V2.6-Distill-Qwen-9B on the System One contract (card claims Decision Index 0.2.1
+    rank 1). 131K ctx per the v0 bench notes; the DeepInfra endpoint satisfies the account's ZDR (no †).
+    $0.04/M input; measured $1.4e-6/q with the leanest prompts of the hosted field (1.7k tokens for the
+    whole 48-question run). Ties the Decider tier at 93.8%.
+notes: 'Open weights, but no local deployment: the fp32 twin needs ~36 GB (the v0 box has 31.4) and GGUF
+  serving waits on Nace''s llama.cpp/Ollaya fork - benched hosted only.'
+v0:
+  benched: true

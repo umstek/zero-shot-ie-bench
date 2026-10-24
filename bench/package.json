@@ -1,0 +1,19 @@
+{
+  "name": "@zsib/bench",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "zsib-bench": "./src/cli.ts"
+  },
+  "scripts": {
+    "dev": "bun src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zsib/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "bun-types": "catalog:"
+  }
+}

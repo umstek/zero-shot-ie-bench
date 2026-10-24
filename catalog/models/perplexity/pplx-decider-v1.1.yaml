@@ -1,0 +1,35 @@
+id: perplexity/pplx-decider-v1.1
+family: pplx-decider
+org: Perplexity
+license: proprietary
+open_weights: false
+params_b: 27
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://openrouter.ai/perplexity/pplx-decider-v1.1-27b
+  paper: null
+versions:
+- id: pplx-decider-v1.1@2026-10
+  hf_revision: null
+  api_slug: perplexity/pplx-decider-v1.1-27b
+  released: null
+deployments:
+- id: pplx-decider-v1.1.openrouter
+  kind: hosted
+  version: pplx-decider-v1.1@2026-10
+  provider: openrouter
+  endpoint: perplexity/pplx-decider-v1.1-27b
+  adapter: openrouter.systemone
+  notes: 'The value pick of the v0 Decisions arrivals: same 5,273 input tokens as V1 at half the list
+    price ($0.02 vs $0.04/M - measured $2.2e-6/q, the cheapest paid Decisions arrival). retainsPrompts:
+    false (no †).'
+notes: Same family caveats as pplx-decider-v1 (image listed, not live; languages = measured baseline).
+v0:
+  benched: true

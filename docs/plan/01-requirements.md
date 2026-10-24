@@ -69,3 +69,13 @@ Standing house rules this plan keeps: measured cost (not derived), the trial gat
 4. **Generic "CSV for everything" doesn't fit model metadata.** It is nested (versions ×
    providers × prices over time). Tabular CSV/JSONL stays for **run rows**; the
    hand-curated catalog is YAML, one file per model.
+
+**Added later the same day: GLM picks I first carried over without checking, now reversed.**
+
+5. **DuckDB + Parquet are not needed.** All results to date are 244 KB; plain TS
+   aggregation into JSON covers years of growth. DuckDB brought an untested
+   Bun/Windows binding and a WASM build whose npm `latest` tag is a dev release.
+6. **Observable Plot is not needed.** No board view requires a second charting library;
+   ECharts covers all of them.
+7. **`just` is not needed** and isn't installed on this machine. Bun already runs
+   `package.json` scripts cross-platform; multi-step scripts go in `scripts/*.ts`.

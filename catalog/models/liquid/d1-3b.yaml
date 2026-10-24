@@ -1,0 +1,45 @@
+id: liquid/d1-3b
+family: d1
+org: Liquid AI
+license: LFM Open License v1.0
+open_weights: true
+params_b: 3.12
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  languages: multilingual
+status: active
+links:
+  card: https://huggingface.co/LiquidAI/d1-3B
+  paper: null
+versions:
+- id: d1-3b@2026-10
+  hf_revision: null
+  api_slug: null
+  released: null
+deployments:
+- id: d1-3b.local-von
+  kind: local
+  version: d1-3b@2026-10
+  runner: von
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+    batch: null
+  requires:
+    vram_gb: null
+    ram_gb: 12.5
+    accel: null
+  notes: 'LiquidAI/d1-3B snapshot loaded in-process via the card''s trust_remote_code route (D1_HOME overrides
+    the C:/src base; runs under .venv-von, transformers >=5.14). LFM2.5-VL-3B backbone: the state is encoded
+    once and every typed question answered from one batched scoring forward, no generation; text + image
+    state; 17-language card. ram_gb estimated (3.12B fp32, no overhead).'
+notes: HF repo LiquidAI/d1-3B (in links.card). ram_gb is estimated from the 3.12B size.
+v0:
+  benched: true

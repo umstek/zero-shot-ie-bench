@@ -1,0 +1,45 @@
+id: fastino/gliner2.5-small
+family: gliner
+org: Fastino
+license: Apache-2.0
+open_weights: true
+params_b: 0.074
+claims:
+  tracks:
+  - ner
+  - classify
+  - relation
+  modalities:
+  - text
+  languages: en
+status: active
+links:
+  card: https://github.com/fastino-ai/GLiNER2
+  paper: null
+versions:
+- id: gliner2.5-small@2026-09
+  hf_revision: null
+  api_slug: null
+  released: null
+deployments:
+- id: gliner2.5-small.local
+  kind: local
+  version: gliner2.5-small@2026-09
+  runner: gliner
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+    batch: null
+  requires:
+    vram_gb: null
+    ram_gb: 0.3
+    accel: null
+  notes: 'fastino/gliner2.5-small-v1 (DeBERTa-v3-xsmall) via the gliner2 AutoExtractor, transformers 4.57.x
+    pin. Fastest local system in v0 (43 ms/question). ram_gb estimated (74M fp32, no overhead). No hosted
+    twin: Fastino deliberately does not host the small checkpoint (404 ''not a recognised model id'' on
+    the chat-completions endpoint).'
+notes: HF repo fastino/gliner2.5-small-v1 (in links.card). ram_gb is estimated from the 74M size.
+v0:
+  benched: true

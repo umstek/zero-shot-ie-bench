@@ -10,8 +10,8 @@ providers, deployments, machines) plus versioned **suites** (questions per track
 language) are the inputs. A single TypeScript **bench** runs a suite against a
 **deployment** and appends an immutable **run** to the lake. A deployment is either a
 hosted API (called in-process by a TS adapter) or a local model (a Python **runner**
-serving one HTTP protocol). A build step turns the lake into Parquet per track. The
-static **board** queries that Parquet in the browser. Everything people read (README
+serving one HTTP protocol). A plain-TypeScript build step aggregates the lake into JSON
+files per track. The static **board** loads that JSON and filters it in memory. Everything people read (README
 tables, counts, charts) is generated from it.
 
 ```
@@ -27,8 +27,8 @@ tables, counts, charts) is generated from it.
                   ▼ append-only
             runs/<track>/…  (meta JSON + item JSONL)   observations/ (dated price/ZDR)
                   │
-                  ▼  lake build (DuckDB)
-            build/<track>.parquet  ──►  apps/board (DuckDB-WASM + ECharts, static)
+                  ▼  lake build (plain TS)
+            build/<track>.*.json   ──►  apps/board (in-memory filters + ECharts, static)
                                    ──►  generated README sections, charts
 ```
 
@@ -36,7 +36,7 @@ tables, counts, charts) is generated from it.
 
 | Dimension | Values | Where it lives |
 |---|---|---|
-| **Track** = task × input modality | `decision`, `score`, `classify`, `ner`, `relation`, `typed-extract` (Clairic-class), `schema-extract` (NuExtract-class), `rerank`, later `event`; modality `text`, `image`, `audio`, `video` | `catalog/tracks.yaml`; a track has its own **metric set** and its own **collection** (`runs/<track>/`, `build/<track>.parquet`) |
+| **Track** = task × input modality | `decision`, `score`, `classify`, `ner`, `relation`, `typed-extract` (Clairic-class), `schema-extract` (NuExtract-class), `rerank`, later `event`; modality `text`, `image`, `audio`, `video` | `catalog/tracks.yaml`; a track has its own **metric set** and its own **collection** (`runs/<track>/`, `build/<track>.*.json`) |
 | **Language** | the selected set (today: 9 non-English + English) | a **column** inside every track; suites ship **parallel items** (same `item_id` in every language), so differences across languages are real and not caused by different questions |
 | **Deployment** | model-version × (provider \| local runtime on a machine) | `catalog/models/…` + `catalog/machines/…`; recorded on every run |
 
@@ -102,6 +102,9 @@ params_hash · runner_version · bench_git_sha · started_at`
   file; rented machines use list price. Local cost is never $0 (D5).
 - **No Python bench driver (D1).** Runners only serve models. A machine that benches
   needs Bun installed next to uv.
+- **CI never downloads model weights.** Runner tests in CI cover the protocol and the
+  code paths with a stub model; tests that load real weights are marked `slow` and run
+  locally on a machine that can hold the model.
 
 ## Hosted side (R5, R6)
 
@@ -120,9 +123,9 @@ params_hash · runner_version · bench_git_sha · started_at`
 
 ## Board (R9)
 
-Static site, no backend: **Vite + React + TanStack Router/Table + DuckDB-WASM over
-Parquet + Apache ECharts** (Observable Plot for the odd small-multiples view). Host on
-Cloudflare Pages or GitHub Pages; it runs equally well offline from `build/`.
+Static site, no backend: **Vite + React + TanStack Router/Table (in-memory filtering
+over the built JSON) + Apache ECharts**. Any static host works (GitHub Pages,
+Cloudflare); it runs equally well offline from `build/`.
 
 Views, in priority order:
 
@@ -143,19 +146,23 @@ Views, in priority order:
 | Concern | Pick | Why / rejected |
 |---|---|---|
 | TS runtime, package manager, tests | **Bun 1.4.x**: workspaces + `catalog:` versions + isolated linker; `bun test` | one tool; Vitest not needed |
+| Type checking (TS) | **TypeScript 7** (`typescript@^7`, the native Go compiler, stable since Jul 2026); `tsc --noEmit` per workspace via `bun run typecheck` | 8–12× faster than TS 5/6. TS 7 has no stable programmatic API yet; that only matters to Vue/Svelte/Astro tooling, none of which is used here. **Do not pin `^5` or `^6`** |
+| Type checking (Python) | **Pyrefly 1.x** in every runner (`[tool.pyrefly]` in its `pyproject.toml`) | 1.0 stable since May 2026. Astral's `ty` is still 0.0.x beta; revisit when it hits 1.0 |
 | Schema SSOT | **Zod 4** in `packages/schema` → `z.toJSONSchema()` → JSON Schema in `catalog/schema/` → Pydantic via `datamodel-codegen` for runners | one definition, both languages; CI fails on drift |
-| Lint/format | Biome (TS), Ruff (Py) | |
-| Lake | per-run **JSONL** (git-diffable) → **DuckDB** builds Parquet per track | `@duckdb/node-api` under Bun is believed to work (Bun fixed the DuckDB N-API crash in 1.2.2), **not yet tested on this box → spike first**. Fallback: DuckDB CLI in the `just` recipe |
-| Charts | **ECharts 6** (+ Observable Plot) | ECharts covers scatter, heatmaps, time series and is well maintained; uPlot dropped (01, disagreement 3); Recharts-class libraries are too weak for heatmaps |
-| Board build | Vite + React + TanStack (D2) | Evidence.dev (SQL + Markdown → static, DuckDB-WASM) rejected: the custom decision views (picks, break-even, planner) outgrow it |
+| Lint/format | **Biome 2.x** (TS), **Ruff** (Py) | Oxlint is faster but lint-only, and Oxc's formatter (oxfmt) isn't confirmed stable; Biome stays the single TS tool |
+| Tool versions on every machine | **uv ≥ 0.13** (`uv self update`; this desktop had 0.10.10 on 2026-10-24), Bun 1.4.x | lockfiles written by an old uv drift from CI; check before phase 3 |
+| Version floors | every `catalog:` entry and runner pin uses the **current major** at install time (Zod 4.6+, ECharts 6, Gradio 6, uv 0.13+) | an open `^N.0.0` floor on an old major is how outdated versions slip in. Check `npm view <pkg> version` / PyPI before writing a range |
+| Lake | per-run **JSONL** (git-diffable) → **plain TS** (`packages/lake`) aggregates into JSON per track; `bun:sqlite` (built into Bun) only if build-time SQL is ever wanted | **No DuckDB.** All results to date are 244 KB; a decade of rebenching stays tens of MB. DuckDB added an untested Bun/Windows native binding, a WASM build whose npm `latest` tag is a dev release, and several MB on the board's first load. Revisit only if item-level data passes ~100 MB or in-browser ad-hoc SQL becomes a need |
+| Charts | **ECharts 6** only (`echarts-for-react` 3.x supports it) | ECharts covers scatter, heatmaps, time series and is well maintained. One charting library: uPlot and Observable Plot dropped (01, disagreements 3 and 6); Recharts-class libraries are too weak for heatmaps |
+| Board build | **Vite 8** (Rolldown-based, stable since Mar 2026) + React + TanStack (D2) | Evidence.dev (SQL + Markdown → static) rejected: the custom decision views (picks, break-even, planner) outgrow it |
 | Suite media | Git LFS (D3) | an HF dataset pointer only once media passes ~1 GB or video suites arrive |
 | Local UI | **Gradio 6**, mounted on the runner's FastAPI app | your pick (R4); one process per runner |
-| Task runner | **`just`** at the root, shelling to `bun run …` and `uv run --project runners/<x> …` | moon's Python toolchain is still marked unstable; Pants doesn't run on Windows; add Turborepo only once CI gets slow |
+| Task runner | **root `package.json` scripts** run with `bun run <name>`; anything longer than one line lives in `scripts/<name>.ts` (Bun Shell `$`). Python steps call `uv run --project runners/<x> …` from those scripts | Bun is already required on every machine (D1) and runs `package.json` scripts through its own cross-platform shell on Windows. **No `just`**: it isn't installed here and would be one more tool (01, disagreement 7). moon's Python toolchain is still unstable; Pants doesn't run on Windows; add Turborepo only once CI gets slow |
 | Interop | optional exporter to **Every Eval Ever** (MIT schema, Jun 2026) | not the native format (it doesn't model deployments × machines × cost), but an export is cheap and makes results citable |
 
 ## Invariants CI enforces
 
-1. `just render && git diff --exit-code`: generated README sections, counts and charts
+1. `bun run render && git diff --exit-code`: generated README sections, counts and charts
    match the lake.
 2. Every catalog, suite and run file validates against `catalog/schema/`.
 3. `runs/` is append-only: CI rejects a PR that modifies or deletes an existing run

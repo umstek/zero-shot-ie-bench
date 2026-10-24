@@ -1,0 +1,40 @@
+id: cloudflare/clef
+family: clef
+org: Cloudflare
+license: Apache-2.0 (weights on HF; metered API)
+open_weights: true
+params_b: 27
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  languages: en
+status: active
+links:
+  card: https://developers.cloudflare.com/workers-ai/models/clef/
+  paper: null
+versions:
+- id: clef@2026-10
+  hf_revision: null
+  api_slug: '@cf/cloudflare/clef'
+  released: null
+deployments:
+- id: clef.workers-ai
+  kind: hosted
+  version: clef@2026-10
+  provider: cloudflare-workers-ai
+  endpoint: '@cf/cloudflare/clef'
+  adapter: workers-ai.clef
+  notes: 'POST https://api.cloudflare.com/client/v4/accounts/<account>/ai/run/@cf/cloudflare/clef - the
+    System One wire format behind Cloudflare''s REST v4 envelope ({success, result}) (cf CLI OAuth session
+    or CLOUDFLARE_AUTH_TOKEN + CLOUDFLARE_ACCOUNT_ID). Frozen Qwen3.8-27B backbone, 64k ctx, vision-capable.
+    ZDR: Cloudflare commits to not reading/storing/training on Clef requests. Reports tokens but no $
+    - derived $2.3e-5/q at $0.24/M input.'
+notes: Weights are Apache 2.0 on HF, so the system is locally runnable in principle; no local engine or
+  runner island exists in v0. claims.languages is the v0-measured baseline (Clef measured 100% on the
+  9-language suite).
+v0:
+  benched: true
