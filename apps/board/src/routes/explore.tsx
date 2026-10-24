@@ -48,7 +48,7 @@ const columns = helper.columns([
     header: "Model",
     cell: (info) => (
       <Link to="/model/$" params={{ _splat: info.row.original.model_id }}>
-        {info.getValue()}
+        {info.getValue() ?? info.row.original.model_id}
       </Link>
     ),
   }),
