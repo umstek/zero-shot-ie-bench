@@ -37,7 +37,8 @@ deployments:
     for 1.14). Context ceilings 64k per request / 32k per question; 262k behind the TypeSafe-Danger-Zone-Long-Context
     header; image assets + 1.14 box questions behind TypeSafe-Danger-Zone-Images (benched text-only).
     Provider reports tokens but no $ - v0 cost derived: $5.3e-6/q at $0.042/M input.'
-  display: Jev
+  display: Jev (cloud, jev-1.14.0)
+  zdr_safe: true
 notes: 1.13 and 1.14 both record 45/48 on the mixed pool (they trade exactly one question each way); 1.13
   is kept as a version for the recorded history. claims.languages is the v0-measured baseline only - Jev
   measured 100% on the 9-language suite.

@@ -31,6 +31,7 @@ deployments:
     noul, score rubrics - up to 128 questions per request. 262K ctx per the v0 bench notes. Reports retainsPrompts:
     false (no †). $0.04/M input; measured $4.4e-6/q.'
   display: Decider V1 27B (OpenRouter)
+  zdr_safe: true
 notes: The README row lists an image modality for the Decider family but records it as not live yet -
   claims.modalities stays [text]. claims.languages is the v0-measured baseline (100% on the 9-language
   suite).

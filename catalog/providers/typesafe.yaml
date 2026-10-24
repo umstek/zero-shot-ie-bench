@@ -5,6 +5,7 @@ base_url: https://api.typesafe.ai/v1/systemone
 auth: [TYPESAFE_API_KEY]
 docs: https://www.typesafe.ai/
 zdr: null  # not stated in the v0 sources; record in observations when known
+zdr_safe: true  # no retention flag on the v0 runs - no † marker
 contracts:
   - name: systemone
     kind: systemone

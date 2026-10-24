@@ -40,6 +40,7 @@ deployments:
   used_as: classify
   notes: sentence-transformers CrossEncoder on CPU
   display: bge-reranker-v2-m3
+  zdr_safe: true
 v0:
   benched: true
 notes: Family rerank-local (bundled local-rerankers row).

@@ -42,5 +42,24 @@ deployments:
     note: ram_gb estimated from params (fp32)
   notes: in-process via the `laya` package (laya.load + agent.predict, one batched call per task)
   display: Laya (local)
+  zdr_safe: true
+- id: laya.router
+  kind: local
+  version: laya@unversioned
+  runner: gliner
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+  requires:
+    vram_gb: 0
+    ram_gb: 3
+    accel: cpu
+    note: ram_gb estimated from params (fp32)
+  notes: routing mode - the multilingual pool script picks the Laya checkpoint per input (mmBERT English
+    root vs typed-decisions); a v0 row of its own
+  display: Laya Router (mmBERT)
+  zdr_safe: true
 v0:
   benched: true

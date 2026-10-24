@@ -31,6 +31,7 @@ deployments:
     and holds 54/54 multilingual. V1.2 lifts context to 262k (per the card). The V1.2/Flash endpoints
     expose no per-endpoint retention policy, so the family's no-† carries.
   display: Decider V1.2 27B (OpenRouter)
+  zdr_safe: true
 notes: Same family caveats (image listed, not live; languages = measured baseline).
 v0:
   benched: true

@@ -44,5 +44,6 @@ deployments:
     DECIDER_DEVICE=cpu); lazy-loads on first request so the bench fires an untimed warm-up; the shared
     server venv installs onnxruntime — engine not documented per model
   display: decider 0.8B (local)
+  zdr_safe: true
 v0:
   benched: true

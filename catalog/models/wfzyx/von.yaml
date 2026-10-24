@@ -43,6 +43,7 @@ deployments:
     note: ram_gb estimated
   notes: OptionMarkerBackend, device cpu, temperature from marker_calibration.json; runs in .venv-von
     (requirements-von.txt, transformers 5.x py3.13)
-  display: von
+  display: von-1.0 (option-marker)
+  zdr_safe: true
 v0:
   benched: true

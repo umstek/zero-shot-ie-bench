@@ -44,5 +44,6 @@ deployments:
   notes: in-process in .venv-von (the snapshot's own jev.serve server hardcodes CUDA); fp32 weights on
     CPU — the snapshot stores bf16 (engines/k2type_client.py); K2TYPE_HOME overrides the snapshot dir
   display: K2-Type 0.9B (local)
+  zdr_safe: true
 v0:
   benched: true

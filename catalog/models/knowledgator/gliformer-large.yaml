@@ -39,6 +39,7 @@ deployments:
     accel: cpu
     note: ram_gb estimated from params (fp32)
   display: GLiFormer-large
+  zdr_safe: true
 v0:
   benched: true
 notes: Knowledgator's GLiNER lineage (family gliner); see gliformer-base.

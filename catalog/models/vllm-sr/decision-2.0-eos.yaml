@@ -39,6 +39,7 @@ deployments:
     accel: cpu
     note: ram_gb estimated
   notes: same decision2 in-process path; load size not documented
-  display: Decision 2.0 Eos 0.8B
+  display: Decision 2.0 Eos 0.8B (local)
+  zdr_safe: true
 v0:
   benched: true

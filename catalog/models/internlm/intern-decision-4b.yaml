@@ -41,5 +41,6 @@ deployments:
     note: ram_gb estimated from params (fp32 residency on the 32 GB box)
   notes: same in-process snapshot-runtime path
   display: Intern-Decision 4B
+  zdr_safe: true
 v0:
   benched: true

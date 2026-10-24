@@ -181,6 +181,15 @@
               "adapter": {
                 "type": "string"
               },
+              "display": {
+                "type": "string"
+              },
+              "zdr_safe": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
               "notes": {
                 "type": "string"
               }
@@ -277,6 +286,15 @@
                   {
                     "type": "null"
                   }
+                ]
+              },
+              "display": {
+                "type": "string"
+              },
+              "zdr_safe": {
+                "type": [
+                  "boolean",
+                  "null"
                 ]
               },
               "notes": {

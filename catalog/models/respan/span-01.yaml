@@ -31,6 +31,7 @@ deployments:
     the text as a plain-string state (it scores conversation spans). Non-ZDR (†) - ZDR-enforcing account
     settings exclude it. Measured $9.0e-7/q (payloads are tiny).'
   display: Span-01
+  zdr_safe: false
 notes: Native output is one probability per label - claimed track is classify (argmax), not decision.
   Size closed, params_b null.
 v0:

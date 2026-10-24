@@ -30,5 +30,6 @@ deployments:
   notes: Same System One contract as local Kev, hosted (OpenRouter /api/v1/systemone, Bearer OPENROUTER_API_KEY).
     Non-ZDR (†). Batches each 24-question task into one request; measured $1.5e-6/q.
   display: Kev 4B (OpenRouter)
+  zdr_safe: false
 v0:
   benched: true

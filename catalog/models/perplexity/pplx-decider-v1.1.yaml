@@ -31,6 +31,7 @@ deployments:
     price ($0.02 vs $0.04/M - measured $2.2e-6/q, the cheapest paid Decisions arrival). retainsPrompts:
     false (no †).'
   display: Decider V1.1 27B (OpenRouter)
+  zdr_safe: true
 notes: Same family caveats as pplx-decider-v1 (image listed, not live; languages = measured baseline).
 v0:
   benched: true

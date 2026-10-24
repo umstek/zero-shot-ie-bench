@@ -30,6 +30,7 @@ deployments:
   notes: Same System One contract behind the v4 envelope; frozen Qwen3.5-9B backbone (~39 ms median, self-reported).
     ZDR. Derived $8.6e-6/q at $0.09/M input.
   display: Clef-flash (Workers AI)
+  zdr_safe: true
 notes: Weights are Apache 2.0 on HF; no local engine or runner island exists in v0.
 v0:
   benched: true

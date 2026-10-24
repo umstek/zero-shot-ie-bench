@@ -43,5 +43,6 @@ deployments:
   notes: in-process in .venv-von (transformers 5.17 for the Qwen3.5 encoder; fla reference kernels on
     CPU)
   display: MoJev 0.85B
+  zdr_safe: true
 v0:
   benched: true

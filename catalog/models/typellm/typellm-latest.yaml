@@ -35,6 +35,7 @@ deployments:
     billed as a generate call) - the benches use /v1/generate. Input $0.05/M, answer tokens free; measured
     $2.6e-6/q plain. No published data-retention commitment (†).'
   display: TypeLLM (hosted)
+  zdr_safe: false
 notes: Version id dated to the 2026-10-17 re-bench after the v0.6.x -> v0.7.x releases (512-value enums,
   described choices, box detection, the Jev-compatible /v1/systemone); no single release date, so 'released'
   is null. claims.languages is the v0-measured baseline (100% on the 9-language suite).

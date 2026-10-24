@@ -46,6 +46,7 @@ deployments:
   notes: in-process in .venv-von via the snapshot's d3_runtime; bf16 backbone + SDPA (hard-coded), fp32
     readout + softmax; weight read ~1.2 GB; Gated DeltaNet on the transformers reference kernels (the
     fla kernels are GPU-only); D3_HOME overrides the snapshot prefix
-  display: Decision 3.0 Edge 0.6B
+  display: Decision 3.0 Edge 0.6B (local)
+  zdr_safe: true
 v0:
   benched: true

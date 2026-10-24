@@ -40,5 +40,6 @@ deployments:
     note: ram_gb estimated from params (fp32)
   notes: same lumma-fev in-process path
   display: Lumma-fev 0.6B
+  zdr_safe: true
 v0:
   benched: true

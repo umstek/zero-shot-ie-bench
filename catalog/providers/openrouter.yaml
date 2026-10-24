@@ -8,6 +8,7 @@ zdr: varies by endpoint — account privacy settings gate retention; the
   account used for v0 runs allows non-ZDR endpoints (README † note). Solar
   Decide / Solar Decide Flash have a ZDR Upstage endpoint but v0 used default
   routing. GPT-6 Luna Decisions retains prompts.
+zdr_safe: false  # non-ZDR on the v0 benches - renders the † marker
 contracts:
   - name: systemone
     kind: systemone

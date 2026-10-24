@@ -45,5 +45,6 @@ deployments:
     5.14.1 — satisfied); fp32 CPU family-wide (bf16 runs ~7x slower with identical predictions, engines/intern_decision_client.py);
     INTERN_DECISION_HOME overrides the snapshot prefix
   display: Intern-Decision 0.8B
+  zdr_safe: true
 v0:
   benched: true

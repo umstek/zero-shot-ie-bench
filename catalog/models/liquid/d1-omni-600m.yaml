@@ -43,6 +43,7 @@ deployments:
     but collapses off-English (51.8%) - the English-centric card reads true. ram_gb estimated (587M fp32,
     no overhead).'
   display: D1-omni 600M (local)
+  zdr_safe: true
 notes: HF repo LiquidAI/d1-omni-600M (in links.card). ram_gb is estimated from the 587M size.
 v0:
   benched: true

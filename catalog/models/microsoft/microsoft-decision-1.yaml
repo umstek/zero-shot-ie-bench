@@ -31,6 +31,7 @@ deployments:
     the only endpoint and satisfies this account''s enforced ZDR (no †). 33K ctx per the v0 bench notes;
     $0.042/M input; measured $2.1e-6/q. Perfect 54/54 multilingual run in v0.'
   display: Microsoft Decision-1 (OpenRouter)
+  zdr_safe: true
 notes: The card says updated continually while the API shape stays the same - a standing silent-change
   risk for the version pin.
 v0:

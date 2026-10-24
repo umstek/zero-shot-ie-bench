@@ -42,5 +42,6 @@ deployments:
   notes: own HTTP contract POST /api/evaluate (NOT System One) on http://127.0.0.1:8149 — jev_service.server
     --checkpoint agentjev_v1.pt --device cpu, own venv; fp32 (autocast is CUDA-only, engines/agentjev_client.py)
   display: AgentJev 0.6B (local)
+  zdr_safe: true
 v0:
   benched: true

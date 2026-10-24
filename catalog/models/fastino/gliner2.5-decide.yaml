@@ -40,6 +40,7 @@ deployments:
     supported) via the gliner2 AutoExtractor, transformers 4.57.x pin. Best local classifier on the v0
     mixed pool and best local NER-capable classifier. ram_gb estimated (340M fp32, no overhead).
   display: GLiNER2.5-Decide
+  zdr_safe: true
 - id: gliner2.5-decide.fastino-chat
   kind: hosted
   version: gliner2.5-decide@2026-09
@@ -50,6 +51,7 @@ deployments:
     is not. Rides the chat-completions schema, NOT /v1/systemone, despite being a decision model (docs.fastino.ai/concepts/gliner-2-5-decide).
     $0.03/M input, output $0; measured $3.9e-7/q. ZDR catalog.
   display: GLiNER2.5-Decide (Fastino)
+  zdr_safe: true
 notes: Two v0 systems, one model (hosted twin). ram_gb is estimated from the 340M size.
 v0:
   benched: true

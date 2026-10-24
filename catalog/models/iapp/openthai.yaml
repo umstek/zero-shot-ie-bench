@@ -43,5 +43,6 @@ deployments:
     OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne); lazy cold load runs minutes (warm-up timeout 600
     s); the shared server venv installs onnxruntime — engine not documented per model
   display: OpenThai 0.8B (local)
+  zdr_safe: true
 v0:
   benched: true

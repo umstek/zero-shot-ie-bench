@@ -39,6 +39,7 @@ deployments:
     note: ram_gb estimated from params (fp32)
   notes: gliclass package, ZeroShotClassificationPipeline, multi-label, threshold 0.0 + argmax
   display: gliclass-modern-base
+  zdr_safe: true
 v0:
   benched: true
 notes: 'Knowledgator''s GLiNER lineage (family gliner). The edge-v3.0 size (33M) is CULLED from the benchmark

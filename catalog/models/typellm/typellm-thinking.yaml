@@ -35,6 +35,7 @@ deployments:
     on the pool). Split into its own file so each benched v0 system is one catalog row. No published data-retention
     commitment (†).'
   display: TypeLLM thinking (hosted)
+  zdr_safe: false
 notes: Same version as typellm/typellm-latest - the thinking mode is a request parameter, not a distinct
   version or endpoint.
 v0:

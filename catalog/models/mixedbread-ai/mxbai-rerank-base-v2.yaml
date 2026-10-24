@@ -41,6 +41,7 @@ deployments:
   notes: sentence-transformers CrossEncoder on CPU; scores one (instruction, label) pair per label, argmax
     = decision
   display: mxbai-rerank-base-v2
+  zdr_safe: true
 v0:
   benched: true
 notes: 'Family rerank-local: the README bundles the local cross-encoder rerankers in one system-table

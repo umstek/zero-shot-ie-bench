@@ -43,6 +43,7 @@ deployments:
     accel: cpu
     note: ram_gb from the documented weight read
   notes: same d3_runtime in-process path; weight read ~4.4 GB per engine docs
-  display: Decision 3.0 Nano 2B
+  display: Decision 3.0 Nano 2B (local)
+  zdr_safe: true
 v0:
   benched: true

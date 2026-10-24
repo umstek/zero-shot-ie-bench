@@ -41,5 +41,6 @@ deployments:
     contract, daemon 0.12.1 here; `ollaya pull` per tag; one request per question — the decision layers
     build their premise from the state)
   display: decima 321M (Ollaya)
+  zdr_safe: true
 v0:
   benched: true

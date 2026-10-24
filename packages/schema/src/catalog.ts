@@ -46,6 +46,7 @@ export const HostedDeployment = z.looseObject({
   endpoint: z.string(), // exact endpoint/model id the adapter calls
   adapter: z.string(), // bench/src/providers module, e.g. "openrouter.systemone"
   display: z.string().optional(), // v0 README/result row name
+  zdr_safe: z.boolean().nullable().optional(), // false renders the v0 dagger marker
   notes: z.string().optional(),
 });
 
@@ -57,6 +58,7 @@ export const LocalDeployment = z.looseObject({
   runtime: Runtime,
   requires: Requires.nullable(),
   display: z.string().optional(), // v0 README/result row name
+  zdr_safe: z.boolean().nullable().optional(), // false renders the v0 dagger marker
   notes: z.string().optional(),
 });
 
@@ -103,6 +105,7 @@ export const Provider = z.looseObject({
   auth: z.array(z.string()).nullable(), // env var names the adapter reads
   docs: z.string().nullable(),
   zdr: z.string().nullable(), // what we know about zero-data-retention
+  zdr_safe: z.boolean().nullable(), // machine-readable: false renders the v0 † marker
   contracts: z.array(ProviderContract).default([]),
   notes: z.string().optional(),
 });

@@ -32,6 +32,7 @@ deployments:
     rides :free (20 req/min paced the multilingual run to 2.97 s/text). MIT weights on HF baselabs/elephant-1.
     The free endpoint documents no retention policy, so the row carries †. Measured $0.
   display: Elephant-1 9B (OpenRouter)
+  zdr_safe: false
 notes: claims.languages is the v0-measured baseline (perfect 54/54 multilingual run).
 v0:
   benched: true

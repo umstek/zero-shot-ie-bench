@@ -40,6 +40,7 @@ deployments:
     accel: cpu
     note: ram_gb from the documented load size; fp32 residency is higher
   notes: same decision2 in-process path; load ~4.8 GB per engine docs
-  display: Decision 2.0 Sol 2B
+  display: Decision 2.0 Sol 2B (local)
+  zdr_safe: true
 v0:
   benched: true

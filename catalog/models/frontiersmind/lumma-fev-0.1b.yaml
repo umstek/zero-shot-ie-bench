@@ -42,5 +42,6 @@ deployments:
   notes: in-process via the lumma-fev package (.venv-von, transformers >=5.4,<6); one decide() call per
     question
   display: Lumma-fev 0.15B
+  zdr_safe: true
 v0:
   benched: true

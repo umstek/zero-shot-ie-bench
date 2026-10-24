@@ -30,6 +30,7 @@ deployments:
   notes: The previous-generation Cohere reranker, same argmax mapping. Non-ZDR (†). Measured $1.0e-3/q
     (~2.5 search units per request).
   display: cohere-rerank-v3.5 (OpenRouter)
+  zdr_safe: false
 notes: The README gives no separate card link for this tier (links.card null). Size closed - params_b
   null.
 v0:

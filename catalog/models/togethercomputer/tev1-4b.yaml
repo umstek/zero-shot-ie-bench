@@ -31,6 +31,7 @@ deployments:
     Reports retainsPrompts: false (no †). $0.042/M input; measured $4.8e-6/q. Trails the other Decisions
     arrivals at 79.2%.'
   display: Tev1 4B (OpenRouter)
+  zdr_safe: true
 notes: Choice-only in the recorded v0 contract - claims.tracks is [decision] without score. claims.languages
   is the v0-measured baseline (100% on the 9-language suite).
 v0:

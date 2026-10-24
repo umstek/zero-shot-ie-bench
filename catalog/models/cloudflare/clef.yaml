@@ -34,6 +34,7 @@ deployments:
     ZDR: Cloudflare commits to not reading/storing/training on Clef requests. Reports tokens but no $
     - derived $2.3e-5/q at $0.24/M input.'
   display: Clef (Workers AI)
+  zdr_safe: true
 notes: Weights are Apache 2.0 on HF, so the system is locally runnable in principle; no local engine or
   runner island exists in v0. claims.languages is the v0-measured baseline (Clef measured 100% on the
   9-language suite).

@@ -42,6 +42,7 @@ deployments:
   used_as: classify
   notes: trust_remote_code load, left padding, fp32 on CPU (the card's bf16 example targets GPU)
   display: nemotron-rerank-1b-v2
+  zdr_safe: true
 v0:
   benched: true
 notes: Family rerank-local (bundled local-rerankers row). The hosted-only vl sibling (nvidia/llama-nemotron-rerank-vl-1b-v2:free,

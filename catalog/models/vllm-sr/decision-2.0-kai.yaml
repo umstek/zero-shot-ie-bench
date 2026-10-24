@@ -44,6 +44,7 @@ deployments:
     + packed parameter counts), load ~1.5 GB; one batched predict per task (share_context off); Windows
     loader re-keys the vendored fingerprint's path separators (engines/decision2_client.py); DECISION2_HOME
     overrides the snapshot prefix
-  display: Decision 2.0 Kai 0.6B
+  display: Decision 2.0 Kai 0.6B (local)
+  zdr_safe: true
 v0:
   benched: true
