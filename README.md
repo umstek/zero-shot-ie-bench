@@ -179,7 +179,7 @@ Caveats worth knowing:
   collapse Laya onto one label (58.3%); benchmarked with strings, where
   it scores 95.8%.
 
-## Mixed-pool spectrum benchmark (all 76 systems)
+## Mixed-pool spectrum benchmark (all 78 systems)
 
 `bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
@@ -822,7 +822,7 @@ surprisingly well for an English-family release (81%, 100% Chinese,
 | Ordinal score rubrics | ✅ via Decide (demoed) | ✅ via Decide twin (classifications demoed) | ❌ | ❌ | ❌ | ✅ score | ✅ rate (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ❌ (lite is classification-only) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score (demoed) | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score | ✅ score (demoed) | ✅ (ordinal score head) | Arbiter ✅ (6 fixed levels); snap/Credence choice-only benched | ✅ score |
 | Yes/no judgments | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ noul | ✅ judge (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ✅ boolean (demoed) | ✅ noul (demoed) | ✅ noul (demoed) | ❌ | ✅ noul (demoed) | ✅ noul | ✅ noul | ✅ (true/false read as A/B) | ✅ (labels read as letters) | ✅ noul | ✅ noul | ✅ noul | ✅ noul | ✅ noul | ✅ noul (demoed) | ❌ | Arbiter ✅ noul (card); snap/Credence unbenched | ✅ noul |
 | Text embeddings | ❌ | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ✅ multi twin (89% over 9 langs here, = local) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | ✅ 78% over 9 langs | ✅ 83% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% | 65–93% over 9 langs by size (Nano 93%); rare tier 28–78% | ✅ 91% (3B, 17-lang card; omni 52%) | ✅ 93% (321M; small 69%) | snap 91%, Arbiter 96% (89% rare); Credence 98% (94% rare — ties winnow's best local rare tier) | ✅ 100% over 9 langs (six of seven; Decision-1 perfect, Drex/Clef-omni 98%) |
+| Multilingual | ✅ multi ckpt (89% over 9 langs here) | ✅ multi twin (89% over 9 langs here, = local) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | ✅ 78% over 9 langs | ✅ 83% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% | 65–93% over 9 langs by size (Nano 93%); rare tier 28–78% | ✅ 91% (3B, 17-lang card; omni 52%) | ✅ 93% (321M; small 69%) | snap 91%, Arbiter 96% (89% rare); Credence 98% (94% rare — ties winnow's best local rare tier) | ✅ 100% over 9 langs (eight of nine; Decision-1, Elephant-1 and luna-decisions perfect, Drex/Clef-omni 98%) |
 | Runs offline / data local | ✅ | ❌ (Fastino API, ZDR) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | Image input | ❌ | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ✅ (danger-zone `assets` behind `TypeSafe-Danger-Zone-Images: true` on 1.13 and 1.14, benched text-only — `demos/jev_image_demo.py`; 1.14-only `box` detection) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) | ❌ | ❌ | ✅ (vision tower in every snapshot, images + videos on the same system_one call; benched text-only here) | ✅ (LFM2.5-VL tower in both checkpoints, demos/d1_demo.py; omni adds 16 kHz speech state) | ❌ | ❌ (Credence ships a vision-tagged variant) | ❌ (Decider lists image modality; text/JSON state only so far — Clef-omni accepts images[]/audio[]/videos[] state, audio/video untested here) |
 | Cost | free | $0.03/1M input (output $0) | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | $0.02–$0.15/1M input, decisions free; Mercury on the :free tier |
@@ -1131,7 +1131,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # (--repeats N) → results/bench_results.json
 .venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
                                          # system → results/bench_spectrum_results.json
-                                         # (76 systems; von, JevK5-Lite,
+                                         # (78 systems; von, JevK5-Lite,
                                          # MoJev 0.85B, Lumma-Fev,
                                          # Intern-Decision, K2-Type,
                                          # Decision 2.0, Decision 3.0 and
@@ -1141,7 +1141,7 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # under .venv-von/Scripts/python)
 # decider/OpenThai speak plain HTTP, so any interpreter works
 .venv/Scripts/python bench_multilingual.py --system <name>
-                                         # 9 languages, all 76 systems →
+                                         # 9 languages, all 78 systems →
                                          # results/bench_multilingual_results.json
                                          # (same interpreter rules)
 .venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
@@ -1439,7 +1439,7 @@ with their full recorded data and charts in TRIALS.md.
 | `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
 | `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
 | `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 76 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `bench_multilingual.py` | 9-language zero-shot suite, all 78 systems (Sinhala/Icelandic/Welsh in the rare tier) |
 | `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
 | `results/bench_*_results.json` | latest results, rendered by the web UI |
 
