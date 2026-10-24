@@ -8,9 +8,14 @@ dependencies = [
     # Floors at the current majors at install time (docs/plan/02 - version floors).
     "fastapi>=0.162",
     "uvicorn>=0.54",
-    "gradio>=6.30",
     "pydantic>=2.14",
 ]
+
+[project.optional-dependencies]
+# Gradio needs huggingface-hub>=1.16, which conflicts with the
+# transformers-4.57.x islands' hub<1.0 pin — so the UI mount is an extra;
+# islands that mount a UI depend on runner-protocol[ui].
+ui = ["gradio>=6.30"]
 
 [dependency-groups]
 dev = [

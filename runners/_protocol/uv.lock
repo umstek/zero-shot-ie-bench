@@ -1197,9 +1197,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
-    { name = "gradio" },
     { name = "pydantic" },
     { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+ui = [
+    { name = "gradio" },
 ]
 
 [package.dev-dependencies]
@@ -1213,10 +1217,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.162" },
-    { name = "gradio", specifier = ">=6.30" },
+    { name = "gradio", marker = "extra == 'ui'", specifier = ">=6.30" },
     { name = "pydantic", specifier = ">=2.14" },
     { name = "uvicorn", specifier = ">=0.54" },
 ]
+provides-extras = ["ui"]
 
 [package.metadata.requires-dev]
 dev = [
