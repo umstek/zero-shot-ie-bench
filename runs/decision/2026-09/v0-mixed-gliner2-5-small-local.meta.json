@@ -1,0 +1,45 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "gliner2.5-small.local",
+ "model_version": "gliner2.5-small@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu",
+   "batch": null
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-20T13:23:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 34,
+  "cost_usd": 0,
+  "p50_ms": 43,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-gliner2-5-small-local",
+ "v0_rank": 66,
+ "v0_cells": {
+  "name": "GLiNER2.5-small",
+  "cls_s": "0.043",
+  "ner_s": "0.053"
+ }
+}

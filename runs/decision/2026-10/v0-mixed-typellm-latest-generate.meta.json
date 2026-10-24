@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "typellm-latest.generate",
+ "model_version": "typellm-latest@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "typellm"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-17T12:26:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 46,
+  "cost_usd": 0.00013,
+  "p50_ms": 57,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-typellm-latest-generate",
+ "v0_rank": 4,
+ "v0_cells": {
+  "name": "TypeLLM (hosted) \u2020",
+  "cls_s": "0.057",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 14,
+  "name": "TypeLLM (hosted) \u2020",
+  "c48": "$0.00013",
+  "c54": "$0.00017",
+  "perq": "$0.0000026",
+  "suppressed": false
+ },
+ "v0_per_question": 2.6e-06
+}

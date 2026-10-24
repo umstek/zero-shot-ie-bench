@@ -1,0 +1,46 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "elephant-1.openrouter-free",
+ "model_version": "elephant-1@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-24T12:48:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 43,
+  "cost_usd": 0.0,
+  "p50_ms": 18,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-elephant-1-openrouter-free",
+ "v0_rank": 17,
+ "v0_cells": {
+  "name": "Elephant-1 9B (OpenRouter) \u2020",
+  "cls_s": "0.018",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 3,
+  "name": "Elephant-1 9B (OpenRouter) \u2020",
+  "c48": "$0",
+  "c54": "$0",
+  "perq": "$0 (free tier)",
+  "suppressed": false
+ }
+}

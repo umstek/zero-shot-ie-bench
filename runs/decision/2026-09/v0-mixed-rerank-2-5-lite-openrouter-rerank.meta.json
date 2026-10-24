@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "rerank-2.5-lite.openrouter-rerank",
+ "model_version": "rerank-2.5-lite@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-26T12:51:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 31,
+  "cost_usd": 6.8e-05,
+  "p50_ms": 358,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-rerank-2-5-lite-openrouter-rerank",
+ "v0_rank": 78,
+ "v0_cells": {
+  "name": "voyage-rerank-2.5-lite (OpenRouter) \u2020",
+  "cls_s": "0.358",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 8,
+  "name": "voyage-rerank-2.5-lite \u2020",
+  "c48": "$0.000068",
+  "c54": "$0.000115",
+  "perq": "$0.0000014",
+  "suppressed": false
+ },
+ "v0_per_question": 1.4e-06
+}

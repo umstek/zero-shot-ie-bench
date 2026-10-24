@@ -1,0 +1,41 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "gliformer-large-v1.local",
+ "model_version": "gliformer-large-v1@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "ner/graded-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:35af2f255ac13427a43c7d44aca9eed9b5b10f8e3b9ee714238df497ab9f1fd2",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-20T13:25:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 18,
+  "correct": 11,
+  "cost_usd": 0,
+  "p50_ms": 411,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-ner-gliformer-large-v1-local",
+ "v0_cells": {
+  "ner_s": "0.411"
+ }
+}

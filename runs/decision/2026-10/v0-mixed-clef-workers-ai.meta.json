@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "clef.workers-ai",
+ "model_version": "clef@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "cloudflare-workers-ai"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-02T20:03:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 47,
+  "cost_usd": 0.0011,
+  "p50_ms": 52,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-clef-workers-ai",
+ "v0_rank": 1,
+ "v0_cells": {
+  "name": "Clef (Workers AI)",
+  "cls_s": "0.052",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 26,
+  "name": "Clef (Workers AI)",
+  "c48": "$0.0011",
+  "c54": "$0.0021",
+  "perq": "$0.000023",
+  "suppressed": false
+ },
+ "v0_per_question": 2.3e-05
+}

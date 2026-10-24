@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "microsoft-decision-1.openrouter",
+ "model_version": "microsoft-decision-1@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-10T10:39:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 44,
+  "cost_usd": 0.000103,
+  "p50_ms": 65,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-microsoft-decision-1-openrouter",
+ "v0_rank": 14,
+ "v0_cells": {
+  "name": "Microsoft Decision-1 (OpenRouter)",
+  "cls_s": "0.065",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 11,
+  "name": "Microsoft Decision-1 (OpenRouter)",
+  "c48": "$0.000103",
+  "c54": "$0.000149",
+  "perq": "$0.0000021",
+  "suppressed": false
+ },
+ "v0_per_question": 2.1e-06
+}

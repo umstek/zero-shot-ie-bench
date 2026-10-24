@@ -1,0 +1,46 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "mercury-decide.openrouter-free",
+ "model_version": "mercury-decide@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-07T22:14:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 43,
+  "cost_usd": 0.0,
+  "p50_ms": 51,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-mercury-decide-openrouter-free",
+ "v0_rank": 18,
+ "v0_cells": {
+  "name": "Mercury Decide (OpenRouter) \u2020",
+  "cls_s": "0.051",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 2,
+  "name": "Mercury Decide (OpenRouter) \u2020",
+  "c48": "$0",
+  "c54": "$0",
+  "perq": "$0 (free tier)",
+  "suppressed": false
+ }
+}

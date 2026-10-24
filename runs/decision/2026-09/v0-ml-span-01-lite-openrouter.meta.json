@@ -1,0 +1,49 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "span-01-lite.openrouter",
+ "model_version": "span-01-lite@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-26T12:53:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 47,
+  "cost_usd": 0.0,
+  "p50_ms": 409,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 40,
+ "run_id": "v0-ml-span-01-lite-openrouter",
+ "v0_per_language": {
+  "zh": 1.0,
+  "fr": 1.0,
+  "is": 0.6667,
+  "si": 0.6667,
+  "es": 1.0,
+  "tr": 1.0,
+  "uk": 1.0,
+  "vi": 1.0,
+  "cy": 0.5
+ },
+ "v0_tier_rates": {
+  "medium": 1.0,
+  "popular": 1.0,
+  "rare": 0.6111
+ }
+}

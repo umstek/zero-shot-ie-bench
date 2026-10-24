@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "rerank-4-fast.openrouter-rerank",
+ "model_version": "rerank-4-fast@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-26T12:50:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 34,
+  "cost_usd": 0.096,
+  "p50_ms": 371,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-rerank-4-fast-openrouter-rerank",
+ "v0_rank": 70,
+ "v0_cells": {
+  "name": "cohere-rerank-4-fast (OpenRouter) \u2020",
+  "cls_s": "0.371",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 30,
+  "name": "cohere-rerank-4-fast \u2020",
+  "c48": "$0.096",
+  "c54": "$0.108",
+  "perq": "$0.0020",
+  "suppressed": false
+ },
+ "v0_per_question": 0.002
+}

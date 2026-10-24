@@ -1,0 +1,55 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "d3-lite.local",
+ "model_version": "d3-lite@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": "bf16",
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-12T08:58:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 47,
+  "cost_usd": 0,
+  "p50_ms": 5889,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 41,
+ "run_id": "v0-ml-d3-lite-local",
+ "v0_per_language": {
+  "es": 1.0,
+  "fr": 1.0,
+  "zh": 1.0,
+  "vi": 1.0,
+  "tr": 1.0,
+  "uk": 1.0,
+  "si": 0.6667,
+  "is": 0.6667,
+  "cy": 0.5
+ },
+ "v0_tier_rates": {
+  "popular": 1.0,
+  "medium": 1.0,
+  "rare": 0.6111
+ }
+}

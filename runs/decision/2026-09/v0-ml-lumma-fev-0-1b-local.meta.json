@@ -1,0 +1,55 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "lumma-fev-0.1b.local",
+ "model_version": "lumma-fev-0.1b@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-27T21:13:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 19,
+  "cost_usd": 0,
+  "p50_ms": 309,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 81,
+ "run_id": "v0-ml-lumma-fev-0-1b-local",
+ "v0_per_language": {
+  "zh": 0.5,
+  "fr": 0.3333,
+  "is": 0.3333,
+  "si": 0.3333,
+  "es": 0.3333,
+  "tr": 0.3333,
+  "uk": 0.3333,
+  "vi": 0.3333,
+  "cy": 0.3333
+ },
+ "v0_tier_rates": {
+  "medium": 0.3333,
+  "popular": 0.3889,
+  "rare": 0.3333
+ }
+}

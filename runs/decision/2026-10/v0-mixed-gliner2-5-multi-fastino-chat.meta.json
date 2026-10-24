@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "gliner2.5-multi.fastino-chat",
+ "model_version": "gliner2.5-multi@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "fastino"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-05T21:21:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 38,
+  "cost_usd": 2.6e-05,
+  "p50_ms": 831,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-gliner2-5-multi-fastino-chat",
+ "v0_rank": 54,
+ "v0_cells": {
+  "name": "GLiNER2.5-multi (Fastino)",
+  "cls_s": "0.831",
+  "ner_s": "0.849"
+ },
+ "v0_cost": {
+  "row": 4,
+  "name": null,
+  "c48": "$0.000026",
+  "c54": "$0.000031",
+  "perq": "$0.00000039",
+  "suppressed": true
+ },
+ "v0_per_question": 3.9e-07
+}

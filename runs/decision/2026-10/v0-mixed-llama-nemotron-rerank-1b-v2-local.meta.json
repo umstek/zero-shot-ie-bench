@@ -1,0 +1,44 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "llama-nemotron-rerank-1b-v2.local",
+ "model_version": "llama-nemotron-rerank-1b-v2@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": "fp32",
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-05T23:52:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 36,
+  "cost_usd": 0,
+  "p50_ms": 838,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-llama-nemotron-rerank-1b-v2-local",
+ "v0_rank": 62,
+ "v0_cells": {
+  "name": "nemotron-rerank-1b-v2",
+  "cls_s": "0.838",
+  "ner_s": ""
+ }
+}

@@ -1,0 +1,55 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "intern-decision-0.8b.local",
+ "model_version": "intern-decision-0.8b@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": "fp32",
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-27T22:51:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 48,
+  "cost_usd": 0,
+  "p50_ms": 1657,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 39,
+ "run_id": "v0-ml-intern-decision-0-8b-local",
+ "v0_per_language": {
+  "zh": 1.0,
+  "fr": 1.0,
+  "is": 0.6667,
+  "si": 1.0,
+  "es": 0.8333,
+  "tr": 1.0,
+  "uk": 1.0,
+  "vi": 0.8333,
+  "cy": 0.6667
+ },
+ "v0_tier_rates": {
+  "medium": 0.9444,
+  "popular": 0.9444,
+  "rare": 0.7778
+ }
+}

@@ -1,0 +1,49 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "gliner2.5-base.fastino-chat",
+ "model_version": "gliner2.5-base@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "fastino"
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-05T21:23:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 30,
+  "cost_usd": 3.1e-05,
+  "p50_ms": 899,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 70,
+ "run_id": "v0-ml-gliner2-5-base-fastino-chat",
+ "v0_per_language": {
+  "es": 0.8333,
+  "fr": 1.0,
+  "zh": 0.8333,
+  "vi": 0.3333,
+  "tr": 0.5,
+  "uk": 0.6667,
+  "si": 0.3333,
+  "is": 0.1667,
+  "cy": 0.3333
+ },
+ "v0_tier_rates": {
+  "popular": 0.8889,
+  "medium": 0.5,
+  "rare": 0.2778
+ }
+}
