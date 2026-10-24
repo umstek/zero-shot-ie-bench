@@ -1,0 +1,21 @@
+{
+  "name": "@zsib/schema",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "gen": "bun scripts/gen.ts",
+    "validate": "bun scripts/validate.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "yaml": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "bun-types": "catalog:"
+  }
+}

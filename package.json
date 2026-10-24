@@ -1,0 +1,34 @@
+{
+  "name": "zero-shot-ie-bench",
+  "private": true,
+  "workspaces": [
+    "bench",
+    "apps/*",
+    "packages/*"
+  ],
+  "catalog": {
+    "zod": "^4.6.7",
+    "yaml": "^2.9.1",
+    "typescript": "^7.0.2",
+    "@types/bun": "^1.4.4",
+    "bun-types": "^1.4.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.2",
+    "@types/bun": "catalog:",
+    "bun-types": "catalog:",
+    "typescript": "catalog:",
+    "yaml": "catalog:"
+  },
+  "scripts": {
+    "gen": "bun install && bun run --cwd packages/schema gen",
+    "validate": "bun run --cwd packages/schema validate",
+    "typecheck": "tsc --noEmit -p tsconfig.json && bun run --cwd packages/schema typecheck && bun run --cwd bench typecheck",
+    "schema-diff": "bun run gen && git diff --exit-code -- catalog/schema",
+    "test": "bun test",
+    "lint": "bunx biome check .",
+    "check": "bun run typecheck && bun test && bun run lint",
+    "lake": "bun run --cwd packages/lake build",
+    "render": "bun run --cwd bench render"
+  }
+}

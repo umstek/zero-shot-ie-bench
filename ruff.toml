@@ -1,0 +1,10 @@
+# Shared Python lint config; each runners/<island>/pyproject.toml extends this.
+line-length = 100
+target-version = "py313"
+
+[format]
+quote-style = "double"
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+ignore = ["E501"]
