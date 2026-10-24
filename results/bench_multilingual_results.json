@@ -879,6 +879,17 @@
       "Sinhala": 1.0,
       "Icelandic": 1.0,
       "Welsh": 1.0
+    },
+    "GPT-6 Luna Decisions (OpenRouter)": {
+      "Spanish": 1.0,
+      "French": 1.0,
+      "Chinese": 1.0,
+      "Vietnamese": 1.0,
+      "Turkish": 1.0,
+      "Ukrainian": 1.0,
+      "Sinhala": 1.0,
+      "Icelandic": 1.0,
+      "Welsh": 1.0
     }
   },
   "by_tier": {
@@ -1271,6 +1282,11 @@
       "popular": 1.0,
       "medium": 1.0,
       "rare": 1.0
+    },
+    "GPT-6 Luna Decisions (OpenRouter)": {
+      "popular": 1.0,
+      "medium": 1.0,
+      "rare": 1.0
     }
   },
   "latency": {
@@ -1351,7 +1367,8 @@
     "Decider V1.2 27B (OpenRouter)": 0.686,
     "Decider Flash V1.2 (OpenRouter)": 0.571,
     "D1-ultra (OpenRouter)": 0.611,
-    "Elephant-1 9B (OpenRouter)": 2.971
+    "Elephant-1 9B (OpenRouter)": 2.971,
+    "GPT-6 Luna Decisions (OpenRouter)": 0.547
   },
   "laya_routing": {
     "Chinese": {
@@ -1394,7 +1411,7 @@
       "neutral"
     ],
     "notes": [
-      "All 80 systems answer the same 54 texts.",
+      "All 81 systems answer the same 54 texts.",
       "Laya Router picks its checkpoint per input by script detection (english vs multilingual).",
       "Jev ran all 54 texts as one batched request.",
       "Laya Router recorded 2026-09-20 15:30, 249s, CPU",
@@ -1507,7 +1524,8 @@
       "Decider V1.2 27B (OpenRouter) recorded 2026-10-18 20:50, 37s, CPU",
       "Decider Flash V1.2 (OpenRouter) recorded 2026-10-18 20:50, 31s, CPU",
       "D1-ultra (OpenRouter) recorded 2026-10-18 20:51, 33s, CPU",
-      "Elephant-1 9B (OpenRouter) recorded 2026-10-24 12:50, 160s, CPU"
+      "Elephant-1 9B (OpenRouter) recorded 2026-10-24 12:50, 160s, CPU",
+      "GPT-6 Luna Decisions (OpenRouter) recorded 2026-10-24 13:14, 30s, CPU"
     ],
     "texts_per_language": 6,
     "verification": "sentences blind back-translated to English by an independent model instance; full table in the PR for native-speaker review (Sinhala especially)"
@@ -1593,7 +1611,8 @@
     "Decider V1.2 27B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "Decider Flash V1.2 (OpenRouter)": "Model download and loading excluded; first forward pass included.",
     "D1-ultra (OpenRouter)": "Model download and loading excluded; first forward pass included.",
-    "Elephant-1 9B (OpenRouter)": "Model download and loading excluded; first forward pass included."
+    "Elephant-1 9B (OpenRouter)": "Model download and loading excluded; first forward pass included.",
+    "GPT-6 Luna Decisions (OpenRouter)": "Model download and loading excluded; first forward pass included."
   },
   "usage": {
     "Clef (Workers AI)": {
@@ -1851,6 +1870,16 @@
       "paid_requests": 54,
       "cost_usd": 0.0,
       "input_tokens": 6565,
+      "total_tokens": 0,
+      "thinking_tokens": 0,
+      "cost_reported": true,
+      "input_tokens_reported": true,
+      "thinking_tokens_reported": false
+    },
+    "GPT-6 Luna Decisions (OpenRouter)": {
+      "paid_requests": 54,
+      "cost_usd": 0.000759,
+      "input_tokens": 7588,
       "total_tokens": 0,
       "thinking_tokens": 0,
       "cost_reported": true,

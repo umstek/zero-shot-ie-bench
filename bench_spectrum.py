@@ -196,10 +196,10 @@ NEMOTRON_RERANKERS = {
 # (9B fp32 also overflows this machine), so the row here is hosted.
 # Both route under this account's enforced ZDR (Azure and DeepInfra
 # endpoints satisfy the data policy).
-# openai/gpt-6-luna-decisions ($0.10/M) is NOT benchmarked: OpenAI's
-# endpoint retains prompts and this account enforces ZDR, so OpenRouter
-# refuses to route to it (re-verified by live probe 2026-10-24: "ZDR
-# violation (account settings)").
+# openai/gpt-6-luna-decisions ($0.10/M) was long unbenched (ZDR); the
+# 2026-10-24 run happened after the account's OpenAI-group ZDR toggle
+# was lifted by user direction — the endpoint retains prompts, so its
+# README row carries the †.
 OPENROUTER_SYSTEMONE = {
     "Kev 4B (OpenRouter)": "jaredpalmer/kev-4b",
     "Solar Decide (OpenRouter)": "upstage/solar-decide",
@@ -220,6 +220,10 @@ OPENROUTER_SYSTEMONE = {
     # tier (endpoints API returns [] for the plain slug; the :free variant
     # carries all traffic, 273M prompt tokens on 2026-10-21 alone)
     "Elephant-1 9B (OpenRouter)": "baseten/elephant-1:free",
+    # 2026-10-24: benched the same day the account's OpenAI-group ZDR
+    # enforcement was lifted by user direction (the endpoint retains
+    # prompts, so the row carries the †)
+    "GPT-6 Luna Decisions (OpenRouter)": "openai/gpt-6-luna-decisions",
 }
 # the choice-question subset: every OpenRouter System One model except
 # the two Span behavior scorers, whose noul branch in main() runs first
