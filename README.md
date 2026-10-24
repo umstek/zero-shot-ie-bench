@@ -1,7 +1,7 @@
 # zero-shot-ie-bench
 
-Seventy-nine zero-shot systems (seventy-six of them benchmarked) across
-thirty-six information-extraction and classification families —
+Eighty zero-shot systems (seventy-seven of them benchmarked) across
+thirty-seven information-extraction and classification families —
 extractor encoders, a purpose-built classifier, cross-encoder rerankers,
 and typed-decision engines (local and cloud, the hosted ones behind
 OpenRouter's decision and rerank endpoints plus Fastino's API, plus ten
@@ -56,6 +56,7 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [Decision-1](https://openrouter.ai/microsoft/microsoft-decision-1) (`microsoft/microsoft-decision-1`) | cloud decision model (Microsoft's Model Foundry entry: Qwen3.5-9B post-trained for single-pass scoring, "updated continually while the API shape stays the same"; Azure is the only endpoint and it satisfies this account's enforced ZDR) | 9B | proprietary API | metered · $2.1e-6/q |
 | [Drex v1.5](https://openrouter.ai/nace-ai/drex-v1.5) (`nace-ai/drex-v1.5`) | cloud decision model (Nace.AI's MiMo-V2.6-Distill-Qwen-9B on the System One contract; the card claims Decision Index 0.2.1 rank 1; open weights plus an Apache-2.0 runtime adapted from Kev — the local fp32 twin needs ~36 GB and GGUF serving waits on Nace's llama.cpp/Ollaya fork, so it is benched hosted) | 9B | Nace.AI Open RAIL-M weights · Apache 2.0 runtime | metered · $1.4e-6/q |
 | [d1](https://openrouter.ai/liquid/d1) / [d1-ultra](https://openrouter.ai/liquid/d1-ultra) (`liquid/d1*`) | cloud decision model (Liquid AI's structured decisions on the System One contract: choice/score/noul with calibrated probabilities; d1-ultra is the larger 2026-10-15 step-up, 32k context) | undisclosed | proprietary API | metered · $2.7e-6 (d1) / $2.2e-6 (ultra) /q † |
+| [Elephant-1 9B](https://openrouter.ai/baseten/elephant-1) (`baseten/elephant-1:free`) | cloud decision model (Base Labs' Qwen3.5-9B decision model served by Baseten on the System One contract — choice/noul/score with calibrated probabilities; the plain slug carries no endpoint, all traffic rides the free variant; MIT weights on HF `baselabs/elephant-1`) | 9B | free API tier · MIT weights on HF | $0 · free tier † |
 | [Tev1 4B](https://openrouter.ai/togethercomputer/tev1-4b-experimental) (`togethercomputer/tev1-4b-experimental`) | cloud decision model (experimental Qwen3.5-4B SFT choosing one of 2–24 labeled options; keeps Qwen's next-token head, and OpenRouter serves it on the systemone schema anyway; the data recipe and training code are published) | 4B | proprietary API · open recipe | metered · $4.8e-6/q |
 | [Mercury Decide](https://openrouter.ai/inception/mercury-decide:free) (`inception/mercury-decide:free`) | cloud decision model (Inception's diffusion LM making typed decisions with calibrated probabilities, up to 14 decisions/s; same /v1/systemone schema as Jev) | undisclosed | proprietary API | free tier † |
 | [Qwen3-Reranker 8B](https://openrouter.ai/qwen/qwen3-reranker-8b) · [Voyage rerank-2.5](https://openrouter.ai/voyageai/rerank-2.5) (+lite) · [Cohere Rerank](https://openrouter.ai/cohere/rerank-4-pro) (4 Pro / 4 Fast / v3.5), all via OpenRouter | cloud rerankers (same (instruction, label) argmax mapping as the local ones) | 8B / closed / closed | proprietary API | metered · $1.4e-6–$2.5e-3/q |
@@ -207,6 +208,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | Microsoft Decision-1 (OpenRouter) | 91.7% | 0.065 | n/a | |
 | TypeLLM thinking (hosted) † | 91.7% | 0.338 | n/a | |
 | Decision 3.0 Nano 2B (local) | 91.7% | 9.376 | n/a | |
+| Elephant-1 9B (OpenRouter) † | 89.6% | 0.018 | n/a | |
 | Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a | |
 | Clef-omni (Workers AI) | 89.6% | 0.040 | n/a | |
 | arbiter 4B (Ollaya) | 89.6% | 4.878 | n/a | |
@@ -274,6 +276,19 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
 Takeaways:
 
+- **Elephant-1 lands on the free tier; luna-decisions stays gated by
+  the account's ZDR.** Baseten/Base Labs' 9B (Qwen3.5-9B, System One
+  contract) arrives at 89.6% (43/48, 0.018 s/q — Mercury Decide's tier
+  at a third of its latency) with a perfect 54/54 multilingual run,
+  both measured at $0: the plain `baseten/elephant-1` slug answers no
+  endpoints, all traffic rides `:free` (whose 20-req/min limit paced
+  the multilingual run to 2.97 s/text). The free endpoint documents no
+  retention policy, so the row carries the †. OpenAI's
+  `gpt-6-luna-decisions` (1.05M ctx, $0.10/M) remains
+  listed-but-unbenched: the 2026-10-24 live probe still returns "ZDR
+  violation (account settings)" — flipping the OpenRouter privacy
+  setting would unlock it. SubQ Snap 1.1 (NanoGPT), Celeris-1 (own
+  API) and Cloudflare's Clairic (Workers AI) are not on OpenRouter.
 - **The OpenRouter Oct-16 arrivals: d1-ultra joins the hosted pool
   lead, and the 12-question gate takes its second same-day overturn** —
   the gate had scored these 9–10/12 (both misses mixed-sentiment), but
@@ -502,6 +517,7 @@ TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 |---|---|---|---|
 | Span-01 Lite † | $0 | $0 | $0 (free tier) |
 | Mercury Decide (OpenRouter) † | $0 | $0 | $0 (free tier) |
+| Elephant-1 9B (OpenRouter) † | $0 | $0 | $0 (free tier) |
 | GLiNER2.5-base / -multi / -Decide (Fastino) | $0.000026 | $0.000031 | $0.00000039 |
 | Span-01 † | $0.000043 | $0.000040 | $0.0000009 |
 | Decider V1.2 27B (OpenRouter) | $0.000048 | $0.000124 | $0.0000010 |
@@ -623,6 +639,7 @@ systems answer the same 54 texts.
 | Microsoft Decision-1 (OpenRouter) | 100% | 100% | 100% | **100%** |
 | Decider V1.2 27B (OpenRouter) | 100% | 100% | 100% | **100%** |
 | D1-ultra (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| Elephant-1 9B (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
