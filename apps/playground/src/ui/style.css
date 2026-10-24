@@ -1,0 +1,134 @@
+/* zsib playground — deliberately minimal */
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.45;
+}
+body {
+  margin: 0;
+  background: canvas;
+  color: canvastext;
+}
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+h1 {
+  font-size: 1.4rem;
+}
+h2 {
+  font-size: 1.05rem;
+  margin-top: 1.75rem;
+  border-bottom: 1px solid color-mix(in srgb, canvastext 15%, transparent);
+  padding-bottom: 0.25rem;
+}
+h3 {
+  font-size: 0.95rem;
+  margin-top: 1.25rem;
+}
+section {
+  margin-bottom: 0.5rem;
+}
+label {
+  display: block;
+  font-size: 0.85rem;
+  margin: 0.75rem 0 0.25rem;
+  font-weight: 600;
+}
+textarea,
+input[type="text"],
+select {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid color-mix(in srgb, canvastext 30%, transparent);
+  border-radius: 6px;
+  background: canvas;
+  color: canvastext;
+}
+button {
+  font: inherit;
+  margin-top: 0.6rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, canvastext 30%, transparent);
+  background: color-mix(in srgb, canvastext 8%, canvas);
+  color: canvastext;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button.small {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8rem;
+  margin: 0 0.25rem;
+}
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+.row input {
+  flex: 1;
+}
+.row button {
+  margin-top: 0;
+  white-space: nowrap;
+}
+.muted {
+  color: color-mix(in srgb, canvastext 60%, transparent);
+  font-size: 0.85rem;
+}
+.error {
+  color: #c0392b;
+  font-size: 0.9rem;
+}
+.ok {
+  color: #1e8e3e;
+  font-size: 0.9rem;
+}
+.badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  border: 1px solid currentcolor;
+}
+.badge.warn {
+  color: #b45309;
+}
+.islands {
+  list-style: none;
+  padding-left: 0;
+  font-size: 0.9rem;
+}
+.islands li {
+  margin: 0.5rem 0;
+}
+code {
+  font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+  font-size: 0.85em;
+  background: color-mix(in srgb, canvastext 8%, transparent);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+.result {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.3rem 0.75rem;
+  margin: 0;
+}
+.result dt {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, canvastext 65%, transparent);
+}
+.result dd {
+  margin: 0;
+  font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+  overflow-wrap: anywhere;
+}

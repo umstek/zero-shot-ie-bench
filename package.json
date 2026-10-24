@@ -23,7 +23,7 @@
   "scripts": {
     "gen": "bun install && bun run --cwd packages/schema gen",
     "validate": "bun run --cwd packages/schema validate",
-    "typecheck": "tsc --noEmit -p tsconfig.json && bun run --cwd packages/schema typecheck && bun run --cwd packages/lake typecheck && bun run --cwd bench typecheck",
+    "typecheck": "tsc --noEmit -p tsconfig.json && bun run --cwd packages/schema typecheck && bun run --cwd packages/lake typecheck && bun run --cwd bench typecheck && bun run --cwd apps/board typecheck && bun run --cwd apps/playground typecheck",
     "schema-diff": "bun run gen && git diff --exit-code -- catalog/schema",
     "test": "bun test",
     "lint": "bunx biome check .",

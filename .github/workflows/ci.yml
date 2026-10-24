@@ -1,0 +1,54 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run typecheck
+      - run: bun test
+      - run: bun run lint
+      - run: bun run validate
+      - run: bun run schema-diff
+      - name: render diff (generated README matches the lake)
+        run: |
+          bun run lake
+          bun run --cwd bench render
+          git diff --exit-code README.md
+      - name: phase-1 counts
+        run: bun run scripts/acceptance-phase1.ts
+      - name: phase-2 tables
+        run: bun run scripts/acceptance-phase2.ts
+
+  append-only:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+      - name: runs/ is append-only
+        run: bun run scripts/check-append-only.ts origin/${{ github.base_ref }}
+
+  runners:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        island: [_protocol, gliner, systemone-local, von, relik, small-decisions, nanodiff]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: sync + test + typecheck (weights-gated tests skip; CI never downloads)
+        working-directory: runners/${{ matrix.island }}
+        run: |
+          uv sync
+          uv run pytest -q
+          uv run pyrefly check

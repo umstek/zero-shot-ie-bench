@@ -1,0 +1,290 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --ink: #1a2233;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --accent: #1d4ed8;
+  --accent-soft: #eff4ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font:
+    15px / 1.55 system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+.shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 48px;
+}
+
+code,
+.mono {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.92em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* nav */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 2px;
+}
+
+.nav a:hover,
+.nav a.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* layout */
+
+.page-head {
+  margin-bottom: 20px;
+}
+
+.page-head h1 {
+  margin: 4px 0 8px;
+  font-size: 26px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.card.stub {
+  border-style: dashed;
+  background: transparent;
+}
+
+.card.error pre {
+  overflow-x: auto;
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.loading {
+  color: var(--muted);
+  padding: 32px 0;
+}
+
+/* picks */
+
+.pick-list {
+  margin: 8px 0 0;
+  padding-left: 22px;
+}
+
+.pick-list li {
+  margin-bottom: 8px;
+}
+
+.pick-list a {
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  margin: 0 8px;
+}
+
+.pick-list a:hover {
+  text-decoration: underline;
+}
+
+.pick-headline {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.pick-detail {
+  display: block;
+  font-size: 13px;
+}
+
+/* explorer */
+
+.facet-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.facet {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.facet summary {
+  cursor: pointer;
+  padding: 6px 12px;
+  user-select: none;
+  font-weight: 600;
+}
+
+.facet summary:hover {
+  color: var(--accent);
+}
+
+.facet ul {
+  list-style: none;
+  margin: 0;
+  padding: 4px 12px 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  min-width: 220px;
+}
+
+.facet label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.facet .count {
+  margin-left: auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.linkish {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 4px;
+}
+
+.table-status {
+  margin: 4px 0 10px;
+  font-size: 13px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover {
+  background: var(--accent-soft);
+}
+
+.data-table th {
+  background: var(--bg);
+  font-weight: 600;
+}
+
+.th-sort {
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+}
+
+.data-table a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.data-table a:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.badge.zdr-safe {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.badge.zdr-not-zdr {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+/* footer */
+
+footer {
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
