@@ -60,8 +60,12 @@ export function percentile(sortedValues: number[], p: 50 | 95): number | null {
 }
 
 export function aggregateRun(meta: RunMeta, items: RunItem[]): RunAggregate {
+  // local runs: the runner's server-measured compute_ms is the latency of
+  // record (docs/plan/02) — HTTP round-trip stays on the item but never
+  // pollutes the percentiles
+  const preferCompute = meta.where.kind === "local";
   const latencies = items
-    .map((i) => i.latency_ms)
+    .map((i) => (preferCompute && typeof i.compute_ms === "number" ? i.compute_ms : i.latency_ms))
     .filter((v): v is number => typeof v === "number")
     .sort((a, b) => a - b);
   const scored = items.filter((i) => typeof i.correct === "boolean");

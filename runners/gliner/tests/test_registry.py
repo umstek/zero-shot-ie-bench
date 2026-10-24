@@ -49,7 +49,26 @@ CAPABILITIES = {
 
 class TestRegistry:
     def test_every_catalog_deployment_is_served(self):
-        assert set(MODELS) == set(CATALOG)
+        # every catalog deployment id resolves (the spec's served_id when it
+        # is its own wire id, its alias otherwise)
+        for deployment_id in CATALOG:
+            assert deployment_id in MODELS
+
+    def test_served_ids_are_catalog_model_ids(self):
+        # /info serves the catalog MODEL ids the bench sends — plus the one
+        # deployment id of a model with two deployments on this runner
+        assert [e["model_id"] for e in SERVED_MODELS] == [
+            "knowledgator/gliformer-base",
+            "knowledgator/gliformer-large",
+            "knowledgator/gliner-relex",
+            "jackboyla/glirel",
+            "knowledgator/gliclass-base",
+            "knowledgator/gliclass-modern-base",
+            "knowledgator/gliclass-large",
+            "convaiinnovations/laya",
+            "laya.router",
+            "convaiinnovations/laya-typed-decisions",
+        ]
 
     def test_versions_and_hf_repos_match_the_catalog(self):
         for model_id, (version, hf_repo) in CATALOG.items():
@@ -66,13 +85,14 @@ class TestRegistry:
 
     def test_every_capability_has_an_implementation(self):
         for spec in MODELS.values():
-            assert set(spec.tracks) == CAPABILITIES[spec.model_id]
+            catalog_key = spec.alias or spec.served_id
+            assert set(spec.tracks) == CAPABILITIES[catalog_key]
             for track in spec.tracks:
                 assert callable(getattr(spec.module, f"run_{track}"))
             assert callable(getattr(spec.module, spec.loader))
 
     def test_model_ids_are_unique(self):
-        assert len(SERVED_MODELS) == len({spec.model_id for spec in MODELS.values()})
+        assert len(SERVED_MODELS) == len({spec.served_id for spec in MODELS.values()})
 
     def test_router_uses_the_router_loader(self):
         assert MODELS["laya.router"].loader == "load_router"

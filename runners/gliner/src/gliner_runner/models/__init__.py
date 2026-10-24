@@ -1,10 +1,15 @@
-"""The island's model registry: catalog deployment ids -> model modules.
+"""The island's model registry: catalog model ids -> model modules.
 
 Every entry mirrors a catalog deployment with `runner: gliner`
 (catalog/models/{knowledgator,jackboyla,convaiinnovations}/*.yaml): the
-model_id is the deployment id, the version the catalog version id, runtime
-the catalog runtime block (torch, fp32-weights, CPU — the shape every
-deployment in this family declares).
+served_id is the catalog MODEL id — the wire convention every island uses,
+so the bench can drive the deployment directly — the alias also accepts the
+catalog deployment id, the version the catalog version id, runtime the
+catalog runtime block (torch, fp32-weights, CPU — the shape every
+deployment in this family declares). The one model with two deployments on
+this runner (convaiinnovations/laya: plain vs router mode) serves its
+router deployment under the deployment id (`laya.router`), which is what
+the bench sends for it.
 
 `predict` is the island's per-item entry point for the runner protocol:
 predict(model_id, payload) with payload = the item's {"input", "question",
@@ -28,52 +33,96 @@ gliformer, gliner_relex, glirel, gliclass, laya = (
 
 @dataclass(frozen=True)
 class ModelSpec:
-    """One served checkpoint. `loader` names the module function that
-    produces the model object (laya.router uses the Router builder)."""
+    """One served checkpoint. `served_id` is the wire model_id — the CATALOG
+    MODEL id (knowledgator/gliformer-base), the convention every island
+    uses, so the bench can drive it directly; `alias` also accepts the
+    catalog deployment id. The two Laya modes share one catalog model, so
+    the router keeps its deployment id as its served_id."""
 
-    model_id: str
+    served_id: str
     version: str
     hf_repo: str
     module: Any
     tracks: tuple[str, ...]
+    alias: str = ""
     loader: str = "load"
     runtime: dict[str, Any] = field(
         default_factory=lambda: {"engine": "torch", "dtype": None, "quant": None,
                                  "device": "cpu"})
 
 
-# The catalog slice this island serves, in catalog file order.
+# The catalog slice this island serves. served_id = the catalog MODEL id
+# (what the bench sends); alias = the catalog deployment id (also accepted).
 _REGISTRY: tuple[ModelSpec, ...] = (
-    ModelSpec("gliformer-base-v1.local", "gliformer-base-v1@unversioned",
-              "knowledgator/gliformer-base-v1", gliformer, ("classify", "ner")),
-    ModelSpec("gliformer-large-v1.local", "gliformer-large-v1@unversioned",
-              "knowledgator/gliformer-large-v1", gliformer, ("classify", "ner")),
-    ModelSpec("gliner-relex-multi-v1.0.local", "gliner-relex-multi-v1.0@unversioned",
+    ModelSpec("knowledgator/gliformer-base", "gliformer-base-v1@unversioned",
+              "knowledgator/gliformer-base-v1", gliformer, ("classify", "ner"),
+              alias="gliformer-base-v1.local"),
+    ModelSpec("knowledgator/gliformer-large", "gliformer-large-v1@unversioned",
+              "knowledgator/gliformer-large-v1", gliformer, ("classify", "ner"),
+              alias="gliformer-large-v1.local"),
+    ModelSpec("knowledgator/gliner-relex", "gliner-relex-multi-v1.0@unversioned",
               "knowledgator/gliner-relex-multi-v1.0", gliner_relex,
-              ("ner", "relation", "classify")),
-    ModelSpec("glirel-large-v0.local", "glirel-large-v0@unversioned",
-              "jackboyla/glirel-large-v0", glirel, ("relation",)),
-    ModelSpec("gliclass-base-v3.0.local", "gliclass-base-v3.0@unversioned",
-              "knowledgator/gliclass-base-v3.0", gliclass, ("classify",)),
-    ModelSpec("gliclass-modern-base-v3.0.local", "gliclass-modern-base-v3.0@unversioned",
-              "knowledgator/gliclass-modern-base-v3.0", gliclass, ("classify",)),
-    ModelSpec("gliclass-large-v3.0.local", "gliclass-large-v3.0@unversioned",
-              "knowledgator/gliclass-large-v3.0", gliclass, ("classify",)),
-    ModelSpec("laya.local", "laya@unversioned", "convaiinnovations/laya",
-              laya, ("decision",)),
+              ("ner", "relation", "classify"), alias="gliner-relex-multi-v1.0.local"),
+    ModelSpec("jackboyla/glirel", "glirel-large-v0@unversioned",
+              "jackboyla/glirel-large-v0", glirel, ("relation",),
+              alias="glirel-large-v0.local"),
+    ModelSpec("knowledgator/gliclass-base", "gliclass-base-v3.0@unversioned",
+              "knowledgator/gliclass-base-v3.0", gliclass, ("classify",),
+              alias="gliclass-base-v3.0.local"),
+    ModelSpec("knowledgator/gliclass-modern-base", "gliclass-modern-base-v3.0@unversioned",
+              "knowledgator/gliclass-modern-base-v3.0", gliclass, ("classify",),
+              alias="gliclass-modern-base-v3.0.local"),
+    ModelSpec("knowledgator/gliclass-large", "gliclass-large-v3.0@unversioned",
+              "knowledgator/gliclass-large-v3.0", gliclass, ("classify",),
+              alias="gliclass-large-v3.0.local"),
+    ModelSpec("convaiinnovations/laya", "laya@unversioned", "convaiinnovations/laya",
+              laya, ("decision",), alias="laya.local"),
+    # the router mode shares the catalog model above, so it keeps its
+    # deployment id as the wire id (the bench targets it explicitly)
     ModelSpec("laya.router", "laya@unversioned", "convaiinnovations/laya",
               laya, ("decision",), loader="load_router"),
-    ModelSpec("laya-typed-decisions.local", "laya-typed-decisions@unversioned",
-              "convaiinnovations/laya-typed-decisions", laya, ("decision",)),
+    ModelSpec("convaiinnovations/laya-typed-decisions",
+              "laya-typed-decisions@unversioned",
+              "convaiinnovations/laya-typed-decisions", laya, ("decision",),
+              alias="laya-typed-decisions.local"),
 )
 
-MODELS: dict[str, ModelSpec] = {spec.model_id: spec for spec in _REGISTRY}
+MODELS: dict[str, ModelSpec] = {}
+for _spec in _REGISTRY:
+    MODELS.setdefault(_spec.served_id, _spec)
+    if _spec.alias:
+        MODELS.setdefault(_spec.alias, _spec)
 
 # The create_app models table: {model_id, version, runtime} per served model.
 SERVED_MODELS: list[dict[str, Any]] = [
-    {"model_id": spec.model_id, "version": spec.version, "runtime": spec.runtime}
+    {"model_id": spec.served_id, "version": spec.version, "runtime": spec.runtime}
     for spec in _REGISTRY
 ]
+
+
+def normalize_suite_payload(spec: ModelSpec, payload: dict[str, Any]):
+    """Suites speak {input: {text}, question: {type, options}}; the engine
+    modules speak (text, {labels: ...} | typed question). Translate so a
+    suite item reaches inference unchanged in meaning:
+
+    - input {"text": ...} (images unused on this island) -> the text string
+    - a choice question on a classify-capable model -> {"labels": {opt: None}}
+    - an options list on any model -> {"labels": [...]} (NER label set)
+    - decision-only models (laya) keep their typed question as-is
+    """
+    raw_input = payload.get("input")
+    if isinstance(raw_input, dict) and "decision" not in spec.tracks:
+        input_value = raw_input.get("text", "")
+    else:
+        input_value = raw_input  # decision specs take rich states as-is
+    question = dict(payload.get("question") or {})
+    qtype = question.get("type")
+    options = question.get("options")
+    if qtype == "choice" and isinstance(options, list) and "classify" in spec.tracks:
+        return input_value, {"labels": {opt: None for opt in options}}
+    if isinstance(options, list) and not question.get("labels"):
+        return input_value, {"labels": options}
+    return input_value, question
 
 
 def resolve_track(spec: ModelSpec, question: dict[str, Any]) -> str:
@@ -120,14 +169,14 @@ def predict(model_id: str, payload: dict[str, Any]) -> dict[str, Any]:
     if spec is None:
         return {"prediction": None, "prob": None,
                 "error": f"unknown model_id: {model_id!r}"}
-    question = payload.get("question") or {}
+    input_value, question = normalize_suite_payload(spec, payload)
     try:
         track = resolve_track(spec, question)
         run = getattr(spec.module, f"run_{track}", None)
         if run is None:
             raise ValueError(f"model {model_id!r} has no {track!r} implementation")
         model = getattr(spec.module, spec.loader)(spec.hf_repo)
-        prediction, prob = run(model, payload.get("input"), question,
+        prediction, prob = run(model, input_value, question,
                                payload.get("params") or {})
         return {"prediction": prediction, "prob": prob, "error": None}
     except Exception as exc:  # noqa: BLE001 — per-item isolation by contract

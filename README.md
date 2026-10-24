@@ -39,28 +39,27 @@ questions. † = hosted via a non-ZDR endpoint.
 <!-- gen:mixed-pool -->
 | System | Classification | s/question | NER exact | s/question |
 |---|---|---|---|---|
-| Clef (Workers AI) | **97.9%** | 0.052 | n/a |  |
-| GLiDE (Fastino) | **97.9%** | 0.056 | n/a |  |
-| D1-ultra (OpenRouter) † | 95.8% | 0.027 | n/a |  |
-| TypeLLM (hosted) † | 95.8% | 0.057 | n/a |  |
-| Solar Decide (OpenRouter) † | 95.8% | 0.308 | n/a |  |
-| Jev (cloud, jev-1.14.0) | 93.8% | 0.015 | n/a |  |
-| GPT-6 Luna Decisions (OpenRouter) † | 93.8% | 0.025 | n/a |  |
+| Solar Decide (OpenRouter) † | **97.9%** | 0.654 | n/a |  |
+| GPT-6 Luna Decisions (OpenRouter) † | 95.8% | 0.419 | n/a |  |
 | D1 (OpenRouter) † | 93.8% | 0.031 | n/a |  |
-| Decider V1.2 27B (OpenRouter) | 93.8% | 0.044 | n/a |  |
 | Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a |  |
 | Decider V1 27B (OpenRouter) | 93.8% | 0.075 | n/a |  |
 | Decider V1.1 27B (OpenRouter) | 93.8% | 0.080 | n/a |  |
-| Drex v1.5 (OpenRouter) | 93.8% | 0.075 | n/a |  |
 | Microsoft Decision-1 (OpenRouter) | 91.7% | 0.065 | n/a |  |
 | TypeLLM thinking (hosted) † | 91.7% | 0.338 | n/a |  |
 | Decision 3.0 Nano 2B (local) | 91.7% | 9.376 | n/a |  |
-| Elephant-1 9B (OpenRouter) † | 89.6% | 0.018 | n/a |  |
+| Drex v1.5 (OpenRouter) | 91.7% | 0.537 | n/a |  |
+| Decider V1.2 27B (OpenRouter) | 91.7% | 0.539 | n/a |  |
+| D1-ultra (OpenRouter) † | 91.7% | 0.602 | n/a |  |
 | Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a |  |
 | Clef-omni (Workers AI) | 89.6% | 0.040 | n/a |  |
 | arbiter 4B (Ollaya) | 89.6% | 4.878 | n/a |  |
+| Jev (cloud, jev-1.14.0) | 89.6% | 0.246 | n/a |  |
+| GLiDE (Fastino) | 89.6% | 0.656 | n/a |  |
+| Elephant-1 9B (OpenRouter) † | 89.6% | 3.361 | n/a |  |
 | winnow e4b (Ollaya) | **87.5%** | 8.138 | n/a |  |
 | qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a |  |
+| TypeLLM (hosted) † | 87.5% | 0.411 | n/a |  |
 | GLiNER2.5-Decide | 85.4% | 0.412 | 61% | 0.476 |
 | GLiNER2.5-Decide (Fastino) | 85.4% | 0.853 | 56% | 0.832 |
 | Decider Flash V1.2 (OpenRouter) | 85.4% | 0.066 | n/a |  |
@@ -94,13 +93,13 @@ questions. † = hosted via a non-ZDR endpoint.
 | Tev1 4B (OpenRouter) | 79.2% | 0.081 | n/a |  |
 | GLiNER2.5-multi (Fastino) | 79.2% | 0.831 | 61% | 0.849 |
 | GLiFormer-large | 79.2% | 0.412 | 61% | 0.411 |
-| von-1.0 (option-marker) | 79.2% | 0.226 | n/a |  |
 | AgentJev 0.6B (local) | 79.2% | 0.646 | n/a |  |
 | Span-01 Lite † | 79.2% | 0.440 | n/a |  |
 | voyage-rerank-2.5 (OpenRouter) † | 79.2% | 0.373 | n/a |  |
 | Decision 2.0 Eos 0.8B (local) | 79.2% | 0.981 | n/a |  |
 | Intern-Decision 0.8B | 77.1% | 1.585 | n/a |  |
 | nemotron-rerank-1b-v2 | 75.0% | 0.838 | n/a |  |
+| von-1.0 (option-marker) | 75.0% | 0.13 | n/a |  |
 | Kev 0.8B (local) | 72.9% | 0.587 | n/a |  |
 | bge-reranker-v2-m3 | 72.9% | 0.339 | n/a |  |
 | MoJev 0.85B | 72.9% | 3.375 | n/a |  |
@@ -120,6 +119,7 @@ questions. † = hosted via a non-ZDR endpoint.
 | GTE-rerank-ModernBERT-base | 60.4% | 0.183 | n/a |  |
 | Lumma-fev 0.15B | 56.2% | 0.256 | n/a |  |
 | Lumma-fev 0.6B | 54.2% | 0.587 | n/a |  |
+| Clef (Workers AI) | 0.0% | n/a | n/a |  |
 <!-- /gen:mixed-pool -->
 
 ### Measured cost per hosted run
@@ -133,35 +133,35 @@ values, flagged in the run meta).
 |---|---|---|---|
 | Span-01 Lite † | $0 | $0 | $0 (free tier) |
 | Mercury Decide (OpenRouter) † | $0 | $0 | $0 (free tier) |
-| Elephant-1 9B (OpenRouter) † | $0 | $0 | $0 (free tier) |
 | GLiNER2.5-base / -multi / -Decide (Fastino) | $0.000026 | $0.000031 | $0.00000039 |
 | Span-01 † | $0.000043 | $0.000040 | $0.0000009 |
-| Decider V1.2 27B (OpenRouter) | $0.000048 | $0.000124 | $0.0000010 |
 | Decider Flash V1.2 (OpenRouter) | $0.000051 | $0.000062 | $0.0000011 |
 | voyage-rerank-2.5-lite † | $0.000068 | $0.000115 | $0.0000014 |
-| Drex v1.5 (OpenRouter) | $0.000068 | $0.000101 | $0.0000014 |
 | Kev 4B (OpenRouter) | $0.000072 | $0.000106 | $0.0000015 |
 | Microsoft Decision-1 (OpenRouter) | $0.000103 | $0.000149 | $0.0000021 |
 | Decider V1.1 27B (OpenRouter) | $0.000105 | $0.000127 | $0.0000022 |
-| D1-ultra (OpenRouter) † | $0.000106 | $0.000171 | $0.0000022 |
-| TypeLLM (hosted) † | $0.00013 | $0.00017 | $0.0000026 |
 | D1 (OpenRouter) † | $0.000130 | $0.000163 | $0.0000030 |
 | voyage-rerank-2.5 † | $0.000170 | $0.000287 | $0.0000035 |
 | Decider V1 27B (OpenRouter) | $0.000211 | $0.000254 | $0.0000044 |
 | Tev1 4B (OpenRouter) | $0.000229 | $0.000269 | $0.0000050 |
-| Jev (cloud) ‡ | $0.00026 | $0.00027 | $0.0000053 |
 | Clef-flash (Workers AI) | $0.00041 | $0.00078 | $0.0000086 |
-| GLiDE (Fastino) | $0.00057 | $0.00071 | $0.0000120 |
-| GPT-6 Luna Decisions (OpenRouter) † | $0.000602 | $0.000759 | $0.0000125 |
 | Clef-omni (Workers AI) | $0.00068 | $0.0013 | $0.000014 |
-| Solar Decide (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
 | Solar Decide Flash (OpenRouter) † | $0.00087 | $0.0010 | $0.0000181 |
-| Clef (Workers AI) | $0.0011 | $0.0021 | $0.000023 |
 | TypeLLM thinking (hosted) † | $0.0029 | $0.0027 | $0.000061 |
 | qwen3-reranker-8b † | $0.0032 | $0.0036 | $0.0000667 |
 | cohere-rerank-v3.5 † | $0.048 | $0.054 | $0.0010 |
 | cohere-rerank-4-fast † | $0.096 | $0.108 | $0.0020 |
 | cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
+| Clef (Workers AI) | $0 | $0.0021 | $0 |
+| D1-ultra (OpenRouter) † | $0 | $0.000171 | $0 |
+| Decider V1.2 27B (OpenRouter) | $0 | $0.000124 | $0 |
+| Drex v1.5 (OpenRouter) | $0 | $0.000101 | $0 |
+| Elephant-1 9B (OpenRouter) † | $0 | $0 | $0 (free tier) |
+| GLiDE (Fastino) | $0 | $0.00071 | $0 |
+| GPT-6 Luna Decisions (OpenRouter) † | $0 | $0.000759 | $0 |
+| Jev (cloud, jev-1.14.0) | $0 | $0.00027 | $0 |
+| Solar Decide (OpenRouter) † | $0 | $0.001 | $0 |
+| TypeLLM (hosted) † | $0 | $0.00017 | $0 |
 <!-- /gen:cost -->
 
 ## Multilingual benchmark (9 languages, no English)
