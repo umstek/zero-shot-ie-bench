@@ -1,0 +1,67 @@
+[project]
+name = "systemone-local-runner"
+version = "0.1.0"
+description = "Local runner island for the System One decision engines: kev-0.8b, decider-0.8b, OpenThai-SystemOne and AgentJev-0.6B, all loaded in-process on the transformers 5.17 CPU stack."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # --- the validated System One serving stack ---
+    # The kev clone's serving venv (the env that produced today's 8009/8018/8029
+    # answers) validated torch 2.8.0 + transformers 5.17.0 + tokenizers 0.23.2 +
+    # peft 0.21.0; decider-ai needs transformers>=5 and openthai-systemone
+    # transformers>=5.0, so all four engines share this one env.
+    "transformers==5.17.0",
+    "tokenizers==0.23.2",
+    # PIN: torch 2.8.0 is what the kev clone pins (>=2.6,<2.9) and validated on;
+    # decider-ai (unpinned) and openthai-systemone (>=2.4) and the AgentJev clone
+    # (>=2.0) all accept it.
+    "torch==2.8.0",
+    # kev folds its LoRA through peft (kev.evaluate.load imports PeftModel).
+    "peft==0.21.0",
+    "accelerate>=1.15",
+    # decider-0.8b engine (PyPI; decider.infer.Decider.system_one is the
+    # in-process API). flash-linear-attention rides along as its dependency —
+    # the historical serve ran without it and transformers fell back to its
+    # reference kernels, so it is not load-bearing here.
+    "decider-ai>=1.10",
+    # OpenThai-SystemOne engine (PyPI; openthai_systemone.client.SystemOneClient
+    # is the in-process API). Weights are gated on HF — see README.
+    "openthai-systemone>=0.1.0",
+    # kev run resolution + the island's HF-cache availability checks.
+    "huggingface-hub>=0.34",
+    # server + protocol
+    "fastapi>=0.141",
+    "uvicorn>=0.53",
+    "runner-protocol",
+]
+
+[tool.uv.sources]
+runner-protocol = { path = "../_protocol", editable = true }
+# CPU-only torch builds (Windows PyPI is CPU by default; Linux PyPI is not —
+# this keeps the docker image off the multi-GB CUDA wheels).
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "httpx>=0.28",
+    "pyrefly>=1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/systemone_local"]
+
+[tool.pytest.ini_options]
+markers = ["slow: loads real weights — runs only where they are locally present"]
+
+[tool.pyrefly]
+project-includes = ["src", "tests"]
