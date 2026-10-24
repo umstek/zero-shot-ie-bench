@@ -79,8 +79,10 @@ export function multilingualTable(
         agg.correct += lang.accuracy * lang.items;
       }
     }
-    const cell = (t: string) =>
-      tierAgg[t]?.scored ? pct(tierAgg[t]!.correct / tierAgg[t]!.scored) : "n/a";
+    const cell = (t: string) => {
+      const agg = tierAgg[t];
+      return agg && agg.scored > 0 ? pct(agg.correct / agg.scored) : "n/a";
+    };
     rows.push([
       dep.display ?? dep.deployment_id,
       cell("popular"),
