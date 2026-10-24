@@ -38,6 +38,8 @@ deployments:
     accel: null
   notes: fastino/gliner2.5-base-v1 (default English checkpoint) via the gliner2 AutoExtractor, transformers
     4.57.x pin. ram_gb estimated (194M fp32, no overhead).
+  display: GLiNER2.5-base
+  zdr_safe: true
 - id: gliner2.5-base.fastino-chat
   kind: hosted
   version: gliner2.5-base@2026-09
@@ -48,6 +50,8 @@ deployments:
     a top-level schema body (entities/classifications), one request per question. $0.03/M input, output
     $0; measured $3.9e-7/q - the cheapest metered row in v0. Classification answers bit-identical to the
     local run; NER differs on one question (serving-stack wobble, not a weight change). ZDR catalog.'
+  display: GLiNER2.5-base (Fastino)
+  zdr_safe: true
 notes: 'Two v0 systems, one model: the Fastino row is the hosted twin of the same open-weight checkpoint.
   ram_gb is estimated from the 194M size.'
 v0:

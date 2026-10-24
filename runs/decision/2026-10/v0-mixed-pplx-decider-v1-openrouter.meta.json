@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "pplx-decider-v1.openrouter",
+ "model_version": "pplx-decider-v1@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-07T22:13:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 45,
+  "cost_usd": 0.000211,
+  "p50_ms": 75,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-pplx-decider-v1-openrouter",
+ "v0_rank": 11,
+ "v0_cells": {
+  "name": "Decider V1 27B (OpenRouter)",
+  "cls_s": "0.075",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 17,
+  "name": "Decider V1 27B (OpenRouter)",
+  "c48": "$0.000211",
+  "c54": "$0.000254",
+  "perq": "$0.0000044",
+  "suppressed": false
+ },
+ "v0_per_question": 4.4e-06
+}

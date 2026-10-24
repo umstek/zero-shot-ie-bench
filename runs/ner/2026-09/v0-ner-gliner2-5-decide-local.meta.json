@@ -1,0 +1,42 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "gliner2.5-decide.local",
+ "model_version": "gliner2.5-decide@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu",
+   "batch": null
+  }
+ },
+ "suite": "ner/graded-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:35af2f255ac13427a43c7d44aca9eed9b5b10f8e3b9ee714238df497ab9f1fd2",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-25T19:22:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 18,
+  "correct": 11,
+  "cost_usd": 0,
+  "p50_ms": 476,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-ner-gliner2-5-decide-local",
+ "v0_cells": {
+  "ner_s": "0.476"
+ }
+}

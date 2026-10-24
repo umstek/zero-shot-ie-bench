@@ -1,0 +1,10 @@
+id: ner/canary
+version: 1
+track: ner
+languages:
+- en
+scorer: span-micro-f1
+items_license: null
+notes: 'Canary subset view of ner/graded-pool: the pool has 18 items (fewer than the
+  ~24 canary target), so the whole parent suite is included verbatim - identical item_ids
+  np-001..np-018 and identical rows.'

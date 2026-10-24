@@ -33,6 +33,8 @@ deployments:
   notes: 'Solar Decide''s low-latency sibling on the same Upstage System One endpoint and Solar Mini 4
     base: same choice/score/noul contract, output tokens free; 4.5x faster than Solar Decide at the identical
     $0.05/M input ($0.00087 per 48-question run). Non-ZDR (†) - default routing.'
+  display: Solar Decide Flash (OpenRouter)
+  zdr_safe: false
 notes: 'Size undisclosed on the card (Solar Mini 4 base) - params_b null. claims.languages: Solar Mini
   4 backbone, built Korean/English/Japanese-first (README).'
 v0:

@@ -1,0 +1,22 @@
+id: decision/multilingual-pool
+version: 1
+track: decision
+languages:
+- es
+- fr
+- zh
+- vi
+- tr
+- uk
+- si
+- is
+- cy
+scorer: exact-choice
+items_license: null
+notes: 'v0 multilingual pool: 6 parallel sentiment texts (2 positive, 2 negative,
+  2 neutral) in each of 9 languages, from legacy/bench_multilingual.py LANGUAGES (lines
+  119-195) with gold labels from its tuples and options from its SENTIMENT_LABELS
+  (lines 105-109). Parallel items: ml-001..ml-006 identify the six sentence positions
+  and the same item_id appears in every language file (54 rows total). Language codes
+  and tiers come from catalog/languages.yaml; English is the template source and was
+  not benched in v0. Ground truth was back-translation verified per the module docstring.'

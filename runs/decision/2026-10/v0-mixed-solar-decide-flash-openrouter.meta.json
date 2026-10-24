@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "solar-decide-flash.openrouter",
+ "model_version": "solar-decide-flash@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-08T22:59:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 45,
+  "cost_usd": 0.00087,
+  "p50_ms": 69,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-solar-decide-flash-openrouter",
+ "v0_rank": 10,
+ "v0_cells": {
+  "name": "Solar Decide Flash (OpenRouter) \u2020",
+  "cls_s": "0.069",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 25,
+  "name": "Solar Decide Flash (OpenRouter) \u2020",
+  "c48": "$0.00087",
+  "c54": "$0.0010",
+  "perq": "$0.0000181",
+  "suppressed": false
+ },
+ "v0_per_question": 1.81e-05
+}

@@ -39,6 +39,8 @@ deployments:
     on 127.0.0.1:8009 (uv run --extra serve --project ../kev python -m kev.serve --run jaredpalmer/kev-0.8b);
     needs transformers >=5.17, so it runs from its own clone. 4B/9B siblings exist but are impractical
     on CPU. ram_gb estimated (0.8B fp32, no overhead).
+  display: Kev 0.8B (local)
+  zdr_safe: true
 notes: ram_gb is estimated from the 0.8B size (4 bytes/param fp32, no overhead).
 v0:
   benched: true

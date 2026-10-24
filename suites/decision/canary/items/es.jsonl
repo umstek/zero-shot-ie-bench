@@ -1,0 +1,2 @@
+{"item_id": "ml-001", "lang": "es", "tier": "popular", "input": {"text": "La comida de este restaurante está deliciosa y el personal es muy amable.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "positive"}
+{"item_id": "ml-002", "lang": "es", "tier": "popular", "input": {"text": "Estoy muy contento con mi teléfono nuevo; la batería dura todo el día.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "positive"}

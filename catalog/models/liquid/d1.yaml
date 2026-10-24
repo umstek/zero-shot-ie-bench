@@ -30,6 +30,8 @@ deployments:
   notes: 'Liquid AI''s structured decisions on the System One contract: choice/score/noul with calibrated
     probabilities. $0.04/M input; measured $2.7e-6/q - at 0.031 s/question the fastest hosted decision
     of the v0 pool. One of its providers retains prompts, so the row carries †.'
+  display: D1 (OpenRouter)
+  zdr_safe: false
 notes: Hosted size undisclosed - params_b null. claims.languages is the v0-measured baseline (100% on
   the 9-language suite); the open-weights sibling has a 17-language card.
 v0:

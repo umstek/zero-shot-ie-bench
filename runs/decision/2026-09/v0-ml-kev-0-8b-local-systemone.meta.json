@@ -1,0 +1,56 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "kev-0.8b.local-systemone",
+ "model_version": "kev-0.8b@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu",
+   "batch": null
+  }
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-21T21:58:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 42,
+  "cost_usd": 0,
+  "p50_ms": 1715,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 51,
+ "run_id": "v0-ml-kev-0-8b-local-systemone",
+ "v0_per_language": {
+  "zh": 0.8333,
+  "fr": 1.0,
+  "is": 0.5,
+  "si": 0.6667,
+  "es": 1.0,
+  "tr": 0.8333,
+  "uk": 1.0,
+  "vi": 0.8333,
+  "cy": 0.3333
+ },
+ "v0_tier_rates": {
+  "medium": 0.8889,
+  "popular": 0.9444,
+  "rare": 0.5
+ }
+}

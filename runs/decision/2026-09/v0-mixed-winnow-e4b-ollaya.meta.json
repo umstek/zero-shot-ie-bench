@@ -1,0 +1,44 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "winnow-e4b.ollaya",
+ "model_version": "winnow-e4b@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "llama.cpp",
+   "dtype": null,
+   "quant": "Q8_0",
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-27T09:25:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 42,
+  "cost_usd": 0,
+  "p50_ms": 8138,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-winnow-e4b-ollaya",
+ "v0_rank": 21,
+ "v0_cells": {
+  "name": "winnow e4b (Ollaya)",
+  "cls_s": "8.138",
+  "ner_s": ""
+ }
+}

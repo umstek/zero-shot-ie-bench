@@ -5,6 +5,7 @@ base_url: https://api.typellm.ai
 auth: [TYPELLM_API_KEY]
 docs: https://typellm.ai/docs/api
 zdr: null  # not stated in the v0 sources; record in observations when known
+zdr_safe: false  # non-ZDR on the v0 benches - renders the † marker
 contracts:
   - name: generate
     kind: typed-generation

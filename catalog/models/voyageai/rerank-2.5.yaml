@@ -29,6 +29,8 @@ deployments:
   used_as: classify
   notes: 'Cohere-style /api/v1/rerank contract, used as a decision engine: (instruction, label) pair scores,
     argmax. Non-ZDR (†). Measured $3.5e-6/q.'
+  display: voyage-rerank-2.5 (OpenRouter)
+  zdr_safe: false
 notes: Size closed - params_b null. claims.languages is the v0-measured baseline (74% on the 9-language
   suite).
 v0:

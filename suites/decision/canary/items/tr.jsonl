@@ -1,0 +1,1 @@
+{"item_id": "ml-004", "lang": "tr", "tier": "medium", "input": {"text": "Bu film uzundu ve sıkıcıydı; izlediğime pişman oldum.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "negative"}

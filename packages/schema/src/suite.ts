@@ -26,3 +26,5 @@ export const SuiteItem = z.looseObject({
   }),
   gold: z.unknown(),
 });
+export type SuiteMetaOut = z.output<typeof SuiteMeta>;
+export type SuiteItemOut = z.output<typeof SuiteItem>;

@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "gpt-6-luna-decisions.openrouter",
+ "model_version": "gpt-6-luna-decisions@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-24T13:14:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 45,
+  "cost_usd": 0.000602,
+  "p50_ms": 25,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-gpt-6-luna-decisions-openrouter",
+ "v0_rank": 7,
+ "v0_cells": {
+  "name": "GPT-6 Luna Decisions (OpenRouter) \u2020",
+  "cls_s": "0.025",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 22,
+  "name": "GPT-6 Luna Decisions (OpenRouter) \u2020",
+  "c48": "$0.000602",
+  "c54": "$0.000759",
+  "perq": "$0.0000125",
+  "suppressed": false
+ },
+ "v0_per_question": 1.25e-05
+}

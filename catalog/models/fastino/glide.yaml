@@ -32,6 +32,8 @@ deployments:
     option is uncertain; thinking output tokens are priced $0, only input bills ($0.15/M). 40k context,
     served on one B200; Fastino's model catalog flags it ZDR. Measured $1.2e-5/q (derived from ~1.9k input
     tokens per batched 24-question request).
+  display: GLiDE (Fastino)
+  zdr_safe: true
 notes: No open-weights release recorded in v0 - open_weights false. Fastino markets GLiDE as an English-first
   Decision Index model, hence claims.languages 'en' (it measured 100% on the 9-language suite anyway).
 v0:

@@ -1,0 +1,47 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "typellm-thinking.generate",
+ "model_version": "typellm-latest@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "typellm"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-17T12:27:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 44,
+  "cost_usd": 0.0029,
+  "p50_ms": 338,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-typellm-thinking-generate",
+ "v0_rank": 15,
+ "v0_cells": {
+  "name": "TypeLLM thinking (hosted) \u2020",
+  "cls_s": "0.338",
+  "ner_s": ""
+ },
+ "v0_cost": {
+  "row": 27,
+  "name": "TypeLLM thinking (hosted) \u2020",
+  "c48": "$0.0029",
+  "c54": "$0.0027",
+  "perq": "$0.000061",
+  "suppressed": false
+ },
+ "v0_per_question": 6.1e-05
+}

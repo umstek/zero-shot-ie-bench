@@ -1,0 +1,44 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "bge-reranker-v2-m3.local",
+ "model_version": "bge-reranker-v2-m3@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-25T21:05:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 35,
+  "cost_usd": 0,
+  "p50_ms": 339,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-bge-reranker-v2-m3-local",
+ "v0_rank": 64,
+ "v0_cells": {
+  "name": "bge-reranker-v2-m3",
+  "cls_s": "0.339",
+  "ner_s": ""
+ }
+}

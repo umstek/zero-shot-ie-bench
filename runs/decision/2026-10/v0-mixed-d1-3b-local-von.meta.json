@@ -1,0 +1,45 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "d1-3b.local-von",
+ "model_version": "d1-3b@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu",
+   "batch": null
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-10T10:59:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 40,
+  "cost_usd": 0,
+  "p50_ms": 5818,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-d1-3b-local-von",
+ "v0_rank": 41,
+ "v0_cells": {
+  "name": "D1 3B (local)",
+  "cls_s": "5.818",
+  "ner_s": ""
+ }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@zsib/lake",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "bun src/build.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zsib/schema": "workspace:*",
+    "zod": "catalog:",
+    "yaml": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "bun-types": "catalog:"
+  }
+}

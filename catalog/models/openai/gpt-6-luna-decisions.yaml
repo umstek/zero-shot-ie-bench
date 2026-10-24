@@ -32,6 +32,8 @@ deployments:
     benched 2026-10-24 only after the account's OpenAI-group ZDR toggle was lifted by user direction.
     Measured $1.3e-5/q; easy calls return degenerate probabilities (1.0/0.0, confidence 1.0) - calibration-table
     fodder.
+  display: GPT-6 Luna Decisions (OpenRouter)
+  zdr_safe: false
 notes: Size undisclosed - params_b null. claims.languages is the v0-measured baseline (perfect 54/54 multilingual
   run).
 v0:

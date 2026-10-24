@@ -1,0 +1,1 @@
+{"item_id": "ml-006", "lang": "uk", "tier": "medium", "input": {"text": "Цю книгу опубліковано у 2019 році, і вона має 300 сторінок.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "neutral"}

@@ -1,0 +1,23 @@
+id: decision/canary
+version: 1
+track: decision
+languages:
+- en
+- es
+- fr
+- zh
+- vi
+- tr
+- uk
+- si
+- is
+- cy
+scorer: exact-choice
+items_license: null
+notes: 'Canary subset view of decision/mixed-pool + decision/multilingual-pool; every
+  row is identical to its parent suite (no new questions). English: the 12 gate items
+  mp-001..mp-012 (same as decision/gate-12). Multilingual: 12 instances covering all
+  9 languages with a balanced 4/4/4 label mix - languages in catalog order round-robin
+  over the six parallel positions in the fixed cycle 1,3,5,2,4,6 (pos, neg, neu, pos,
+  neg, neu) until 12 instances: es ml-001+ml-002, fr ml-003+ml-004, zh ml-005+ml-006,
+  vi ml-002, tr ml-004, uk ml-006, si ml-001, is ml-003, cy ml-005.'

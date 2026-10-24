@@ -30,6 +30,8 @@ deployments:
   notes: 'The larger 2026-10-15 step-up, 32k context. Joined the hosted pool lead on arrival: 95.8% (46/48)
     at 0.027 s/question - fastest at the top of the v0 table. Measured $2.2e-6/q; the + is inherited from
     the same Liquid routing.'
+  display: D1-ultra (OpenRouter)
+  zdr_safe: false
 notes: Hosted size undisclosed - params_b null. claims.languages is the v0-measured baseline (100% on
   the 9-language suite).
 v0:

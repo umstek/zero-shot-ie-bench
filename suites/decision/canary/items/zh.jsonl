@@ -1,0 +1,2 @@
+{"item_id": "ml-005", "lang": "zh", "tier": "popular", "input": {"text": "开往首都的火车早上七点发车。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "neutral"}
+{"item_id": "ml-006", "lang": "zh", "tier": "popular", "input": {"text": "这本书于2019年出版，共300页。", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "neutral"}

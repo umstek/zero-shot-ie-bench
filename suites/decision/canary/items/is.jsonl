@@ -1,0 +1,1 @@
+{"item_id": "ml-003", "lang": "is", "tier": "rare", "input": {"text": "Strætóinn var fullur og hægur, og ég kom mjög seint.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "negative"}

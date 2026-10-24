@@ -1,0 +1,43 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "d3-edge.local",
+ "model_version": "d3-edge@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": "bf16",
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-12T08:37:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 40,
+  "cost_usd": 0,
+  "p50_ms": 2745,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-d3-edge-local",
+ "v0_rank": 39,
+ "v0_cells": {
+  "cls_s": "2.745",
+  "ner_s": ""
+ }
+}

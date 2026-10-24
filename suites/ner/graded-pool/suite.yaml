@@ -1,0 +1,15 @@
+id: ner/graded-pool
+version: 1
+track: ner
+languages:
+- en
+scorer: span-micro-f1
+items_license: null
+notes: 'v0 NER pool: 18 English texts with gold (start, end, label) span triples,
+  from bench_graded.NER (6 per tier, tier-major easy/medium/hard) as flattened by
+  legacy/bench_spectrum.py NER_QUESTIONS (lines 119-122); offsets computed with bench.spans_of
+  (legacy/bench.py:133) exactly as the bench did. Options are legacy/bench.py NER_LABELS
+  (person, company, product, location). Suite id from the source module bench_graded.py;
+  the README reports this pool as NER exact-match (18 questions, extractors only).
+  The older flat bench.py 10-text NER set (30 gold entities, results/bench_results.json)
+  is not extracted.'

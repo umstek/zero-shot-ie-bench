@@ -39,6 +39,8 @@ deployments:
   notes: fastino/gliner2.5-multi-v1 (mDeBERTa, multilingual - the largest 2.5; no 'large' exists) via
     the gliner2 AutoExtractor, transformers 4.57.x pin. Most robust local extractor in v0. ram_gb estimated
     (287M fp32, no overhead).
+  display: GLiNER2.5-multi (mDeBERTa)
+  zdr_safe: true
 - id: gliner2.5-multi.fastino-chat
   kind: hosted
   version: gliner2.5-multi@2026-09
@@ -48,6 +50,8 @@ deployments:
   notes: Hosted twin of the local multi checkpoint over the chat-completions schema endpoint; $0.03/M
     input, output $0; measured $3.9e-7/q. Repeats the local run's answers exactly on classification and
     across all nine languages. ZDR catalog.
+  display: GLiNER2.5-multi (Fastino)
+  zdr_safe: true
 notes: Two v0 systems, one model (hosted twin of the same checkpoint). ram_gb is estimated from the 287M
   size.
 v0:

@@ -1,0 +1,44 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "gte-rerank-modernbert-base.local",
+ "model_version": "gte-rerank-modernbert-base@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-25T21:01:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 48,
+  "correct": 29,
+  "cost_usd": 0,
+  "p50_ms": 183,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "run_id": "v0-mixed-gte-rerank-modernbert-base-local",
+ "v0_rank": 79,
+ "v0_cells": {
+  "name": "GTE-rerank-ModernBERT-base",
+  "cls_s": "0.183",
+  "ner_s": ""
+ }
+}

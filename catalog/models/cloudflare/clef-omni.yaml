@@ -33,6 +33,8 @@ deployments:
   notes: 'Clef''s MoE member: Qwen3-Omni-30B-A3B fine-tune (30B total / 3B active) on the same System
     One questions, plus audio[]/videos[] state inputs alongside the Clef images[] extension (benches ride
     the text path). ZDR. Derived $1.4e-5/q at $0.15/M input.'
+  display: Clef-omni (Workers AI)
+  zdr_safe: true
 notes: Weights are Apache 2.0 on HF, but ~60 GB bf16 towers past the v0 CPU box - the local twin was never
   run. claims.languages is the v0-measured baseline (98% on the 9-language suite).
 v0:

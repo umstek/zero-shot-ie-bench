@@ -1,0 +1,49 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "rerank-4-pro.openrouter-rerank",
+ "model_version": "rerank-4-pro@2026-09",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-09-26T12:50:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 45,
+  "cost_usd": 0.135,
+  "p50_ms": 413,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 48,
+ "run_id": "v0-ml-rerank-4-pro-openrouter-rerank",
+ "v0_per_language": {
+  "zh": 1.0,
+  "fr": 1.0,
+  "is": 0.5,
+  "si": 0.8333,
+  "es": 1.0,
+  "tr": 0.8333,
+  "uk": 0.8333,
+  "vi": 1.0,
+  "cy": 0.5
+ },
+ "v0_tier_rates": {
+  "medium": 0.8889,
+  "popular": 1.0,
+  "rare": 0.6111
+ }
+}

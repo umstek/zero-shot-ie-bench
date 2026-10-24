@@ -1,0 +1,2 @@
+{"item_id": "ml-003", "lang": "fr", "tier": "popular", "input": {"text": "Le bus était bondé et lent, et je suis arrivé très en retard.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "negative"}
+{"item_id": "ml-004", "lang": "fr", "tier": "popular", "input": {"text": "Ce film était long et ennuyeux ; je regrette de l'avoir vu.", "images": []}, "question": {"type": "choice", "options": ["positive", "negative", "neutral"]}, "gold": "negative"}

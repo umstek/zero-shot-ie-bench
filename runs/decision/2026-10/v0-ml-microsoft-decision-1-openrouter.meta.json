@@ -1,0 +1,49 @@
+{
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "microsoft-decision-1.openrouter",
+ "model_version": "microsoft-decision-1@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0",
+  "git_sha": "20e4825"
+ },
+ "started_at": "2026-10-10T10:40:00+05:30",
+ "finished_at": null,
+ "totals": {
+  "items": 54,
+  "correct": 54,
+  "cost_usd": 0.000149,
+  "p50_ms": 631,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "legacy-v0",
+ "v0_rank": 15,
+ "run_id": "v0-ml-microsoft-decision-1-openrouter",
+ "v0_per_language": {
+  "es": 1.0,
+  "fr": 1.0,
+  "zh": 1.0,
+  "vi": 1.0,
+  "tr": 1.0,
+  "uk": 1.0,
+  "si": 1.0,
+  "is": 1.0,
+  "cy": 1.0
+ },
+ "v0_tier_rates": {
+  "popular": 1.0,
+  "medium": 1.0,
+  "rare": 1.0
+ }
+}

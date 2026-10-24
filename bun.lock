@@ -19,7 +19,21 @@
         "zsib-bench": "./src/cli.ts",
       },
       "dependencies": {
+        "@zsib/lake": "workspace:*",
         "@zsib/schema": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "bun-types": "catalog:",
+      },
+    },
+    "packages/lake": {
+      "name": "@zsib/lake",
+      "version": "0.1.0",
+      "dependencies": {
+        "@zsib/schema": "workspace:*",
+        "yaml": "catalog:",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -114,6 +128,8 @@
     "@typescript/typescript-win32-x64": ["@typescript/typescript-win32-x64@7.0.2", "", { "os": "win32", "cpu": "x64" }, "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g=="],
 
     "@zsib/bench": ["@zsib/bench@workspace:bench"],
+
+    "@zsib/lake": ["@zsib/lake@workspace:packages/lake"],
 
     "@zsib/schema": ["@zsib/schema@workspace:packages/schema"],
 

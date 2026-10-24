@@ -66,3 +66,5 @@ export const RunItem = z.looseObject({
     .nullable(),
   error: z.string().nullable(),
 });
+export type RunMetaOut = z.output<typeof RunMeta>;
+export type RunItemOut = z.output<typeof RunItem>;

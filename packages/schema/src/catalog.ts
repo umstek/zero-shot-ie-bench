@@ -45,6 +45,8 @@ export const HostedDeployment = z.looseObject({
   provider: z.string(), // catalog/providers/<slug>.yaml
   endpoint: z.string(), // exact endpoint/model id the adapter calls
   adapter: z.string(), // bench/src/providers module, e.g. "openrouter.systemone"
+  display: z.string().optional(), // v0 README/result row name
+  zdr_safe: z.boolean().nullable().optional(), // false renders the v0 dagger marker
   notes: z.string().optional(),
 });
 
@@ -55,6 +57,8 @@ export const LocalDeployment = z.looseObject({
   runner: z.string(), // runners/<island>
   runtime: Runtime,
   requires: Requires.nullable(),
+  display: z.string().optional(), // v0 README/result row name
+  zdr_safe: z.boolean().nullable().optional(), // false renders the v0 dagger marker
   notes: z.string().optional(),
 });
 
@@ -101,6 +105,7 @@ export const Provider = z.looseObject({
   auth: z.array(z.string()).nullable(), // env var names the adapter reads
   docs: z.string().nullable(),
   zdr: z.string().nullable(), // what we know about zero-data-retention
+  zdr_safe: z.boolean().nullable(), // machine-readable: false renders the v0 † marker
   contracts: z.array(ProviderContract).default([]),
   notes: z.string().optional(),
 });
@@ -149,3 +154,8 @@ export const Language = z.looseObject({
   script: z.string().nullable(),
   tier: z.enum(["popular", "medium", "rare"]).nullable(),
 });
+export type ModelOut = z.output<typeof Model>;
+export type ProviderOut = z.output<typeof Provider>;
+export type MachineOut = z.output<typeof Machine>;
+export type TrackOut = z.output<typeof Track>;
+export type LanguageOut = z.output<typeof Language>;

@@ -30,6 +30,8 @@ deployments:
   notes: 'Cohere-style /api/v1/rerank contract, used as a decision engine: (instruction, label) pair scores,
     argmax. Non-ZDR (†). Bills ~2.5 search units per rerank request, so a 48-question run costs $0.12
     - measured $2.5e-3/q, the expensive end of the hosted field.'
+  display: cohere-rerank-4-pro (OpenRouter)
+  zdr_safe: false
 notes: Size closed - params_b null. claims.languages is the v0-measured baseline (83% on the 9-language
   suite).
 v0:
