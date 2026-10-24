@@ -8,7 +8,7 @@ const identity = {
   model_version: "test@unversioned",
   suite: "decision/mixed-pool",
   suite_version: 1,
-  suite_hash: "sha256:" + "0".repeat(64),
+  suite_hash: `sha256:${"0".repeat(64)}`,
   params: {},
 };
 
@@ -25,11 +25,12 @@ describe("RunWriter", () => {
   });
 
   test("writes meta + items append-only and refuses overwrites", async () => {
+    const root = tmpRoot();
     const w = new RunWriter(
       identity,
       { kind: "local", machine: "seoul", runtime: {} },
       "testrun-a",
-      tmpRoot(),
+      root,
     );
     w.push({
       item_id: "mp-001",
@@ -57,12 +58,12 @@ describe("RunWriter", () => {
     expect(lines).toHaveLength(1);
     expect(JSON.parse(lines[0] ?? "{}").correct).toBe(true);
 
-    // append-only: a second writer with the same id must refuse
+    // append-only: a second writer with the same id, same root, must refuse
     const dup = new RunWriter(
       identity,
       { kind: "local", machine: "seoul", runtime: {} },
       "testrun-a",
-      tmpRoot(),
+      root,
     );
     await expect(
       dup.write({

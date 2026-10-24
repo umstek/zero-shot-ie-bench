@@ -55,6 +55,11 @@ export class RunWriter {
     this.items.push(item);
   }
 
+  /** read-only view for totals computation */
+  snapshot(): readonly RunItemOut[] {
+    return this.items;
+  }
+
   async write(meta: {
     status: "ok" | "partial" | "failed" | "deferred";
     deferred_reason?: string | null;

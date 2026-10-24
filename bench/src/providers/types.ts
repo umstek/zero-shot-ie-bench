@@ -10,6 +10,9 @@ export type AdapterContext = {
   /** resolved secrets — never logged, never written to runs */
   auth: Record<string, string>;
   endpoint: string;
+  /** the wire `model` slug when it differs from the endpoint (e.g. the
+   *  pinned typesafe api_slug jev-1.14.0 while the endpoint is a URL) */
+  model?: string;
   fetchImpl?: typeof fetch;
 };
 
