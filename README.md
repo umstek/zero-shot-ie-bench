@@ -192,6 +192,7 @@ per-question predictions live in `legacy/results/bench_spectrum_results.json`.
 Classification accuracy on the mixed pool (48 questions), NER scored as
 exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 
+<!-- gen:mixed-pool -->
 | System | Classification | s/question | NER exact | s/question |
 |---|---|---|---|---|
 | Clef (Workers AI) | **97.9%** | 0.052 | n/a | |
@@ -275,6 +276,7 @@ exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
 | GTE-rerank-ModernBERT-base | 60.4% | 0.183 | n/a | |
 | Lumma-fev 0.15B | 56.2% | 0.256 | n/a | |
 | Lumma-fev 0.6B | 54.2% | 0.587 | n/a | |
+<!-- /gen:mixed-pool -->
 
 Takeaways:
 
@@ -519,6 +521,7 @@ rows are list price ($0.24 / $0.09 / $0.15 / $0.15 / $0.042 / $0.05 /
 $0.03 per M input;
 TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 
+<!-- gen:cost -->
 | System | 48-q run | 54-text run | $ / question |
 |---|---|---|---|
 | Span-01 Lite † | $0 | $0 | $0 (free tier) |
@@ -552,6 +555,7 @@ TypeLLM adds $0.50 per M thinking tokens) × measured tokens:
 | cohere-rerank-v3.5 † | $0.048 | $0.054 | $0.0010 |
 | cohere-rerank-4-fast † | $0.096 | $0.108 | $0.0020 |
 | cohere-rerank-4-pro † | $0.120 | $0.135 | $0.0025 |
+<!-- /gen:cost -->
 
 The cost charts plot the **metered** systems only — free tiers bill $0
 (Span-01 Lite's plain id is priced $0.0, same as its `:free` twin;
@@ -627,6 +631,7 @@ by blind back-translation through an independent model instance (it
 caught 8 errors, including a sentiment-flipping Sinhala word). All 88
 systems answer the same 54 texts.
 
+<!-- gen:multilingual -->
 | System | Popular | Medium | Rare | All |
 |---|---|---|---|---|
 | Jev (cloud, jev-1.14.0) | **100%** | **100%** | **100%** | **100%** |
@@ -710,6 +715,7 @@ systems answer the same 54 texts.
 | Lumma-fev 0.6B | 28% | 39% | 44% | 37% |
 | GLiNER2.5-small | 56% | 22% | 28% | 35% |
 | Lumma-fev 0.15B | 39% | 33% | 33% | 35% |
+<!-- /gen:multilingual -->
 
 ![Accuracy by system and language](docs/charts/ml_heatmap.png)
 

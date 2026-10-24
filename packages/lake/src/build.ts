@@ -80,6 +80,7 @@ const deployments = catalog.models.flatMap((model) =>
     return {
       deployment_id: deployment.id,
       model_id: model.id,
+      display: deployment.display,
       family: model.family,
       org: model.org,
       license: model.license,

@@ -45,6 +45,7 @@ export const HostedDeployment = z.looseObject({
   provider: z.string(), // catalog/providers/<slug>.yaml
   endpoint: z.string(), // exact endpoint/model id the adapter calls
   adapter: z.string(), // bench/src/providers module, e.g. "openrouter.systemone"
+  display: z.string().optional(), // v0 README/result row name
   notes: z.string().optional(),
 });
 
@@ -55,6 +56,7 @@ export const LocalDeployment = z.looseObject({
   runner: z.string(), // runners/<island>
   runtime: Runtime,
   requires: Requires.nullable(),
+  display: z.string().optional(), // v0 README/result row name
   notes: z.string().optional(),
 });
 
