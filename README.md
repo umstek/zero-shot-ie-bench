@@ -30,19 +30,19 @@ Just here for the results? **[Skip to the benchmark charts](#benchmark-charts)**
 | [decider](https://huggingface.co/Mapika/decider-0.8b) (`decider-ai`) | local decision engine (System One contract) | 0.8B | Apache 2.0 | $0 · local |
 | [OpenThai-SystemOne](https://huggingface.co/iapp/OpenThai-SystemOne) (`openthai-systemone`) | local decision engine (Thai/English, System One contract) | 0.8B | Apache 2.0 package; weights gated on HF | $0 · local |
 | [JevK5-Lite](https://huggingface.co/alibiserikbay/JevK5-Lite) (`jevk5` runtime) | local decision classifier (label-head encoder, one pass) | 437M | Apache 2.0 | $0 · local |
-| [MoJev](https://huggingface.co/MoLeMo-Lab/mojev) 0.85B (`engines/mojev_engine/`, adapted) | local decision engine (packed one-pass candidate scoring; choice/score/noul in one forward, Qwen3.5 + fla) | 0.85B | engine MIT; checkpoint card MIT (Qwen base-model license on the encoder weights) | $0 · local |
+| [MoJev](https://huggingface.co/MoLeMo-Lab/mojev) 0.85B (`legacy/engines/mojev_engine/`, adapted) | local decision engine (packed one-pass candidate scoring; choice/score/noul in one forward, Qwen3.5 + fla) | 0.85B | engine MIT; checkpoint card MIT (Qwen base-model license on the encoder weights) | $0 · local |
 | [Lumma-Fev](https://huggingface.co/FrontiersMind/Lumma-fev-0.1b) (`FrontiersMind/Lumma-fev-0.1b/0.6b/4b`, `lumma-fev` package) | local typed-decision engine (single forward over state+questions, no generation) | 154M / 649M / 4.2B | Apache 2.0 | $0 · local |
 | [Intern-Decision](https://huggingface.co/collections/internlm/intern-decision) (`internlm/Intern-Decision-{0.8B,2B,4B}`, runtime ships in the HF repos) | local multimodal decision LLM (Qwen3.5 fine-tune; one causal forward, option-symbol logits at masked decision slots, calibrated probabilities; the snapshots' vision tower accepts 1–8 images per request) | 853M / 2.2B / 4.5B | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) | $0 · local |
 | [K2-Type 0.9B](https://huggingface.co/IFM/K2-Type-0.9B) (`jev/` runtime ships in the HF snapshot; loaded in-process) | local Jev-style typed-decision model (state encoded once, block-causal mask isolates each question, a pointer head scores every option in one forward — no generation) | 0.9B (1.08B stored) | Apache 2.0 | $0 · local |
 | [Decision 2.0](https://huggingface.co/collections/vllm-sr/decision-20) (`vllm-sr/Decision-2.0-{Kai-0.6B,Eos-0.8B,Sol-2B}`, `decision2/` runtime ships in the HF snapshots) | local typed-decision family behind Ollaya's `decision` (Qwen backbone + trained candidate head scoring option descriptions, one batched forward — no generation; self-verifying snapshots) | 597M / 753M / 1.88B | Apache 2.0 | $0 · local |
 | [Decision 3.0](https://huggingface.co/collections/vllm-sr/decision-30) (`vllm-sr/d3-{edge,lite,nano}`, `d3_runtime.py` ships in the HF snapshots) | local multimodal typed-decision family, Decision 2.0's successor (Qwen3.5 backbones + vision/video towers; a 255-way code-readout head scores single-token answer codes at the last prompt position — one forward per question, no generation; self-verifying snapshots) | 594M / 853M / 2.21B | Apache 2.0 | $0 · local |
-| [d1](https://huggingface.co/LiquidAI/d1-3B) (`LiquidAI/d1-3B` + `LiquidAI/d1-omni-600M`, `engines/d1_client.py` loads the HF snapshots in-process) | local decision model (LiquidAI's open d1 line on LFM2.5-VL backbones: the state is encoded once and every typed question answered from one batched scoring forward, no generation; the d1 runner packs single-question requests together and shares the trunk across multi-question branches; text + image state, 17-language card — the omni sibling adds 16 kHz speech state) | 3.12B / 587M | LFM Open License v1.0 | $0 · local |
+| [d1](https://huggingface.co/LiquidAI/d1-3B) (`LiquidAI/d1-3B` + `LiquidAI/d1-omni-600M`, `legacy/engines/d1_client.py` loads the HF snapshots in-process) | local decision model (LiquidAI's open d1 line on LFM2.5-VL backbones: the state is encoded once and every typed question answered from one batched scoring forward, no generation; the d1 runner packs single-question requests together and shares the trunk across multi-question branches; text + image state, 17-language card — the omni sibling adds 16 kHz speech state) | 3.12B / 587M | LFM Open License v1.0 | $0 · local |
 | [NLI](https://ollaya.dev/library/nli) (`nli` / `nli:modernbert-large` via Ollaya) | local zero-shot NLI entailment classifiers (MoritzLaurer; one premise–hypothesis pair per option) | 435M / 396M | MIT (deberta card notes non-commercial training-data parts) · Apache 2.0 (modernbert) | $0 · local |
 | [decision](https://ollaya.dev/library/decision) (`decision` via Ollaya) | local decision engine (vLLM Semantic Router Decision 1.0: Qwen3.5-0.8B backbone + endpoint head, one forward pass per question) | 0.75B | Apache 2.0 | $0 · local |
 | [JevK5 4B](https://huggingface.co/alibiserikbay/JevK5-GGUF) (`jevk5` via Ollaya, Q8_0 GGUF) | local decision LLM (the full JevK5 v0.3 on llama.cpp; letters' logits, one pass per question) | 4B | Apache 2.0 | $0 · local |
 | [Winnow E4B](https://huggingface.co/EldanRing/Winnow-E4B) (`winnow:e4b` via Ollaya, Q8_0 GGUF) | local decision LLM (EldanRing, fine-tuned from Gemma 4 E4B on llama.cpp; option letters' logits) | E4B (8 GB Q8_0) | Apache 2.0 | $0 · local |
 | [Decima](https://ollaya.dev/library/decima) (`decima` / `decima:small`) · [snap](https://ollaya.dev/library/snap) (`snap`) · [Arbiter](https://ollaya.dev/library/arbiter) (`arbiter`) · [Credence](https://ollaya.dev/library/credence) (`credence`), all via Ollaya | local decision models (Madani's Decima pair: mmBERT / multilingual-e5-small encoders + a late-interaction option scorer — order-invariant — and an ordinal score head, billed as fastest on CPU; logitlab's snap1-2b: MiniCPM5-2B fine-tune, Q8_0 on llama.cpp; Codekins' Arbiter: Gemma 3 4B IT + LoRA behind a fixed 24-slot head, noul + choice ≤16 options + 6-level score; Txoka's Credence v1: MiCA refinements of Winnow-E4B, two Q8_0 checkpoints trading accuracy vs calibration) | 122M / 321M / 2B / 4.3B / 7.5B | Apache-2.0 runtime; per-model weight licenses on the Ollaya catalog pages | $0 · local |
-| [Jev](https://www.typesafe.ai/) (`jev-1.14.0` pinned via System One API — `jev-latest` moves with TypeSafe's releases) | cloud typed-decision engine (choice/score/noul; danger-zone headers opt into image `assets`, a 262k long-context mode and 1.14's `box` detection — wired in `engines/jev_client.py`, demoed in `demos/jev_image_demo.py`, benched text-only) | closed | proprietary API | metered · $5.3e-6/q ‡ |
+| [Jev](https://www.typesafe.ai/) (`jev-1.14.0` pinned via System One API — `jev-latest` moves with TypeSafe's releases) | cloud typed-decision engine (choice/score/noul; danger-zone headers opt into image `assets`, a 262k long-context mode and 1.14's `box` detection — wired in `legacy/engines/jev_client.py`, demoed in `legacy/demos/jev_image_demo.py`, benched text-only) | closed | proprietary API | metered · $5.3e-6/q ‡ |
 | [Kev 4B](https://openrouter.ai/jaredpalmer/kev-4b) (`jaredpalmer/kev-4b` via OpenRouter) | cloud decision engine (same System One contract as local Kev, hosted) | 4B | proprietary API | metered · $1.5e-6/q † |
 | [Solar Decide](https://openrouter.ai/upstage/solar-decide) (`upstage/solar-decide` via OpenRouter) | cloud typed-decision engine (Upstage System One endpoint on Solar Mini 4: choice/score/noul with calibrated probabilities, no prose — one forward, output tokens free, 524K context) | 35B MoE (3B active) | proprietary API | metered · $1.8e-5/q † |
 | [Solar Decide Flash](https://openrouter.ai/upstage/solar-decide-flash) (`upstage/solar-decide-flash` via OpenRouter) | cloud typed-decision engine (Solar Decide's low-latency sibling on the same Upstage System One endpoint and Solar Mini 4 base: same choice/score/noul contract, output tokens free) | undisclosed · Solar Mini 4 base | proprietary API | metered · $1.8e-5/q † |
@@ -139,8 +139,8 @@ Jev.
 
 Measured on CPU, zero-shot, identical label sets and descriptions,
 out-of-the-box defaults; every case runs 5 times. Full detail in
-[`results/bench_results.json`](results/bench_results.json); methodology
-in `bench.py`.
+[`legacy/results/bench_results.json`](legacy/results/bench_results.json); methodology
+in `legacy/bench.py`.
 
 Classification accuracy (mean latency ± std per text):
 
@@ -181,13 +181,13 @@ Caveats worth knowing:
 
 ## Mixed-pool spectrum benchmark (all 78 systems)
 
-`bench_spectrum.py` — the headline comparison. Every system answers the
+`legacy/bench_spectrum.py` — the headline comparison. Every system answers the
 same **one mixed pool** of 48 classification questions (sentiment + topic,
 varying difficulty); the nine local extractors and the three hosted GLiNER
 twins also answer 18 NER questions.
 Question difficulty is **measured** as the fraction of answering systems
 that got it wrong; the web UI plots accuracy along that spectrum, and
-per-question predictions live in `results/bench_spectrum_results.json`.
+per-question predictions live in `legacy/results/bench_spectrum_results.json`.
 
 Classification accuracy on the mixed pool (48 questions), NER scored as
 exact span-set match (18 questions). † = hosted via OpenRouter (non-ZDR):
@@ -375,8 +375,8 @@ Takeaways:
   counts. The gate caught the traded loss but not the traded win; the
   row moved to 1.14 and stays pinned to a versioned id either way so
   the alias flip can't silently change it. The danger-zone surface is
-  wired (`engines/jev_client.py`) and demoed live in
-  `demos/jev_image_demo.py`.
+  wired (`legacy/engines/jev_client.py`) and demoed live in
+  `legacy/demos/jev_image_demo.py`.
 - **GLiDE ties Clef's 97.9% lead on arrival** — Fastino's "thinking
   decision model" (released Sep 30, three days before this run) matches
   the top of the table in its first bench here. Its single miss is the
@@ -485,13 +485,13 @@ Takeaways:
   and a pointer head scores every option's hidden state against its
   question in one block-causal forward — never generates (0.762
   JevBench public). The upstream `jev/serve.py` hardcodes CUDA, so
-  `engines/k2type_client.py` loads the snapshot's own runtime
+  `legacy/engines/k2type_client.py` loads the snapshot's own runtime
   in-process on this CPU-only machine (fp32, ~13 s load, warm predict
   ~0.65 s); on the house request-shape probe every shape (text as
   state vs restated, bare labels vs described criteria) ties 8/8 with
   identical picks, so the benches keep the house shape for
   comparability.
-- **Decision 2.0 (vLLM Semantic Router): Kai ties Sol on English, Sol pulls ahead multilingual** — Kai 0.6B (597M) and Sol 2B both score 83.3% on the pool (0.640 / 2.578 s per question; Eos 0.8B sits between at 79.2%), right alongside decider and GLiNER2.5-base — a three-size sweep of one mechanism: a trained candidate head scores option DESCRIPTIONS over a single batched forward, no generation. The snapshots are self-verifying (every packaged byte SHA-256-checked against MODEL_MANIFEST.json before anything loads); on Windows the vendored fingerprint keys its backbone paths with backslashes, so `engines/decision2_client.py` re-binds it with POSIX separators — the manifest's own byte verification passes untouched (measured: every file verifies individually, the combined digest differs only by separator keying). Multilingual scales with size: 74% (Kai) → 80% (Eos) → 83% (Sol, perfect on the popular and medium tiers, 50% rare). On the house request-shape probe (eight easy-tier sentiment texts, Kai) every shape — house restated-text, kev state-as-text, bare-label criteria — ties 8/8 with identical picks.
+- **Decision 2.0 (vLLM Semantic Router): Kai ties Sol on English, Sol pulls ahead multilingual** — Kai 0.6B (597M) and Sol 2B both score 83.3% on the pool (0.640 / 2.578 s per question; Eos 0.8B sits between at 79.2%), right alongside decider and GLiNER2.5-base — a three-size sweep of one mechanism: a trained candidate head scores option DESCRIPTIONS over a single batched forward, no generation. The snapshots are self-verifying (every packaged byte SHA-256-checked against MODEL_MANIFEST.json before anything loads); on Windows the vendored fingerprint keys its backbone paths with backslashes, so `legacy/engines/decision2_client.py` re-binds it with POSIX separators — the manifest's own byte verification passes untouched (measured: every file verifies individually, the combined digest differs only by separator keying). Multilingual scales with size: 74% (Kai) → 80% (Eos) → 83% (Sol, perfect on the popular and medium tiers, 50% rare). On the house request-shape probe (eight easy-tier sentiment texts, Kai) every shape — house restated-text, kev state-as-text, bare-label criteria — ties 8/8 with identical picks.
 - **Decision 3.0 (vLLM Semantic Router): Nano 2B takes best-local on the mixed pool; the mechanism swapped candidate head for code readout** — Edge 0.6B (594M, a pruned Qwen3.5-0.8B with a 0.10B vision encoder) and Lite 0.85B both score 83.3% on the pool (2.745 / 5.354 s per question), tying Decision 2.0's Kai and Sol; Nano 2B jumps to 91.7% (9.376 s) — past arbiter 4B (89.6%) and every other local system on this pool, eight points over 2.0's Sol 2B (83.3%) at near-equal size, the line's biggest generational win here. The mechanism changed with the generation: every option renders under a single-token answer code and a 255-way readout scores those codes at the last prompt position, one forward per question (2.0's candidate head scored option descriptions in one batched forward); the same system_one call now also reads images and videos (the benches exercise the text path — the vision tower ships in every snapshot). Like 2.0 the snapshots are self-verifying, but the manifest keys files POSIX-relative, so no Windows fingerprint shim is needed. On CPU the runtime hard-codes a bf16 backbone with fp32 readout and runs the Gated DeltaNet layers on transformers' reference kernels (the fla kernels are GPU-only) — roughly 4× Decision 2.0's per-question latency at equal size, the price of the accuracy jump. Multilingual scales steeply: 65% (Edge, rare tier 28% — the family's weak point, below 2.0 Kai's 74%) → 87% (Lite, rare 61%) → 93% (Nano, rare 78%, Welsh perfect) — past every 2.0 size and K2-Type, though the bigger multilingual locals still lead (Intern-Decision 4B and Lumma 4B at 96%, the Ollaya GGUFs 98–100%). All three sizes pass the trial pool's first-12 questions 12/12.
 - Hosted kev-4b ties Decide at 85.4% and is 2nd overall multilingual
   (98%, one Welsh text short of perfect); Span-01 matches it on both
@@ -560,8 +560,8 @@ Jev, the hosted GLiNER twins and TypeLLM report tokens but no
 provider $, so all chart at **derived** numbers
 matching their table rows above: list price × measured tokens,
 computed by `app.cost_summary_frame` from the prices recorded in
-`engines/clef_client.py`, `engines/fastino_client.py`,
-`engines/jev_client.py` and `engines/typellm_client.py` (Jev: 6,094 /
+`legacy/engines/clef_client.py`, `legacy/engines/fastino_client.py`,
+`legacy/engines/jev_client.py` and `legacy/engines/typellm_client.py` (Jev: 6,094 /
 6,430 input tokens across its 2 + 1 batched requests × $0.042/1M;
 GLiDE: 3,833 / 4,741 input tokens × $0.15/1M — its usage block also
 reports thinking `output_tokens`, priced $0 so they add nothing;
@@ -593,7 +593,7 @@ purpose: `typesafe/jev-1.13`
 ### Benchmark charts
 
 The web UI renders these as interactive charts; the same charts, as
-images (regenerate with `python make_chart_images.py`):
+images (regenerate with `python legacy/make_chart_images.py`):
 
 **Classification (48-question mixed pool)**
 
@@ -619,7 +619,7 @@ images (regenerate with `python make_chart_images.py`):
 
 ## Multilingual benchmark (9 languages, no English)
 
-`bench_multilingual.py` — the same six sentence meanings per language
+`legacy/bench_multilingual.py` — the same six sentence meanings per language
 (2 positive / 2 negative / 2 neutral sentiment), labels in English.
 Popular: Spanish, French, Chinese · Medium: Vietnamese, Turkish,
 Ukrainian · Rare: **Sinhala**, Icelandic, Welsh. Sentences were verified
@@ -824,7 +824,7 @@ surprisingly well for an English-family release (81%, 100% Chinese,
 | Text embeddings | ❌ | ❌ | ✅ 1024-d | ❌ (reranker-capable) | ❌ (cross-encoders only) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Multilingual | ✅ multi ckpt (89% over 9 langs here) | ✅ multi twin (89% over 9 langs here, = local) | ❌ English (63%) | ✅ large 81% over 9 langs | bge-v2-m3 67% over 9 langs; mxbai 48% / GTE 44% | ✅ Router, 100+ langs (76%) | option-marker: 48% over 9 langs | ✅ 100% incl. Sinhala | ✅ 78% over 9 langs | 63% over 9 langs | 83% over 9 langs | 83% over 9 langs | ✅ 78% over 9 langs | ✅ 83% over 9 langs | deberta 69% / modernbert 46% over 9 langs | ✅ 89% over 9 langs (best local tie) | ✅ 100% incl. Sinhala (only local 100%) | ✅ 98% over 9 langs (100% Sinhala) | ✅ 96% over 9 langs (4B; small ckpts 35–37%, English-centric) | ✅ 98% over 9 langs (4B; 0.8B 89%, 2B 91%) | ✅ 83% over 9 langs (rare-tier 56%) | 74–83% over 9 langs by size (Sol 83%); rare tier 44–61% | 65–93% over 9 langs by size (Nano 93%); rare tier 28–78% | ✅ 91% (3B, 17-lang card; omni 52%) | ✅ 93% (321M; small 69%) | snap 91%, Arbiter 96% (89% rare); Credence 98% (94% rare — ties winnow's best local rare tier) | ✅ 100% over 9 langs (eight of nine; Decision-1, Elephant-1 and luna-decisions perfect, Drex/Clef-omni 98%) |
 | Runs offline / data local | ✅ | ❌ (Fastino API, ZDR) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Image input | ❌ | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ✅ (danger-zone `assets` behind `TypeSafe-Danger-Zone-Images: true` on 1.13 and 1.14, benched text-only — `demos/jev_image_demo.py`; 1.14-only `box` detection) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `demos/intern_decision_image_demo.py`) | ❌ | ❌ | ✅ (vision tower in every snapshot, images + videos on the same system_one call; benched text-only here) | ✅ (LFM2.5-VL tower in both checkpoints, demos/d1_demo.py; omni adds 16 kHz speech state) | ❌ | ❌ (Credence ships a vision-tagged variant) | ❌ (Decider lists image modality; text/JSON state only so far — Clef-omni accepts images[]/audio[]/videos[] state, audio/video untested here) |
+| Image input | ❌ | ❌ | ❌ | ❌ | hosted Nemotron VL only (image documents, `legacy/demos/nemotron_vl_demo.py`); local trio + Cohere/Voyage are text-only | ❌ | ❌ | ✅ (danger-zone `assets` behind `TypeSafe-Danger-Zone-Images: true` on 1.13 and 1.14, benched text-only — `legacy/demos/jev_image_demo.py`; 1.14-only `box` detection) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (vision tower + projector ship in every snapshot; 1–8 images per request, same one forward — `legacy/demos/intern_decision_image_demo.py`) | ❌ | ❌ | ✅ (vision tower in every snapshot, images + videos on the same system_one call; benched text-only here) | ✅ (LFM2.5-VL tower in both checkpoints, legacy/demos/d1_demo.py; omni adds 16 kHz speech state) | ❌ | ❌ (Credence ships a vision-tagged variant) | ❌ (Decider lists image modality; text/JSON state only so far — Clef-omni accepts images[]/audio[]/videos[] state, audio/video untested here) |
 | Cost | free | $0.03/1M input (output $0) | free | free | free | free | free | $0.042/1M input | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | free (CPU time) | $0.02–$0.15/1M input, decisions free; Mercury on the :free tier |
 | License | Apache 2.0 | Apache 2.0 weights; metered hosted API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 | proprietary API | Apache 2.0 | Apache 2.0 | Apache 2.0 | Apache 2.0 (package); weights gated | Apache 2.0 | MIT (engine; Qwen base-model license on encoder weights) | MIT (deberta card notes non-commercial training-data parts); Apache 2.0 (modernbert) | Apache 2.0 | Apache 2.0 (NOTICE: some training questions written by an OpenAI model) | Apache 2.0 | Apache 2.0 | Apache 2.0 (Qwen3.5 upstream weights also Apache 2.0) | Apache 2.0 | Apache 2.0 | Apache 2.0 | LFM Open License v1.0 | per-model on the Ollaya catalog (runtime Apache 2.0) | per-model on the Ollaya catalog (runtime Apache 2.0) | proprietary API (Tev1's data recipe + training code are open; Drex weights Open RAIL-M, runtime Apache 2.0) |
 | Batch shape | per text | per text, one request (all labels in the schema) | per text (batch_size) | per text, all labels | per text, one pair per label | all questions, one pass | per text | all questions, one request | all questions, one request | all questions, one request | all questions, one request | all questions, one request | per text, all heads + labels | per text, all packed candidates | per text, one pair per option | per text, one row per question | per text, one request per question | per text, one request per question | per text, all questions one forward | per text, all questions one forward | per text, all questions one forward | per text, all questions one forward | per request (all questions one call, one forward per question, batched 8 per pass) | per text, trunk + question branches one forward | per text, all options one pass | per text, one request per question | all questions, one request (spectrum batches 24) |
@@ -838,7 +838,7 @@ particular will not parse in PowerShell/cmd.
 
 ```bash
 uv venv .venv
-uv pip install --python .venv -r requirements.txt --overrides overrides.txt
+uv pip install --python .venv -r legacy/requirements.txt --overrides legacy/overrides.txt
 # so1 (upstream has since published open-alternative-jev on PyPI under
 # Apache-2.0; this venv keeps the git install from its MIT days):
 uv pip install --python .venv "open-alternative-jev @ git+https://github.com/ikermoel/open-alternative-jev"
@@ -847,12 +847,12 @@ uv pip install --python .venv "open-alternative-jev @ git+https://github.com/ike
 uv pip install --python .venv sentence-transformers==5.7.0
 # von needs transformers 5.x, so it lives in its own venv:
 uv venv --python 3.13 .venv-von
-uv pip install --python .venv-von -r requirements-von.txt
+uv pip install --python .venv-von -r legacy/requirements-von.txt
 # relik needs torch 2.3.1 + faiss-cpu, so Python 3.11 and its own venv
 # (on Windows `import relik` additionally needs the csv shim that
-# engines/relik_client.py installs — no site-packages patching):
+# legacy/engines/relik_client.py installs — no site-packages patching):
 uv venv --python 3.11 .venv-relik
-uv pip install --python .venv-relik -r requirements-relik.txt
+uv pip install --python .venv-relik -r legacy/requirements-relik.txt
 # GLiNER-X (Knowledgator's mT5-encoder multilingual family) loads through
 # the classic gliner package with the stanza extra (per the model card);
 # a fresh gliner[stanza] resolve wants transformers 5.x, so it gets its
@@ -888,21 +888,21 @@ DECIDER_MODEL=Mapika/decider-0.8b DECIDER_DEVICE=cpu \
 OPENTHAI_SYSTEMONE_MODEL=iapp/OpenThai-SystemOne \
     C:/venvs/agent-jev/Scripts/python -m uvicorn \
     openthai_systemone.server:app --port 8029
-# demos/systemone_locals_demo.py tours the kev (:8009), decider (:8018)
+# legacy/demos/systemone_locals_demo.py tours the kev (:8009), decider (:8018)
 # and AgentJev (:8149) servers — start them for the demo too; AgentJev's
-# start line is in bench_spectrum.py's header comment.
+# start line is in legacy/bench_spectrum.py's header comment.
 # Verdict runs in-process (no server) from the Verdict-open-jev checkout;
 # set VERDICT_HOME if it is not at C:\src\verdict (its artifacts download
 # from heman10x/rlcd-modernbert-151m), and run the benchmarks with the
 # agent-jev venv python.
 # JevK5-Lite, LFM2.5-RLCD 350M and MoJev 0.85B also run in .venv-von
 # (transformers 5.17 is already pinned there): the jevk5 lite runtime plus
-# jsonschema. The LFM engine itself is vendored in engines/rlcd_engine/ (engine
+# jsonschema. The LFM engine itself is vendored in legacy/engines/rlcd_engine/ (engine
 # code MIT; the LiquidAI/LFM2.5-350M weights it loads are under the LFM
 # Open License v1.0). MoJev is a 0.85B Qwen3.5 + fla packed one-pass scorer
 # whose scorer class loads from the checkpoint via trust_remote_code; its
-# request path is adapted in engines/mojev_engine/ (MIT). Certo (engines/certo_engine/,
-# vendored from the certo repo, MIT) and nanodiff (engines/nanodiff_engine/,
+# request path is adapted in legacy/engines/mojev_engine/ (MIT). Certo (legacy/engines/certo_engine/,
+# vendored from the certo repo, MIT) and nanodiff (legacy/engines/nanodiff_engine/,
 # vendored from BY571/nanoDiff + the pngwn release, MIT) run in the main
 # venv — nothing extra to install beyond sentence-transformers above:
 uv pip install --python .venv-von/Scripts/python.exe "jevk5[lite]==0.3.1" jsonschema
@@ -913,34 +913,34 @@ uv pip install --python .venv-von/Scripts/python.exe lumma-fev
 # in .venv-von: the HF repo is a complete snapshot (fp32 weights + the
 # `julia` runtime package). It is installed --no-deps because its
 # pyproject pins transformers >=5.0,<5.1 while .venv-von keeps 5.17 (the
-# one drift is handled in engines/julia_client.py):
+# one drift is handled in legacy/engines/julia_client.py):
 git clone https://huggingface.co/SupersonicLabs/Julia-1 ../Julia-1
 uv pip install --python .venv-von/Scripts/python.exe --no-deps -e ../Julia-1
 # the engine runs 16 torch CPU threads by default; JULIA_CPU_THREADS overrides
 # Intern-Decision (internlm's Qwen3.5 decision fine-tunes, Apache 2.0 + a
 # second Apache-2.0 LICENSE-QWEN file for the upstream weights) also runs
 # in .venv-von — nothing to pip-install: the runtime ships INSIDE each HF
-# snapshot (a standalone inference.py; engines/intern_decision_client.py
+# snapshot (a standalone inference.py; legacy/engines/intern_decision_client.py
 # sys.path-inserts the snapshot dir and imports it). Pull the three
 # snapshots into C:\src (INTERN_DECISION_HOME overrides the base dir):
 python -c "from huggingface_hub import snapshot_download; [snapshot_download(f'internlm/Intern-Decision-{s}', local_dir=f'C:/src/Intern-Decision-{s}') for s in ('0.8B', '2B', '4B')]"
-# do NOT install the snapshots' requirements.txt — it pins
+# do NOT install the snapshots' legacy/requirements.txt — it pins
 # torch==2.9.1/transformers==5.14.1, while .venv-von's newer stack
 # (torch 2.14, transformers 5.17) already satisfies the runtime;
 # torchvision is there unpinned for the multimodal processor
 # K2-Type 0.9B (IFM's Jev-style typed-decision model, Apache 2.0) also
 # runs in .venv-von — nothing to pip-install: the minimal jev/ runtime
-# ships inside the HF snapshot and engines/k2type_client.py imports it
+# ships inside the HF snapshot and legacy/engines/k2type_client.py imports it
 # from there (the upstream `python -m jev.serve` server hardcodes one
 # CUDA GPU; the in-process loader runs the same weights fp32 on the
 # CPU). Pull the snapshot into C:\src (K2TYPE_HOME overrides the whole
-# path) and, like Intern-Decision, do NOT install its requirements.txt:
+# path) and, like Intern-Decision, do NOT install its legacy/requirements.txt:
 .venv-von/Scripts/python -c "from huggingface_hub import snapshot_download; snapshot_download('IFM/K2-Type-0.9B', local_dir='C:/src/K2-Type-0.9B')"
 # Decision 2.0 (vLLM Semantic Router's second generation, the line behind
 # Ollaya's `decision`) also runs in .venv-von — nothing to pip-install:
 # the self-verifying decision2/ runtime ships inside each HF snapshot
 # (from_pretrained SHA-256-checks every packaged byte against MODEL_MANIFEST.json;
-# engines/decision2_client.py imports it from there and re-binds the
+# legacy/engines/decision2_client.py imports it from there and re-binds the
 # vendored checkpoint fingerprint with POSIX path separators — on Windows
 # its backslash keying breaks the manifest identity check while every
 # byte still verifies). Pull the three snapshots into C:\src (~8 GB;
@@ -950,7 +950,7 @@ python -c "from huggingface_hub import snapshot_download; [snapshot_download(f'i
 # Multimodal Foundation Decision Models") also runs in .venv-von —
 # nothing to pip-install either: the self-verifying d3 runtime
 # (d3_runtime.py + friends) ships inside each HF snapshot, and
-# engines/d3_client.py imports it from there (verify="fast"
+# legacy/engines/d3_client.py imports it from there (verify="fast"
 # SHA-256-checks every packaged file up to 64 MiB, size-checks the
 # weight shards; the manifest keys are POSIX-relative, so no Windows
 # fingerprint shim is needed). Pull the three snapshots into C:\src
@@ -974,7 +974,7 @@ ollaya pull arbiter && ollaya pull credence
 ollaya serve   # TypeSafe-compatible /v1/systemone on 127.0.0.1:11435
 ```
 
-Use uv for this install: `overrides.txt` deliberately overrides GLiClass
+Use uv for this install: `legacy/overrides.txt` deliberately overrides GLiClass
 0.1.20's transformers ≥5 metadata with the validated 4.57.6 version required
 by GLiNER2. This is an explicit compatibility exception for that pinned
 GLiClass release; plain pip dependency resolution cannot install this mix.
@@ -983,16 +983,16 @@ Altair is included explicitly for the benchmark charts. `protobuf` and
 pull them in and the DeBERTa tokenizer needs them. Model checkpoints
 (~0.3–2.3 GB each) download from Hugging Face on first run. Cloud keys
 live in a repo-root `.env` (gitignored): `TYPESAFE_API_KEY` for Jev
-(paid API, see `engines/jev_client.py`) and `OPENROUTER_API_KEY` for
-the hosted OpenRouter systems (see `engines/openrouter_client.py`).
-GLiDE runs on Fastino's own API (see `engines/fastino_client.py`):
+(paid API, see `legacy/engines/jev_client.py`) and `OPENROUTER_API_KEY` for
+the hosted OpenRouter systems (see `legacy/engines/openrouter_client.py`).
+GLiDE runs on Fastino's own API (see `legacy/engines/fastino_client.py`):
 put `FASTINO_API_KEY` in the same `.env` (input $0.15/M tokens,
 thinking tokens $0).
-TypeLLM runs on its own hosted API (see `engines/typellm_client.py`):
+TypeLLM runs on its own hosted API (see `legacy/engines/typellm_client.py`):
 put `TYPELLM_API_KEY` in the same `.env` (input $0.05/M, thinking
 $0.50/M, answer tokens free).
 Clef / Clef-flash run on Cloudflare Workers AI (see
-`engines/clef_client.py`): either a one-time `cf auth login` (the
+`legacy/engines/clef_client.py`): either a one-time `cf auth login` (the
 client reads and auto-refreshes the cf CLI's OAuth session token;
 add `CLOUDFLARE_ACCOUNT_ID` to `.env` to skip the per-run
 `cf auth whoami` lookup) or a Workers AI token as
@@ -1001,91 +1001,91 @@ add `CLOUDFLARE_ACCOUNT_ID` to `.env` to skip the per-run
 ## Run
 
 ```bash
-.venv/Scripts/python demos/demo.py       # GLiNER 2.5 tour: entities,
+.venv/Scripts/python legacy/demos/demo.py       # GLiNER 2.5 tour: entities,
                                          # classification, relations, JointIE,
                                          # span attributes, records — ends
                                          # with the decision-tuned sibling
                                          # GLiNER2.5-Decide (--model decide
                                          # tours only that checkpoint)
-.venv/Scripts/python demos/demo_gliformer.py   # GLiFormer tour + embeddings,
+.venv/Scripts/python legacy/demos/demo_gliformer.py   # GLiFormer tour + embeddings,
                                          # incl. parse_pdf: layout-aware
                                          # extraction over a PDF (pymupdf
                                          # sample; `uv pip install --python
                                          # .venv pymupdf` first)
                                           # (--model base or large)
-.venv/Scripts/python demos/demo_glirel.py      # GLiREL zero-shot relations
+.venv/Scripts/python legacy/demos/demo_glirel.py      # GLiREL zero-shot relations
                                          # (GLiNER 2.5 base supplies the
                                          # entity spans it scores pairs of)
-.venv/Scripts/python demos/demo_gliner_relex.py # GLiNER-relex: joint NER +
+.venv/Scripts/python legacy/demos/demo_gliner_relex.py # GLiNER-relex: joint NER +
                                          # relations in one pass (multilingual)
-.venv-relik/Scripts/python demos/demo_relik.py  # ReLiK retriever-reader
+.venv-relik/Scripts/python legacy/demos/demo_relik.py  # ReLiK retriever-reader
                                          # relations (closed Wikidata
                                          # vocabulary; Python 3.11 venv)
                                          # + typed NER+relation sibling (stop 5)
-.venv/Scripts/python demos/demo_laya.py        # Laya tour + multilingual Router
-.venv/Scripts/python demos/demo_jev.py         # Jev tour (2 paid API requests)
-.venv-von/Scripts/python demos/jevk5_demo.py   # JevK5-Lite tour (label-head
+.venv/Scripts/python legacy/demos/demo_laya.py        # Laya tour + multilingual Router
+.venv/Scripts/python legacy/demos/demo_jev.py         # Jev tour (2 paid API requests)
+.venv-von/Scripts/python legacy/demos/jevk5_demo.py   # JevK5-Lite tour (label-head
                                          # encoder; transformers-5 venv)
-.venv-von/Scripts/python demos/lfm_rlcd_demo.py # LFM2.5-RLCD constrained-decoding
-                                          # tour (vendored engines/rlcd_engine/)
+.venv-von/Scripts/python legacy/demos/lfm_rlcd_demo.py # LFM2.5-RLCD constrained-decoding
+                                          # tour (vendored legacy/engines/rlcd_engine/)
                                           # + the autoregressive-baseline stop
-.venv/Scripts/python demos/reranker_demo.py    # three cross-encoder rerankers as
+.venv/Scripts/python legacy/demos/reranker_demo.py    # three cross-encoder rerankers as
                                          # decision engines: pair scores +
                                          # argmax (sentence-transformers)
-.venv/Scripts/python demos/certo_demo.py       # Certo 421M calibrated decide()
-                                         # tour (vendored engines/certo_engine/)
-.venv/Scripts/python demos/nanodiff_demo.py    # nanodiff 350M diffusion-LM tour
+.venv/Scripts/python legacy/demos/certo_demo.py       # Certo 421M calibrated decide()
+                                         # tour (vendored legacy/engines/certo_engine/)
+.venv/Scripts/python legacy/demos/nanodiff_demo.py    # nanodiff 350M diffusion-LM tour
                                          # (~10 s/question; vendored
-                                         # engines/nanodiff_engine/)
-.venv/Scripts/python demos/nanodiff_demo.py --v2
+                                         # legacy/engines/nanodiff_engine/)
+.venv/Scripts/python legacy/demos/nanodiff_demo.py --v2
                                          # same tour on the v2 retrain
-.venv/Scripts/python demos/nemotron_vl_demo.py  # Nemotron Rerank VL image
+.venv/Scripts/python legacy/demos/nemotron_vl_demo.py  # Nemotron Rerank VL image
                                          # documents: three PIL-drawn page
                                          # screenshots ranked as base64
                                          # data-URI documents against a text
                                          # query, next to the same pages as
                                          # plain text (OpenRouter free tier)
-C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
+C:/venvs/agent-jev/Scripts/python legacy/demos/verdict_demo.py
                                          # Verdict 151M tour: one evaluate()
                                          # answers a Choice + a Score rubric
                                          # + a Noul proposition over one
                                          # ticket, then the abstention probe
                                          # fires on an unrelated context
                                          # (agent-jev venv; VERDICT_HOME)
-.venv/Scripts/python demos/openthai_demo.py     # OpenThai-SystemOne tour: the
+.venv/Scripts/python legacy/demos/openthai_demo.py     # OpenThai-SystemOne tour: the
                                          # score + noul questions the benches
                                          # never ask, over a Thai and the
                                          # shared English ticket (needs the
                                          # :8029 server from the setup block)
-.venv-von/Scripts/python demos/mojev_demo.py   # MoJev 0.85B packed one-pass
+.venv-von/Scripts/python legacy/demos/mojev_demo.py   # MoJev 0.85B packed one-pass
                                          # scoring (transformers-5 venv) incl.
                                          # noul + score rubric and
                                          # choice+noul+score in ONE packed forward
-.venv/Scripts/python demos/systemone_locals_demo.py  # kev / decider / AgentJev:
+.venv/Scripts/python legacy/demos/systemone_locals_demo.py  # kev / decider / AgentJev:
                                          # the score + yes/no questions the
                                          # benches never ask, three engines
                                          # side by side (needs the
                                          # :8009/:8018/:8149 servers from the
                                          # setup block; the AgentJev start
-                                         # line is in bench_spectrum.py)
-.venv-von/Scripts/python demos/lumma_demo.py   # Lumma-Fev typed-decision tour:
+                                         # line is in legacy/bench_spectrum.py)
+.venv-von/Scripts/python legacy/demos/lumma_demo.py   # Lumma-Fev typed-decision tour:
                                          # one decide() answers a choice, a
                                          # noul and a score question at once
                                          # (--model 0.6b or 4b picks a bigger
                                          # checkpoint; transformers-5 venv)
-.venv-von/Scripts/python demos/julia_demo.py
+.venv-von/Scripts/python legacy/demos/julia_demo.py
                                          # Julia 1 typed-decision tour: one
                                          # predict() answers a choice, a noul
                                          # and a score question in one batch
                                          # (transformers-5 venv)
-.venv-von/Scripts/python demos/intern_decision_demo.py
+.venv-von/Scripts/python legacy/demos/intern_decision_demo.py
                                          # Intern-Decision tour: one
                                          # predict() scores a choice, a noul
                                          # and a score rubric in one causal
                                          # forward (--model 2b or 4b picks a
                                          # bigger checkpoint; transformers-5
                                          # venv)
-.venv-von/Scripts/python demos/intern_decision_image_demo.py
+.venv-von/Scripts/python legacy/demos/intern_decision_image_demo.py
                                          # Intern-Decision MULTIMODAL tour:
                                          # three Pillow-drawn images (ticket
                                          # screenshot, receipt, revenue
@@ -1095,42 +1095,42 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # tower + projector ship in every
                                          # snapshot (~3.4 s vs ~1.3 s
                                          # text-only on the 0.8B here)
-.venv-von/Scripts/python demos/k2type_demo.py
+.venv-von/Scripts/python legacy/demos/k2type_demo.py
                                          # K2-Type 0.9B tour: one
                                          # predict() answers a choice, a
                                          # noul and a score rubric in
                                          # one block-causal forward
-.venv-von/Scripts/python demos/decision2_demo.py
+.venv-von/Scripts/python legacy/demos/decision2_demo.py
                                          # Decision 2.0 tour: the model
                                          # card's damaged-order example — a choice, a
                                          # noul and a score rubric in ONE predict() batch
                                          # (--size eos-0.8b / sol-2b; transformers-5 venv)
                                          # (transformers-5 venv)
-.venv-von/Scripts/python demos/d3_demo.py
+.venv-von/Scripts/python legacy/demos/d3_demo.py
                                          # Decision 3.0 tour: the same
                                          # damaged-order example through the
                                          # code-readout head (--size lite /
                                          # nano; bf16 CPU forward, fp32 readout)
-.venv-von/Scripts/python demos/von_demo.py --tour
+.venv-von/Scripts/python legacy/demos/von_demo.py --tour
                                          # von tour: shared-text choice, then
                                          # judge + rate on one shared sample
                                          # (serve stays the no-flag default
                                          # both von tab sections spawn)
-.venv/Scripts/python demos/ollaya_demo.py      # tour of the ten Ollaya-
+.venv/Scripts/python legacy/demos/ollaya_demo.py      # tour of the ten Ollaya-
                                          # served models (needs `ollaya
                                          # serve`; --models=nli,decision
                                          # picks a subset)
-.venv-glinerx/Scripts/python demos/glinerx_demo.py --tour
+.venv-glinerx/Scripts/python legacy/demos/glinerx_demo.py --tour
                                          # GLiNER-X tour: multilingual NER
                                          # (mT5 encoder + stanza word
                                          # splitter) + the NER-only
                                          # classification caveat
                                          # (.venv-glinerx; see setup)
 
-.venv/Scripts/python bench.py            # flat suite, 5 runs per case
-                                         # (--repeats N) → results/bench_results.json
-.venv/Scripts/python bench_spectrum.py --system <name>   # one mixed pool per
-                                         # system → results/bench_spectrum_results.json
+.venv/Scripts/python legacy/bench.py            # flat suite, 5 runs per case
+                                         # (--repeats N) → legacy/results/bench_results.json
+.venv/Scripts/python legacy/bench_spectrum.py --system <name>   # one mixed pool per
+                                         # system → legacy/results/bench_spectrum_results.json
                                          # (78 systems; von, JevK5-Lite,
                                          # MoJev 0.85B, Lumma-Fev,
                                          # Intern-Decision, K2-Type,
@@ -1140,56 +1140,56 @@ C:/venvs/agent-jev/Scripts/python demos/verdict_demo.py
                                          # same command
                                          # under .venv-von/Scripts/python)
 # decider/OpenThai speak plain HTTP, so any interpreter works
-.venv/Scripts/python bench_multilingual.py --system <name>
+.venv/Scripts/python legacy/bench_multilingual.py --system <name>
                                          # 9 languages, all 78 systems →
-                                         # results/bench_multilingual_results.json
+                                         # legacy/results/bench_multilingual_results.json
                                          # (same interpreter rules)
-.venv-von/Scripts/python bench_multilingual.py --system "Lumma-fev 0.15B"
+.venv-von/Scripts/python legacy/bench_multilingual.py --system "Lumma-fev 0.15B"
                                          # (also "Lumma-fev 0.6B" / "Lumma-fev 4B")
-.venv-von/Scripts/python bench_multilingual.py \
+.venv-von/Scripts/python legacy/bench_multilingual.py \
     --system "Intern-Decision 0.8B"      # (also 2B / 4B)
-.venv-von/Scripts/python bench_multilingual.py \
+.venv-von/Scripts/python legacy/bench_multilingual.py \
     --system "K2-Type 0.9B (local)"
-.venv-von/Scripts/python bench_multilingual.py \
+.venv-von/Scripts/python legacy/bench_multilingual.py \
     --system "Decision 2.0 Kai 0.6B"   # (also Eos 0.8B / Sol 2B)
-.venv-von/Scripts/python bench_multilingual.py \
+.venv-von/Scripts/python legacy/bench_multilingual.py \
     --system "Decision 3.0 Edge 0.6B"   # (also Lite 0.85B / Nano 2B)
 # the ten Ollaya systems speak plain HTTP to the local daemon, so the
 # main venv runs them too (`ollaya serve` must be up, models pulled):
-.venv/Scripts/python bench_spectrum.py --system "nli deberta-v3-large (Ollaya)"
-.venv/Scripts/python bench_spectrum.py --system "decision 0.75B (Ollaya)"
-.venv/Scripts/python bench_spectrum.py --system "jevk5 4B (Ollaya)"
-.venv/Scripts/python bench_spectrum.py --system "winnow e4b (Ollaya)"
+.venv/Scripts/python legacy/bench_spectrum.py --system "nli deberta-v3-large (Ollaya)"
+.venv/Scripts/python legacy/bench_spectrum.py --system "decision 0.75B (Ollaya)"
+.venv/Scripts/python legacy/bench_spectrum.py --system "jevk5 4B (Ollaya)"
+.venv/Scripts/python legacy/bench_spectrum.py --system "winnow e4b (Ollaya)"
 # Lumma-Fev runs in-process from .venv-von (transformers >=5.4,<6):
-.venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.15B"
-.venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 0.6B"
-.venv-von/Scripts/python bench_spectrum.py --system "Lumma-fev 4B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Lumma-fev 0.15B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Lumma-fev 0.6B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Lumma-fev 4B"
 # Julia 1 runs in-process from .venv-von (see the setup block):
-.venv-von/Scripts/python bench_spectrum.py --system "Julia 1 144M"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Julia 1 144M"
 # Intern-Decision runs in-process from .venv-von (runtime ships in the
 # snapshots; INTERN_DECISION_HOME overrides the C:\src base):
-.venv-von/Scripts/python bench_spectrum.py --system "Intern-Decision 0.8B"
-.venv-von/Scripts/python bench_spectrum.py --system "Intern-Decision 2B"
-.venv-von/Scripts/python bench_spectrum.py --system "Intern-Decision 4B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Intern-Decision 0.8B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Intern-Decision 2B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Intern-Decision 4B"
 # K2-Type runs in-process from .venv-von (runtime ships in the
 # snapshot; K2TYPE_HOME overrides the C:\src path):
-.venv-von/Scripts/python bench_spectrum.py --system "K2-Type 0.9B (local)"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "K2-Type 0.9B (local)"
 # Decision 2.0 runs in-process from .venv-von (self-verifying runtime
 # ships in the snapshots; DECISION2_HOME overrides the C:\src base):
-.venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Kai 0.6B"
-.venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Eos 0.8B"
-.venv-von/Scripts/python bench_spectrum.py --system "Decision 2.0 Sol 2B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Decision 2.0 Kai 0.6B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Decision 2.0 Eos 0.8B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Decision 2.0 Sol 2B"
 # Decision 3.0 runs in-process from .venv-von (self-verifying runtime
 # ships in the snapshots; D3_HOME overrides the C:\src base):
-.venv-von/Scripts/python bench_spectrum.py --system "Decision 3.0 Edge 0.6B"
-.venv-von/Scripts/python bench_spectrum.py --system "Decision 3.0 Lite 0.85B"
-.venv-von/Scripts/python bench_spectrum.py --system "Decision 3.0 Nano 2B"
-.venv/Scripts/python app.py              # web UI at http://127.0.0.1:7860
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Decision 3.0 Edge 0.6B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Decision 3.0 Lite 0.85B"
+.venv-von/Scripts/python legacy/bench_spectrum.py --system "Decision 3.0 Nano 2B"
+.venv/Scripts/python legacy/app.py              # web UI at http://127.0.0.1:7860
 ```
 
 ## Web UI
 
-`app.py` serves a live demo tab per family — GLiNER 2.5 (checkpoint
+`legacy/app.py` serves a live demo tab per family — GLiNER 2.5 (checkpoint
 selector includes GLiNER2.5-Decide, plus a Decide score-rubric
 section), GLiFormer, GLiREL, GLiNER-relex,
 ReLiK, GLiNER-X (small/base/large checkpoint dropdown), GLiClass,
@@ -1211,21 +1211,21 @@ vision input), plus **Ollaya** (the ten daemon-served
 decision models behind a model dropdown — needs the local `ollaya serve`,
 free), plus benchmark tabs (classification /
 extraction / multilingual: tables and charts from
-`results/bench_*_results.json`, including the cost-vs-accuracy charts) and
+`legacy/results/bench_*_results.json`, including the cost-vs-accuracy charts) and
 a Compare tab (feature matrix). The remaining local engines (Kev,
 AgentJev, decider, OpenThai, Verdict) run as separate servers or venvs
 and are covered by the benchmark and compare tabs.
 
 The `.venv-von` systems (von, JevK5-Lite, LFM2.5-RLCD, MoJev, Lumma,
-Julia, Intern-Decision, K2-Type, Decision 2.0, Decision 3.0, d1) spawn one-shot `demos/*_demo.py --serve` runners, each loading
+Julia, Intern-Decision, K2-Type, Decision 2.0, Decision 3.0, d1) spawn one-shot `legacy/demos/*_demo.py --serve` runners, each loading
 its model once per click in a single `.venv-von` process; nanodiff does
-the same under the main venv, and ReLiK spawns `demos/relik_demo.py`
+the same under the main venv, and ReLiK spawns `legacy/demos/relik_demo.py`
 from `.venv-relik`
 (first click loads the pipeline and, once, downloads ~700 MB), while
-GLiNER-X spawns `demos/glinerx_demo.py` from `.venv-glinerx` (first
+GLiNER-X spawns `legacy/demos/glinerx_demo.py` from `.venv-glinerx` (first
 click loads the checkpoint; the very first use also downloads the
 weights and stanza's per-language tokenize models). von's
-shared loader (`engines/von_client.py`) pins the
+shared loader (`legacy/engines/von_client.py`) pins the
 upstream SDK and model revision and requires the complete
 `option_marker.pt` state dict — missing or incompatible weights fail
 before inference; there is no random-head fallback (first use downloads
@@ -1262,13 +1262,13 @@ extra Laya checkpoints noted below):
 | `iapp/OpenThai-SystemOne` | 0.8B | Qwen3.5 Gated DeltaNet hybrid + 256-way slot head, Thai/English — benchmarked (weights gated on HF) |
 | `heman10x/rlcd-modernbert-151m` | 151M | ModernBERT-base decision head with trained abstention ("Verdict") — culled from the benchmark (data in TRIALS.md) |
 | `alibiserikbay/JevK5-Lite` | 437M | lite build of JevK5 (JevBench #3): label-head DeBERTa-v3-large encoder, `jevk5` package — benchmarked |
-| `notnotsamuel/LFM2.5-350M-RLCD` | 350M | LFM2.5 backbone + RLCD training; vendored constrained-decoding engine (`engines/rlcd_engine/`) — culled from the benchmark (data in TRIALS.md) |
+| `notnotsamuel/LFM2.5-350M-RLCD` | 350M | LFM2.5 backbone + RLCD training; vendored constrained-decoding engine (`legacy/engines/rlcd_engine/`) — culled from the benchmark (data in TRIALS.md) |
 | `mixedbread-ai/mxbai-rerank-base-v2` | 494M | cross-encoder reranker, (instruction, label) pair scoring — benchmarked as a decision engine |
 | `BAAI/bge-reranker-v2-m3` | 568M | XLM-RoBERTa-large cross-encoder, multilingual — benchmarked; best reranker here (72.9%) |
 | `Alibaba-NLP/gte-rerank-modernbert-base` | 150M | ModernBERT-base cross-encoder — benchmarked |
-| `altslate/certo-decision-model` | 421M | ModernBERT-large + calibrated per-option score head; vendored engine (`engines/certo_engine/`) — culled from the benchmark (data in TRIALS.md) |
-| `MoLeMo-Lab/mojev` | 0.85B | Qwen3.5 + fla packed one-pass scorer, loads via trust_remote_code; adapted engine (`engines/mojev_engine/`) — benchmarked; noul/score + one-packed-forward tour added |
-| `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (architecture repo BY571/nanoDiff; the card lists the base as `Sebasdi/nanodiff-350m-base`); vendored engine (`engines/nanodiff_engine/`) — culled from the benchmark (data in TRIALS.md) |
+| `altslate/certo-decision-model` | 421M | ModernBERT-large + calibrated per-option score head; vendored engine (`legacy/engines/certo_engine/`) — culled from the benchmark (data in TRIALS.md) |
+| `MoLeMo-Lab/mojev` | 0.85B | Qwen3.5 + fla packed one-pass scorer, loads via trust_remote_code; adapted engine (`legacy/engines/mojev_engine/`) — benchmarked; noul/score + one-packed-forward tour added |
+| `pngwn/nanodiff-350m-typed-decisions-lam1` | 350M | bidirectional diffusion LM (architecture repo BY571/nanoDiff; the card lists the base as `Sebasdi/nanodiff-350m-base`); vendored engine (`legacy/engines/nanodiff_engine/`) — culled from the benchmark (data in TRIALS.md) |
 | `pngwn/nanodiff-350m-typed-decisions-v2` | 350M | v2 retrain of the typed-decisions run (step 3000; the checkpoint's embedded args say lam=1.0, seed 1337 — the same run the `…-v2-lam1` repo, created empty on HF, was meant to publish); same vendored engine, loadable unchanged — culled from the benchmark (data in TRIALS.md) |
 | `FrontiersMind/Lumma-fev-0.1b` | 154M | card name "Lumma-Fev-0.15B"; causal backbone + pointer head over choice/score/noul rows, `lumma-fev` package — benchmarked |
 | `FrontiersMind/Lumma-fev-0.6b` | 649M | same pointer-head architecture at the middle scale — benchmarked |
@@ -1394,54 +1394,54 @@ with their full recorded data and charts in TRIALS.md.
 | File | What it is |
 |---|---|
 | `TRIALS.md` | the trial-pool gate every new candidate passes (12-question mini-pool, 12/12 graduates) — the committed record of graduates, failures and unrunnables |
-| `demos/demo.py` / `demos/demo_gliformer.py` / `demos/demo_glirel.py` / `demos/demo_gliner_relex.py` / `demos/demo_relik.py` / `demos/demo_laya.py` / `demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
-| `demos/demo_gliformer.py` stop 7 | `parse_pdf`: entity extraction over a pymupdf-drawn two-page ticket PDF (words + boxes + rendered page image; card-size pages — A4 at the encoder's fixed 144 dpi wants ~8 GB CPU RAM) |
-| `demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/lfm_rlcd_demo.py` | LFM2.5-RLCD tour (incl. the autoregressive-baseline stop) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
-| `demos/certo_demo.py` | Certo 421M calibrated `decide()` tour incl. the `abstain_below` threshold stop (vendored `engines/certo_engine/`, main venv) |
-| `demos/mojev_demo.py` | MoJev 0.85B tour (incl. noul + score rubric; choice+noul+score in one packed forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/nanodiff_demo.py` | nanodiff 350M diffusion-LM tour (incl. `predict_multi`: three typed questions in one forward; `--v2` runs the v2 retrain) + one-shot runner (`--serve`, `--v2`) in the main venv, spawned by its web-UI tab |
-| `demos/nemotron_vl_demo.py` | Nemotron Rerank VL image-document tour: PIL-drawn page screenshots as base64 data-URI documents through OpenRouter's structured rerank documents, vs the same pages as plain text (main venv, network) |
-| `demos/verdict_demo.py` | Verdict (RLCD 151M) tour: Choice + Score + Noul in one `evaluate()` and an abstention probe, plus a one-shot runner (`--serve`) — run under the agent-jev venv python |
-| `demos/openthai_demo.py` | OpenThai-SystemOne tour: score + noul over a Thai and the shared English ticket via the local :8029 System One server, plus a one-shot runner (`--serve`) |
-| `demos/systemone_locals_demo.py` | kev 0.8B / decider 0.8B / AgentJev 0.6B tour: the score + yes/no questions the benches never ask, three engines side by side over the shared ticket, plus a one-shot runner (`--serve`) — needs the local :8009/:8018/:8149 servers |
-| `demos/lumma_demo.py` | Lumma-Fev tour (all three question types in one `decide()`) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/julia_demo.py` | Julia 1 tour (all three question types in one `predict()` batch) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/intern_decision_demo.py` | Intern-Decision tour (all three question types in one `predict()` forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/intern_decision_image_demo.py` | Intern-Decision multimodal tour: Pillow-drawn ticket/receipt/chart images answered with choice+noul+score questions in one forward (the snapshots' vision tower + projector) + one-shot runner (`--serve`) inside `.venv-von`, spawned by the web-UI tab's image section |
-| `demos/k2type_demo.py` | K2-Type 0.9B tour (choice + noul + score rubric in one block-causal forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/decision2_demo.py` | Decision 2.0 tour (the model card's choice + noul + score example in one predict(), `--size` picks the checkpoint) + one-shot runner (`--serve --size S`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/d3_demo.py` | Decision 3.0 tour (the model card's choice + noul + score example in one predict(), `--size` picks edge/lite/nano) + one-shot runner (`--serve --size S`) inside `.venv-von`, spawned by its web-UI tab |
-| `demos/d1_demo.py` | Liquid d1 tour (typed questions in one predict; shared-text sentiment; a Pillow-drawn circles image question; `--model d1-omni-600M` adds a SAPI 16 kHz speech-state stop with money/weather noul probes; predict_batch packing) + one-shot runner (`--serve --model ...`) inside `.venv-von`, spawned by its web-UI tab |
-| `engines/julia_client.py` | loader for the local `../Julia-1` snapshot (JULIA_HOME override; the `julia` runtime package ships in the HF repo), with the transformers-5.17 forward-specialization guard and the JULIA_CPU_THREADS note |
-| `engines/intern_decision_client.py` | loader for the local `C:\src\Intern-Decision-{0.8B,2B,4B}` snapshots (INTERN_DECISION_HOME prefix override; the runtime is a standalone `inference.py` inside each snapshot, imported per size so each checkpoint's own calibration temperature applies) |
-| `engines/k2type_client.py` | in-process loader for the local `C:\src\K2-Type-0.9B` snapshot (K2TYPE_HOME override; sys.path-inserts the snapshot and imports its own `jev/` runtime on the CPU because the upstream `jev/serve.py` hardcodes CUDA — `to_record`/`answer` mirror serve.py, so the local path answers exactly like the upstream server) |
-| `engines/decision2_client.py` | in-process loader for the local `C:\src\Decision-2.0-{Kai,Eos,Sol}` snapshots (DECISION2_HOME prefix override; sys.path-inserts each snapshot and imports its own `decision2/` runtime fp32 on the CPU, one size per process; re-binds the vendored checkpoint fingerprint with POSIX path separators — on Windows its backslash keying breaks the manifest identity check while every packaged byte still verifies) |
-| `engines/d3_client.py` | in-process loader for the local `C:\src\d3-{edge,lite,nano}` snapshots (D3_HOME prefix override; sys.path-inserts each snapshot and imports its own `d3_runtime.py` on the CPU, one size per process; bf16 backbone + fp32 255-way code-readout head, Gated DeltaNet layers on the transformers reference kernels — the fla kernels are GPU-only; verify="fast" manifest check, POSIX-relative keys so no Windows shim) |
-| `engines/d1_client.py` | in-process loader for Liquid's open d1 (D1_HOME prefix override, default `C:\src`; trust_remote_code AutoModel route into the snapshot's own `d1` runner; `predict()` guards kwargs so the same client serves d1-3B and the omni sibling, whose `system_one` takes a 4th `audio` arg — 16 kHz mono int16 numpy) |
-| `engines/ollaya_client.py` | keyless System One client for the local Ollaya daemon (name → tag registry; records the state-is-the-text and described-criteria request findings) |
-| `demos/ollaya_demo.py` | tour of the ten Ollaya-served models: typed questions in one request, shared-text sentiment, score rubric |
-| `app.py` | Gradio web UI: live tab per family + benchmark + compare |
-| `demos/von_demo.py` | von tour (shared-text choice, then a judge and a rate stop on one shared sample) + one-shot runner (`--serve`, choice and judge_rate modes) inside `.venv-von`, spawned by both von tab sections |
-| `engines/von_client.py` | pinned, complete option-marker checkpoint loader (decide/judge/rate wrappers over evaluate_choice/evaluate_noul/evaluate_score) shared by demo, tab and benchmarks |
-| `demos/relik_demo.py` | one-shot ReLiK runner inside `.venv-relik`, spawned by the ReLiK tab |
-| `demos/glinerx_demo.py` | GLiNER-X tour (`--tour`: multilingual NER + the NER-only classification caveat) + one-shot runner (JSON over stdin) inside `.venv-glinerx`, spawned by its web-UI tab |
-| `engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK pipeline, parametrized so the tour can load the joint NER+relation sibling (two relik 1.0.7 load fixes; the benched default is forwarded verbatim) |
-| `engines/glinerx_client.py` | registry + loader for the GLiNER-X family through the classic `gliner` package with the stanza extra (.venv-glinerx; the loader names the venv when the stack is missing) plus the vendor multitask classification mapping (prompt + single-label reduction) and the per-language stanza-splitter warm-up — with the probe notes that established the checkpoints are NER-only |
-| `engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server; versioned model pinning, `extra_headers`, `assets`/`image_asset()` and the `box` builder for the danger-zone features, `last_model` provenance) |
-| `engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
-| `engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Solar Decide, Span-01, six rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
-| `engines/clef_client.py` | dependency-free client for the Clef / Clef-flash decision models on Cloudflare Workers AI (same System One contract behind the v4 REST envelope; cf CLI session token with auto-refresh, or `CLOUDFLARE_AUTH_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in repo-root `.env`) |
-| `engines/fastino_client.py` | dependency-free client for Fastino's hosted models: the GLiDE decision model (same System One contract, flat payload) plus the hosted GLiNER twins (the local GLiNER2.5 base/multi/Decide checkpoints over the OpenAI-compatible chat-completions endpoint with a `schema` body; `FASTINO_API_KEY` in repo-root `.env`) |
-| `engines/typellm_client.py` | dependency-free client for TypeLLM's hosted API (JSON-Schema enum questions — up to 512 values — plus `choices`/`box`/`boxes` builders via POST /v1/generate, images as base64 data URIs; `TYPELLM_API_KEY` in repo-root `.env`) |
-| `engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
-| `bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
-| `bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
-| `bench_graded.py` | question pools for the mixed-pool benchmark (source for `bench_spectrum.py`) |
-| `bench_multilingual.py` | 9-language zero-shot suite, all 78 systems (Sinhala/Icelandic/Welsh in the rare tier) |
-| `make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
-| `results/bench_*_results.json` | latest results, rendered by the web UI |
+| `legacy/demos/demo.py` / `legacy/demos/demo_gliformer.py` / `legacy/demos/demo_glirel.py` / `legacy/demos/demo_gliner_relex.py` / `legacy/demos/demo_relik.py` / `legacy/demos/demo_laya.py` / `legacy/demos/demo_jev.py` | scripted tours, one per system, shared sample texts |
+| `legacy/demos/demo_gliformer.py` stop 7 | `parse_pdf`: entity extraction over a pymupdf-drawn two-page ticket PDF (words + boxes + rendered page image; card-size pages — A4 at the encoder's fixed 144 dpi wants ~8 GB CPU RAM) |
+| `legacy/demos/jevk5_demo.py` | JevK5-Lite tour + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/lfm_rlcd_demo.py` | LFM2.5-RLCD tour (incl. the autoregressive-baseline stop) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/reranker_demo.py` | three cross-encoder rerankers as decision engines: (instruction, label) pair scores + argmax (main venv, sentence-transformers) |
+| `legacy/demos/certo_demo.py` | Certo 421M calibrated `decide()` tour incl. the `abstain_below` threshold stop (vendored `legacy/engines/certo_engine/`, main venv) |
+| `legacy/demos/mojev_demo.py` | MoJev 0.85B tour (incl. noul + score rubric; choice+noul+score in one packed forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/nanodiff_demo.py` | nanodiff 350M diffusion-LM tour (incl. `predict_multi`: three typed questions in one forward; `--v2` runs the v2 retrain) + one-shot runner (`--serve`, `--v2`) in the main venv, spawned by its web-UI tab |
+| `legacy/demos/nemotron_vl_demo.py` | Nemotron Rerank VL image-document tour: PIL-drawn page screenshots as base64 data-URI documents through OpenRouter's structured rerank documents, vs the same pages as plain text (main venv, network) |
+| `legacy/demos/verdict_demo.py` | Verdict (RLCD 151M) tour: Choice + Score + Noul in one `evaluate()` and an abstention probe, plus a one-shot runner (`--serve`) — run under the agent-jev venv python |
+| `legacy/demos/openthai_demo.py` | OpenThai-SystemOne tour: score + noul over a Thai and the shared English ticket via the local :8029 System One server, plus a one-shot runner (`--serve`) |
+| `legacy/demos/systemone_locals_demo.py` | kev 0.8B / decider 0.8B / AgentJev 0.6B tour: the score + yes/no questions the benches never ask, three engines side by side over the shared ticket, plus a one-shot runner (`--serve`) — needs the local :8009/:8018/:8149 servers |
+| `legacy/demos/lumma_demo.py` | Lumma-Fev tour (all three question types in one `decide()`) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/julia_demo.py` | Julia 1 tour (all three question types in one `predict()` batch) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/intern_decision_demo.py` | Intern-Decision tour (all three question types in one `predict()` forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/intern_decision_image_demo.py` | Intern-Decision multimodal tour: Pillow-drawn ticket/receipt/chart images answered with choice+noul+score questions in one forward (the snapshots' vision tower + projector) + one-shot runner (`--serve`) inside `.venv-von`, spawned by the web-UI tab's image section |
+| `legacy/demos/k2type_demo.py` | K2-Type 0.9B tour (choice + noul + score rubric in one block-causal forward) + one-shot runner (`--serve`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/decision2_demo.py` | Decision 2.0 tour (the model card's choice + noul + score example in one predict(), `--size` picks the checkpoint) + one-shot runner (`--serve --size S`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/d3_demo.py` | Decision 3.0 tour (the model card's choice + noul + score example in one predict(), `--size` picks edge/lite/nano) + one-shot runner (`--serve --size S`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/demos/d1_demo.py` | Liquid d1 tour (typed questions in one predict; shared-text sentiment; a Pillow-drawn circles image question; `--model d1-omni-600M` adds a SAPI 16 kHz speech-state stop with money/weather noul probes; predict_batch packing) + one-shot runner (`--serve --model ...`) inside `.venv-von`, spawned by its web-UI tab |
+| `legacy/engines/julia_client.py` | loader for the local `../Julia-1` snapshot (JULIA_HOME override; the `julia` runtime package ships in the HF repo), with the transformers-5.17 forward-specialization guard and the JULIA_CPU_THREADS note |
+| `legacy/engines/intern_decision_client.py` | loader for the local `C:\src\Intern-Decision-{0.8B,2B,4B}` snapshots (INTERN_DECISION_HOME prefix override; the runtime is a standalone `inference.py` inside each snapshot, imported per size so each checkpoint's own calibration temperature applies) |
+| `legacy/engines/k2type_client.py` | in-process loader for the local `C:\src\K2-Type-0.9B` snapshot (K2TYPE_HOME override; sys.path-inserts the snapshot and imports its own `jev/` runtime on the CPU because the upstream `jev/serve.py` hardcodes CUDA — `to_record`/`answer` mirror serve.py, so the local path answers exactly like the upstream server) |
+| `legacy/engines/decision2_client.py` | in-process loader for the local `C:\src\Decision-2.0-{Kai,Eos,Sol}` snapshots (DECISION2_HOME prefix override; sys.path-inserts each snapshot and imports its own `decision2/` runtime fp32 on the CPU, one size per process; re-binds the vendored checkpoint fingerprint with POSIX path separators — on Windows its backslash keying breaks the manifest identity check while every packaged byte still verifies) |
+| `legacy/engines/d3_client.py` | in-process loader for the local `C:\src\d3-{edge,lite,nano}` snapshots (D3_HOME prefix override; sys.path-inserts each snapshot and imports its own `d3_runtime.py` on the CPU, one size per process; bf16 backbone + fp32 255-way code-readout head, Gated DeltaNet layers on the transformers reference kernels — the fla kernels are GPU-only; verify="fast" manifest check, POSIX-relative keys so no Windows shim) |
+| `legacy/engines/d1_client.py` | in-process loader for Liquid's open d1 (D1_HOME prefix override, default `C:\src`; trust_remote_code AutoModel route into the snapshot's own `d1` runner; `predict()` guards kwargs so the same client serves d1-3B and the omni sibling, whose `system_one` takes a 4th `audio` arg — 16 kHz mono int16 numpy) |
+| `legacy/engines/ollaya_client.py` | keyless System One client for the local Ollaya daemon (name → tag registry; records the state-is-the-text and described-criteria request findings) |
+| `legacy/demos/ollaya_demo.py` | tour of the ten Ollaya-served models: typed questions in one request, shared-text sentiment, score rubric |
+| `legacy/app.py` | Gradio web UI: live tab per family + benchmark + compare |
+| `legacy/demos/von_demo.py` | von tour (shared-text choice, then a judge and a rate stop on one shared sample) + one-shot runner (`--serve`, choice and judge_rate modes) inside `.venv-von`, spawned by both von tab sections |
+| `legacy/engines/von_client.py` | pinned, complete option-marker checkpoint loader (decide/judge/rate wrappers over evaluate_choice/evaluate_noul/evaluate_score) shared by demo, tab and benchmarks |
+| `legacy/demos/relik_demo.py` | one-shot ReLiK runner inside `.venv-relik`, spawned by the ReLiK tab |
+| `legacy/demos/glinerx_demo.py` | GLiNER-X tour (`--tour`: multilingual NER + the NER-only classification caveat) + one-shot runner (JSON over stdin) inside `.venv-glinerx`, spawned by its web-UI tab |
+| `legacy/engines/relik_client.py` | Windows csv shim (SapienzaNLP/relik#39) + strict loader for the ReLiK pipeline, parametrized so the tour can load the joint NER+relation sibling (two relik 1.0.7 load fixes; the benched default is forwarded verbatim) |
+| `legacy/engines/glinerx_client.py` | registry + loader for the GLiNER-X family through the classic `gliner` package with the stanza extra (.venv-glinerx; the loader names the venv when the stack is missing) plus the vendor multitask classification mapping (prompt + single-label reduction) and the per-language stanza-splitter warm-up — with the probe notes that established the checkpoints are NER-only |
+| `legacy/engines/jev_client.py` | dependency-free Python client for the TypeSafe System One API (also used against the local Kev server; versioned model pinning, `extra_headers`, `assets`/`image_asset()` and the `box` builder for the danger-zone features, `last_model` provenance) |
+| `legacy/engines/agentjev_client.py` | dependency-free client for the local AgentJev loopback API |
+| `legacy/engines/openrouter_client.py` | dependency-free client for OpenRouter's `/systemone` and `/rerank` endpoints (hosted Kev 4B, Solar Decide, Span-01, six rerankers; `OPENROUTER_API_KEY` in repo-root `.env`) |
+| `legacy/engines/clef_client.py` | dependency-free client for the Clef / Clef-flash decision models on Cloudflare Workers AI (same System One contract behind the v4 REST envelope; cf CLI session token with auto-refresh, or `CLOUDFLARE_AUTH_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in repo-root `.env`) |
+| `legacy/engines/fastino_client.py` | dependency-free client for Fastino's hosted models: the GLiDE decision model (same System One contract, flat payload) plus the hosted GLiNER twins (the local GLiNER2.5 base/multi/Decide checkpoints over the OpenAI-compatible chat-completions endpoint with a `schema` body; `FASTINO_API_KEY` in repo-root `.env`) |
+| `legacy/engines/typellm_client.py` | dependency-free client for TypeLLM's hosted API (JSON-Schema enum questions — up to 512 values — plus `choices`/`box`/`boxes` builders via POST /v1/generate, images as base64 data URIs; `TYPELLM_API_KEY` in repo-root `.env`) |
+| `legacy/engines/{rlcd,certo,mojev,nanodiff}_engine/` | vendored inference packages for the local decision systems (attribution headers with source repo, revision and license inside each) |
+| `legacy/bench.py` | flat-suite benchmark driver (classification + NER, 5× determinism) |
+| `legacy/bench_spectrum.py` | the headline mixed-pool benchmark, one run per `--system` |
+| `legacy/bench_graded.py` | question pools for the mixed-pool benchmark (source for `legacy/bench_spectrum.py`) |
+| `legacy/bench_multilingual.py` | 9-language zero-shot suite, all 78 systems (Sinhala/Icelandic/Welsh in the rare tier) |
+| `legacy/make_chart_images.py` | renders the benchmark charts to `docs/charts/*.png` for this README |
+| `legacy/results/bench_*_results.json` | latest results, rendered by the web UI |
 
 ## License
 
@@ -1455,7 +1455,7 @@ and Decision 3.0 snapshots (their `d3` runtimes included) —
 the Intern-Decision repos additionally carry a LICENSE-QWEN file keeping
 the Qwen3.5 upstream weights under Alibaba Cloud's Apache 2.0; so1's
 library and the vendored
-`engines/*_engine/` packages are MIT; the LiquidAI/LFM2.5-350M weights
+`legacy/engines/*_engine/` packages are MIT; the LiquidAI/LFM2.5-350M weights
 behind LFM2.5-RLCD are under the LFM Open License v1.0); Jev access is
 subject to TypeSafe AI's terms. ReLiK's licensing is ambiguous and
 recorded as-is: the relik repo carries no LICENSE file, its README
