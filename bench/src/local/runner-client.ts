@@ -9,6 +9,8 @@ import {
   type TrackResponseOut,
 } from "@zsib/schema";
 
+export type { RunnerInfoOut, TrackRequestOut, TrackResponseOut } from "@zsib/schema";
+
 export type RunnerEndpoint = {
   baseUrl: string; // e.g. http://127.0.0.1:8030
   fetchImpl?: typeof fetch;
