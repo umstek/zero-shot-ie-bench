@@ -2075,6 +2075,7 @@ OPENROUTER_SYSTEMONE = {
     "Decider V1.2 27B (OpenRouter)": "perplexity/pplx-decider-v1.2",
     "Decider Flash V1.2 (OpenRouter)": "perplexity/pplx-decider-flash-v1.2",
     "D1-ultra (OpenRouter)": "liquid/d1-ultra",
+    "Elephant-1 9B (OpenRouter)": "baseten/elephant-1:free",
 }
 # the choice-question subset (the Span scorers answer noul only - the
 # noul branch below claims them first)

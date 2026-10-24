@@ -23,6 +23,7 @@ NEW_DECISIONS = {
     "Mercury Decide (OpenRouter)": "inception/mercury-decide:free",
     "Microsoft Decision-1 (OpenRouter)": "microsoft/microsoft-decision-1",
     "Drex v1.5 (OpenRouter)": "nace-ai/drex-v1.5",
+    "Elephant-1 9B (OpenRouter)": "baseten/elephant-1:free",
 }
 
 
