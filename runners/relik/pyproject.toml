@@ -1,0 +1,85 @@
+[project]
+name = "relik-runner"
+version = "0.1.0"
+description = "Local runner island for relik-ie ReLiK: the retriever-reader relation-extraction and joint NER+relation pipelines on the relik 1.0.7 CPU stack (its own venv — the only py3.11 island: relik pins torch==2.3.1)."
+readme = "README.md"
+# Upper bound: torch 2.3.1 (relik 1.0.7's own pin) ships no 3.13 wheels, so
+# the island must never resolve on the 3.13 line the other islands use.
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    # --- the relik stack (legacy/requirements-relik.txt, verbatim pin) ---
+    # PIN: relik 1.0.7 itself pins torch==2.3.1 and
+    # transformers[sentencepiece]>=4.41,<4.42 (numpy<2 arrives with that
+    # torch); the faiss extra adds faiss-cpu==1.8.0 per the documented
+    # install. Never move these without re-validating loading against
+    # legacy (the csv shim + the two load-time fixes below are tuned to
+    # exactly this release).
+    "relik[faiss]==1.0.7",
+    # torch declared explicitly because it is the reason this island exists
+    # on Python 3.11. Windows PyPI is CPU by default; the explicit CPU index
+    # below keeps Linux/docker images off the CUDA wheels.
+    "torch==2.3.1",
+    # legacy/requirements-relik.txt: "numpy<2 comes with that torch". True
+    # transitively when the legacy .venv-relik resolved (faiss-cpu 1.8.0 and
+    # torch 2.3.1 both predate numpy 2 — ABI-incompatible with it), but the
+    # metadata no longer forces it, so pin the bound the legacy venv had.
+    "numpy<2",
+    # relik's import chain needs pkg_resources (lightning/fabric imports it
+    # at module load); the legacy pip-built venv had setuptools implicitly,
+    # uv venvs do not. And the setuptools 81+ line no longer SHIPS
+    # pkg_resources, so hold the pre-removal line.
+    "setuptools<81",
+    # relik's annotator segments text with spacy's en_core_web_sm and
+    # AUTO-INSTALLS it via pip at load time when missing — impossible in a
+    # uv venv (no pip) and it 500s the first predict. The model is not on
+    # PyPI; pin the release wheel matching the locked spacy 3.7.x (the
+    # legacy .venv-relik carried the same model).
+    "en_core_web_sm",
+    # --- server + protocol (current-major floors, shared with _protocol) ---
+    "fastapi>=0.162",
+    "uvicorn>=0.54",
+    "pydantic>=2.14",
+    "runner-protocol",
+]
+
+[tool.uv.sources]
+runner-protocol = { path = "../_protocol", editable = true }
+torch = { index = "pytorch-cpu" }
+# spacy 3.7.x-compatible build of the model relik needs at load time
+# (not on PyPI; see the dependency comment above)
+en_core_web_sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "httpx>=0.28",
+    "pyrefly>=1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/relik_runner"]
+
+[tool.pyrefly]
+project-includes = ["src", "tests"]
+python-version = "3.11"
+# tests import their shared stubs from conftest (pytest puts tests/ on
+# sys.path at runtime); teach pyrefly the same import root.
+search-path = ["tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: loads the real relik checkpoints from the local HF cache (skipped when the pinned snapshot is not cached; CI never downloads weights)",
+]
+
+[tool.ruff]
+extend = "../../ruff.toml"

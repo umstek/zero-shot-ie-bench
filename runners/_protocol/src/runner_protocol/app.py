@@ -82,7 +82,7 @@ def create_app(
         return TrackResponse(model_id=request.model_id, results=results, compute_ms=compute_ms, usage=None)
 
     if ui is not None:
-        import gradio  # noqa: PLC0415 — lazy: heavy import, only needed with a UI
+        import gradio  # noqa: PLC0415 — lazy: heavy import, only needed with a UI; pyrefly: ignore[missing-import] (optional [ui] extra)
 
         gradio.mount_gradio_app(app, ui, path="/")
 

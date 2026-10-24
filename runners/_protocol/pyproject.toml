@@ -3,7 +3,12 @@ name = "runner-protocol"
 version = "0.1.0"
 description = "Shared library for runner islands: FastAPI app factory, /info + /healthz, /v1/<track> wire models (generated from catalog/schema), host fingerprint, Gradio mount."
 readme = "README.md"
-requires-python = ">=3.13"
+# >=3.11, not >=3.13: the relik island runs Python 3.11 (relik 1.0.7 pins
+# torch==2.3.1, which has no 3.13 wheels) and takes this package as a path
+# dependency, so the declared floor must admit it. The CODE is
+# 3.11-compatible (from __future__ import annotations everywhere, no PEP
+# 695 syntax); this project's own venv/tests stay on 3.13 (.python-version).
+requires-python = ">=3.11"
 dependencies = [
     # Floors at the current majors at install time (docs/plan/02 - version floors).
     "fastapi>=0.162",
