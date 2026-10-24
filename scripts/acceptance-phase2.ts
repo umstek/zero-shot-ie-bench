@@ -6,7 +6,7 @@
 // tables are parsed from the current README's <!-- gen:… --> sections.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { parseTables, type MdTable } from "../bench/src/render/markdown.ts";
+import { type MdTable, parseTables } from "../bench/src/render/markdown.ts";
 
 const repoRoot = join(import.meta.dir, "..");
 
@@ -62,14 +62,9 @@ const compare = (t: MdTable, g: MdTable | undefined, label: string) => {
 const benchmarkHeadings = targetTables
   .map((t) => t.heading)
   .filter((h) =>
-    [
-      "Mixed-pool spectrum benchmark",
-      "Multilingual",
-      "NER",
-      "rerank",
-      "trial",
-      "cost",
-    ].some((k) => h.toLowerCase().includes(k.toLowerCase())),
+    ["Mixed-pool spectrum benchmark", "Multilingual", "NER", "rerank", "trial", "cost"].some((k) =>
+      h.toLowerCase().includes(k.toLowerCase()),
+    ),
   );
 
 if (benchmarkHeadings.length === 0) {
@@ -83,7 +78,5 @@ for (const heading of benchmarkHeadings) {
   compare(t, generated.get(heading), "v0");
 }
 
-console.log(
-  `phase-2 acceptance: ${benchmarkHeadings.length} target tables, ${failures} failures`,
-);
+console.log(`phase-2 acceptance: ${benchmarkHeadings.length} target tables, ${failures} failures`);
 if (failures > 0) process.exit(1);

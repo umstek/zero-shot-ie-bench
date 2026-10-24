@@ -18,7 +18,7 @@ const meta = {
   bench: { version: "0.1.0", git_sha: "000" },
   started_at: "2026-10-24T00:00:00Z",
   finished_at: null,
-  totals: { items: 0, correct: 0, cost_usd: 0, p50_ms: 0, p95_ms: 0, errors: 0 },
+  totals: { items: 0, correct: null, cost_usd: 0, p50_ms: null, p95_ms: null, errors: 0 },
   source: "bench",
 } as unknown as RunMeta;
 
@@ -68,5 +68,20 @@ describe("aggregateRun", () => {
     const agg = aggregateRun(meta, [item({ correct: null })]);
     expect(agg.accuracy).toBeNull();
     expect(agg.correct).toBeNull();
+  });
+
+  test("legacy summary run falls back to recorded totals", () => {
+    const summaryMeta = {
+      ...meta,
+      totals: { items: 18, correct: 16, cost_usd: 0.004, p50_ms: 210, p95_ms: 400, errors: 0 },
+    } as unknown as RunMeta;
+    const agg = aggregateRun(
+      summaryMeta,
+      Array.from({ length: 18 }, () => item({ correct: null })),
+    );
+    expect(agg.correct).toBe(16);
+    expect(agg.accuracy).toBeCloseTo(16 / 18);
+    expect(agg.p50_ms).toBe(210);
+    expect(agg.cost_usd).toBeCloseTo(0.004);
   });
 });

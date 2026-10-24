@@ -45,6 +45,19 @@ export function aggregateRun(meta: RunMeta, items: RunItem[]): RunAggregate {
   const scored = items.filter((i) => typeof i.correct === "boolean");
   const correct = scored.filter((i) => i.correct === true).length;
 
+  // legacy summary runs (source legacy-v0) may carry only totals — e.g. the
+  // v0 NER columns recorded rates, not per-item predictions. Per-item truth
+  // wins when present; recorded totals are the fallback.
+  const totalsCorrect =
+    scored.length === 0 && typeof meta.totals.correct === "number" ? meta.totals.correct : null;
+  const totalsItems = typeof meta.totals.items === "number" ? meta.totals.items : 0;
+  const effectiveCorrect = scored.length > 0 ? correct : totalsCorrect;
+  const effectiveDenominator = scored.length > 0 ? scored.length : totalsItems;
+  const accuracy =
+    effectiveCorrect !== null && effectiveDenominator > 0
+      ? effectiveCorrect / effectiveDenominator
+      : null;
+
   const byLang = new Map<string, { items: number; correct: number; scored: number }>();
   for (const i of items) {
     const lang = i.lang ?? "unknown";
@@ -72,12 +85,12 @@ export function aggregateRun(meta: RunMeta, items: RunItem[]): RunAggregate {
       machine: meta.where.kind === "local" ? meta.where.machine : undefined,
     },
     items: items.length,
-    correct: scored.length > 0 ? correct : null,
-    accuracy: scored.length > 0 ? correct / scored.length : null,
-    cost_usd: items.reduce((sum, i) => sum + (i.cost_usd ?? 0), 0),
+    correct: effectiveCorrect,
+    accuracy,
+    cost_usd: items.reduce((sum, i) => sum + (i.cost_usd ?? 0), 0) || meta.totals.cost_usd,
     errors: items.filter((i) => typeof i.error === "string").length,
-    p50_ms: percentile(latencies, 50),
-    p95_ms: percentile(latencies, 95),
+    p50_ms: percentile(latencies, 50) ?? meta.totals.p50_ms ?? null,
+    p95_ms: percentile(latencies, 95) ?? meta.totals.p95_ms ?? null,
     per_language: [...byLang.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([lang, agg]) => ({

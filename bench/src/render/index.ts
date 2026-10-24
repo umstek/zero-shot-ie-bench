@@ -5,8 +5,8 @@
 // against the v0-final README.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { renderTable } from "./markdown.ts";
 import type { RunAggregate } from "@zsib/lake";
+import { renderTable } from "./markdown.ts";
 
 const repoRoot = join(import.meta.dir, "..", "..", "..");
 
