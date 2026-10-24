@@ -204,7 +204,7 @@ async function runDeployment(
     console.log(`deferred run written (${written.metaPath})`);
     return;
   }
-  const served = info.models.find((m) => m.model_id === model.id);
+  const served = info.models.find((m: { model_id: string }) => m.model_id === model.id);
   const writer = new RunWriter(identity, {
     kind: "local",
     machine,
