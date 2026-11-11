@@ -191,6 +191,101 @@ export function languageHeatmapOption(
   };
 }
 
+/** Language-support heatmap: one row per deployment — its latest scored
+ *  multilingual-pool run — one column per language, rows sorted by mean
+ *  per-language accuracy. Blank cells were not measured in that run. */
+export function languageSupportOption(
+  latest: Map<string, RunWithTrack>,
+  deployments: Deployment[],
+): EChartsCoreOption {
+  const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
+  const rows = [...latest.values()]
+    .map((run) => {
+      const dep = byId.get(run.deployment);
+      const measured = (run.per_language ?? []).filter((p) => p.accuracy != null);
+      const mean =
+        measured.length === 0
+          ? null
+          : measured.reduce((sum, p) => sum + (p.accuracy ?? 0), 0) / measured.length;
+      return { run, display: dep?.display ?? run.deployment, mean };
+    })
+    .filter((r) => r.mean != null)
+    .sort((a, b) => (b.mean ?? 0) - (a.mean ?? 0) || a.display.localeCompare(b.display));
+
+  const present = new Set<string>();
+  for (const { run } of rows) {
+    for (const pl of run.per_language ?? []) {
+      if (pl.accuracy != null) present.add(pl.lang);
+    }
+  }
+  const langs = orderLangs(present);
+
+  const cells: [number, number, number][] = [];
+  for (let y = 0; y < rows.length; y++) {
+    const row = rows[y];
+    if (!row) continue;
+    for (let x = 0; x < langs.length; x++) {
+      const lang = langs[x];
+      const pl = (row.run.per_language ?? []).find((p) => p.lang === lang);
+      if (lang && pl?.accuracy != null) {
+        cells.push([x, y, Math.round(pl.accuracy * 1000) / 10]);
+      }
+    }
+  }
+
+  return {
+    tooltip: {
+      formatter: (params: unknown) => {
+        const p = params as { value?: [number, number, number] };
+        const v = p.value;
+        if (!v) return "";
+        const row = rows[v[1]];
+        const lang = langs[v[0]];
+        if (!row || !lang) return "";
+        const pl = (row.run.per_language ?? []).find((x) => x.lang === lang);
+        return [
+          row.display,
+          `${langLabel(lang)}: ${fmtPct(pl?.accuracy)} (${pl?.correct ?? "?"}/${pl?.items ?? "?"} items)`,
+          `${row.run.suite} · ${fmtDate(row.run.started_at)}`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 220, right: 110, top: 10, bottom: 24 },
+    xAxis: { type: "category", data: langs.map(langLabel), splitArea: { show: true } },
+    yAxis: {
+      type: "category",
+      data: rows.map((r) => r.display),
+      splitArea: { show: true },
+      inverse: true,
+      axisLabel: { fontSize: 11 },
+    },
+    visualMap: {
+      min: 0,
+      max: 100,
+      calculable: false,
+      orient: "vertical",
+      right: 8,
+      top: "center",
+      text: ["100%", "0%"],
+      inRange: { color: ["#f8fafc", "#bfdbfe", "#3b82f6", "#1d4ed8"] },
+    },
+    series: [
+      {
+        type: "heatmap" as const,
+        data: cells,
+        label: {
+          show: true,
+          fontSize: 10,
+          formatter: (p: unknown) => {
+            const q = p as { value?: [number, number, number] };
+            return q.value ? `${q.value[2]}%` : "";
+          },
+        },
+      },
+    ],
+  };
+}
+
 // Compare scatters: one point per deployment over its latest usable decision
 // run, hosted/local split for the speed chart, measured spend only for price.
 

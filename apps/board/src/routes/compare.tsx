@@ -1,14 +1,16 @@
 import { useMemo } from "react";
 import { EChart } from "../charts/echart";
 import {
+  languageSupportOption,
   pricePoints,
   priceScatterOption,
   speedPoints,
   speedScatterOption,
 } from "../charts/options";
+import { latestSuiteRun } from "../lib/latest";
 import { useBoardData } from "../queries/data";
 
-// /compare — cross-deployment scatters over the latest decision-track runs.
+// /compare — cross-deployment charts over each deployment's canonical runs.
 
 export function ComparePage() {
   const { deployments, runs } = useBoardData();
@@ -17,6 +19,9 @@ export function ComparePage() {
   const price = useMemo(() => pricePoints(runs, deployments), [runs, deployments]);
   const speedOption = useMemo(() => speedScatterOption(speed), [speed]);
   const priceOption = useMemo(() => priceScatterOption(price), [price]);
+
+  const langs = useMemo(() => latestSuiteRun(runs, "decision/multilingual-pool"), [runs]);
+  const langOption = useMemo(() => languageSupportOption(langs, deployments), [langs, deployments]);
 
   return (
     <section>
@@ -53,6 +58,20 @@ export function ComparePage() {
           <p className="muted">No data.</p>
         ) : (
           <EChart option={priceOption} height={360} />
+        )}
+      </div>
+
+      <div className="card">
+        <h2>Language support</h2>
+        <p className="muted">
+          Per-language accuracy, one row per deployment — its latest scored decision/
+          multilingual-pool run, rows sorted by mean accuracy. Blank cells were not measured; hover
+          a cell for its counts and run date.
+        </p>
+        {langs.size === 0 ? (
+          <p className="muted">No data.</p>
+        ) : (
+          <EChart option={langOption} height={Math.max(360, langs.size * 22 + 130)} />
         )}
       </div>
     </section>
