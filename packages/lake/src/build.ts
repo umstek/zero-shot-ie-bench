@@ -91,6 +91,14 @@ const deployments = catalog.models.flatMap((model) =>
       kind: deployment.kind,
       version: deployment.version,
       provider: deployment.kind === "hosted" ? deployment.provider : undefined,
+      // hosted BYOK tryer (apps/cloud) drives the adapter in the browser and
+      // needs the same fields the bench CLI resolves server-side
+      adapter: deployment.kind === "hosted" ? deployment.adapter : undefined,
+      endpoint: deployment.kind === "hosted" ? deployment.endpoint : undefined,
+      api_slug:
+        deployment.kind === "hosted"
+          ? (model.versions.find((v) => v.id === deployment.version)?.api_slug ?? undefined)
+          : undefined,
       runner: deployment.kind === "local" ? deployment.runner : undefined,
       requires: deployment.kind === "local" ? deployment.requires : undefined,
       feasible_on: machineFeasibility,
@@ -109,3 +117,16 @@ const deployments = catalog.models.flatMap((model) =>
 
 writeFileSync(join(buildDir, "deployments.json"), `${JSON.stringify(deployments, null, 2)}\n`);
 console.log(`lake: build/deployments.json (${deployments.length} deployments)`);
+
+// providers: what the hosted BYOK tryer (apps/cloud) needs to drive an
+// adapter from the browser — base_url plus the env var NAMES each adapter
+// reads. Names only, never values: the user's own keys are typed into the
+// browser and stay there.
+const providers = catalog.providers.map((provider) => ({
+  id: provider.id,
+  name: provider.name,
+  base_url: provider.base_url,
+  auth: provider.auth,
+}));
+writeFileSync(join(buildDir, "providers.json"), `${JSON.stringify(providers, null, 2)}\n`);
+console.log(`lake: build/providers.json (${providers.length} providers)`);

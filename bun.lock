@@ -28,6 +28,20 @@
         "vite": "^8.3.8",
       },
     },
+    "apps/cloud": {
+      "name": "@zsib/cloud",
+      "dependencies": {
+        "@zsib/schema": "workspace:*",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+      },
+      "devDependencies": {
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "@vitejs/plugin-react": "^6.3.0",
+        "vite": "^8.3.8",
+      },
+    },
     "apps/local": {
       "name": "@zsib/local",
       "version": "0.1.0",
@@ -229,6 +243,8 @@
     "@zsib/bench": ["@zsib/bench@workspace:bench"],
 
     "@zsib/board": ["@zsib/board@workspace:apps/board"],
+
+    "@zsib/cloud": ["@zsib/cloud@workspace:apps/cloud"],
 
     "@zsib/lake": ["@zsib/lake@workspace:packages/lake"],
 
