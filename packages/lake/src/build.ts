@@ -45,6 +45,64 @@ for (const [track, trackRuns] of byTrack) {
   console.log(`lake: build/${track}.runs.json (${aggregates.length} runs)`);
 }
 
+// difficulty spectrum: per-item correctness across the canonical
+// decision/mixed-pool runs — the same latest-scored-run-per-deployment
+// selection the board's selectors use — answering which questions are hard
+// for everyone. An item only counts a system that actually answered it:
+// adapter failures (401s, timeouts) say nothing about an item's difficulty.
+{
+  const canonical = new Map<
+    string,
+    { started_at: string; run_id: string; items: (typeof runs)[number]["items"] }
+  >();
+  for (const { meta, items } of runs) {
+    if (meta.suite !== "decision/mixed-pool") continue;
+    if (meta.status === "failed" || meta.status === "deferred") continue;
+    if (aggregateRun(meta, items).accuracy == null) continue;
+    const prev = canonical.get(meta.deployment);
+    const newer =
+      !prev ||
+      meta.started_at > prev.started_at ||
+      (meta.started_at === prev.started_at && meta.run_id > prev.run_id);
+    if (newer)
+      canonical.set(meta.deployment, { started_at: meta.started_at, run_id: meta.run_id, items });
+  }
+
+  const perItem = new Map<string, { lang: string; attempts: number; correct: number }>();
+  for (const { items } of canonical.values()) {
+    for (const item of items) {
+      if (typeof item.correct !== "boolean" || item.error != null) continue;
+      const agg = perItem.get(item.item_id) ?? {
+        lang: item.lang ?? "unknown",
+        attempts: 0,
+        correct: 0,
+      };
+      agg.attempts += 1;
+      if (item.correct) agg.correct += 1;
+      perItem.set(item.item_id, agg);
+    }
+  }
+
+  const spectrum = {
+    suite: "decision/mixed-pool",
+    systems: canonical.size,
+    items: [...perItem.entries()]
+      .map(([item_id, agg]) => ({
+        item_id,
+        lang: agg.lang,
+        attempts: agg.attempts,
+        correct: agg.correct,
+        accuracy: agg.attempts > 0 ? agg.correct / agg.attempts : null,
+      }))
+      // hardest first: low accuracy at the top of the board chart
+      .sort((a, b) => (a.accuracy ?? 1) - (b.accuracy ?? 1) || a.item_id.localeCompare(b.item_id)),
+  };
+  writeFileSync(join(buildDir, "spectrum.json"), `${JSON.stringify(spectrum, null, 2)}\n`);
+  console.log(
+    `lake: build/spectrum.json (${spectrum.items.length} items across ${spectrum.systems} runs)`,
+  );
+}
+
 // deployments: catalog flattened + latest run per deployment + machine feasibility
 const latestByDeployment = new Map<
   string,

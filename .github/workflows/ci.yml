@@ -25,6 +25,8 @@ jobs:
           bun run lake
           bun run --cwd bench render
           git diff --exit-code README.md
+      - name: board bundle builds and prerenders
+        run: bun run --cwd apps/board build
       - name: phase-1 counts
         run: bun run scripts/acceptance-phase1.ts
       - name: phase-2 tables

@@ -47,6 +47,21 @@ export interface RunWithTrack extends Run {
   track: Track;
 }
 
+export interface SpectrumItem {
+  item_id: string;
+  lang: string;
+  attempts: number;
+  correct: number;
+  accuracy: number | null;
+}
+
+/** build/spectrum.json — per-item difficulty over the canonical mixed-pool runs. */
+export interface Spectrum {
+  suite: string;
+  systems: number;
+  items: SpectrumItem[];
+}
+
 export interface DeploymentLatestRun {
   run_id: string;
   suite: string;

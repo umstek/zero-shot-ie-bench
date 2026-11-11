@@ -3,7 +3,7 @@ import { measuredPerItem } from "../lib/cost";
 import { fmtCostPer1k, fmtDate, fmtMs, fmtPct, platformOf } from "../lib/format";
 import { langLabel, orderLangs } from "../lib/languages";
 import { latestMixedPoolRun } from "../lib/latest";
-import type { Deployment, DeploymentKind, RunWithTrack } from "../types";
+import type { Deployment, DeploymentKind, RunWithTrack, SpectrumItem } from "../types";
 
 // Pure option builders — no echarts imports beyond types, so the chart modules
 // stay in echart.tsx and tree-shaking has a single registration point.
@@ -332,6 +332,172 @@ export function nerF1BarOption(entries: NerEntry[]): EChartsCoreOption {
   };
 }
 
+/** Generic ranked horizontal bar over compare points (accuracy, latency…).
+ *  Null values drop out; `top` caps the list, highest/lowest first. */
+export function rankedBarOption(
+  points: ComparePoint[],
+  opts: {
+    value: (p: ComparePoint) => number | null;
+    label: string;
+    higherFirst: boolean;
+    format: (v: number) => string;
+    top?: number;
+  },
+): EChartsCoreOption {
+  const rows = points
+    .map((p) => ({ p, v: opts.value(p) }))
+    .filter((r): r is { p: ComparePoint; v: number } => r.v != null)
+    .sort(
+      (a, b) =>
+        (opts.higherFirst ? b.v - a.v : a.v - b.v) || a.p.display.localeCompare(b.p.display),
+    )
+    .slice(0, opts.top ?? points.length);
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const q = params as { dataIndex?: number };
+        const r = q.dataIndex != null ? rows[q.dataIndex] : undefined;
+        if (!r) return "";
+        return [
+          `${r.p.display} · ${r.p.platform}`,
+          `${opts.label} ${opts.format(r.v)} · accuracy ${fmtPct(r.p.accuracy)}`,
+          `${r.p.suite} · ${fmtDate(r.p.startedAt)}`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 220, right: 64, top: 10, bottom: 28 },
+    xAxis: { type: "value", axisLabel: { formatter: (v: number) => opts.format(v) } },
+    yAxis: {
+      type: "category",
+      data: rows.map((r) => r.p.display),
+      inverse: true,
+      axisLabel: { fontSize: 10 },
+    },
+    series: [
+      {
+        type: "bar" as const,
+        data: rows.map((r) => r.v),
+        label: {
+          show: true,
+          position: "right" as const,
+          formatter: (p: unknown) => opts.format((p as { value: number }).value),
+        },
+        itemStyle: { color: "#3b82f6" },
+        barMaxWidth: 14,
+      },
+    ],
+  };
+}
+
+/** Per-item difficulty over the canonical mixed-pool runs, hardest first:
+ *  the share of answering systems each item stumped. Bars stay one color —
+ *  position is the signal, and the axis already encodes it. */
+export function spectrumBarOption(items: SpectrumItem[]): EChartsCoreOption {
+  const rows = items
+    .filter((i): i is SpectrumItem & { accuracy: number } => i.accuracy != null)
+    .sort((a, b) => a.accuracy - b.accuracy || a.item_id.localeCompare(b.item_id));
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const q = params as { dataIndex?: number };
+        const r = q.dataIndex != null ? rows[q.dataIndex] : undefined;
+        if (!r) return "";
+        return [
+          `${r.item_id} · ${r.lang}`,
+          `correct for ${fmtPct(r.accuracy)} of systems (${r.correct}/${r.attempts})`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 70, right: 56, top: 10, bottom: 28 },
+    xAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    yAxis: {
+      type: "category",
+      data: rows.map((r) => r.item_id),
+      inverse: true,
+      axisLabel: { fontSize: 10 },
+    },
+    series: [
+      {
+        type: "bar" as const,
+        data: rows.map((r) => Math.round(r.accuracy * 1000) / 10),
+        label: { show: true, position: "right" as const, formatter: "{c}%" },
+        itemStyle: { color: "#3b82f6" },
+        barMaxWidth: 14,
+      },
+    ],
+  };
+}
+
+/** $ per 1k (log) vs p50 (log) — hosted deployments with measured spend and a
+ *  measured p50. The frontier marks systems no other is both cheaper and
+ *  faster than. */
+export function costSpeedScatterOption(points: ComparePoint[]): EChartsCoreOption {
+  const usable = points.filter((p) => p.perItem != null && p.p50Ms != null);
+  const cost1k = (p: ComparePoint) => (p.perItem ?? 0) * 1000;
+  const data = scatterData(usable, cost1k).map((d, i) => ({
+    ...d,
+    value: [d.value[0], usable[i]?.p50Ms ?? 0] as [number, number],
+  }));
+  const sorted = [...usable].sort(
+    (a, b) => cost1k(a) - cost1k(b) || (a.p50Ms ?? 0) - (b.p50Ms ?? 0),
+  );
+  const frontier: ComparePoint[] = [];
+  let bestMs = Number.POSITIVE_INFINITY;
+  for (const p of sorted) {
+    if ((p.p50Ms ?? Number.POSITIVE_INFINITY) < bestMs) {
+      frontier.push(p);
+      bestMs = p.p50Ms ?? Number.POSITIVE_INFINITY;
+    }
+  }
+  const frontierData = scatterData(frontier, cost1k).map((d, i) => ({
+    ...d,
+    value: [d.value[0], frontier[i]?.p50Ms ?? 0] as [number, number],
+  }));
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as ScatterDatum;
+        if (!p.data) return "";
+        return [
+          `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
+          `${fmtCostPer1k(p.data.perItem ?? 0)} · p50 ${fmtMs(p.data.p50Ms)} · accuracy ${fmtPct(
+            p.data.accuracy,
+          )}`,
+          `${p.data.suite ?? ""} · ${fmtDate(p.data.startedAt ?? "")}`,
+        ].join("<br/>");
+      },
+    },
+    legend: { top: 0 },
+    grid: { left: 44, right: 24, top: 40, bottom: 62 },
+    xAxis: {
+      type: "log",
+      name: "$ per 1k items (log scale)",
+      nameLocation: "middle",
+      nameGap: 32,
+      axisLabel: { formatter: (v: number) => `$${v < 0.01 ? v.toFixed(4) : v.toFixed(2)}` },
+    },
+    yAxis: {
+      type: "log",
+      name: "p50 (log)",
+      axisLabel: { formatter: (v: number) => fmtMs(v) },
+    },
+    series: [
+      { name: "hosted", type: "scatter" as const, symbolSize: 10, data },
+      {
+        name: "Pareto frontier",
+        type: "line" as const,
+        symbolSize: 6,
+        lineStyle: { type: "dashed" as const, width: 1.5, color: "#64748b" },
+        itemStyle: { color: "#64748b" },
+        data: frontierData,
+      },
+    ],
+  };
+}
+
 // Compare scatters: one point per deployment over its latest usable decision
 // run, hosted/local split for the speed chart, measured spend only for price.
 
@@ -356,6 +522,7 @@ interface ScatterPoint {
   value: [number, number];
   display: string;
   platform: string;
+  accuracy: number;
   perItem: number | null;
   p50Ms: number | null;
   suite: string;
@@ -416,6 +583,7 @@ function scatterData(points: ComparePoint[], x: (p: ComparePoint) => number): Sc
       value: [x(p), Math.round(p.accuracy * 1000) / 10],
       display: p.display,
       platform: p.platform,
+      accuracy: p.accuracy,
       perItem: p.perItem,
       p50Ms: p.p50Ms,
       suite: p.suite,
