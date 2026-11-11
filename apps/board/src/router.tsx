@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { ComparePage } from "./routes/compare";
 import { ExplorerPage } from "./routes/explore";
 import { ModelPage } from "./routes/model.$id";
+import { NerPage } from "./routes/ner";
 import { PicksPage } from "./routes/picks";
 
 // Code-based route tree (no codegen step): the component files live in
@@ -13,6 +14,7 @@ const NAV = [
   { to: "/", label: "Picks", exact: true },
   { to: "/explore", label: "Explorer", exact: false },
   { to: "/compare", label: "Charts", exact: false },
+  { to: "/ner", label: "NER", exact: false },
 ] as const;
 
 function Nav() {
@@ -93,7 +95,19 @@ const modelRoute = createRoute({
   component: ModelPage,
 });
 
-const routeTree = rootRoute.addChildren([picksRoute, exploreRoute, compareRoute, modelRoute]);
+const nerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ner",
+  component: NerPage,
+});
+
+const routeTree = rootRoute.addChildren([
+  picksRoute,
+  exploreRoute,
+  compareRoute,
+  nerRoute,
+  modelRoute,
+]);
 
 export const router = createRouter({ routeTree });
 

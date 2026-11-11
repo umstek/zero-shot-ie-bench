@@ -1,4 +1,4 @@
-import { HeatmapChart, LineChart, ScatterChart } from "echarts/charts";
+import { BarChart, HeatmapChart, LineChart, ScatterChart } from "echarts/charts";
 import {
   GridComponent,
   LegendComponent,
@@ -15,6 +15,7 @@ import { useEffect, useRef } from "react";
 // registered here, and every chart on the site renders through this wrapper.
 
 echarts.use([
+  BarChart,
   LineChart,
   HeatmapChart,
   ScatterChart,

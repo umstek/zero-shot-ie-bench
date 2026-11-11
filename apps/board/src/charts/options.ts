@@ -281,6 +281,57 @@ export function languageSupportOption(
   };
 }
 
+// NER: strict micro-F1 ranked bar over the canonical ner/graded-pool run.
+
+/** One plotted deployment on the NER view. */
+export interface NerEntry {
+  display: string;
+  platform: string;
+  kind: DeploymentKind;
+  /** strict micro-F1, 0–1 */
+  f1: number;
+  p50Ms: number | null;
+  suite: string;
+  startedAt: string;
+}
+
+/** Strict micro-F1 horizontal bar, highest first, with tooltip provenance. */
+export function nerF1BarOption(entries: NerEntry[]): EChartsCoreOption {
+  const sorted = [...entries].sort((a, b) => b.f1 - a.f1 || a.display.localeCompare(b.display));
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as { dataIndex?: number };
+        const e = p.dataIndex != null ? sorted[p.dataIndex] : undefined;
+        if (!e) return "";
+        return [
+          `${e.display} · ${e.platform}`,
+          `micro-F1 ${fmtPct(e.f1)} · p50 ${fmtMs(e.p50Ms)}`,
+          `${e.suite} · ${fmtDate(e.startedAt)}`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 220, right: 56, top: 10, bottom: 28 },
+    xAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    yAxis: {
+      type: "category",
+      data: sorted.map((e) => e.display),
+      inverse: true,
+      axisLabel: { fontSize: 11 },
+    },
+    series: [
+      {
+        type: "bar" as const,
+        data: sorted.map((e) => Math.round(e.f1 * 1000) / 10),
+        label: { show: true, position: "right" as const, formatter: "{c}%" },
+        itemStyle: { color: "#3b82f6" },
+        barMaxWidth: 22,
+      },
+    ],
+  };
+}
+
 // Compare scatters: one point per deployment over its latest usable decision
 // run, hosted/local split for the speed chart, measured spend only for price.
 
