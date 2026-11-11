@@ -1,7 +1,8 @@
 import type { EChartsCoreOption } from "echarts/core";
-import { fmtDate, fmtPct } from "../lib/format";
+import { measuredPerItem } from "../lib/cost";
+import { fmtCostPer1k, fmtDate, fmtMs, fmtPct, platformOf } from "../lib/format";
 import { langLabel, orderLangs } from "../lib/languages";
-import type { Deployment, RunWithTrack } from "../types";
+import type { Deployment, DeploymentKind, RunWithTrack } from "../types";
 
 // Pure option builders — no echarts imports beyond types, so the chart modules
 // stay in echart.tsx and tree-shaking has a single registration point.
@@ -186,5 +187,197 @@ export function languageHeatmapOption(
         },
       },
     ],
+  };
+}
+
+// Compare scatters: one point per deployment over its latest usable decision
+// run, hosted/local split for the speed chart, measured spend only for price.
+
+/** One plotted deployment — shared by both compare charts. */
+export interface ComparePoint {
+  deployment: string;
+  display: string;
+  /** provider (hosted) or runner (local) */
+  platform: string;
+  kind: DeploymentKind;
+  /** 0–1 */
+  accuracy: number;
+  /** run cost ÷ items (v0 bookkeeping figure when present) */
+  perItem: number | null;
+  p50Ms: number | null;
+}
+
+interface ScatterPoint {
+  value: [number, number];
+  display: string;
+  platform: string;
+  perItem: number | null;
+  p50Ms: number | null;
+}
+
+interface ScatterDatum {
+  seriesName?: string;
+  value?: [number, number];
+  data?: Partial<ScatterPoint>;
+}
+
+/** Latest scored, non-failed mixed-pool run per deployment. */
+function latestMixedPoolRun(runs: RunWithTrack[]): Map<string, RunWithTrack> {
+  const latest = new Map<string, RunWithTrack>();
+  for (const run of runs) {
+    if (run.track !== "decision" || run.suite !== "decision/mixed-pool") continue;
+    if (run.status === "failed" || run.status === "deferred") continue;
+    if (run.accuracy == null) continue;
+    const prev = latest.get(run.deployment);
+    if (!prev || Date.parse(run.started_at) > Date.parse(prev.started_at)) {
+      latest.set(run.deployment, run);
+    }
+  }
+  return latest;
+}
+
+/** Latest scored, non-failed decision run per deployment, any suite. */
+function latestScoredDecisionRun(runs: RunWithTrack[]): Map<string, RunWithTrack> {
+  const latest = new Map<string, RunWithTrack>();
+  for (const run of runs) {
+    if (run.track !== "decision" || run.status === "failed" || run.status === "deferred") continue;
+    if (run.accuracy == null) continue;
+    const prev = latest.get(run.deployment);
+    if (!prev || Date.parse(run.started_at) > Date.parse(prev.started_at)) {
+      latest.set(run.deployment, run);
+    }
+  }
+  return latest;
+}
+
+/** Latest mixed-pool run per deployment, falling back to the latest scored
+ *  decision run of another suite for deployments the mixed pool never covered. */
+function latestComparableRun(runs: RunWithTrack[]): Map<string, RunWithTrack> {
+  const latest = latestMixedPoolRun(runs);
+  for (const [depId, run] of latestScoredDecisionRun(runs)) {
+    if (!latest.has(depId)) latest.set(depId, run);
+  }
+  return latest;
+}
+
+function toPoint(dep: Deployment, run: RunWithTrack): ComparePoint {
+  return {
+    deployment: dep.deployment_id,
+    display: dep.display,
+    platform: platformOf(dep),
+    kind: dep.kind,
+    accuracy: run.accuracy ?? 0,
+    perItem: measuredPerItem(run),
+    p50Ms: run.p50_ms,
+  };
+}
+
+/** Speed vs accuracy points: every deployment with a scored decision run that
+ *  also has a measured p50 (a log x-axis cannot place the rest). */
+export function speedPoints(runs: RunWithTrack[], deployments: Deployment[]): ComparePoint[] {
+  const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
+  const points: ComparePoint[] = [];
+  for (const [depId, run] of latestComparableRun(runs)) {
+    const dep = byId.get(depId);
+    if (!dep || run.p50_ms == null) continue;
+    points.push(toPoint(dep, run));
+  }
+  return points.sort((a, b) => a.display.localeCompare(b.display));
+}
+
+/** Price vs accuracy points: hosted deployments whose latest mixed-pool run
+ *  carries measured positive spend only (free-tier/unpriced never rank on
+ *  price — same rule as the cheapest ≥90% pick). */
+export function pricePoints(runs: RunWithTrack[], deployments: Deployment[]): ComparePoint[] {
+  const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
+  const points: ComparePoint[] = [];
+  for (const [depId, run] of latestMixedPoolRun(runs)) {
+    const dep = byId.get(depId);
+    if (dep?.kind !== "hosted" || measuredPerItem(run) == null) continue;
+    points.push(toPoint(dep, run));
+  }
+  return points.sort((a, b) => a.display.localeCompare(b.display));
+}
+
+function scatterData(points: ComparePoint[], x: (p: ComparePoint) => number): ScatterPoint[] {
+  const data: ScatterPoint[] = [];
+  for (const p of points) {
+    data.push({
+      value: [x(p), Math.round(p.accuracy * 1000) / 10],
+      display: p.display,
+      platform: p.platform,
+      perItem: p.perItem,
+      p50Ms: p.p50Ms,
+    });
+  }
+  return data;
+}
+
+/** p50 latency (log ms) vs accuracy, one series per deployment kind. */
+export function speedScatterOption(points: ComparePoint[]): EChartsCoreOption {
+  const data = (kind: DeploymentKind) =>
+    scatterData(
+      points.filter((p) => p.kind === kind && p.p50Ms != null),
+      (p) => p.p50Ms ?? 0,
+    );
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as ScatterDatum;
+        if (!p.data) return "";
+        return [
+          `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
+          `accuracy ${fmtPct((p.value?.[1] ?? 0) / 100)} · p50 ${fmtMs(p.data.p50Ms)}`,
+        ].join("<br/>");
+      },
+    },
+    legend: { top: 0 },
+    grid: { left: 44, right: 24, top: 40, bottom: 62 },
+    xAxis: {
+      type: "log",
+      name: "p50 latency (log scale)",
+      nameLocation: "middle",
+      nameGap: 32,
+      axisLabel: { formatter: (v: number) => fmtMs(v) },
+    },
+    yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    series: [
+      { name: "hosted", type: "scatter" as const, symbolSize: 10, data: data("hosted") },
+      { name: "local", type: "scatter" as const, symbolSize: 10, data: data("local") },
+    ],
+  };
+}
+
+/** $ per 1k items (log) vs accuracy, measured spend only — a single hosted
+ *  series (local runs carry no metered cost). */
+export function priceScatterOption(points: ComparePoint[]): EChartsCoreOption {
+  const usable = points.filter((p) => p.perItem != null);
+  const data = scatterData(usable, (p) => (p.perItem ?? 0) * 1000);
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as ScatterDatum;
+        if (!p.data) return "";
+        return [
+          `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
+          `${fmtCostPer1k(p.data.perItem ?? 0)} · accuracy ${fmtPct((p.value?.[1] ?? 0) / 100)}`,
+        ].join("<br/>");
+      },
+    },
+    legend: { top: 0 },
+    grid: { left: 44, right: 24, top: 40, bottom: 62 },
+    xAxis: {
+      type: "log",
+      name: "$ per 1k items (log scale)",
+      nameLocation: "middle",
+      nameGap: 32,
+      axisLabel: {
+        formatter: (v: number) => `$${v < 0.01 ? v.toFixed(4) : v.toFixed(2)}`,
+      },
+    },
+    yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    series: [{ name: "hosted", type: "scatter" as const, symbolSize: 10, data }],
   };
 }

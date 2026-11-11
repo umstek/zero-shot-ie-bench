@@ -1,4 +1,4 @@
-import { HeatmapChart, LineChart } from "echarts/charts";
+import { HeatmapChart, LineChart, ScatterChart } from "echarts/charts";
 import {
   GridComponent,
   LegendComponent,
@@ -17,6 +17,7 @@ import { useEffect, useRef } from "react";
 echarts.use([
   LineChart,
   HeatmapChart,
+  ScatterChart,
   GridComponent,
   LegendComponent,
   MarkPointComponent,

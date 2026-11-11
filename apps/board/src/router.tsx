@@ -1,5 +1,6 @@
 import { createRootRoute, createRoute, createRouter, Link, Outlet } from "@tanstack/react-router";
 import { Suspense } from "react";
+import { ComparePage } from "./routes/compare";
 import { CrossoverPage } from "./routes/crossover";
 import { ExplorerPage } from "./routes/explore";
 import { ModelPage } from "./routes/model.$id";
@@ -13,6 +14,7 @@ import { ProvidersPage } from "./routes/providers";
 const NAV = [
   { to: "/", label: "Picks", exact: true },
   { to: "/explore", label: "Explorer", exact: false },
+  { to: "/compare", label: "Charts", exact: false },
   { to: "/crossover", label: "Self-host vs API", exact: false },
   { to: "/providers", label: "Providers", exact: false },
   { to: "/planner", label: "GPU planner", exact: false },
@@ -83,6 +85,11 @@ const exploreRoute = createRoute({
   path: "/explore",
   component: ExplorerPage,
 });
+const compareRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/compare",
+  component: ComparePage,
+});
 // Splat: model ids contain "/" (fastino/gliner2.5-base), so /model/$ captures
 // the whole tail and params._splat is the model_id.
 const modelRoute = createRoute({
@@ -109,6 +116,7 @@ const plannerRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   picksRoute,
   exploreRoute,
+  compareRoute,
   modelRoute,
   crossoverRoute,
   providersRoute,
