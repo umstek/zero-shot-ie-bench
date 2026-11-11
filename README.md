@@ -202,8 +202,8 @@ The same 54 parallel texts per system; tiers are the language grouping
 | Elephant-1 9B (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | GPT-6 Luna Decisions (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | D1.1 (OpenRouter) † | 100% | 100% | 100% | **100%** |
-| Reflex (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | Drex Max Finance (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| Reflex (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
