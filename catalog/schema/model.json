@@ -70,6 +70,45 @@
               "type": "null"
             }
           ]
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "ner_spans": {
+              "type": "boolean"
+            },
+            "text_classification": {
+              "type": "boolean"
+            },
+            "one_pass": {
+              "type": "boolean"
+            },
+            "relations": {
+              "type": "boolean"
+            },
+            "span_attributes": {
+              "type": "boolean"
+            },
+            "structured_records": {
+              "type": "boolean"
+            },
+            "ordinal_rubrics": {
+              "type": "boolean"
+            },
+            "yes_no": {
+              "type": "boolean"
+            },
+            "text_embeddings": {
+              "type": "boolean"
+            },
+            "runs_offline": {
+              "type": "boolean"
+            },
+            "image_input": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": {}
         }
       },
       "required": [
