@@ -2,6 +2,7 @@ import type { EChartsCoreOption } from "echarts/core";
 import { measuredPerItem } from "../lib/cost";
 import { fmtCostPer1k, fmtDate, fmtMs, fmtPct, platformOf } from "../lib/format";
 import { langLabel, orderLangs } from "../lib/languages";
+import { latestMixedPoolRun } from "../lib/latest";
 import type { Deployment, DeploymentKind, RunWithTrack } from "../types";
 
 // Pure option builders — no echarts imports beyond types, so the chart modules
@@ -205,6 +206,9 @@ export interface ComparePoint {
   /** run cost ÷ items (v0 bookkeeping figure when present) */
   perItem: number | null;
   p50Ms: number | null;
+  /** provenance, shown in tooltips so every number is self-describing */
+  suite: string;
+  startedAt: string;
 }
 
 interface ScatterPoint {
@@ -213,51 +217,14 @@ interface ScatterPoint {
   platform: string;
   perItem: number | null;
   p50Ms: number | null;
+  suite: string;
+  startedAt: string;
 }
 
 interface ScatterDatum {
   seriesName?: string;
   value?: [number, number];
   data?: Partial<ScatterPoint>;
-}
-
-/** Latest scored, non-failed mixed-pool run per deployment. */
-function latestMixedPoolRun(runs: RunWithTrack[]): Map<string, RunWithTrack> {
-  const latest = new Map<string, RunWithTrack>();
-  for (const run of runs) {
-    if (run.track !== "decision" || run.suite !== "decision/mixed-pool") continue;
-    if (run.status === "failed" || run.status === "deferred") continue;
-    if (run.accuracy == null) continue;
-    const prev = latest.get(run.deployment);
-    if (!prev || Date.parse(run.started_at) > Date.parse(prev.started_at)) {
-      latest.set(run.deployment, run);
-    }
-  }
-  return latest;
-}
-
-/** Latest scored, non-failed decision run per deployment, any suite. */
-function latestScoredDecisionRun(runs: RunWithTrack[]): Map<string, RunWithTrack> {
-  const latest = new Map<string, RunWithTrack>();
-  for (const run of runs) {
-    if (run.track !== "decision" || run.status === "failed" || run.status === "deferred") continue;
-    if (run.accuracy == null) continue;
-    const prev = latest.get(run.deployment);
-    if (!prev || Date.parse(run.started_at) > Date.parse(prev.started_at)) {
-      latest.set(run.deployment, run);
-    }
-  }
-  return latest;
-}
-
-/** Latest mixed-pool run per deployment, falling back to the latest scored
- *  decision run of another suite for deployments the mixed pool never covered. */
-function latestComparableRun(runs: RunWithTrack[]): Map<string, RunWithTrack> {
-  const latest = latestMixedPoolRun(runs);
-  for (const [depId, run] of latestScoredDecisionRun(runs)) {
-    if (!latest.has(depId)) latest.set(depId, run);
-  }
-  return latest;
 }
 
 function toPoint(dep: Deployment, run: RunWithTrack): ComparePoint {
@@ -269,15 +236,17 @@ function toPoint(dep: Deployment, run: RunWithTrack): ComparePoint {
     accuracy: run.accuracy ?? 0,
     perItem: measuredPerItem(run),
     p50Ms: run.p50_ms,
+    suite: run.suite,
+    startedAt: run.started_at,
   };
 }
 
-/** Speed vs accuracy points: every deployment with a scored decision run that
+/** Speed vs accuracy points: every deployment whose canonical mixed-pool run
  *  also has a measured p50 (a log x-axis cannot place the rest). */
 export function speedPoints(runs: RunWithTrack[], deployments: Deployment[]): ComparePoint[] {
   const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
   const points: ComparePoint[] = [];
-  for (const [depId, run] of latestComparableRun(runs)) {
+  for (const [depId, run] of latestMixedPoolRun(runs)) {
     const dep = byId.get(depId);
     if (!dep || run.p50_ms == null) continue;
     points.push(toPoint(dep, run));
@@ -285,7 +254,7 @@ export function speedPoints(runs: RunWithTrack[], deployments: Deployment[]): Co
   return points.sort((a, b) => a.display.localeCompare(b.display));
 }
 
-/** Price vs accuracy points: hosted deployments whose latest mixed-pool run
+/** Price vs accuracy points: hosted deployments whose canonical mixed-pool run
  *  carries measured positive spend only (free-tier/unpriced never rank on
  *  price — same rule as the cheapest ≥90% pick). */
 export function pricePoints(runs: RunWithTrack[], deployments: Deployment[]): ComparePoint[] {
@@ -308,6 +277,8 @@ function scatterData(points: ComparePoint[], x: (p: ComparePoint) => number): Sc
       platform: p.platform,
       perItem: p.perItem,
       p50Ms: p.p50Ms,
+      suite: p.suite,
+      startedAt: p.startedAt,
     });
   }
   return data;
@@ -360,6 +331,7 @@ export function speedScatterOption(points: ComparePoint[]): EChartsCoreOption {
         return [
           `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
           `accuracy ${fmtPct((p.value?.[1] ?? 0) / 100)} · p50 ${fmtMs(p.data.p50Ms)}`,
+          `${p.data.suite ?? ""} · ${fmtDate(p.data.startedAt ?? "")}`,
         ].join("<br/>");
       },
     },
@@ -395,6 +367,7 @@ export function priceScatterOption(points: ComparePoint[]): EChartsCoreOption {
         return [
           `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
           `${fmtCostPer1k(p.data.perItem ?? 0)} · accuracy ${fmtPct((p.value?.[1] ?? 0) / 100)}`,
+          `${p.data.suite ?? ""} · ${fmtDate(p.data.startedAt ?? "")}`,
         ].join("<br/>");
       },
     },

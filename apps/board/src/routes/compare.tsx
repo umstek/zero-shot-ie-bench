@@ -23,8 +23,8 @@ export function ComparePage() {
       <header className="page-head">
         <h1>Charts</h1>
         <p>
-          Cross-deployment comparisons over the latest decision-track run per deployment. Hover a
-          point for its run.
+          Cross-deployment comparisons over each deployment's latest scored decision/mixed-pool run
+          — the same selection the explorer and picks use. Hover a point for its run.
         </p>
       </header>
 

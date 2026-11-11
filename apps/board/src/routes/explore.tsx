@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import { measuredPerItem } from "../lib/cost";
 import { fmtDate, fmtMs, fmtPct, fmtUsdCompact, platformOf, zdrLabel } from "../lib/format";
+import { latestMixedPoolRun } from "../lib/latest";
 import { useBoardData } from "../queries/data";
 import type { Deployment, Run } from "../types";
 
@@ -26,25 +27,13 @@ import type { Deployment, Run } from "../types";
 // TanStack Table v9: features are registered explicitly (filtering, faceting,
 // sorting) with their row-model factories; everything else stays core.
 
-/** Deployment row plus the latest mixed-pool run's measured speed and price. */
+/** Deployment row plus its canonical mixed-pool run — the single source for
+ *  accuracy, p50, price and date so one row can never fuse two runs. */
 type ExplorerRow = Deployment & {
+  mixed: Run | null;
   p50_ms: number | null;
   perItem: number | null;
 };
-
-/** Latest scored decision/mixed-pool run per deployment — the same run the
- *  picks page and the charts read, so the three views never disagree. */
-function latestMixedPool(runs: Run[]): Map<string, Run> {
-  const latest = new Map<string, Run>();
-  for (const run of runs) {
-    if (run.suite !== "decision/mixed-pool" || run.accuracy == null) continue;
-    const prev = latest.get(run.deployment);
-    if (!prev || Date.parse(run.started_at) > Date.parse(prev.started_at)) {
-      latest.set(run.deployment, run);
-    }
-  }
-  return latest;
-}
 
 const features = tableFeatures({
   columnFilteringFeature,
@@ -100,12 +89,12 @@ const columns = helper.columns([
     header: "VRAM GB",
     cell: (info) => (info.row.original.requires ? info.getValue() : "—"),
   }),
-  helper.accessor((d) => d.latest_run?.accuracy ?? -1, {
-    id: "latest_accuracy",
-    header: "Latest acc",
-    cell: (info) => fmtPct(info.row.original.latest_run?.accuracy),
+  helper.accessor((d) => d.mixed?.accuracy ?? -1, {
+    id: "mixed_accuracy",
+    header: "Mixed acc",
+    cell: (info) => fmtPct(info.row.original.mixed?.accuracy),
   }),
-  // measured figures from the latest mixed-pool run; Infinity keeps unpriced /
+  // measured figures from the same mixed-pool run; Infinity keeps unpriced /
   // untimed rows at the bottom of an ascending sort instead of faking zero
   helper.accessor((d) => d.p50_ms ?? Number.POSITIVE_INFINITY, {
     id: "p50",
@@ -118,11 +107,11 @@ const columns = helper.columns([
     cell: (info) =>
       info.row.original.perItem == null ? "—" : fmtUsdCompact(info.row.original.perItem),
   }),
-  helper.accessor((d) => d.latest_run?.started_at ?? "", {
+  helper.accessor((d) => d.mixed?.started_at ?? "", {
     id: "last_run",
-    header: "Last run",
+    header: "Mixed run",
     cell: (info) => {
-      const at = info.row.original.latest_run?.started_at;
+      const at = info.row.original.mixed?.started_at;
       return at ? fmtDate(at) : "—";
     },
   }),
@@ -182,14 +171,15 @@ function Facet({
 
 export function ExplorerPage() {
   const { deployments, runs } = useBoardData();
-  const [sorting, setSorting] = useState<SortingState>([{ id: "latest_accuracy", desc: true }]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "mixed_accuracy", desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  const latest = latestMixedPool(runs);
+  const latest = latestMixedPoolRun(runs);
   const data: ExplorerRow[] = deployments.map((d) => {
-    const run = latest.get(d.deployment_id);
+    const run = latest.get(d.deployment_id) ?? null;
     return {
       ...d,
+      mixed: run,
       p50_ms: run?.p50_ms ?? null,
       perItem: run ? measuredPerItem(run) : null,
     };
@@ -211,9 +201,11 @@ export function ExplorerPage() {
       <header className="page-head">
         <h1>Explorer</h1>
         <p>
-          All {deployments.length} catalog deployments, filtered in memory. p50 and $/1k come from
-          each system's latest mixed-pool run (measured spend only — free tiers show —). Facets
-          count only the rows that survive the other active filters.
+          All {deployments.length} catalog deployments, filtered in memory. Accuracy, p50, $/1k and
+          the run date all come from one run per system — its latest scored decision/mixed-pool run
+          (measured spend only — free tiers show —) — the same selection the picks and charts pages
+          use. Multilingual-pool results live on each model's page. Facets count only the rows that
+          survive the other active filters.
         </p>
       </header>
 
