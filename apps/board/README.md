@@ -40,13 +40,15 @@ error (root `errorComponent`) when a file is missing.
 
 ## Views
 
-| Route                                                                                                                                          | Status                              |
-| ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `/` Picks — cheapest ≥90%, fastest local on CPU, best rare-language (mean over si/is/cy from `per_language`), best open-weights, ZDR-safe only | real                                |
-| `/explore` — TanStack Table with faceted filters (kind, family, provider/runner, status, ZDR) + sortable columns                               | real                                |
-| `/model/$` — every deployment of one model, accuracy-over-time line (version markers), per-language heatmap, run history table                 | real                                |
-| `/compare` Charts — speed vs accuracy (p50 log scale, hosted/local) and price vs accuracy ($ per 1k items, measured spend only) scatters       | real                                |
-| `/crossover`, `/providers`, `/planner`                                                                                                         | routed stubs (phase 5 continuation) |
+| Route                                                                                                                                          | Status |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `/` Picks — cheapest ≥90%, fastest local on CPU, best rare-language (mean over si/is/cy from `per_language`), best open-weights, ZDR-safe only | real   |
+| `/explore` — TanStack Table with faceted filters (kind, family, provider/runner, status, ZDR) + sortable columns                               | real   |
+| `/model/$` — every deployment of one model, accuracy-over-time line (version markers), per-language heatmap, run history table                 | real   |
+| `/compare` Charts — speed vs accuracy (p50 log scale, hosted/local) and price vs accuracy ($ per 1k items, measured spend only) scatters       | real   |
+
+Planned but not built: self-host vs API, provider picker, GPU planner — intent
+tracked in `docs/board-roadmap.md`; add the route when implemented.
 
 Model ids contain a slash (`fastino/gliner2.5-base`), so the model page is a splat route
 (`/model/$`) and `params._splat` is the model id.

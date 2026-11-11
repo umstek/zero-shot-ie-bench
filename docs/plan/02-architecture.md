@@ -144,6 +144,8 @@ Views, in priority order:
    stability)
 6. **GPU planner**: which deferred runs a candidate machine would unlock
 
+   Views 4–6 are not built yet; intent tracked in [board-roadmap.md](../board-roadmap.md).
+
 ## Stack decisions
 
 | Concern | Pick | Why / rejected |

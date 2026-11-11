@@ -1,23 +1,18 @@
 import { createRootRoute, createRoute, createRouter, Link, Outlet } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ComparePage } from "./routes/compare";
-import { CrossoverPage } from "./routes/crossover";
 import { ExplorerPage } from "./routes/explore";
 import { ModelPage } from "./routes/model.$id";
 import { PicksPage } from "./routes/picks";
-import { PlannerPage } from "./routes/planner";
-import { ProvidersPage } from "./routes/providers";
 
 // Code-based route tree (no codegen step): the component files live in
-// src/routes/ with the planned names, registered here.
+// src/routes/ with the planned names, registered here. Planned-but-unbuilt
+// views live in docs/board-roadmap.md — no stub pages on the site.
 
 const NAV = [
   { to: "/", label: "Picks", exact: true },
   { to: "/explore", label: "Explorer", exact: false },
   { to: "/compare", label: "Charts", exact: false },
-  { to: "/crossover", label: "Self-host vs API", exact: false },
-  { to: "/providers", label: "Providers", exact: false },
-  { to: "/planner", label: "GPU planner", exact: false },
 ] as const;
 
 function Nav() {
@@ -97,31 +92,8 @@ const modelRoute = createRoute({
   path: "/model/$",
   component: ModelPage,
 });
-const crossoverRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/crossover",
-  component: CrossoverPage,
-});
-const providersRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/providers",
-  component: ProvidersPage,
-});
-const plannerRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/planner",
-  component: PlannerPage,
-});
 
-const routeTree = rootRoute.addChildren([
-  picksRoute,
-  exploreRoute,
-  compareRoute,
-  modelRoute,
-  crossoverRoute,
-  providersRoute,
-  plannerRoute,
-]);
+const routeTree = rootRoute.addChildren([picksRoute, exploreRoute, compareRoute, modelRoute]);
 
 export const router = createRouter({ routeTree });
 
