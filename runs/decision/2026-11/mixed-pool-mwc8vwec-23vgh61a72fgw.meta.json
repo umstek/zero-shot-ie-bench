@@ -1,0 +1,32 @@
+{
+ "run_id": "mixed-pool-mwc8vwec-23vgh61a72fgw",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "reflex.openrouter",
+ "model_version": "reflex@2026-11",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "02dc32892c6988b0871cc3f87d46d7ae876101f7"
+ },
+ "started_at": "2026-11-11T14:59:54.818Z",
+ "finished_at": "2026-11-11T14:59:54.818Z",
+ "totals": {
+  "items": 48,
+  "correct": 45,
+  "cost_usd": 0.000208362,
+  "p50_ms": 604,
+  "p95_ms": 724,
+  "errors": 0
+ },
+ "source": "bench"
+}

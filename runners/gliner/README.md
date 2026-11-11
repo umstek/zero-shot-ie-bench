@@ -20,6 +20,7 @@ protocol from `runners/_protocol`.
 | `laya.local` | convaiinnovations/laya (421M) | laya | decision | ~3 GB |
 | `laya.router` | convaiinnovations/laya (+ typed-decisions, via `laya.Router`) | laya | decision | ~3 GB resident |
 | `laya-typed-decisions.local` | convaiinnovations/laya-typed-decisions | laya | decision | ~3 GB |
+| `laya-multilingual.local` | convaiinnovations/laya-multilingual (322M) | laya | decision | ~2 GB |
 
 `model_id`s are the catalog deployment ids (`runner: gliner` in
 `catalog/models/{knowledgator,jackboyla,convaiinnovations}/*.yaml`); `version`s

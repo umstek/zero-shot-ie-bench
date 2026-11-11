@@ -1,0 +1,36 @@
+id: nace-ai/drex-v2.0
+family: drex
+org: Nace AI
+license: proprietary
+open_weights: false
+params_b: 35
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: null
+status: active
+links:
+  card: https://openrouter.ai/nace-ai/drex-v2.0
+  paper: null
+versions:
+- id: drex-v2.0@2026-10
+  hf_revision: null
+  api_slug: nace-ai/drex-v2.0
+  released: '2026-10-12'
+deployments:
+- id: drex-v2.0.openrouter
+  kind: hosted
+  version: drex-v2.0@2026-10
+  provider: openrouter
+  endpoint: nace-ai/drex-v2.0
+  adapter: openrouter.systemone
+  notes: 'Second-generation Drex, a 35B MoE decision model - successor to the benched drex-v1.5 (35B
+    dense). Same System One contract on OpenRouter. Benched 2026-11-11 straight to the pools (gate
+    skipped, user override): 43/48 mixed, 53/54 multilingual, p50 ~0.86s, ~$2e-6/q. Open weights also
+    ship on HF (nace-ai/drex-v2.0, ungated, safetensors confirm 35.1B).'
+  display: Drex v2.0 (OpenRouter)
+  zdr_safe: false
+notes: params_b is the MoE total. The v1.5 row stays benched history; v2.0 now benched alongside it.

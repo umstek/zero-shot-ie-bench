@@ -27,7 +27,7 @@ class TestServer:
         assert body["runner"] == RUNNER == "gliner"
         assert body["protocol"] == "v1"
         assert body["models"] == SERVED_MODELS
-        assert len(body["models"]) == 10
+        assert len(body["models"]) == 11
         # the host fingerprint the bench matches against catalog/machines/
         assert set(body["host"]) == {"hostname", "cpu", "ram_gb", "gpus", "os"}
 

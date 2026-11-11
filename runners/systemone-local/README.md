@@ -9,10 +9,11 @@ in-process and lazily — the first predict pays the load.
 |---|---|---|---|---|
 | `kev-0.8b` | `kev-0.8b@2026-09` | Qwen3.5-0.8B + LoRA + pointer head (System One contract) | HF `jaredpalmer/kev-0.8b` (run: head.pt + adapter) | the jaredpalmer/kev clone — not on PyPI |
 | `decider-0.8b` | `decider-0.8b@unversioned` | Qwen3.5-0.8B fine-tune, 752M (System One contract) | HF `Mapika/decider-0.8b` | PyPI `decider-ai` |
+| `decider-2b` | `decider-2b@unversioned` | Qwen3.5-2B fine-tune, ~1.9B (System One contract) | HF `Mapika/decider-2b` | PyPI `decider-ai` (same engine as decider-0.8b) |
 | `openthai-systemone` | `openthai-systemone@unversioned` | Qwen3.5 Gated DeltaNet hybrid + 256-way slot head, Thai/English | HF `iapp/OpenThai-SystemOne` (gated) | PyPI `openthai-systemone` |
 | `agentjev-v1` | `agentjev-v1@unversioned` | candidate head over Qwen3-0.6B — **own `/api/evaluate` contract, not System One** | `agentjev_v1.pt` + a Qwen3-0.6B snapshot | the malevrigns/agent-jev clone — not on PyPI |
 
-All four serve the **decision** track (the catalog's only claimed track with
+All five serve the **decision** track (the catalog's only claimed track with
 suites); choice, score and noul/boolean questions are all accepted.
 
 ## Where the engines come from
@@ -34,7 +35,7 @@ each (see `legacy/demos/systemone_locals_demo.py` and the serve logs):
 
 This island replaces the HTTP hop with an in-process import of each engine
 (one module per engine under `src/systemone_local/models/`), keeping the
-ports above as the historical record — the island itself serves all four
+ports above as the historical record — the island itself serves all five
 models on one port and does not bind them.
 
 ## Run
@@ -49,25 +50,27 @@ models on one port and does not bind them.
 |---|---|---|
 | kev | `KEV_HOME` (default: the `kev` clone next to this repo) | `KEV_WEIGHTS` (run dir) or `KEV_RUN` (hub id, default `jaredpalmer/kev-0.8b`); resolved through the HF cache, downloaded on first predict if missing |
 | decider | PyPI (`decider-ai`) | `DECIDER_WEIGHTS` (snapshot dir) or `DECIDER_MODEL` (default `Mapika/decider-0.8b`) |
+| decider-2b | PyPI (`decider-ai`, same engine) | `DECIDER2_WEIGHTS` (snapshot dir) or `DECIDER2_MODEL` (default `Mapika/decider-2b`) |
 | openthai | PyPI (`openthai-systemone`) | `OPENTHAI_WEIGHTS` (snapshot dir) or `OPENTHAI_MODEL` (default `iapp/OpenThai-SystemOne`); **gated on HF — needs an HF token to download** |
 | agentjev | `AGENTJEV_HOME` (default: the `agent-jev` clone next to this repo) | `AGENTJEV_CHECKPOINT` (default `HOME/agentjev_v1.pt`), `AGENTJEV_MODEL_PATH` (default `HOME/models/Qwen3-0.6B-Base`, else the `Qwen/Qwen3-0.6B` HF-cache snapshot), `AGENTJEV_TEMPERATURES` (default `HOME/temperatures.json` when present) |
 
 Device selection follows the catalog (`requires: {accel: cpu}`): every engine
-defaults to CPU/fp32; `KEV_DEVICE` / `DECIDER_DEVICE` / `OPENTHAI_DEVICE` /
-`AGENTJEV_DEVICE` override.
+defaults to CPU/fp32; `KEV_DEVICE` / `DECIDER_DEVICE` / `DECIDER2_DEVICE` /
+`OPENTHAI_DEVICE` / `AGENTJEV_DEVICE` override.
 
 A model whose weights are absent still appears on `/info` (the island serves
 it); its items come back with a per-item `error` naming the fix — the
 protocol's per-item isolation means one absent engine never takes a run down.
-`uv run python -c "from systemone_local.models import kev, decider, openthai, agentjev; print(kev.available(), decider.available(), openthai.available(), agentjev.available())"`
+`uv run python -c "from systemone_local.models import kev, decider, decider2, openthai, agentjev; print(kev.available(), decider.available(), decider2.available(), openthai.available(), agentjev.available())"`
 checks what can actually load (offline; the tests skip on the same check).
 
 ## Hardware
 
 0.8B-class fp32 on CPU: ~3–5 GB RAM per engine (one at a time in-process;
-the engines are loaded lazily and kept). No GPU needed; the catalog's
-`requires` for all four deployments is `accel: cpu`. Cold load runs minutes
-(OpenThai worst — the reason the legacy bench used a 600 s warm-up timeout).
+the engines are loaded lazily and kept); decider-2b fp32 is ~9 GB. No GPU
+needed; the catalog's `requires` for all five deployments is `accel: cpu`.
+Cold load runs minutes (OpenThai worst — the reason the legacy bench used
+a 600 s warm-up timeout).
 
 ## Tests
 

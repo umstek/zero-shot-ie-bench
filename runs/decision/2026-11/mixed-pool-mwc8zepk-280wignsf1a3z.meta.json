@@ -1,0 +1,32 @@
+{
+ "run_id": "mixed-pool-mwc8zepk-280wignsf1a3z",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "span-02.openrouter",
+ "model_version": "span-02@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "02dc32892c6988b0871cc3f87d46d7ae876101f7"
+ },
+ "started_at": "2026-11-11T15:02:46.208Z",
+ "finished_at": "2026-11-11T15:02:46.208Z",
+ "totals": {
+  "items": 48,
+  "correct": 43,
+  "cost_usd": 0.000055949999999999984,
+  "p50_ms": 717,
+  "p95_ms": 1217,
+  "errors": 0
+ },
+ "source": "bench"
+}

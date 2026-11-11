@@ -7,15 +7,17 @@ weights (docs/plan/02: stub models in CI, real weights locally).
 
 On this repo's machine the historical serving put kev-0.8b, decider-0.8b
 and Qwen3-0.6B into the HF cache and agentjev_v1.pt into the agent-jev
-clone; caches get cleaned, so skips are the normal outcome — set
-KEV_WEIGHTS / DECIDER_WEIGHTS / OPENTHAI_WEIGHTS / AGENTJEV_* to run them.
+clone (decider-2b was added later and is not in any cache yet); caches
+get cleaned, so skips are the normal outcome — set KEV_WEIGHTS /
+DECIDER_WEIGHTS / DECIDER2_WEIGHTS / OPENTHAI_WEIGHTS / AGENTJEV_* to run
+them.
 """
 
 from __future__ import annotations
 
 import pytest
 from systemone_local.models import _systemone as s1
-from systemone_local.models import agentjev, decider, kev, openthai
+from systemone_local.models import agentjev, decider, decider2, kev, openthai
 
 # the systemone_locals_demo comparison ticket + sentiment labels
 TICKET = "I was charged twice for my subscription this month and want a refund."
@@ -45,6 +47,15 @@ def test_kev_live_choice():
 )
 def test_decider_live_choice():
     result = decider.predict(decision_payload(SENTIMENT))
+    assert_choice_shape(result, SENTIMENT["options"])
+
+
+@pytest.mark.slow
+@pytest.mark.skipif(
+    not decider2.available(), reason="decider-2b weights not in the HF cache (DECIDER2_WEIGHTS)"
+)
+def test_decider2_live_choice():
+    result = decider2.predict(decision_payload(SENTIMENT))
     assert_choice_shape(result, SENTIMENT["options"])
 
 

@@ -1,7 +1,7 @@
 [project]
 name = "small-decisions-runner"
 version = "0.1.0"
-description = "The catch-all local decision-model island: vLLM-SR Decision 2.0/3.0, K2-Type, MoJev, Intern-Decision in-process on the transformers 5.17 CPU stack, plus the ten Ollaya daemon models proxied over HTTP (System One contract)."
+description = "The catch-all local decision-model island: vLLM-SR Decision 2.0/3.0, K2-Type, MoJev, Intern-Decision in-process on the transformers 5.17 CPU stack, plus the eleven Ollaya daemon models proxied over HTTP (System One contract)."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

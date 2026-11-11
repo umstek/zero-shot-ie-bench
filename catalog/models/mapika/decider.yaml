@@ -25,6 +25,15 @@ versions:
   notes: 0.8B (752M) Qwen3.5-0.8B-Base fine-tune; served by the PyPI decider-ai[serve] System One server;
     benched; the larger decider-2b / decider-35b-a3b siblings are 'Noted, not benchmarked' rows (GPU-priced)
     and get no catalog file
+- id: decider-2b@unversioned
+  hf_revision: null
+  api_slug: null
+  released: null
+  params_b: 2.0
+  hf_repo: Mapika/decider-2b
+  notes: ~1.9B (1.88B) Qwen3.5-2B-Base fine-tune, Apache 2.0, bf16 safetensors (repo created 2026-09-16);
+    loads through the same PyPI decider-ai engine as the 0.8b (decider.infer.Decider, text from 1.4.0+);
+    not yet benched (no runs)
 deployments:
 - id: decider-0.8b.local
   kind: local
@@ -44,6 +53,25 @@ deployments:
     DECIDER_DEVICE=cpu); lazy-loads on first request so the bench fires an untimed warm-up; the shared
     server venv installs onnxruntime — engine not documented per model
   display: decider 0.8B (local)
+  zdr_safe: true
+- id: decider-2b.local
+  kind: local
+  version: decider-2b@unversioned
+  runner: systemone-local
+  runtime:
+    engine: torch
+    dtype: null
+    quant: null
+    device: cpu
+  requires:
+    vram_gb: 0
+    ram_gb: 9
+    accel: cpu
+    note: ram_gb estimated
+  notes: served in-process by the systemone-local island (systemone_local.models.decider2, PyPI
+    decider-ai Decider.system_one, DECIDER2_MODEL=Mapika/decider-2b DECIDER2_DEVICE=cpu); lazy-loads
+    on first request so the bench fires an untimed warm-up
+  display: decider 2B (local)
   zdr_safe: true
 v0:
   benched: true
