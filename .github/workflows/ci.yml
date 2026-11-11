@@ -8,7 +8,11 @@ jobs:
   ts:
     runs-on: ubuntu-latest
     steps:
+      # fetch-tags: acceptance-phase1.ts diffs README against the v0-final
+      # tag; the default shallow checkout fetches no tags at all.
       - uses: actions/checkout@v7
+        with:
+          fetch-tags: true
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - run: bun run typecheck
@@ -45,7 +49,9 @@ jobs:
         island: [_protocol, gliner, systemone-local, von, relik, small-decisions, nanodiff]
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      # EXACT tag: astral-sh stopped publishing moving major tags after v6,
+      # so @v10 does not resolve (GitHub: "unable to find version v10").
+      - uses: astral-sh/setup-uv@v10.3.3
       - name: sync + test + typecheck (weights-gated tests skip; CI never downloads)
         working-directory: runners/${{ matrix.island }}
         run: |
