@@ -18,6 +18,7 @@ wire once the credential arrives; the gate-12 trial run decides each one.
 | djev | Maisa | invite / recovery key (djev.dev) | Custom yes/no/choice/score API over text/JSON/images; invite-gated |
 | Hume Audio Decision API | Hume | `HUME_API_KEY` (waitlist) | Audio-native decisions — likely out of scope for the text/image suites; listed for completeness |
 | Tazo | Tazo Labs | request API access | Audio-native (voice agents) — likely out of scope |
+| Jev Router | TypeSafe | nothing to get — retry the endpoint later | Web listing (openrouter.ai/typesafe/jev-router) resolves, but the API 400s "Model typesafe/jev-router does not exist" (2026-11-11). Stub listing; catalog yaml + failed run were removed. Re-add one yaml when the route serves |
 
 ## B. Engineering deferrals (no key needed; unblock condition stated)
 

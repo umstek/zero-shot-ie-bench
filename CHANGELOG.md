@@ -6,10 +6,18 @@ One entry per release or arrival round. The run history itself lives in
 
 ## 2026-11-11 — new-system arrival round
 
-- **Hosted catalog** (+6 deployments, all awaiting gate-12 trials): Morph
-  Reflex, Liquid D1.1, Drex v2.0 + Drex Max Finance, Span-02, Jev Router —
-  every endpoint verified live on OpenRouter; all ride the existing
-  `openrouter.systemone` adapter.
+- **Hosted catalog** (+5 deployments, benched same day): Morph Reflex,
+  Liquid D1.1, Drex v2.0, Drex Max Finance, Span-02 — all on the existing
+  `openrouter.systemone` adapter. A sixth arrival, TypeSafe's Jev Router,
+  was pulled back: the OpenRouter web listing resolves but the API route
+  400s (stub) — tracked in docs/pending-access.md.
+- **Gate override #2** (recorded, per the adding-a-model recipe): the
+  gate-12 screening was skipped for this round at the user's call —
+  arrivals went straight to mixed-pool + multilingual-pool. Results —
+  mixed: reflex 45/48, d1.1 44/48, drex-v2.0 / drex-max-finance / span-02
+  43/48; multilingual: reflex / d1.1 / drex-max-finance 54/54, drex-v2.0 /
+  span-02 53/54; 0 errors anywhere, p50 604–856 ms. span-02's open weights
+  (ungated, 15.8B) settled its params_b.
 - **Local islands** (+3 servable): laya-multilingual (gliner island, one
   registry row — laya==0.4.14 loads it generically), decider-2b
   (systemone-local; decider.py refactored to per-checkpoint machinery),
@@ -17,9 +25,12 @@ One entry per release or arrival round. The run history itself lives in
   run). GLiDE-0.4B enters the catalog with its island module deferred (its
   Python API ships inside the HF repo, not on PyPI — see
   docs/pending-access.md).
-- **docs/pending-access.md**: the keys/access list (10 vendors) plus
-  engineering deferrals and next-round CPU-small candidates from the
-  2026-11-11 research fan-out.
+- **docs/pending-access.md**: the keys/access list (10 vendors + the
+  Jev Router stub) plus engineering deferrals and next-round CPU-small
+  candidates from the 2026-11-11 research fan-out. HF gating check across
+  all 36 researched repos: only MoLeMo-Lab/mojev is gated (auto) — and it
+  is already benched via a pinned commit; nothing this round needs an
+  unlock.
 
 ## 2026-10-24 — restructure (phases 0–4)
 
