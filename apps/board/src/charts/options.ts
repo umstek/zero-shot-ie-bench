@@ -273,14 +273,9 @@ export function languageSupportOption(
       {
         type: "heatmap" as const,
         data: cells,
-        label: {
-          show: true,
-          fontSize: 10,
-          formatter: (p: unknown) => {
-            const q = p as { value?: [number, number, number] };
-            return q.value ? `${q.value[2]}%` : "";
-          },
-        },
+        // colors only — the percentage, counts and run date live in the
+        // tooltip, which lets the rows run at a fraction of the height
+        itemStyle: { borderColor: "#ffffff", borderWidth: 0.5 },
       },
     ],
   };

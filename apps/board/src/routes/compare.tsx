@@ -65,13 +65,13 @@ export function ComparePage() {
         <h2>Language support</h2>
         <p className="muted">
           Per-language accuracy, one row per deployment — its latest scored decision/
-          multilingual-pool run, rows sorted by mean accuracy. Blank cells were not measured; hover
-          a cell for its counts and run date.
+          multilingual-pool run, rows sorted by mean accuracy. Colors only; hover a cell for the
+          percentage, counts and run date. Blank cells were not measured.
         </p>
         {langs.size === 0 ? (
           <p className="muted">No data.</p>
         ) : (
-          <EChart option={langOption} height={Math.max(360, langs.size * 22 + 130)} />
+          <EChart option={langOption} height={Math.max(320, langs.size * 12 + 120)} />
         )}
       </div>
     </section>
