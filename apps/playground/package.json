@@ -15,8 +15,8 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "bun-types": "catalog:"
   }
 }

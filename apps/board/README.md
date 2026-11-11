@@ -19,6 +19,7 @@ bun run --cwd apps/board typecheck
 ## Data expectations
 
 The board fetches `./data/*.json` at runtime. That path maps to the lake output:
+
 - **dev**: a Vite middleware in `vite.config.ts` serves `../../build/**` under `/data/**`
   (no publicDir symlink, no extra dependency).
 - **build**: `vite build` copies the `build/**` JSON tree into `dist/data/` via the same
