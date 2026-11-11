@@ -17,13 +17,34 @@ import {
   useTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { fmtDate, fmtPct, platformOf, zdrLabel } from "../lib/format";
+import { measuredPerItem } from "../lib/cost";
+import { fmtDate, fmtMs, fmtPct, fmtUsdCompact, platformOf, zdrLabel } from "../lib/format";
 import { useBoardData } from "../queries/data";
-import type { Deployment } from "../types";
+import type { Deployment, Run } from "../types";
 
 // Faceted, in-memory filter over build/deployments.json — no backend involved.
 // TanStack Table v9: features are registered explicitly (filtering, faceting,
 // sorting) with their row-model factories; everything else stays core.
+
+/** Deployment row plus the latest mixed-pool run's measured speed and price. */
+type ExplorerRow = Deployment & {
+  p50_ms: number | null;
+  perItem: number | null;
+};
+
+/** Latest scored decision/mixed-pool run per deployment — the same run the
+ *  picks page and the charts read, so the three views never disagree. */
+function latestMixedPool(runs: Run[]): Map<string, Run> {
+  const latest = new Map<string, Run>();
+  for (const run of runs) {
+    if (run.suite !== "decision/mixed-pool" || run.accuracy == null) continue;
+    const prev = latest.get(run.deployment);
+    if (!prev || Date.parse(run.started_at) > Date.parse(prev.started_at)) {
+      latest.set(run.deployment, run);
+    }
+  }
+  return latest;
+}
 
 const features = tableFeatures({
   columnFilteringFeature,
@@ -36,12 +57,12 @@ const features = tableFeatures({
 });
 
 /** Multi-select enum filter: empty selection = show everything. */
-const multiSelect: FilterFn<typeof features, Deployment> = (row, columnId, filterValue) => {
+const multiSelect: FilterFn<typeof features, ExplorerRow> = (row, columnId, filterValue) => {
   if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
   return filterValue.includes(String(row.getValue(columnId)));
 };
 
-const helper = createColumnHelper<typeof features, Deployment>();
+const helper = createColumnHelper<typeof features, ExplorerRow>();
 
 const columns = helper.columns([
   helper.accessor("display", {
@@ -84,6 +105,19 @@ const columns = helper.columns([
     header: "Latest acc",
     cell: (info) => fmtPct(info.row.original.latest_run?.accuracy),
   }),
+  // measured figures from the latest mixed-pool run; Infinity keeps unpriced /
+  // untimed rows at the bottom of an ascending sort instead of faking zero
+  helper.accessor((d) => d.p50_ms ?? Number.POSITIVE_INFINITY, {
+    id: "p50",
+    header: "p50",
+    cell: (info) => fmtMs(info.row.original.p50_ms),
+  }),
+  helper.accessor((d) => d.perItem ?? Number.POSITIVE_INFINITY, {
+    id: "price_per_1k",
+    header: "$ / 1k",
+    cell: (info) =>
+      info.row.original.perItem == null ? "—" : fmtUsdCompact(info.row.original.perItem),
+  }),
   helper.accessor((d) => d.latest_run?.started_at ?? "", {
     id: "last_run",
     header: "Last run",
@@ -107,7 +141,7 @@ function Facet({
   columnId,
   label,
 }: {
-  table: Table<typeof features, Deployment>;
+  table: Table<typeof features, ExplorerRow>;
   columnId: string;
   label: string;
 }) {
@@ -147,14 +181,24 @@ function Facet({
 }
 
 export function ExplorerPage() {
-  const { deployments } = useBoardData();
+  const { deployments, runs } = useBoardData();
   const [sorting, setSorting] = useState<SortingState>([{ id: "latest_accuracy", desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const latest = latestMixedPool(runs);
+  const data: ExplorerRow[] = deployments.map((d) => {
+    const run = latest.get(d.deployment_id);
+    return {
+      ...d,
+      p50_ms: run?.p50_ms ?? null,
+      perItem: run ? measuredPerItem(run) : null,
+    };
+  });
 
   const table = useTable({
     features,
     columns,
-    data: deployments,
+    data,
     state: { sorting, columnFilters },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -167,8 +211,9 @@ export function ExplorerPage() {
       <header className="page-head">
         <h1>Explorer</h1>
         <p>
-          All {deployments.length} catalog deployments, filtered in memory. Facets count only the
-          rows that survive the other active filters.
+          All {deployments.length} catalog deployments, filtered in memory. p50 and $/1k come from
+          each system's latest mixed-pool run (measured spend only — free tiers show —). Facets
+          count only the rows that survive the other active filters.
         </p>
       </header>
 
