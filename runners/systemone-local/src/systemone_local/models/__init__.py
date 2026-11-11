@@ -11,14 +11,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from . import agentjev, decider, kev, openthai
+from . import agentjev, decider, decider2, kev, openthai
 
 MODELS: list[dict[str, Any]] = [
     {"model_id": engine.MODEL_ID, "version": engine.VERSION, "runtime": engine.RUNTIME}
-    for engine in (kev, decider, openthai, agentjev)
+    for engine in (kev, decider, decider2, openthai, agentjev)
 ]
 
-_ENGINES = {engine.MODEL_ID: engine for engine in (kev, decider, openthai, agentjev)}
+_ENGINES = {engine.MODEL_ID: engine for engine in (kev, decider, decider2, openthai, agentjev)}
 
 
 def predict(model_id: str, payload: dict[str, Any]) -> dict[str, Any]:

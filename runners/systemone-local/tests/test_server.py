@@ -46,13 +46,14 @@ def test_healthz(client):
     assert client.get("/healthz").json() == {"ok": True}
 
 
-def test_info_lists_the_four_catalog_models(client):
+def test_info_lists_the_five_catalog_models(client):
     info = client.get("/info").json()
     assert info["runner"] == "systemone-local"
     assert info["protocol"] == "v1"
     assert [m["model_id"] for m in info["models"]] == [
         "kev-0.8b",
         "decider-0.8b",
+        "decider-2b",
         "openthai-systemone",
         "agentjev-v1",
     ]
@@ -60,6 +61,7 @@ def test_info_lists_the_four_catalog_models(client):
     assert versions == {
         "kev-0.8b": "kev-0.8b@2026-09",
         "decider-0.8b": "decider-0.8b@unversioned",
+        "decider-2b": "decider-2b@unversioned",
         "openthai-systemone": "openthai-systemone@unversioned",
         "agentjev-v1": "agentjev-v1@unversioned",
     }
@@ -169,7 +171,7 @@ def test_import_pulls_no_heavy_dependencies():
     with patch.dict(sys.modules, {"torch": None, "transformers": None}):
         from systemone_local import models as registry
 
-        for name in ("_systemone", "_base", "kev", "decider", "openthai", "agentjev"):
+        for name in ("_systemone", "_base", "kev", "decider", "decider2", "openthai", "agentjev"):
             module = importlib.import_module(f"systemone_local.models.{name}")
             importlib.reload(module)
         importlib.reload(registry)
