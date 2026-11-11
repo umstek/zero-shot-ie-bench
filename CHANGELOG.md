@@ -4,6 +4,30 @@ One entry per release or arrival round. The run history itself lives in
 `runs/` (append-only); every table below is generated from the lake by
 `bun run render` — nothing here is a hand-edited number.
 
+## 2026-11-12 — board polish round
+
+- **`apps/board` prerenders every route at build time** — 85 pages (picks,
+  explorer, charts, NER, 81 model pages) with per-route `<title>`/description
+  shared between the prerenderer and SPA navigation, and the browser entry now
+  hydrates instead of re-rendering, so crawlers see real content and the page
+  doesn't blank on load. A data-as-of stamp in the footer shows the newest run
+  date.
+- Charts page gained three cards over the same canonical latest-scored
+  mixed-pool runs as the explorer: a **cost-vs-speed** scatter with its own
+  Pareto frontier, **ranked top-20** accuracy/latency bars, and an
+  **item-difficulty** spectrum fed by a new `build/spectrum.json` (per-question
+  accuracy across systems; adapter failures are not attempts).
+- The lake records **measured browser-CORS verdicts per provider** (dated,
+  credential-free OPTIONS preflights against the real POST paths; only
+  OpenRouter currently passes) and `apps/cloud` badges its picker accordingly.
+- **Capability matrix ported from v0** into 49 model catalogs as an optional
+  11-key schema block; families the v0 app never charted stay unset.
+- The NER trio (GLiNER-relex, ReLiK, GLiREL) was attempted on
+  `ner/graded-pool` and **deferred** — the runner islands' Python environments
+  are gone from this machine; the append-only deferred rows record why.
+- CI builds the board bundle + prerender as a gate; determinism remains
+  unbuilt (needs a new flat suite first).
+
 ## 2026-11-11 — app split
 
 - `apps/playground` split into two apps and deleted. **`apps/local`** keeps the
