@@ -1,4 +1,5 @@
-/* zsib playground — deliberately minimal */
+/* zsib cloud tryer — deliberately minimal (carried over from the old
+   playground, plus the key inputs) */
 :root {
   color-scheme: light dark;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -23,10 +24,6 @@ h2 {
   border-bottom: 1px solid color-mix(in srgb, canvastext 15%, transparent);
   padding-bottom: 0.25rem;
 }
-h3 {
-  font-size: 0.95rem;
-  margin-top: 1.25rem;
-}
 section {
   margin-bottom: 0.5rem;
 }
@@ -38,6 +35,7 @@ label {
 }
 textarea,
 input[type="text"],
+input[type="password"],
 select {
   width: 100%;
   box-sizing: border-box;
@@ -47,6 +45,9 @@ select {
   border-radius: 6px;
   background: canvas;
   color: canvastext;
+}
+input[type="password"] + input[type="password"] {
+  margin-top: 0.4rem;
 }
 button {
   font: inherit;
@@ -62,32 +63,18 @@ button:disabled {
   opacity: 0.5;
   cursor: default;
 }
-button.small {
-  padding: 0.15rem 0.5rem;
-  font-size: 0.8rem;
-  margin: 0 0.25rem;
-}
-.row {
-  display: flex;
-  gap: 0.5rem;
-}
-.row input {
-  flex: 1;
-}
-.row button {
-  margin-top: 0;
-  white-space: nowrap;
-}
 .muted {
   color: color-mix(in srgb, canvastext 60%, transparent);
   font-size: 0.85rem;
 }
+.note {
+  font-size: 0.8rem;
+  border-left: 3px solid color-mix(in srgb, canvastext 25%, transparent);
+  padding-left: 0.6rem;
+  color: color-mix(in srgb, canvastext 70%, transparent);
+}
 .error {
   color: #c0392b;
-  font-size: 0.9rem;
-}
-.ok {
-  color: #1e8e3e;
   font-size: 0.9rem;
 }
 .badge {
@@ -101,13 +88,8 @@ button.small {
 .badge.warn {
   color: #b45309;
 }
-.islands {
-  list-style: none;
-  padding-left: 0;
-  font-size: 0.9rem;
-}
-.islands li {
-  margin: 0.5rem 0;
+.badge.ok {
+  color: #1e8e3e;
 }
 code {
   font-family: ui-monospace, "Cascadia Code", Menlo, monospace;

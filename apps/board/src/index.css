@@ -94,11 +94,6 @@ code,
   font-size: 18px;
 }
 
-.card.stub {
-  border-style: dashed;
-  background: transparent;
-}
-
 .card.error pre {
   overflow-x: auto;
   background: var(--bg);
@@ -140,6 +135,11 @@ code,
 
 .pick-detail {
   display: block;
+  font-size: 13px;
+}
+
+.pick-unranked {
+  margin: 10px 0 0;
   font-size: 13px;
 }
 

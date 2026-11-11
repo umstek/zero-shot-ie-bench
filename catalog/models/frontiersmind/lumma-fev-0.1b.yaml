@@ -11,6 +11,18 @@ claims:
   modalities:
   - text
   languages: null
+  capabilities:
+    ner_spans: false
+    text_classification: true
+    one_pass: true
+    relations: false
+    span_attributes: false
+    structured_records: false
+    ordinal_rubrics: true
+    yes_no: true
+    text_embeddings: false
+    runs_offline: true
+    image_input: true
 status: active
 links:
   card: https://huggingface.co/FrontiersMind/Lumma-fev-0.1b

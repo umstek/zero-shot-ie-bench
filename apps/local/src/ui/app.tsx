@@ -1,22 +1,9 @@
-// zsib playground — one page, two ways to ask a decision question:
-// a hosted catalog deployment (server-side adapter + server-side keys) or a
-// live local runner (proxied by the server, no CORS from the browser).
+// zsib local — the live-local-runner tryer (split out of the old playground).
+// No API keys anywhere: the only backends this page talks to are runner
+// islands on your own machine, always proxied by the local server (no CORS
+// from the browser).
 import { useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-
-type DeploymentRow = {
-  id: string;
-  modelId: string;
-  display: string;
-  provider: string;
-  adapter: string;
-  endpoint: string;
-  version: string;
-  zdrSafe: boolean | null;
-  keysRequired: Array<string>;
-  keysMissing: Array<string>;
-  keysConfigured: boolean;
-};
 
 type IslandModel = { id: string; display: string; versions: Array<string> };
 
@@ -69,9 +56,6 @@ async function getJson(url: string): Promise<Record<string, unknown>> {
 }
 
 function App() {
-  const [deployments, setDeployments] = useState<Array<DeploymentRow> | null>(null);
-  const [deploymentsError, setDeploymentsError] = useState<string | null>(null);
-  const [selected, setSelected] = useState("");
   const [stateText, setStateText] = useState("");
   const [optionsText, setOptionsText] = useState("");
 
@@ -81,7 +65,7 @@ function App() {
   const [probe, setProbe] = useState<Probe>(null);
   const [probeBusy, setProbeBusy] = useState(false);
 
-  const [busy, setBusy] = useState<"hosted" | "runner" | null>(null);
+  const [busy, setBusy] = useState(false);
   const [askError, setAskError] = useState<string | null>(null);
   const [result, setResult] = useState<AskResult>(null);
 
@@ -98,52 +82,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    getJson("/api/deployments")
-      .then((data) => {
-        const rows = Array.isArray(data.deployments)
-          ? (data.deployments as Array<DeploymentRow>)
-          : [];
-        setDeployments(rows);
-        const firstReady = rows.find((d) => d.keysConfigured);
-        if (firstReady) setSelected(firstReady.id);
-      })
-      .catch((err: Error) => setDeploymentsError(err.message));
-    loadRunners(null).catch((err: Error) => setDeploymentsError(err.message));
+    loadRunners(null).catch((err: Error) => setAskError(err.message));
   }, [loadRunners]);
-
-  async function askHosted() {
-    if (stateText.trim().length === 0) {
-      setAskError("state is required (free text)");
-      return;
-    }
-    if (options.length < 2) {
-      setAskError("at least two options (one per line) are required");
-      return;
-    }
-    setBusy("hosted");
-    setAskError(null);
-    setResult(null);
-    try {
-      const data = await postJson("/api/ask", {
-        deploymentId: selected || undefined,
-        state: stateText,
-        question: { type: "choice", options },
-      });
-      setResult({
-        source: typeof data.deployment === "string" ? data.deployment : "hosted",
-        model: typeof data.model === "string" ? data.model : "?",
-        prediction: data.prediction ?? null,
-        prob: typeof data.prob === "number" ? data.prob : null,
-        error: typeof data.error === "string" ? data.error : null,
-        latencyMs: typeof data.latencyMs === "number" ? data.latencyMs : 0,
-        computeMs: typeof data.computeMs === "number" ? data.computeMs : null,
-      });
-    } catch (err) {
-      setAskError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setBusy(null);
-    }
-  }
 
   async function askRunner() {
     if (stateText.trim().length === 0) {
@@ -158,7 +98,7 @@ function App() {
       setAskError("model is required (the runner's model_id — probe /info to fill it)");
       return;
     }
-    setBusy("runner");
+    setBusy(true);
     setAskError(null);
     setResult(null);
     try {
@@ -180,7 +120,7 @@ function App() {
     } catch (err) {
       setAskError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   }
 
@@ -198,10 +138,11 @@ function App() {
 
   return (
     <main>
-      <h1>zsib playground</h1>
+      <h1>zsib local</h1>
       <p className="muted">
-        Hosted deployments run through the same bench adapters — API keys stay on the server. Local
-        runners are proxied by this server from your machine.
+        No API keys anywhere — this page talks only to local runner islands from the catalog,
+        proxied by the server on your machine. Cloud deployments (bring your own key) live in the
+        separate static app.
       </p>
 
       <section>
@@ -222,38 +163,6 @@ function App() {
           placeholder={"yes\nno"}
           onChange={(e) => setOptionsText(e.target.value)}
         />
-      </section>
-
-      <section>
-        <h2>Hosted deployment</h2>
-        {deploymentsError && <p className="error">{deploymentsError}</p>}
-        {deployments === null && !deploymentsError && <p className="muted">loading catalog…</p>}
-        {deployments !== null && (
-          <>
-            <label htmlFor="deployment">Deployment (from the catalog)</label>
-            <select id="deployment" value={selected} onChange={(e) => setSelected(e.target.value)}>
-              <option value="">auto — first deployment with keys configured</option>
-              {deployments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.display} — {d.provider}
-                  {d.keysConfigured ? "" : ` (needs ${d.keysMissing.join(", ")})`}
-                </option>
-              ))}
-            </select>
-            {selected && (
-              <p className="muted">
-                adapter <code>{deployments.find((d) => d.id === selected)?.adapter}</code> ·
-                endpoint <code>{deployments.find((d) => d.id === selected)?.endpoint}</code>
-                {deployments.find((d) => d.id === selected)?.zdrSafe === false && (
-                  <span className="badge warn">not ZDR-safe</span>
-                )}
-              </p>
-            )}
-            <button type="button" onClick={askHosted} disabled={busy !== null}>
-              {busy === "hosted" ? "asking…" : "Ask hosted"}
-            </button>
-          </>
-        )}
       </section>
 
       <section>
@@ -300,8 +209,8 @@ function App() {
           onChange={(e) => setModel(e.target.value)}
           placeholder="wfzyx/von"
         />
-        <button type="button" onClick={askRunner} disabled={busy !== null}>
-          {busy === "runner" ? "asking…" : "Ask runner"}
+        <button type="button" onClick={askRunner} disabled={busy}>
+          {busy ? "asking…" : "Ask runner"}
         </button>
 
         <h3>Catalog runner islands</h3>

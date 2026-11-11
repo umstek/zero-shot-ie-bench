@@ -59,7 +59,7 @@ phase 4's acceptance passes.*
   with TypeScript 7 (nothing official says either way); if it doesn't, pin that one
   workspace to `@typescript/typescript6` until TS 7.1. Picks + explorer + model page first; crossover, provider picker and
   planner after.
-- `apps/playground`.
+- `apps/playground` (since split into `apps/local` + `apps/cloud`).
 - Delete `legacy/`. README cut to ~200 lines + generated sections.
 - CI: schema validation, append-only check, render diff, per-island tests, board
   deploy.

@@ -1,7 +1,9 @@
 import type { EChartsCoreOption } from "echarts/core";
-import { fmtDate, fmtPct } from "../lib/format";
+import { measuredPerItem } from "../lib/cost";
+import { fmtCostPer1k, fmtDate, fmtMs, fmtPct, platformOf } from "../lib/format";
 import { langLabel, orderLangs } from "../lib/languages";
-import type { Deployment, RunWithTrack } from "../types";
+import { latestMixedPoolRun } from "../lib/latest";
+import type { Deployment, DeploymentKind, RunWithTrack, SpectrumItem } from "../types";
 
 // Pure option builders — no echarts imports beyond types, so the chart modules
 // stay in echart.tsx and tree-shaking has a single registration point.
@@ -185,6 +187,514 @@ export function languageHeatmapOption(
           },
         },
       },
+    ],
+  };
+}
+
+/** Language-support heatmap: one row per deployment — its latest scored
+ *  multilingual-pool run — one column per language, rows sorted by mean
+ *  per-language accuracy. Blank cells were not measured in that run. */
+export function languageSupportOption(
+  latest: Map<string, RunWithTrack>,
+  deployments: Deployment[],
+): EChartsCoreOption {
+  const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
+  const rows = [...latest.values()]
+    .map((run) => {
+      const dep = byId.get(run.deployment);
+      const measured = (run.per_language ?? []).filter((p) => p.accuracy != null);
+      const mean =
+        measured.length === 0
+          ? null
+          : measured.reduce((sum, p) => sum + (p.accuracy ?? 0), 0) / measured.length;
+      return { run, display: dep?.display ?? run.deployment, mean };
+    })
+    .filter((r) => r.mean != null)
+    .sort((a, b) => (b.mean ?? 0) - (a.mean ?? 0) || a.display.localeCompare(b.display));
+
+  const present = new Set<string>();
+  for (const { run } of rows) {
+    for (const pl of run.per_language ?? []) {
+      if (pl.accuracy != null) present.add(pl.lang);
+    }
+  }
+  const langs = orderLangs(present);
+
+  const cells: [number, number, number][] = [];
+  for (let y = 0; y < rows.length; y++) {
+    const row = rows[y];
+    if (!row) continue;
+    for (let x = 0; x < langs.length; x++) {
+      const lang = langs[x];
+      const pl = (row.run.per_language ?? []).find((p) => p.lang === lang);
+      if (lang && pl?.accuracy != null) {
+        cells.push([x, y, Math.round(pl.accuracy * 1000) / 10]);
+      }
+    }
+  }
+
+  return {
+    tooltip: {
+      formatter: (params: unknown) => {
+        const p = params as { value?: [number, number, number] };
+        const v = p.value;
+        if (!v) return "";
+        const row = rows[v[1]];
+        const lang = langs[v[0]];
+        if (!row || !lang) return "";
+        const pl = (row.run.per_language ?? []).find((x) => x.lang === lang);
+        return [
+          row.display,
+          `${langLabel(lang)}: ${fmtPct(pl?.accuracy)} (${pl?.correct ?? "?"}/${pl?.items ?? "?"} items)`,
+          `${row.run.suite} · ${fmtDate(row.run.started_at)}`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 220, right: 110, top: 10, bottom: 24 },
+    xAxis: { type: "category", data: langs.map(langLabel), splitArea: { show: true } },
+    yAxis: {
+      type: "category",
+      data: rows.map((r) => r.display),
+      splitArea: { show: true },
+      inverse: true,
+      axisLabel: { fontSize: 11 },
+    },
+    visualMap: {
+      min: 0,
+      max: 100,
+      calculable: false,
+      orient: "vertical",
+      right: 8,
+      top: "center",
+      text: ["100%", "0%"],
+      inRange: { color: ["#f8fafc", "#bfdbfe", "#3b82f6", "#1d4ed8"] },
+    },
+    series: [
+      {
+        type: "heatmap" as const,
+        data: cells,
+        // colors only — the percentage, counts and run date live in the
+        // tooltip, which lets the rows run at a fraction of the height
+        itemStyle: { borderColor: "#ffffff", borderWidth: 0.5 },
+      },
+    ],
+  };
+}
+
+// NER: strict micro-F1 ranked bar over the canonical ner/graded-pool run.
+
+/** One plotted deployment on the NER view. */
+export interface NerEntry {
+  display: string;
+  platform: string;
+  kind: DeploymentKind;
+  /** strict micro-F1, 0–1 */
+  f1: number;
+  p50Ms: number | null;
+  suite: string;
+  startedAt: string;
+}
+
+/** Strict micro-F1 horizontal bar, highest first, with tooltip provenance. */
+export function nerF1BarOption(entries: NerEntry[]): EChartsCoreOption {
+  const sorted = [...entries].sort((a, b) => b.f1 - a.f1 || a.display.localeCompare(b.display));
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as { dataIndex?: number };
+        const e = p.dataIndex != null ? sorted[p.dataIndex] : undefined;
+        if (!e) return "";
+        return [
+          `${e.display} · ${e.platform}`,
+          `micro-F1 ${fmtPct(e.f1)} · p50 ${fmtMs(e.p50Ms)}`,
+          `${e.suite} · ${fmtDate(e.startedAt)}`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 220, right: 56, top: 10, bottom: 28 },
+    xAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    yAxis: {
+      type: "category",
+      data: sorted.map((e) => e.display),
+      inverse: true,
+      axisLabel: { fontSize: 11 },
+    },
+    series: [
+      {
+        type: "bar" as const,
+        data: sorted.map((e) => Math.round(e.f1 * 1000) / 10),
+        label: { show: true, position: "right" as const, formatter: "{c}%" },
+        itemStyle: { color: "#3b82f6" },
+        barMaxWidth: 22,
+      },
+    ],
+  };
+}
+
+/** Generic ranked horizontal bar over compare points (accuracy, latency…).
+ *  Null values drop out; `top` caps the list, highest/lowest first. */
+export function rankedBarOption(
+  points: ComparePoint[],
+  opts: {
+    value: (p: ComparePoint) => number | null;
+    label: string;
+    higherFirst: boolean;
+    format: (v: number) => string;
+    top?: number;
+  },
+): EChartsCoreOption {
+  const rows = points
+    .map((p) => ({ p, v: opts.value(p) }))
+    .filter((r): r is { p: ComparePoint; v: number } => r.v != null)
+    .sort(
+      (a, b) =>
+        (opts.higherFirst ? b.v - a.v : a.v - b.v) || a.p.display.localeCompare(b.p.display),
+    )
+    .slice(0, opts.top ?? points.length);
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const q = params as { dataIndex?: number };
+        const r = q.dataIndex != null ? rows[q.dataIndex] : undefined;
+        if (!r) return "";
+        return [
+          `${r.p.display} · ${r.p.platform}`,
+          `${opts.label} ${opts.format(r.v)} · accuracy ${fmtPct(r.p.accuracy)}`,
+          `${r.p.suite} · ${fmtDate(r.p.startedAt)}`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 220, right: 64, top: 10, bottom: 28 },
+    xAxis: { type: "value", axisLabel: { formatter: (v: number) => opts.format(v) } },
+    yAxis: {
+      type: "category",
+      data: rows.map((r) => r.p.display),
+      inverse: true,
+      axisLabel: { fontSize: 10 },
+    },
+    series: [
+      {
+        type: "bar" as const,
+        data: rows.map((r) => r.v),
+        label: {
+          show: true,
+          position: "right" as const,
+          formatter: (p: unknown) => opts.format((p as { value: number }).value),
+        },
+        itemStyle: { color: "#3b82f6" },
+        barMaxWidth: 14,
+      },
+    ],
+  };
+}
+
+/** Per-item difficulty over the canonical mixed-pool runs, hardest first:
+ *  the share of answering systems each item stumped. Bars stay one color —
+ *  position is the signal, and the axis already encodes it. */
+export function spectrumBarOption(items: SpectrumItem[]): EChartsCoreOption {
+  const rows = items
+    .filter((i): i is SpectrumItem & { accuracy: number } => i.accuracy != null)
+    .sort((a, b) => a.accuracy - b.accuracy || a.item_id.localeCompare(b.item_id));
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const q = params as { dataIndex?: number };
+        const r = q.dataIndex != null ? rows[q.dataIndex] : undefined;
+        if (!r) return "";
+        return [
+          `${r.item_id} · ${r.lang}`,
+          `correct for ${fmtPct(r.accuracy)} of systems (${r.correct}/${r.attempts})`,
+        ].join("<br/>");
+      },
+    },
+    grid: { left: 70, right: 56, top: 10, bottom: 28 },
+    xAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    yAxis: {
+      type: "category",
+      data: rows.map((r) => r.item_id),
+      inverse: true,
+      axisLabel: { fontSize: 10 },
+    },
+    series: [
+      {
+        type: "bar" as const,
+        data: rows.map((r) => Math.round(r.accuracy * 1000) / 10),
+        label: { show: true, position: "right" as const, formatter: "{c}%" },
+        itemStyle: { color: "#3b82f6" },
+        barMaxWidth: 14,
+      },
+    ],
+  };
+}
+
+/** $ per 1k (log) vs p50 (log) — hosted deployments with measured spend and a
+ *  measured p50. The frontier marks systems no other is both cheaper and
+ *  faster than. */
+export function costSpeedScatterOption(points: ComparePoint[]): EChartsCoreOption {
+  const usable = points.filter((p) => p.perItem != null && p.p50Ms != null);
+  const cost1k = (p: ComparePoint) => (p.perItem ?? 0) * 1000;
+  const data = scatterData(usable, cost1k).map((d, i) => ({
+    ...d,
+    value: [d.value[0], usable[i]?.p50Ms ?? 0] as [number, number],
+  }));
+  const sorted = [...usable].sort(
+    (a, b) => cost1k(a) - cost1k(b) || (a.p50Ms ?? 0) - (b.p50Ms ?? 0),
+  );
+  const frontier: ComparePoint[] = [];
+  let bestMs = Number.POSITIVE_INFINITY;
+  for (const p of sorted) {
+    if ((p.p50Ms ?? Number.POSITIVE_INFINITY) < bestMs) {
+      frontier.push(p);
+      bestMs = p.p50Ms ?? Number.POSITIVE_INFINITY;
+    }
+  }
+  const frontierData = scatterData(frontier, cost1k).map((d, i) => ({
+    ...d,
+    value: [d.value[0], frontier[i]?.p50Ms ?? 0] as [number, number],
+  }));
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as ScatterDatum;
+        if (!p.data) return "";
+        return [
+          `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
+          `${fmtCostPer1k(p.data.perItem ?? 0)} · p50 ${fmtMs(p.data.p50Ms)} · accuracy ${fmtPct(
+            p.data.accuracy,
+          )}`,
+          `${p.data.suite ?? ""} · ${fmtDate(p.data.startedAt ?? "")}`,
+        ].join("<br/>");
+      },
+    },
+    legend: { top: 0 },
+    grid: { left: 44, right: 24, top: 40, bottom: 62 },
+    xAxis: {
+      type: "log",
+      name: "$ per 1k items (log scale)",
+      nameLocation: "middle",
+      nameGap: 32,
+      axisLabel: { formatter: (v: number) => `$${v < 0.01 ? v.toFixed(4) : v.toFixed(2)}` },
+    },
+    yAxis: {
+      type: "log",
+      name: "p50 (log)",
+      axisLabel: { formatter: (v: number) => fmtMs(v) },
+    },
+    series: [
+      { name: "hosted", type: "scatter" as const, symbolSize: 10, data },
+      {
+        name: "Pareto frontier",
+        type: "line" as const,
+        symbolSize: 6,
+        lineStyle: { type: "dashed" as const, width: 1.5, color: "#64748b" },
+        itemStyle: { color: "#64748b" },
+        data: frontierData,
+      },
+    ],
+  };
+}
+
+// Compare scatters: one point per deployment over its latest usable decision
+// run, hosted/local split for the speed chart, measured spend only for price.
+
+/** One plotted deployment — shared by both compare charts. */
+export interface ComparePoint {
+  deployment: string;
+  display: string;
+  /** provider (hosted) or runner (local) */
+  platform: string;
+  kind: DeploymentKind;
+  /** 0–1 */
+  accuracy: number;
+  /** run cost ÷ items (v0 bookkeeping figure when present) */
+  perItem: number | null;
+  p50Ms: number | null;
+  /** provenance, shown in tooltips so every number is self-describing */
+  suite: string;
+  startedAt: string;
+}
+
+interface ScatterPoint {
+  value: [number, number];
+  display: string;
+  platform: string;
+  accuracy: number;
+  perItem: number | null;
+  p50Ms: number | null;
+  suite: string;
+  startedAt: string;
+}
+
+interface ScatterDatum {
+  seriesName?: string;
+  value?: [number, number];
+  data?: Partial<ScatterPoint>;
+}
+
+function toPoint(dep: Deployment, run: RunWithTrack): ComparePoint {
+  return {
+    deployment: dep.deployment_id,
+    display: dep.display,
+    platform: platformOf(dep),
+    kind: dep.kind,
+    accuracy: run.accuracy ?? 0,
+    perItem: measuredPerItem(run),
+    p50Ms: run.p50_ms,
+    suite: run.suite,
+    startedAt: run.started_at,
+  };
+}
+
+/** Speed vs accuracy points: every deployment whose canonical mixed-pool run
+ *  also has a measured p50 (a log x-axis cannot place the rest). */
+export function speedPoints(runs: RunWithTrack[], deployments: Deployment[]): ComparePoint[] {
+  const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
+  const points: ComparePoint[] = [];
+  for (const [depId, run] of latestMixedPoolRun(runs)) {
+    const dep = byId.get(depId);
+    if (!dep || run.p50_ms == null) continue;
+    points.push(toPoint(dep, run));
+  }
+  return points.sort((a, b) => a.display.localeCompare(b.display));
+}
+
+/** Price vs accuracy points: hosted deployments whose canonical mixed-pool run
+ *  carries measured positive spend only (free-tier/unpriced never rank on
+ *  price — same rule as the cheapest ≥90% pick). */
+export function pricePoints(runs: RunWithTrack[], deployments: Deployment[]): ComparePoint[] {
+  const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
+  const points: ComparePoint[] = [];
+  for (const [depId, run] of latestMixedPoolRun(runs)) {
+    const dep = byId.get(depId);
+    if (dep?.kind !== "hosted" || measuredPerItem(run) == null) continue;
+    points.push(toPoint(dep, run));
+  }
+  return points.sort((a, b) => a.display.localeCompare(b.display));
+}
+
+function scatterData(points: ComparePoint[], x: (p: ComparePoint) => number): ScatterPoint[] {
+  const data: ScatterPoint[] = [];
+  for (const p of points) {
+    data.push({
+      value: [x(p), Math.round(p.accuracy * 1000) / 10],
+      display: p.display,
+      platform: p.platform,
+      accuracy: p.accuracy,
+      perItem: p.perItem,
+      p50Ms: p.p50Ms,
+      suite: p.suite,
+      startedAt: p.startedAt,
+    });
+  }
+  return data;
+}
+
+/** Non-dominated points: no other point is both lower on x (faster / cheaper)
+ *  and at least as accurate. Sorted by x ascending with accuracy strictly
+ *  rising along the line — the best-available trade-off staircase. */
+export function paretoFrontier(
+  points: ComparePoint[],
+  x: (p: ComparePoint) => number,
+): ComparePoint[] {
+  const sorted = [...points].sort((a, b) => x(a) - x(b) || b.accuracy - a.accuracy);
+  const frontier: ComparePoint[] = [];
+  let best = Number.NEGATIVE_INFINITY;
+  for (const p of sorted) {
+    if (p.accuracy > best) {
+      frontier.push(p);
+      best = p.accuracy;
+    }
+  }
+  return frontier;
+}
+
+/** The dashed frontier line drawn over a compare scatter. */
+function frontierSeries(points: ComparePoint[], x: (p: ComparePoint) => number) {
+  return {
+    name: "Pareto frontier",
+    type: "line" as const,
+    symbolSize: 6,
+    lineStyle: { type: "dashed" as const, width: 1.5, color: "#64748b" },
+    itemStyle: { color: "#64748b" },
+    data: scatterData(paretoFrontier(points, x), x),
+  };
+}
+
+/** p50 latency (log ms) vs accuracy, one series per deployment kind. */
+export function speedScatterOption(points: ComparePoint[]): EChartsCoreOption {
+  const data = (kind: DeploymentKind) =>
+    scatterData(
+      points.filter((p) => p.kind === kind && p.p50Ms != null),
+      (p) => p.p50Ms ?? 0,
+    );
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as ScatterDatum;
+        if (!p.data) return "";
+        return [
+          `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
+          `accuracy ${fmtPct((p.value?.[1] ?? 0) / 100)} · p50 ${fmtMs(p.data.p50Ms)}`,
+          `${p.data.suite ?? ""} · ${fmtDate(p.data.startedAt ?? "")}`,
+        ].join("<br/>");
+      },
+    },
+    legend: { top: 0 },
+    grid: { left: 44, right: 24, top: 40, bottom: 62 },
+    xAxis: {
+      type: "log",
+      name: "p50 latency (log scale)",
+      nameLocation: "middle",
+      nameGap: 32,
+      axisLabel: { formatter: (v: number) => fmtMs(v) },
+    },
+    yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    series: [
+      { name: "hosted", type: "scatter" as const, symbolSize: 10, data: data("hosted") },
+      { name: "local", type: "scatter" as const, symbolSize: 10, data: data("local") },
+      frontierSeries(points, (p) => p.p50Ms ?? 0),
+    ],
+  };
+}
+
+/** $ per 1k items (log) vs accuracy, measured spend only — a single hosted
+ *  series (local runs carry no metered cost). */
+export function priceScatterOption(points: ComparePoint[]): EChartsCoreOption {
+  const usable = points.filter((p) => p.perItem != null);
+  const data = scatterData(usable, (p) => (p.perItem ?? 0) * 1000);
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: (params: unknown) => {
+        const p = params as ScatterDatum;
+        if (!p.data) return "";
+        return [
+          `${p.data.display ?? ""} · ${p.data.platform ?? ""}`,
+          `${fmtCostPer1k(p.data.perItem ?? 0)} · accuracy ${fmtPct((p.value?.[1] ?? 0) / 100)}`,
+          `${p.data.suite ?? ""} · ${fmtDate(p.data.startedAt ?? "")}`,
+        ].join("<br/>");
+      },
+    },
+    legend: { top: 0 },
+    grid: { left: 44, right: 24, top: 40, bottom: 62 },
+    xAxis: {
+      type: "log",
+      name: "$ per 1k items (log scale)",
+      nameLocation: "middle",
+      nameGap: 32,
+      axisLabel: {
+        formatter: (v: number) => `$${v < 0.01 ? v.toFixed(4) : v.toFixed(2)}`,
+      },
+    },
+    yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
+    series: [
+      { name: "hosted", type: "scatter" as const, symbolSize: 10, data },
+      frontierSeries(usable, (p) => (p.perItem ?? 0) * 1000),
     ],
   };
 }

@@ -1,5 +1,5 @@
 import { use } from "react";
-import type { Deployment, Run, RunWithTrack } from "../types";
+import type { Deployment, Run, RunWithTrack, Spectrum } from "../types";
 
 // Promise cache keyed by URL — survives re-renders; re-created on HMR, which is fine.
 const cache = new Map<string, Promise<unknown>>();
@@ -19,19 +19,22 @@ export interface BoardData {
   deployments: Deployment[];
   /** decision + ner runs merged, each tagged with its track. */
   runs: RunWithTrack[];
+  /** per-item difficulty over the canonical mixed-pool runs (spectrum.json). */
+  spectrum: Spectrum;
 }
 
 async function loadBoardData(): Promise<BoardData> {
-  const [deployments, decisionRuns, nerRuns] = await Promise.all([
+  const [deployments, decisionRuns, nerRuns, spectrum] = await Promise.all([
     fetchJson<Deployment[]>("/data/deployments.json"),
     fetchJson<Run[]>("/data/decision.runs.json"),
     fetchJson<Run[]>("/data/ner.runs.json"),
+    fetchJson<Spectrum>("/data/spectrum.json"),
   ]);
   const runs: RunWithTrack[] = [
     ...decisionRuns.map((r) => ({ ...r, track: "decision" as const })),
     ...nerRuns.map((r) => ({ ...r, track: "ner" as const })),
   ];
-  return { deployments, runs };
+  return { deployments, runs, spectrum };
 }
 
 let boardPromise: Promise<BoardData> | null = null;

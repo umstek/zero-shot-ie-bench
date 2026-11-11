@@ -35,6 +35,9 @@ export interface Run {
   p50_ms: number | null;
   p95_ms: number | null;
   per_language: PerLanguageStat[] | null;
+  /** legacy-v0 bookkeeping: per-question cost figure (list-price derived when
+   *  the provider reported tokens but no $); present on all lake rows */
+  v0_per_question?: number | null;
   v0_tiers?: Record<string, number> | null;
   v0_cells?: Record<string, string> | null;
 }
@@ -42,6 +45,21 @@ export interface Run {
 /** A run tagged with the track it belongs to (decision + ner lakes merged). */
 export interface RunWithTrack extends Run {
   track: Track;
+}
+
+export interface SpectrumItem {
+  item_id: string;
+  lang: string;
+  attempts: number;
+  correct: number;
+  accuracy: number | null;
+}
+
+/** build/spectrum.json — per-item difficulty over the canonical mixed-pool runs. */
+export interface Spectrum {
+  suite: string;
+  systems: number;
+  items: SpectrumItem[];
 }
 
 export interface DeploymentLatestRun {

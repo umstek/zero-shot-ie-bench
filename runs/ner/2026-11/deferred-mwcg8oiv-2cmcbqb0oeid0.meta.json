@@ -1,0 +1,38 @@
+{
+ "run_id": "deferred-mwcg8oiv-2cmcbqb0oeid0",
+ "status": "deferred",
+ "deferred_reason": "no ZSIB_RUNNER_GLINER URL configured (start the runner: runners/gliner)",
+ "deployment": "glirel-large-v0.local",
+ "model_version": "glirel-large-v0@unversioned",
+ "served_version": null,
+ "where": {
+  "kind": "local",
+  "machine": "seoul",
+  "runtime": {
+   "engine": "torch",
+   "dtype": null,
+   "quant": null,
+   "device": "cpu"
+  }
+ },
+ "suite": "ner/graded-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:35af2f255ac13427a43c7d44aca9eed9b5b10f8e3b9ee714238df497ab9f1fd2",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "7fa0497d886d517d86a535e2ec7f5cf8322950b5"
+ },
+ "started_at": "2026-11-11T18:25:17.864Z",
+ "finished_at": "2026-11-11T18:25:17.864Z",
+ "totals": {
+  "items": 0,
+  "correct": null,
+  "cost_usd": 0,
+  "p50_ms": null,
+  "p95_ms": null,
+  "errors": 0
+ },
+ "source": "bench"
+}

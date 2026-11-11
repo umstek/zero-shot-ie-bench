@@ -1,36 +1,26 @@
-// apps/playground — the hosted side of the bench as a try-it UI
-// (docs/plan/02 "Hosted side"): Bun.serve + React via HTML imports, importing
-// the same provider adapters the bench CLI drives, so a provider is wired
-// once. Keys stay server-side (src/keys.ts, process.env only); the browser
-// never sees one. Live local runners are listed and proxied here too, so one
-// UI tries both hosted deployments and a runner island.
+// apps/local — the live-local-runner tryer, split out of the old playground.
+// Local-only: this app holds NO credentials of any kind — no provider keys,
+// no .env lookups, no secrets in scope. It lists the catalog's runner islands
+// and proxies decision questions to a live runner over the runner protocol
+// (docs/plan/02), so the browser never needs CORS. Hosted deployments moved
+// to apps/cloud (BYOK, keys stay in the browser).
 //
 //   GET  /                  the React page (Bun HTML import — no bundler)
-//   GET  /api/deployments   hosted deployments from the catalog + key NAMES
-//   POST /api/ask           {deploymentId?, model?, state, question} → adapter
 //   GET  /api/runners       runner islands from the catalog + ?baseUrl/?runner probe
 //   POST /api/runner-ask    {baseUrl, model, state, question} → runner /v1/decision
 //
-// Run: `bun run dev` (from apps/playground) after `bun install` at the root.
+// Run: `bun run dev` (from apps/local) after `bun install` at the root.
 import { loadCatalog } from "@zsib/lake";
 import type { TrackRequestOut } from "@zsib/schema";
 // bench has no package "exports" field yet, so the same-file imports the
-// architecture doc asks for ("imports the same adapters from bench") ride
+// architecture doc asks for ("imports the same runners the bench drives") ride
 // relative paths into bench/src; switch to "@zsib/bench/..." once bench
 // declares subpath exports.
 import {
   fetchInfo,
   RunnerUnavailableError,
   sendTrack,
-  type TrackResponseOut,
 } from "../../../bench/src/local/runner-client.ts";
-import {
-  type AdapterContext,
-  AdapterError,
-  getAdapter,
-} from "../../../bench/src/providers/index.ts";
-import { endpointIsUrl } from "../../../bench/src/providers/wire.ts";
-import { authFor, expectedKeyNames, missingKeyNames } from "./keys.ts";
 import ui from "./ui/index.html";
 
 const PORT = Number(process.env.PORT ?? 4010);
@@ -48,7 +38,6 @@ function json(data: unknown, status = 200): Response {
 }
 
 function errorStatus(err: unknown): number {
-  if (err instanceof AdapterError) return err.status ?? 502;
   if (err instanceof RunnerUnavailableError) return 502;
   return 500;
 }
@@ -62,7 +51,6 @@ function errorMessage(err: unknown): string {
 class BadRequestError extends Error {}
 
 function parseAskBody(body: unknown): {
-  deploymentId: string | null;
   model: string | null;
   state: string;
   question: Question;
@@ -83,11 +71,7 @@ function parseAskBody(body: unknown): {
   }
   if (cleaned.length > MAX_OPTIONS) throw new BadRequestError(`at most ${MAX_OPTIONS} options`);
   const model = typeof b.model === "string" && b.model.trim().length > 0 ? b.model.trim() : null;
-  const deploymentId =
-    typeof b.deploymentId === "string" && b.deploymentId.trim().length > 0
-      ? b.deploymentId.trim()
-      : null;
-  return { deploymentId, model, state, question: { type: "choice", options: cleaned } };
+  return { model, state, question: { type: "choice", options: cleaned } };
 }
 
 function parseRunnerBody(body: unknown): {
@@ -107,133 +91,6 @@ function parseRunnerBody(body: unknown): {
   const model = parsed.model;
   if (!model) throw new BadRequestError("model is required (the runner's model_id, see /info)");
   return { baseUrl: url.origin, model, state: parsed.state, question: parsed.question };
-}
-
-// ---- catalog resolution ----------------------------------------------------
-
-function findDeployment(catalog: ReturnType<typeof loadCatalog>, deploymentId: string) {
-  for (const model of catalog.models) {
-    const deployment = model.deployments.find((d) => d.id === deploymentId);
-    if (deployment) return { model, deployment };
-  }
-  return null;
-}
-
-function apiSlugOf(
-  model: ReturnType<typeof loadCatalog>["models"][number],
-  versionId: string,
-): string | undefined {
-  return model.versions.find((v) => v.id === versionId)?.api_slug ?? undefined;
-}
-
-// ---- GET /api/deployments --------------------------------------------------
-
-async function listDeployments(): Promise<Response> {
-  const catalog = loadCatalog();
-  const deployments = catalog.models
-    .flatMap((model) =>
-      model.deployments.flatMap((d) => {
-        if (d.kind !== "hosted") return [];
-        const provider = catalog.providers.find((p) => p.id === d.provider);
-        const missing = provider ? missingKeyNames(provider) : [];
-        return [
-          {
-            id: d.id,
-            modelId: model.id,
-            family: model.family,
-            display: d.display ?? d.id,
-            provider: d.provider,
-            adapter: d.adapter,
-            endpoint: d.endpoint,
-            version: d.version,
-            zdrSafe: d.zdr_safe ?? null,
-            // env var NAMES only — the values never leave the server
-            keysRequired: provider ? expectedKeyNames(provider) : [],
-            keysMissing: missing,
-            keysConfigured: missing.length === 0,
-          },
-        ];
-      }),
-    )
-    .sort((a, b) => a.display.localeCompare(b.display));
-  return json({ deployments });
-}
-
-// ---- POST /api/ask ---------------------------------------------------------
-
-async function askHosted(body: unknown): Promise<Response> {
-  const { deploymentId, model: modelOverride, state, question } = parseAskBody(body);
-  const catalog = loadCatalog();
-
-  let found: ReturnType<typeof findDeployment> = null;
-  if (deploymentId) {
-    found = findDeployment(catalog, deploymentId);
-    if (!found) throw new BadRequestError(`unknown deployment "${deploymentId}"`);
-  } else {
-    // no deployment picked: default to the first hosted one whose keys are all
-    // configured, so the page works before the picker is touched
-    for (const model of catalog.models) {
-      for (const d of model.deployments) {
-        if (d.kind !== "hosted") continue;
-        const provider = catalog.providers.find((p) => p.id === d.provider);
-        if (provider && missingKeyNames(provider).length === 0) {
-          found = { model, deployment: d };
-          break;
-        }
-      }
-      if (found) break;
-    }
-    if (!found) {
-      throw new BadRequestError(
-        "no hosted deployment has its provider keys in the server environment — export them (see README) or pass a deploymentId",
-      );
-    }
-  }
-
-  const { model, deployment } = found;
-  if (deployment.kind !== "hosted")
-    throw new BadRequestError(`"${deployment.id}" is not a hosted deployment`);
-  const provider = catalog.providers.find((p) => p.id === deployment.provider);
-  if (!provider) throw new BadRequestError(`unknown provider "${deployment.provider}"`);
-
-  // secrets come from process.env here on the server; the client only ever
-  // sees the response below
-  const ctx: AdapterContext = {
-    baseUrl: provider.base_url ?? "",
-    auth: authFor(provider),
-    endpoint: deployment.endpoint,
-    // same rule as bench/src/cli.ts: a URL endpoint selects by the pinned
-    // api_slug, a slug endpoint IS the wire model — the request `model`
-    // overrides both for playground experiments
-    model:
-      modelOverride ??
-      (endpointIsUrl(deployment.endpoint)
-        ? (apiSlugOf(model, deployment.version) ?? undefined)
-        : undefined),
-  };
-  const adapter = getAdapter(deployment.adapter);
-  const req: TrackRequestOut = {
-    model_id: deployment.endpoint,
-    items: [{ item_id: "playground", input: { text: state }, question }],
-  };
-
-  const t0 = performance.now();
-  const response = await adapter.send(req, ctx);
-  const latencyMs = Math.round(performance.now() - t0);
-  const result = response.results.find(
-    (r: TrackResponseOut["results"][number]) => r.item_id === "playground",
-  );
-  return json({
-    deployment: deployment.id,
-    adapter: deployment.adapter,
-    model: ctx.model ?? ctx.endpoint,
-    prediction: result?.prediction ?? null,
-    prob: result?.prob ?? null,
-    error: result?.error ?? null,
-    latencyMs,
-    computeMs: response.compute_ms || null,
-    usage: response.usage ?? null,
-  });
 }
 
 // ---- GET /api/runners ------------------------------------------------------
@@ -318,11 +175,12 @@ async function askRunner(body: unknown): Promise<Response> {
   // the server does the call — the browser never talks to the runner directly
   // (no CORS involved), and latency is measured around the client call like
   // the bench does (the runner's own compute_ms rides the response)
-  const { response, latencyMs } = await sendTrack({ baseUrl }, "decision", {
+  const req: TrackRequestOut = {
     model_id: model,
-    items: [{ item_id: "playground", input: { text: state }, question }],
-  });
-  const result = response.results.find((r) => r.item_id === "playground");
+    items: [{ item_id: "local", input: { text: state }, question }],
+  };
+  const { response, latencyMs } = await sendTrack({ baseUrl }, "decision", req);
+  const result = response.results.find((r) => r.item_id === "local");
   return json({
     baseUrl,
     model,
@@ -345,10 +203,7 @@ Bun.serve({
   async fetch(req) {
     const { pathname } = new URL(req.url);
     try {
-      if (req.method === "GET" && pathname === "/api/deployments") return await listDeployments();
       if (req.method === "GET" && pathname === "/api/runners") return await listRunners(req);
-      if (req.method === "POST" && pathname === "/api/ask")
-        return await askHosted(await req.json());
       if (req.method === "POST" && pathname === "/api/runner-ask") {
         return await askRunner(await req.json());
       }
@@ -362,5 +217,7 @@ Bun.serve({
   },
 });
 
-console.log(`zsib playground → http://localhost:${PORT}`);
-console.log("keys are read from process.env on this server only; the browser never sees them");
+console.log(`zsib local → http://localhost:${PORT}`);
+console.log(
+  "local-only: this app holds no credentials of any kind; runners come from your machine",
+);

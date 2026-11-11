@@ -40,12 +40,15 @@ error (root `errorComponent`) when a file is missing.
 
 ## Views
 
-| Route                                                                                                                                          | Status                              |
-| ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `/` Picks — cheapest ≥90%, fastest local on CPU, best rare-language (mean over si/is/cy from `per_language`), best open-weights, ZDR-safe only | real                                |
-| `/explore` — TanStack Table with faceted filters (kind, family, provider/runner, status, ZDR) + sortable columns                               | real                                |
-| `/model/$` — every deployment of one model, accuracy-over-time line (version markers), per-language heatmap, run history table                 | real                                |
-| `/crossover`, `/providers`, `/planner`                                                                                                         | routed stubs (phase 5 continuation) |
+| Route                                                                                                                                          | Status |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `/` Picks — cheapest ≥90%, fastest local on CPU, best rare-language (mean over si/is/cy from `per_language`), best open-weights, ZDR-safe only | real   |
+| `/explore` — TanStack Table with faceted filters (kind, family, provider/runner, status, ZDR) + sortable columns                               | real   |
+| `/model/$` — every deployment of one model, accuracy-over-time line (version markers), per-language heatmap, run history table                 | real   |
+| `/compare` Charts — speed vs accuracy (p50 log scale, hosted/local) and price vs accuracy ($ per 1k items, measured spend only) scatters       | real   |
+
+Planned but not built: self-host vs API, provider picker, GPU planner — intent
+tracked in `docs/board-roadmap.md`; add the route when implemented.
 
 Model ids contain a slash (`fastino/gliner2.5-base`), so the model page is a splat route
 (`/model/$`) and `params._splat` is the model id.
@@ -56,7 +59,8 @@ Model ids contain a slash (`fastino/gliner2.5-base`), so the model page is a spl
   types/components the board uses), so bundles stay tree-shaken; option builders in
   `src/charts/options.ts` are pure functions.
 - Picks rank on the **decision** track only, latest `status: ok` run per deployment.
-  Legacy local runs record a $0 amortised cost, so they sort as free.
+  The cheapest-≥90% pick ranks measured spend only; free-tier and unpriced qualifiers
+  are listed below the ranking, not ranked.
 - Language order/tiers mirror `catalog/languages.yaml` (duplicated in
   `src/lib/languages.ts` because the built JSON does not carry them).
 - Deploy target: static host served from the site root (`base: "/"` in
