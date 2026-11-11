@@ -264,7 +264,7 @@ runs/       append-only run records (CI-enforced)
 bench/      TS benchmark: adapters, scorers, CLI
 runners/    Python model servers, one uv project per dependency island
 packages/   schema (Zod SSOT) + lake (aggregation to build/)
-apps/       board (static) + playground (try it)
+apps/       board (static) + cloud (BYOK tryer) + local (runner tryer)
 docs/       methodology, adding-a-model, the restructure plan
 legacy/     the v0 code (frozen; deleted at the end of the restructure)
 ```

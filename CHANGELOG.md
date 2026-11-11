@@ -4,6 +4,17 @@ One entry per release or arrival round. The run history itself lives in
 `runs/` (append-only); every table below is generated from the lake by
 `bun run render` — nothing here is a hand-edited number.
 
+## 2026-11-11 — app split
+
+- `apps/playground` split into two apps and deleted. **`apps/local`** keeps the
+  live-local-runner half (`/api/runners`, `/api/runner-ask`) and holds no
+  credentials of any kind. **`apps/cloud`** is the new hosted half: a static
+  Vite + React page where the bench adapters run in the browser with the user's
+  own keys — React state only, nothing stored or logged; a network failure
+  surfaces a CORS hint. The lake now emits `adapter`/`endpoint`/`api_slug` on
+  hosted deployment rows plus `build/providers.json` (base_url + env var
+  names, never values) to feed it.
+
 ## 2026-10-24 — restructure (phases 0–4)
 
 - **Phase 0**: v0 frozen at tag `v0-final`; the flat repo moved under
