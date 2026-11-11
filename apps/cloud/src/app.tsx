@@ -145,6 +145,14 @@ function Tryer() {
               <span className="badge warn">not ZDR-safe</span>
             )}
             {selectedDeployment.zdr_safe === true && <span className="badge ok">ZDR-safe</span>}
+            {selectedProvider?.browser && (
+              <span
+                className={selectedProvider.browser.ok ? "badge ok" : "badge warn"}
+                title={selectedProvider.browser.note}
+              >
+                {selectedProvider.browser.ok ? "works in browser" : "blocked by provider (CORS)"}
+              </span>
+            )}
           </p>
         )}
 

@@ -22,6 +22,15 @@ export type HostedDeployment = {
   api_slug?: string;
 };
 
+/** Static CORS-preflight verdict the lake ships per provider (measured
+ *  server-side with a credential-free OPTIONS — no key involved). */
+export type BrowserCors = {
+  /** whether the provider lets this page call it from the browser */
+  ok: boolean;
+  /** dated measurement note (endpoint + HTTP detail) */
+  note: string;
+};
+
 /** One row of build/providers.json — the BYOK surface of a provider. */
 export type ProviderRow = {
   id: string;
@@ -29,4 +38,6 @@ export type ProviderRow = {
   base_url: string | null;
   /** env var NAMES the adapter reads — names only, never values */
   auth: Array<string> | null;
+  /** browser usability verdict; absent until the provider was measured */
+  browser?: BrowserCors;
 };

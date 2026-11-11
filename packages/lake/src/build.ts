@@ -118,6 +118,59 @@ const deployments = catalog.models.flatMap((model) =>
 writeFileSync(join(buildDir, "deployments.json"), `${JSON.stringify(deployments, null, 2)}\n`);
 console.log(`lake: build/deployments.json (${deployments.length} deployments)`);
 
+// Static, dated browser-CORS verdicts for the BYOK tryer (apps/cloud): its
+// adapters run client-side, so a provider is only usable there if its API
+// answers the CORS preflight with Access-Control-Allow-Origin. Measured by
+// hand with a credential-free OPTIONS (no key sent, none printed):
+//   curl -s -i -X OPTIONS "<endpoint>" \
+//     -H "Origin: https://example.pages.dev" \
+//     -H "Access-Control-Request-Method: POST" \
+//     -H "Access-Control-Request-Headers: authorization, content-type"
+// The endpoints are the real POST paths the bench adapters call
+// (bench/src/providers/*), not the provider root. Remeasure when a provider
+// changes its CORS posture and bump the dates.
+export type BrowserCors = {
+  /** whether the provider lets a browser call it (preflight answered) */
+  ok: boolean;
+  /** dated preflight measurement detail */
+  note: string;
+};
+
+const BROWSER_CORS: Record<string, BrowserCors> = {
+  openrouter: {
+    ok: true,
+    note:
+      "preflight OPTIONS measured 2026-11-11 (POST /api/v1/systemone and /api/v1/rerank): " +
+      "HTTP 204, Access-Control-Allow-Origin: * — works in browser",
+  },
+  typellm: {
+    ok: false,
+    note:
+      "preflight OPTIONS measured 2026-11-11 (POST /v1/generate): HTTP 401 with no CORS " +
+      "headers — the browser blocks the call",
+  },
+  fastino: {
+    ok: false,
+    note:
+      "preflight OPTIONS measured 2026-11-11 (POST /v1/systemone and /v1/chat/completions): " +
+      "HTTP 400 with allow-methods/allow-headers but no Access-Control-Allow-Origin " +
+      "(origin-gated) — the preflight fails",
+  },
+  typesafe: {
+    ok: false,
+    note:
+      "preflight OPTIONS measured 2026-11-11 (POST /v1/systemone): HTTP 400 with allow-" +
+      "methods/allow-headers but no Access-Control-Allow-Origin (origin-gated) — the " +
+      "preflight fails",
+  },
+  "cloudflare-workers-ai": {
+    ok: false,
+    note:
+      "preflight OPTIONS measured 2026-11-11 (POST /accounts/<account>/ai/run/<model>): " +
+      "HTTP 405 Method Not Allowed with no CORS headers — the browser blocks the call",
+  },
+};
+
 // providers: what the hosted BYOK tryer (apps/cloud) needs to drive an
 // adapter from the browser — base_url plus the env var NAMES each adapter
 // reads. Names only, never values: the user's own keys are typed into the
@@ -127,6 +180,9 @@ const providers = catalog.providers.map((provider) => ({
   name: provider.name,
   base_url: provider.base_url,
   auth: provider.auth,
+  // measured browser usability (see BROWSER_CORS); dropped from the JSON
+  // until a provider has been measured
+  browser: BROWSER_CORS[provider.id],
 }));
 writeFileSync(join(buildDir, "providers.json"), `${JSON.stringify(providers, null, 2)}\n`);
 console.log(`lake: build/providers.json (${providers.length} providers)`);
