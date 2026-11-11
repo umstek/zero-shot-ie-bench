@@ -42,12 +42,13 @@ class RegistryTests:
 
     def test_every_ollaya_catalog_model_has_an_entry(self):
         assert {entry["model_id"] for entry in ollaya.ENTRIES} == set(ollaya.TAGS)
-        assert len(ollaya.ENTRIES) == 10
+        assert len(ollaya.ENTRIES) == 11
 
     def test_known_tags(self):
         assert ollaya.TAGS["vllm-sr/decision"] == "decision"
         assert ollaya.TAGS["moritzlaurer/nli-deberta-v3-large"] == "nli"
         assert ollaya.TAGS["moritzlaurer/nli-modernbert-large"] == "nli:modernbert-large"
+        assert ollaya.TAGS["madani/decima-agent"] == "decima:agent"
         assert ollaya.TAGS["madani/decima-small"] == "decima:small"
 
 

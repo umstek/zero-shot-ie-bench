@@ -46,6 +46,7 @@ EXPECTED_MODEL_IDS = [
     "alibiserikbay/jevk5-4b",
     "eldanring/winnow-e4b",
     "madani/decima",
+    "madani/decima-agent",
     "madani/decima-small",
     "logitlab/snap",
     "codekins/arbiter",
@@ -72,6 +73,7 @@ EXPECTED_VERSIONS = {
     "alibiserikbay/jevk5-4b": "jevk5-4b@unversioned",
     "eldanring/winnow-e4b": "winnow-e4b@unversioned",
     "madani/decima": "decima-base-2.0@unversioned",
+    "madani/decima-agent": "decima-agent-2.2@unversioned",
     "madani/decima-small": "decima-small-1.1@unversioned",
     "logitlab/snap": "snap1-2b@unversioned",
     "codekins/arbiter": "arbiter-4b@unversioned",
@@ -97,7 +99,7 @@ def test_healthz(client):
     assert client.get("/healthz").json() == {"ok": True}
 
 
-def test_info_lists_the_23_catalog_models(client):
+def test_info_lists_the_24_catalog_models(client):
     info = client.get("/info").json()
     assert info["runner"] == "small-decisions"
     assert info["protocol"] == "v1"

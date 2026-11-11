@@ -10,7 +10,7 @@ deployment's runtime dict echoed):
 - ifm/k2-type                                 -> models/k2type.py
 - molemo-lab/mojev                            -> models/mojev.py
 - internlm/intern-decision-{0.8b,2b,4b}       -> models/intern_decision.py
-- vllm-sr/decision + the nine daemon models   -> models/ollaya.py (HTTP
+- vllm-sr/decision + the ten daemon models    -> models/ollaya.py (HTTP
   proxies; the Ollaya daemon does the serving)
 - liquid/d1-3b and liquid/d1-omni-600m         -> models/d1.py (the catalog
   routing moved from runner: von to this island — the code lives here and
