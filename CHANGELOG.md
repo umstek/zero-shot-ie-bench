@@ -4,6 +4,23 @@ One entry per release or arrival round. The run history itself lives in
 `runs/` (append-only); every table below is generated from the lake by
 `bun run render` — nothing here is a hand-edited number.
 
+## 2026-11-11 — new-system arrival round
+
+- **Hosted catalog** (+6 deployments, all awaiting gate-12 trials): Morph
+  Reflex, Liquid D1.1, Drex v2.0 + Drex Max Finance, Span-02, Jev Router —
+  every endpoint verified live on OpenRouter; all ride the existing
+  `openrouter.systemone` adapter.
+- **Local islands** (+3 servable): laya-multilingual (gliner island, one
+  registry row — laya==0.4.14 loads it generically), decider-2b
+  (systemone-local; decider.py refactored to per-checkpoint machinery),
+  decima:agent (small-decisions Ollaya table; needs the 0.13.0+ daemon to
+  run). GLiDE-0.4B enters the catalog with its island module deferred (its
+  Python API ships inside the HF repo, not on PyPI — see
+  docs/pending-access.md).
+- **docs/pending-access.md**: the keys/access list (10 vendors) plus
+  engineering deferrals and next-round CPU-small candidates from the
+  2026-11-11 research fan-out.
+
 ## 2026-10-24 — restructure (phases 0–4)
 
 - **Phase 0**: v0 frozen at tag `v0-final`; the flat repo moved under
