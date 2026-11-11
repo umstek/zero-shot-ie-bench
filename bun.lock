@@ -28,8 +28,8 @@
         "vite": "^8.3.8",
       },
     },
-    "apps/playground": {
-      "name": "@zsib/playground",
+    "apps/local": {
+      "name": "@zsib/local",
       "version": "0.1.0",
       "dependencies": {
         "@zsib/bench": "workspace:*",
@@ -232,7 +232,7 @@
 
     "@zsib/lake": ["@zsib/lake@workspace:packages/lake"],
 
-    "@zsib/playground": ["@zsib/playground@workspace:apps/playground"],
+    "@zsib/local": ["@zsib/local@workspace:apps/local"],
 
     "@zsib/schema": ["@zsib/schema@workspace:packages/schema"],
 
