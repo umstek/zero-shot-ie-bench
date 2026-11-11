@@ -1,0 +1,32 @@
+{
+ "run_id": "mixed-pool-mwc8xjav-2c1rwiq2f7shd",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "drex-v2.0.openrouter",
+ "model_version": "drex-v2.0@2026-10",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "02dc32892c6988b0871cc3f87d46d7ae876101f7"
+ },
+ "started_at": "2026-11-11T15:01:28.725Z",
+ "finished_at": "2026-11-11T15:01:28.725Z",
+ "totals": {
+  "items": 48,
+  "correct": 43,
+  "cost_usd": 0.00009030000000000001,
+  "p50_ms": 856,
+  "p95_ms": 1417,
+  "errors": 0
+ },
+ "source": "bench"
+}

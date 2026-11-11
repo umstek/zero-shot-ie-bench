@@ -43,9 +43,10 @@ deployments:
   endpoint: liquid/d1.1
   adapter: openrouter.systemone
   notes: 'D1''s successor, now Liquid''s default hosted decision model on the same System One contract
-    (choice/score/noul). Not yet trialed - this deployment awaits its gate-12 run. Open-weights siblings
-    d1-2B / d1-Omni-2B exist on HF but demand transformers>=5.19, above the systemone-local island''s
-    5.17.0 pin - see the follow-up list.'
+    (choice/score/noul). Benched 2026-11-11 straight to the pools (gate skipped, user override): 44/48
+    mixed, 54/54 multilingual, p50 ~0.6s, $1.0e-6/q. Open-weights siblings d1-2B / d1-Omni-2B exist on
+    HF but demand transformers>=5.19, above the systemone-local island''s 5.17.0 pin - see the follow-up
+    list.'
   display: D1.1 (OpenRouter)
   zdr_safe: false
 notes: Hosted size undisclosed - params_b null. claims.languages is the v0-measured baseline (100% on

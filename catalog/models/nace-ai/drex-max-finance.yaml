@@ -29,8 +29,9 @@ deployments:
   endpoint: nace-ai/drex-max-finance
   adapter: openrouter.systemone
   notes: 'Drex Max (27B multimodal, #1 on the ArtificialAnalysis Decision Index v2 at arrival) tuned
-    for finance decisions; text+image questions on the System One contract. Benched text-only per the
-    suite modality. Not yet trialed - awaits its gate-12 run.'
+    for finance decisions; text+image questions on the System One contract. Benched 2026-11-11 straight
+    to the pools (gate skipped, user override), text-only per the suite modality: 43/48 mixed, 54/54
+    multilingual, p50 ~0.73s, ~$6e-6/q (priciest of the 2026-11-11 arrivals).'
   display: Drex Max Finance (OpenRouter)
   zdr_safe: false
 notes: 'license: the Max line''s open weights are Open RAIL-M ($1M revenue cap); the hosted endpoint is

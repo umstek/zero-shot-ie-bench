@@ -3,7 +3,7 @@ family: span-01
 org: Respan
 license: proprietary
 open_weights: false
-params_b: null
+params_b: 16
 claims:
   tracks:
   - decision
@@ -30,9 +30,10 @@ deployments:
   adapter: openrouter.systemone
   notes: 'Span-01''s successor with anytime reasoning - deadline-budgeted decisions that refine until
     the budget expires - and 4-image input. Same System One contract as the benched span-01; open
-    weights announced on HF (respanai/span-02) with params/gating still unverified. Not yet trialed -
-    awaits its gate-12 run.'
+    weights on HF (respanai/span-02, ungated, 15.8B). Benched 2026-11-11 straight to the pools (gate
+    skipped, user override): 43/48 mixed, 53/54 multilingual, p50 ~0.7s, ~$1.2e-6/q.'
   display: Span-02 (OpenRouter)
   zdr_safe: false
-notes: 'The span-01 wire quirks (plain-string state, criteria omitted) may or may not carry over; the
-  trial run decides whether the span-01 notes still apply.'
+notes: 'The span-01 wire quirks (plain-string state, criteria omitted) did not carry over - the stock
+  openrouter.systemone adapter ran both pools clean with 0 errors. params_b from the open weights.'
+

@@ -1,0 +1,32 @@
+{
+ "run_id": "mixed-pool-mwc8ykrm-1x3dpjdtfvh1q",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "drex-max-finance.openrouter",
+ "model_version": "drex-max-finance@2026-11",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "02dc32892c6988b0871cc3f87d46d7ae876101f7"
+ },
+ "started_at": "2026-11-11T15:02:07.555Z",
+ "finished_at": "2026-11-11T15:02:07.555Z",
+ "totals": {
+  "items": 48,
+  "correct": 43,
+  "cost_usd": 0.00027462000000000005,
+  "p50_ms": 720,
+  "p95_ms": 1244,
+  "errors": 0
+ },
+ "source": "bench"
+}
