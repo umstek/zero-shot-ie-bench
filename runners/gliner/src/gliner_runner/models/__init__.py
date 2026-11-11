@@ -85,6 +85,11 @@ _REGISTRY: tuple[ModelSpec, ...] = (
               "laya-typed-decisions@unversioned",
               "convaiinnovations/laya-typed-decisions", laya, ("decision",),
               alias="laya-typed-decisions.local"),
+    ModelSpec("convaiinnovations/laya-multilingual", "laya-multilingual@unversioned",
+              "convaiinnovations/laya-multilingual", laya, ("decision",),
+              alias="laya-multilingual.local",
+              runtime={"engine": "torch", "dtype": "fp32", "quant": None,
+                       "device": "cpu"}),
 )
 
 MODELS: dict[str, ModelSpec] = {}

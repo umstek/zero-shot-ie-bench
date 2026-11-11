@@ -1,0 +1,47 @@
+id: convaiinnovations/laya-multilingual
+family: laya
+org: ConvaiInnovations
+license: Apache 2.0
+open_weights: true
+params_b: 0.322
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: multilingual
+status: active
+links:
+  card: https://huggingface.co/convaiinnovations/laya-multilingual
+  paper: null
+versions:
+- id: laya-multilingual@unversioned
+  hf_revision: null
+  api_slug: null
+  released: '2026-09-19'
+  params_b: 0.322
+  hf_repo: convaiinnovations/laya-multilingual
+  notes: 322M multilingual sibling of laya (the multilingual pool's other root, mmBERT-based, 100+
+    languages); served by the same laya==0.4.14 runtime the island already pins; not yet trialed
+deployments:
+- id: laya-multilingual.local
+  kind: local
+  version: laya-multilingual@unversioned
+  runner: gliner
+  runtime:
+    engine: torch
+    dtype: fp32
+    quant: null
+    device: cpu
+  requires:
+    vram_gb: 0
+    ram_gb: 2
+    accel: cpu
+    note: ram_gb estimated from params (fp32)
+  notes: in-process via the `laya` package (laya.load + agent.predict, one batched call per task)
+  display: Laya multilingual (local)
+  zdr_safe: true
+v0:
+  benched: false
+notes: added to the gliner island registry and tests without a trial run, so v0.benched is false.
