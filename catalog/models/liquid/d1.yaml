@@ -20,6 +20,10 @@ versions:
   hf_revision: null
   api_slug: liquid/d1
   released: null
+- id: d1.1@2026-11
+  hf_revision: null
+  api_slug: liquid/d1.1
+  released: '2026-10-24'
 deployments:
 - id: d1.openrouter
   kind: hosted
@@ -31,6 +35,18 @@ deployments:
     probabilities. $0.04/M input; measured $2.7e-6/q - at 0.031 s/question the fastest hosted decision
     of the v0 pool. One of its providers retains prompts, so the row carries †.'
   display: D1 (OpenRouter)
+  zdr_safe: false
+- id: d1.1.openrouter
+  kind: hosted
+  version: d1.1@2026-11
+  provider: openrouter
+  endpoint: liquid/d1.1
+  adapter: openrouter.systemone
+  notes: 'D1''s successor, now Liquid''s default hosted decision model on the same System One contract
+    (choice/score/noul). Not yet trialed - this deployment awaits its gate-12 run. Open-weights siblings
+    d1-2B / d1-Omni-2B exist on HF but demand transformers>=5.19, above the systemone-local island''s
+    5.17.0 pin - see the follow-up list.'
+  display: D1.1 (OpenRouter)
   zdr_safe: false
 notes: Hosted size undisclosed - params_b null. claims.languages is the v0-measured baseline (100% on
   the 9-language suite); the open-weights sibling has a 17-language card.

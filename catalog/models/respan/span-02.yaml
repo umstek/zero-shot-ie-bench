@@ -1,0 +1,38 @@
+id: respan/span-02
+family: span-01
+org: Respan
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  - image
+  languages: null
+status: active
+links:
+  card: https://openrouter.ai/respan/span-02
+  paper: null
+versions:
+- id: span-02@2026-10
+  hf_revision: null
+  api_slug: respan/span-02
+  released: '2026-10-28'
+deployments:
+- id: span-02.openrouter
+  kind: hosted
+  version: span-02@2026-10
+  provider: openrouter
+  endpoint: respan/span-02
+  adapter: openrouter.systemone
+  notes: 'Span-01''s successor with anytime reasoning - deadline-budgeted decisions that refine until
+    the budget expires - and 4-image input. Same System One contract as the benched span-01; open
+    weights announced on HF (respanai/span-02) with params/gating still unverified. Not yet trialed -
+    awaits its gate-12 run.'
+  display: Span-02 (OpenRouter)
+  zdr_safe: false
+notes: 'The span-01 wire quirks (plain-string state, criteria omitted) may or may not carry over; the
+  trial run decides whether the span-01 notes still apply.'

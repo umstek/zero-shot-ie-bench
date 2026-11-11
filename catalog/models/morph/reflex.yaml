@@ -1,0 +1,35 @@
+id: morph/reflex
+family: reflex
+org: Morph
+license: proprietary
+open_weights: false
+params_b: null
+claims:
+  tracks:
+  - decision
+  - score
+  modalities:
+  - text
+  languages: null
+status: active
+links:
+  card: https://openrouter.ai/morph/reflex
+  paper: null
+versions:
+- id: reflex@2026-11
+  hf_revision: null
+  api_slug: morph/reflex
+  released: null
+deployments:
+- id: reflex.openrouter
+  kind: hosted
+  version: reflex@2026-11
+  provider: openrouter
+  endpoint: morph/reflex
+  adapter: openrouter.systemone
+  notes: 'Morph (YC) decision model on the /v1/systemone wire: text/JSON state, up to 16 images,
+    prefix-cached state for repeated-context workloads. Community-reported lineage says ex-d3-ultra
+    (unconfirmed - params_b stays null). Not yet trialed - awaits its gate-12 run.'
+  display: Reflex (OpenRouter)
+  zdr_safe: false
+notes: Arrived on OpenRouter ~2026-11; the only Morph decisions-capable listing as of 2026-11-11.
