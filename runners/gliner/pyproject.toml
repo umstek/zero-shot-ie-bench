@@ -26,7 +26,11 @@ dependencies = [
     "gliformer==0.1.2",
     "glirel>=1.2.1",
     "gliclass==0.1.20",
-    "laya>=0.3.4",
+    # EXACT: 0.4.14 — the release the lock carried and the venvs ran.
+    # 0.4.15+ drags in vegaml, which declares transformers>=5.17 and only
+    # resolves against this island through the 4.57.6 override below — an
+    # unvalidated stack. Never move this without re-validating Laya on 4.57.6.
+    "laya==0.4.14",
     # gliformer's parse_pdf needs pymupdf, which gliformer itself only pulls
     # in under its pdf/all extras.
     "pymupdf>=1.23",
