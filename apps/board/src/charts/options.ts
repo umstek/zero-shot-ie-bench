@@ -313,6 +313,37 @@ function scatterData(points: ComparePoint[], x: (p: ComparePoint) => number): Sc
   return data;
 }
 
+/** Non-dominated points: no other point is both lower on x (faster / cheaper)
+ *  and at least as accurate. Sorted by x ascending with accuracy strictly
+ *  rising along the line — the best-available trade-off staircase. */
+export function paretoFrontier(
+  points: ComparePoint[],
+  x: (p: ComparePoint) => number,
+): ComparePoint[] {
+  const sorted = [...points].sort((a, b) => x(a) - x(b) || b.accuracy - a.accuracy);
+  const frontier: ComparePoint[] = [];
+  let best = Number.NEGATIVE_INFINITY;
+  for (const p of sorted) {
+    if (p.accuracy > best) {
+      frontier.push(p);
+      best = p.accuracy;
+    }
+  }
+  return frontier;
+}
+
+/** The dashed frontier line drawn over a compare scatter. */
+function frontierSeries(points: ComparePoint[], x: (p: ComparePoint) => number) {
+  return {
+    name: "Pareto frontier",
+    type: "line" as const,
+    symbolSize: 6,
+    lineStyle: { type: "dashed" as const, width: 1.5, color: "#64748b" },
+    itemStyle: { color: "#64748b" },
+    data: scatterData(paretoFrontier(points, x), x),
+  };
+}
+
 /** p50 latency (log ms) vs accuracy, one series per deployment kind. */
 export function speedScatterOption(points: ComparePoint[]): EChartsCoreOption {
   const data = (kind: DeploymentKind) =>
@@ -345,6 +376,7 @@ export function speedScatterOption(points: ComparePoint[]): EChartsCoreOption {
     series: [
       { name: "hosted", type: "scatter" as const, symbolSize: 10, data: data("hosted") },
       { name: "local", type: "scatter" as const, symbolSize: 10, data: data("local") },
+      frontierSeries(points, (p) => p.p50Ms ?? 0),
     ],
   };
 }
@@ -378,6 +410,9 @@ export function priceScatterOption(points: ComparePoint[]): EChartsCoreOption {
       },
     },
     yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" } },
-    series: [{ name: "hosted", type: "scatter" as const, symbolSize: 10, data }],
+    series: [
+      { name: "hosted", type: "scatter" as const, symbolSize: 10, data },
+      frontierSeries(usable, (p) => (p.perItem ?? 0) * 1000),
+    ],
   };
 }

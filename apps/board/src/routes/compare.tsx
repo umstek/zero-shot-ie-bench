@@ -32,7 +32,8 @@ export function ComparePage() {
         <h2>Speed vs accuracy</h2>
         <p className="muted">
           Measured p50 latency (log scale) against accuracy; one point per deployment, split by
-          hosted/local. Runs without a measured p50 can't be plotted.
+          hosted/local. The dashed Pareto frontier marks systems where nothing is both faster and at
+          least as accurate. Runs without a measured p50 can't be plotted.
         </p>
         {speed.length === 0 ? (
           <p className="muted">No data.</p>
@@ -45,7 +46,8 @@ export function ComparePage() {
         <h2>Price vs accuracy</h2>
         <p className="muted">
           Measured spend per 1k items (log scale) against accuracy, hosted deployments with a
-          positive measured cost only — free-tier and unpriced systems are excluded.
+          positive measured cost only — free-tier and unpriced systems are excluded. The dashed
+          Pareto frontier marks systems where nothing is both cheaper and at least as accurate.
         </p>
         {price.length === 0 ? (
           <p className="muted">No data.</p>
