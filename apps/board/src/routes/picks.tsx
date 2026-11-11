@@ -24,19 +24,26 @@ export function PicksPage() {
           {pick.rows.length === 0 ? (
             <p className="muted">No qualifying runs in the lake yet.</p>
           ) : (
-            <ol className="pick-list">
-              {pick.rows.map((row) => (
-                <li key={row.deployment.deployment_id}>
-                  <span className="pick-headline">{row.headline}</span>
-                  <Link to="/model/$" params={{ _splat: row.deployment.model_id }}>
-                    {row.deployment.display}
-                  </Link>
-                  <span className="muted pick-detail">
-                    {row.deployment.org} · {row.deployment.kind} · {row.detail}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <>
+              <ol className="pick-list">
+                {pick.rows.map((row) => (
+                  <li key={row.deployment.deployment_id}>
+                    <span className="pick-headline">{row.headline}</span>
+                    <Link to="/model/$" params={{ _splat: row.deployment.model_id }}>
+                      {row.deployment.display}
+                    </Link>
+                    <span className="muted pick-detail">
+                      {row.deployment.org} · {row.deployment.kind} · {row.detail}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              {pick.unranked && pick.unranked.length > 0 && (
+                <p className="muted pick-unranked">
+                  Free-tier / unpriced (not ranked): {pick.unranked.join(" · ")}
+                </p>
+              )}
+            </>
           )}
         </article>
       ))}

@@ -56,7 +56,8 @@ Model ids contain a slash (`fastino/gliner2.5-base`), so the model page is a spl
   types/components the board uses), so bundles stay tree-shaken; option builders in
   `src/charts/options.ts` are pure functions.
 - Picks rank on the **decision** track only, latest `status: ok` run per deployment.
-  Legacy local runs record a $0 amortised cost, so they sort as free.
+  The cheapest-≥90% pick ranks measured spend only; free-tier and unpriced qualifiers
+  are listed below the ranking, not ranked.
 - Language order/tiers mirror `catalog/languages.yaml` (duplicated in
   `src/lib/languages.ts` because the built JSON does not carry them).
 - Deploy target: static host served from the site root (`base: "/"` in

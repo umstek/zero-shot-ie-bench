@@ -35,6 +35,9 @@ export interface Run {
   p50_ms: number | null;
   p95_ms: number | null;
   per_language: PerLanguageStat[] | null;
+  /** legacy-v0 bookkeeping: per-question cost figure (list-price derived when
+   *  the provider reported tokens but no $); present on all lake rows */
+  v0_per_question?: number | null;
   v0_tiers?: Record<string, number> | null;
   v0_cells?: Record<string, string> | null;
 }
