@@ -1,0 +1,32 @@
+{
+ "run_id": "mixed-pool-mwc8wpxd-16a40fuzg8h2h",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "d1.1.openrouter",
+ "model_version": "d1.1@2026-11",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/mixed-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:900aba60ecb6c914ca0a04f86a4ac7e8f5c9e828799196ee02ad3b38c32cc711",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "02dc32892c6988b0871cc3f87d46d7ae876101f7"
+ },
+ "started_at": "2026-11-11T15:00:40.181Z",
+ "finished_at": "2026-11-11T15:00:40.181Z",
+ "totals": {
+  "items": 48,
+  "correct": 44,
+  "cost_usd": 0.000050060000000000005,
+  "p50_ms": 708,
+  "p95_ms": 1309,
+  "errors": 0
+ },
+ "source": "bench"
+}

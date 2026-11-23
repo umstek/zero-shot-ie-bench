@@ -1,0 +1,32 @@
+{
+ "run_id": "multilingual-pool-mwc90mxi-1w0u4n62w4149",
+ "status": "ok",
+ "deferred_reason": null,
+ "deployment": "reflex.openrouter",
+ "model_version": "reflex@2026-11",
+ "served_version": null,
+ "where": {
+  "kind": "hosted",
+  "provider": "openrouter"
+ },
+ "suite": "decision/multilingual-pool",
+ "suite_version": 1,
+ "suite_hash": "sha256:ec4631c6905b8114c066431a83d75ab8e5644b94428ac86d383d7a4dd5d112ae",
+ "params": {},
+ "params_hash": null,
+ "bench": {
+  "version": "0.1.0",
+  "git_sha": "02dc32892c6988b0871cc3f87d46d7ae876101f7"
+ },
+ "started_at": "2026-11-11T15:03:38.288Z",
+ "finished_at": "2026-11-11T15:03:38.288Z",
+ "totals": {
+  "items": 54,
+  "correct": 54,
+  "cost_usd": 0.00025053,
+  "p50_ms": 605,
+  "p95_ms": 694,
+  "errors": 0
+ },
+ "source": "bench"
+}

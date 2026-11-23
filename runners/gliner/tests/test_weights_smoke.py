@@ -23,6 +23,7 @@ GLIREL = "jackboyla/glirel-large-v0"
 RELEX = "knowledgator/gliner-relex-multi-v1.0"
 LICLASS = "knowledgator/gliclass-modern-base-v3.0"  # the smallest gliclass
 LAYA = "convaiinnovations/laya"
+LAYA_MULTILINGUAL = "convaiinnovations/laya-multilingual"
 
 needs = pytest.mark.skipif
 
@@ -91,6 +92,23 @@ class TestLayaWeights:
         agent = laya.load(LAYA)
         prediction, prob = laya.run_decision(
             agent, "The food was cold and the waiter was rude.",
+            {"type": "choice",
+             "instructions": 'What is the overall sentiment of this text: "..."',
+             "criteria": {"positive": None, "negative": None, "neutral": None}}, {})
+        assert prediction in ("positive", "negative", "neutral", None)
+        assert prob is None or 0.0 <= prob <= 1.0
+
+
+@needs(not weights_cached(LAYA_MULTILINGUAL),
+       reason=f"{LAYA_MULTILINGUAL} not in the local HF cache")
+class TestLayaMultilingualWeights:
+    def test_choice_question_answers_a_label(self):
+        # the 322M multilingual sibling loads through the same generic
+        # laya.load(repo) path; never trialed yet — this only pins the
+        # load + answer shapes, not any score
+        agent = laya.load(LAYA_MULTILINGUAL)
+        prediction, prob = laya.run_decision(
+            agent, "Das Essen war kalt und der Kellner war unfreundlich.",
             {"type": "choice",
              "instructions": 'What is the overall sentiment of this text: "..."',
              "criteria": {"positive": None, "negative": None, "neutral": None}}, {})

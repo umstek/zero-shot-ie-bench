@@ -54,14 +54,17 @@ console.log(`families:     ${[...families].sort().join(", ")}`);
 // The README's headline counts ONE system per file, but the two v0 tables'
 // memberships differ (e.g. Laya Router is multilingual-only, "Laya (local)"
 // mixed-only), so the file count legitimately drifts from the headline once
-// every table row gets its own file. The hard gates: family count exactly,
-// and every catalog file unique — headline numbers stay informational.
+// every table row gets its own file — and post-v0 arrival rounds add both
+// files and families. The hard gates: the family set never shrinks below the
+// v0-final headline count, and every catalog file unique — headline numbers
+// stay informational.
 if (expected.length !== 3) {
   console.error("FAIL could not parse the v0-final README headline numbers");
   process.exit(1);
 }
-if (families.size !== expected[2]) {
-  console.error("FAIL family count does not match the v0-final README");
+const minFamilies = expected[2];
+if (minFamilies !== undefined && families.size < minFamilies) {
+  console.error("FAIL family count dropped below the v0-final README");
   process.exit(1);
 }
 const ids = models.map((m) => m.id);
@@ -69,4 +72,4 @@ if (new Set(ids).size !== ids.length) {
   console.error("FAIL duplicate model ids in the catalog");
   process.exit(1);
 }
-console.log("OK phase-1 acceptance (families exact, ids unique; file counts informational)");
+console.log("OK phase-1 acceptance (families >= v0, ids unique; file counts informational)");

@@ -1,6 +1,6 @@
 """Laya — Convai Innovations' typed-decision ModernBERT (the local Jev).
 
-Serves the three catalog deployments (catalog/models/convaiinnovations/*.yaml,
+Serves the four catalog deployments (catalog/models/convaiinnovations/*.yaml,
 all `runner: gliner`):
   - laya.local                    -> convaiinnovations/laya (421M English root,
                                      benched as "Laya (local)")
@@ -9,6 +9,8 @@ all `runner: gliner`):
                                      English root vs typed-decisions), a v0 row
                                      of its own
   - laya-typed-decisions.local    -> convaiinnovations/laya-typed-decisions
+  - laya-multilingual.local       -> convaiinnovations/laya-multilingual (322M,
+                                     the multilingual sibling; not yet trialed)
 
 Track: decision — Laya answers the Jev typed questions (choice / score /
 noul, the `engines/jev_client.choice/score/noul` dict shape) over a state in
