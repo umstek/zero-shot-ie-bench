@@ -18,7 +18,11 @@ MODELS: list[dict[str, Any]] = [
     for engine in (kev, decider, decider2, openthai, agentjev)
 ]
 
-_ENGINES = {engine.MODEL_ID: engine for engine in (kev, decider, decider2, openthai, agentjev)}
+_ENGINES = {
+    key: engine
+    for engine in (kev, decider, decider2, openthai, agentjev)
+    for key in (engine.MODEL_ID, f"{engine.MODEL_ID}.local")
+}
 
 
 def predict(model_id: str, payload: dict[str, Any]) -> dict[str, Any]:

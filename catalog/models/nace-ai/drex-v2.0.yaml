@@ -2,7 +2,7 @@ id: nace-ai/drex-v2.0
 family: drex
 org: Nace AI
 license: proprietary
-open_weights: false
+open_weights: true
 params_b: 35
 claims:
   tracks:

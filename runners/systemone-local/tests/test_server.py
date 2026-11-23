@@ -164,6 +164,62 @@ def test_bare_value_is_wrapped_by_the_protocol():
     ]
 
 
+def test_decider_local_deployment_ids_dispatch():
+    """Catalog wire IDs with `.local` (used when a model has multiple deployments) dispatch."""
+    from systemone_local.models import decider, decider2
+
+    with (
+        patch.object(decider, "predict", return_value={"prediction": "positive", "prob": 0.8}),
+        patch.object(decider2, "predict", return_value={"prediction": "positive", "prob": 0.9}),
+        TestClient(server_module.build_app()) as test_client,
+    ):
+        for model_id, expected_prob in (("decider-0.8b.local", 0.8), ("decider-2b.local", 0.9)):
+            response = test_client.post("/v1/decision", json={"model_id": model_id, "items": [ITEM]})
+            assert response.status_code == 200
+            assert response.json()["results"] == [
+                {"item_id": "mp-001", "prediction": "positive", "prob": expected_prob, "error": None}
+            ]
+
+
+def test_decider_engine_cache_keys_on_weights_and_device(monkeypatch):
+    """Differing weights overrides or devices must not alias the same cached Decider engine."""
+    from types import ModuleType
+
+    from systemone_local.models import decider
+
+    calls: list[tuple[str, str, bool]] = []
+
+    class FakeDecider:
+        def __init__(self, path: str, device: str = "cpu", use_graphs: bool = False):
+            calls.append((path, device, use_graphs))
+
+    fake_pkg = ModuleType("decider")
+    fake_infer = ModuleType("decider.infer")
+    setattr(fake_infer, "Decider", FakeDecider)
+    monkeypatch.setitem(sys.modules, "decider", fake_pkg)
+    monkeypatch.setitem(sys.modules, "decider.infer", fake_infer)
+    monkeypatch.setattr(decider, "_ENGINES", {})
+
+    monkeypatch.setenv("DECIDER_WEIGHTS", "/tmp/w1")
+    monkeypatch.setenv("DECIDER_DEVICE", "cpu")
+    eng1 = decider.checkpoint_load("Mapika/decider-0.8b", "DECIDER_WEIGHTS", "DECIDER_DEVICE")
+    eng1_again = decider.checkpoint_load("Mapika/decider-0.8b", "DECIDER_WEIGHTS", "DECIDER_DEVICE")
+    assert eng1 is eng1_again
+
+    monkeypatch.setenv("DECIDER_WEIGHTS", "/tmp/w2")
+    eng2 = decider.checkpoint_load("Mapika/decider-0.8b", "DECIDER_WEIGHTS", "DECIDER_DEVICE")
+    assert eng2 is not eng1
+
+    monkeypatch.setenv("DECIDER_DEVICE", "cuda")
+    eng3 = decider.checkpoint_load("Mapika/decider-0.8b", "DECIDER_WEIGHTS", "DECIDER_DEVICE")
+    assert eng3 is not eng2
+    assert calls == [
+        ("/tmp/w1", "cpu", False),
+        ("/tmp/w2", "cpu", False),
+        ("/tmp/w2", "cuda", False),
+    ]
+
+
 def test_import_pulls_no_heavy_dependencies():
     """The module-hygiene rule the legacy demo tests police: importing the
     island (and re-importing every engine module) with torch/transformers

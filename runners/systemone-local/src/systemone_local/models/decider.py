@@ -44,7 +44,7 @@ DEVICE_ENV = "DECIDER_DEVICE"
 # predict and stays); the load lock is shared across checkpoints — CPU
 # loads run minutes, so serialize them instead of racing two multi-GB
 # weight reads into RAM at once.
-_ENGINES: dict[str, list[Any]] = {}
+_ENGINES: dict[tuple[str, str, str], list[Any]] = {}
 _LOAD_LOCK = threading.Lock()
 
 
@@ -65,19 +65,21 @@ def checkpoint_available(repo: str, weights_env: str) -> bool:
 def checkpoint_load(repo: str, weights_env: str, device_env: str) -> Any:
     """The lazy weight load for one checkpoint (decider lazy-loads on the
     first request too)."""
-    slot = _ENGINES.get(repo)
+    explicit_weights = os.environ.get(weights_env) or ""
+    device = os.environ.get(device_env, "cpu")  # catalog requires: accel cpu
+    key = (repo, explicit_weights, device)
+    slot = _ENGINES.get(key)
     if slot:
         return slot[0]
     with _LOAD_LOCK:
-        slot = _ENGINES.get(repo)
+        slot = _ENGINES.get(key)
         if slot:
             return slot[0]
         from decider.infer import Decider  # noqa: PLC0415 — the heavy stack, lazy
 
         path = pick_path(repo, weights_env)
-        device = os.environ.get(device_env, "cpu")  # catalog requires: accel cpu
-        _ENGINES[repo] = [Decider(path, device=device, use_graphs=False)]
-        return _ENGINES[repo][0]
+        _ENGINES[key] = [Decider(path, device=device, use_graphs=False)]
+        return _ENGINES[key][0]
 
 
 def checkpoint_predict(

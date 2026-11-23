@@ -92,6 +92,36 @@ class TestServer:
         assert body["results"][0]["prediction"] == "negative"
         assert body["results"][0]["prob"] == 0.71
 
+    def test_decision_suite_choice_preserves_typed_question_for_laya(self, monkeypatch):
+        seen: dict[str, object] = {}
+
+        def predict(state, questions):
+            seen["state"] = state
+            seen["questions"] = questions
+            return {"answers": {"q": {"choice": "positive", "confidence": 0.88}}}
+
+        agent = SimpleNamespace(predict=predict)
+        monkeypatch.setitem(laya._LOADED, "convaiinnovations/laya-multilingual", agent)
+        body = TestClient(app).post("/v1/decision", json={
+            "model_id": "laya-multilingual.local",
+            "items": [{"item_id": "d2", "input": "Great service.",
+                       "question": {"type": "choice", "options": ["positive", "negative"]}}],
+        }).json()
+        assert seen["state"] == {"text": "Great service."}
+        assert seen["questions"] == {
+            "q": {
+                "type": "choice",
+                "instructions": "Choose the best option.",
+                "criteria": {"positive": None, "negative": None},
+            }
+        }
+        assert body["results"] == [{
+            "item_id": "d2",
+            "prediction": "positive",
+            "prob": 0.88,
+            "error": None,
+        }]
+
     def test_relation_dispatch_runs_off_the_question_shape(self, monkeypatch):
         # no /v1/relation route yet (see README known gap) — the relex
         # relations handler is still reachable through predict() because the

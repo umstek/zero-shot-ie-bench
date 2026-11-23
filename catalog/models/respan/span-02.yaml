@@ -2,7 +2,7 @@ id: respan/span-02
 family: span-01
 org: Respan
 license: proprietary
-open_weights: false
+open_weights: true
 params_b: 16
 claims:
   tracks:
