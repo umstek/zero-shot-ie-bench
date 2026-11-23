@@ -45,17 +45,22 @@ questions. † = hosted via a non-ZDR endpoint.
 | Solar Decide Flash (OpenRouter) † | 93.8% | 0.069 | n/a |  |
 | Decider V1 27B (OpenRouter) | 93.8% | 0.075 | n/a |  |
 | Decider V1.1 27B (OpenRouter) | 93.8% | 0.080 | n/a |  |
+| Reflex (OpenRouter) † | 93.8% | 0.604 | n/a |  |
 | Microsoft Decision-1 (OpenRouter) | 91.7% | 0.065 | n/a |  |
 | TypeLLM thinking (hosted) † | 91.7% | 0.338 | n/a |  |
 | Decision 3.0 Nano 2B (local) | 91.7% | 9.376 | n/a |  |
 | Drex v1.5 (OpenRouter) | 91.7% | 0.537 | n/a |  |
 | Decider V1.2 27B (OpenRouter) | 91.7% | 0.539 | n/a |  |
 | D1-ultra (OpenRouter) † | 91.7% | 0.602 | n/a |  |
+| D1.1 (OpenRouter) † | 91.7% | 0.708 | n/a |  |
 | Mercury Decide (OpenRouter) † | 89.6% | 0.051 | n/a |  |
 | Clef-omni (Workers AI) | 89.6% | 0.040 | n/a |  |
 | arbiter 4B (Ollaya) | 89.6% | 4.878 | n/a |  |
 | Jev (cloud, jev-1.14.0) | 89.6% | 0.246 | n/a |  |
 | GLiDE (Fastino) | 89.6% | 0.656 | n/a |  |
+| Span-02 (OpenRouter) † | 89.6% | 0.717 | n/a |  |
+| Drex Max Finance (OpenRouter) † | 89.6% | 0.72 | n/a |  |
+| Drex v2.0 (OpenRouter) † | 89.6% | 0.856 | n/a |  |
 | Elephant-1 9B (OpenRouter) † | 89.6% | 3.361 | n/a |  |
 | winnow e4b (Ollaya) | **87.5%** | 8.138 | n/a |  |
 | qwen3-reranker-8b (OpenRouter) † | 87.5% | 0.564 | n/a |  |
@@ -162,6 +167,11 @@ values, flagged in the run meta).
 | Jev (cloud, jev-1.14.0) | $0 | $0.00027 | $0 |
 | Solar Decide (OpenRouter) † | $0 | $0.001 | $0 |
 | TypeLLM (hosted) † | $0 | $0.00017 | $0 |
+| D1.1 (OpenRouter) † | $0.00005 | $0.000064 | $0.00000104 |
+| Span-02 (OpenRouter) † | $0.000056 | $0.000066 | $0.00000117 |
+| Drex v2.0 (OpenRouter) † | $0.00009 | $0.000125 | $0.00000188 |
+| Reflex (OpenRouter) † | $0.000208 | $0.000251 | $0.00000434 |
+| Drex Max Finance (OpenRouter) † | $0.000275 | $0.000333 | $0.00000572 |
 <!-- /gen:cost -->
 
 ## Multilingual benchmark (9 languages, no English)
@@ -191,6 +201,9 @@ The same 54 parallel texts per system; tiers are the language grouping
 | D1-ultra (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | Elephant-1 9B (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | GPT-6 Luna Decisions (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| D1.1 (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| Drex Max Finance (OpenRouter) † | 100% | 100% | 100% | **100%** |
+| Reflex (OpenRouter) † | 100% | 100% | 100% | **100%** |
 | winnow e4b (Ollaya) | 100% | 100% | 94% | 98% |
 | Span-01 † | 100% | 100% | 94% | 98% |
 | Kev 4B (OpenRouter) † | 100% | 100% | 94% | 98% |
@@ -199,6 +212,8 @@ The same 54 parallel texts per system; tiers are the language grouping
 | Clef-omni (Workers AI) | 100% | 100% | 94% | 98% |
 | Drex v1.5 (OpenRouter) | 100% | 100% | 94% | 98% |
 | Decider Flash V1.2 (OpenRouter) | 100% | 100% | 94% | 98% |
+| Drex v2.0 (OpenRouter) † | 100% | 100% | 94% | 98% |
+| Span-02 (OpenRouter) † | 94% | 100% | 100% | 98% |
 | qwen3-reranker-8b (OpenRouter) † | 100% | 100% | 89% | 96% |
 | Lumma-fev 4B | 100% | 100% | 89% | 96% |
 | arbiter 4B (Ollaya) | 100% | 100% | 89% | 96% |

@@ -1,8 +1,8 @@
 """The systemone-local runner app.
 
-One FastAPI app (runner_protocol.create_app) serves the island's four
-System One-contract decision engines under POST /v1/decision, plus
-GET /info and GET /healthz. There is no Gradio UI here: these engines'
+One FastAPI app (runner_protocol.create_app) serves the island's five
+decision models (four engines; the decider checkpoints share one) under
+POST /v1/decision, plus GET /info and GET /healthz. There is no Gradio UI here: these engines'
 self-host UIs were the legacy demos; the playground app covers them.
 
 Start (historical ports for reference — the native System One servers
@@ -21,7 +21,7 @@ from runner_protocol import create_app
 
 from .models import MODELS, predict
 
-TRACKS = ["decision"]  # the catalog's claimed track for all four models
+TRACKS = ["decision"]  # the catalog's claimed track for all five models
 
 
 def build_app() -> FastAPI:

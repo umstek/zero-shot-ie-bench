@@ -115,8 +115,9 @@ const intPct = (accuracy: number | null): string =>
 
 // | System | Popular | Medium | Rare | All |
 // v0 rules: integer % everywhere; All desc with the v0 arrival order
-// (meta.v0_rank, legacy bookkeeping) as the tiebreak; the leading row's tier
-// cells are bold; the All column bolds perfect scores; † on OpenRouter rows.
+// (meta.v0_rank, legacy bookkeeping) as the tiebreak, then name for fresh
+// rows; the leading row's tier cells are bold; the All column bolds perfect
+// scores; † on OpenRouter rows.
 export function multilingualTable(
   decisionRuns: RunAggregate[],
   deployments: DeploymentInfo[],
@@ -160,7 +161,12 @@ export function multilingualTable(
       rank: run.v0_rank ?? Number.MAX_SAFE_INTEGER,
     });
   }
-  rows.sort((a, b) => b.all - a.all || a.rank - b.rank);
+  // fresh rows (no v0_rank) tie-break on name — ingestion order is
+  // readdir-dependent and differs between platforms
+  rows.sort(
+    (a, b) =>
+      b.all - a.all || a.rank - b.rank || (a.cells[0] ?? "").localeCompare(b.cells[0] ?? ""),
+  );
   const leader = rows[0];
   const header = ["System", "Popular", "Medium", "Rare", "All"];
   const body = rows.map((r) => {

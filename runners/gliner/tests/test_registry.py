@@ -29,6 +29,8 @@ CATALOG = {
     "laya.router": ("laya@unversioned", "convaiinnovations/laya"),
     "laya-typed-decisions.local": ("laya-typed-decisions@unversioned",
                                    "convaiinnovations/laya-typed-decisions"),
+    "laya-multilingual.local": ("laya-multilingual@unversioned",
+                                "convaiinnovations/laya-multilingual"),
 }
 
 # catalog claims per deployment (claims.tracks; relex's classify row is the
@@ -44,6 +46,7 @@ CAPABILITIES = {
     "laya.local": {"decision"},
     "laya.router": {"decision"},
     "laya-typed-decisions.local": {"decision"},
+    "laya-multilingual.local": {"decision"},
 }
 
 
@@ -68,6 +71,7 @@ class TestRegistry:
             "convaiinnovations/laya",
             "laya.router",
             "convaiinnovations/laya-typed-decisions",
+            "convaiinnovations/laya-multilingual",
         ]
 
     def test_versions_and_hf_repos_match_the_catalog(self):

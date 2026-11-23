@@ -4,7 +4,7 @@ The catch-all local decision-model island: one process serves the vLLM
 Semantic Router **Decision 2.0** trio, the **Decision 3.0** trio,
 IFM's **K2-Type-0.9B**, MoLeMo-Lab's **MoJev**, internlm's
 **Intern-Decision** trio (all loaded in-process on the transformers 5.17
-CPU stack) and the ten **Ollaya** daemon models (proxied over HTTP on the
+CPU stack) and the eleven **Ollaya** daemon models (proxied over HTTP on the
 TypeSafe System One wire contract — the daemon does the serving, this
 process only forwards).
 
@@ -40,18 +40,21 @@ intern_decision_client,julia_client,d1_client,ollaya_client}.py` and
 | `alibiserikbay/jevk5-4b` | `jevk5-4b@unversioned` | `jevk5` |
 | `eldanring/winnow-e4b` | `winnow-e4b@unversioned` | `winnow:e4b` |
 | `madani/decima` | `decima-base-2.0@unversioned` | `decima` |
+| `madani/decima-agent` | `decima-agent-2.2@unversioned` | `decima:agent` |
 | `madani/decima-small` | `decima-small-1.1@unversioned` | `decima:small` |
 | `logitlab/snap` | `snap1-2b@unversioned` | `snap` |
 | `codekins/arbiter` | `arbiter-4b@unversioned` | `arbiter` |
 | `txoka/credence` | `credence-v1@unversioned` | `credence` |
 
-**The daemon dependency:** the ten proxied models answer through the local
+**The daemon dependency:** the eleven proxied models answer through the local
 Ollaya daemon (`ollaya serve`, <https://ollaya.dev/download>, default port
 11435; this repo runs 0.12.1). Nothing loads here — `POST /v1/systemone`
 on `OLLAYA_BASE_URL` (default `http://127.0.0.1:11435`, a full
 `.../v1/systemone` URL wins as-is). Pull each tag first (`ollaya pull
 <tag>`); a dead daemon fails those items' predictions with the HTTP error,
-not the run.
+not the run. Note `decima:agent` needs daemon **0.13.0 or newer** (its
+late-interaction-v2 layout; 0.12.1 downloads the weights and then refuses
+to load them) — upgrade before pulling it.
 
 ## Also ported, not registered on /info
 

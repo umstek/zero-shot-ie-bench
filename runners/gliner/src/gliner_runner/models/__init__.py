@@ -85,6 +85,11 @@ _REGISTRY: tuple[ModelSpec, ...] = (
               "laya-typed-decisions@unversioned",
               "convaiinnovations/laya-typed-decisions", laya, ("decision",),
               alias="laya-typed-decisions.local"),
+    ModelSpec("convaiinnovations/laya-multilingual", "laya-multilingual@unversioned",
+              "convaiinnovations/laya-multilingual", laya, ("decision",),
+              alias="laya-multilingual.local",
+              runtime={"engine": "torch", "dtype": "fp32", "quant": None,
+                       "device": "cpu"}),
 )
 
 MODELS: dict[str, ModelSpec] = {}
@@ -107,19 +112,28 @@ def normalize_suite_payload(spec: ModelSpec, payload: dict[str, Any]):
 
     - input {"text": ...} (images unused on this island) -> the text string
     - a choice question on a classify-capable model -> {"labels": {opt: None}}
-    - an options list on any model -> {"labels": [...]} (NER label set)
-    - decision-only models (laya) keep their typed question as-is
+    - a decision-capable model (laya) keeps its typed question (converting
+      suite `options` on a choice question to `criteria`)
+    - an options list on any other model -> {"labels": [...]} (NER label set)
     """
     raw_input = payload.get("input")
     if isinstance(raw_input, dict) and "decision" not in spec.tracks:
         input_value = raw_input.get("text", "")
     else:
         input_value = raw_input  # decision specs take rich states as-is
-    question = dict(payload.get("question") or {})
+    question: dict[str, Any] = dict(payload.get("question") or {})
     qtype = question.get("type")
     options = question.get("options")
     if qtype == "choice" and isinstance(options, list) and "classify" in spec.tracks:
         return input_value, {"labels": {opt: None for opt in options}}
+    if "decision" in spec.tracks:
+        if qtype == "choice" and isinstance(options, list) and not question.get("criteria"):
+            question.pop("options", None)
+            question["criteria"] = {opt: None for opt in options}
+            question.setdefault("instructions", "Choose the best option.")
+            return input_value, question
+        if qtype in ("choice", "score", "noul"):
+            return input_value, question
     if isinstance(options, list) and not question.get("labels"):
         return input_value, {"labels": options}
     return input_value, question

@@ -225,11 +225,17 @@ class TestAgentJevRows:
 # ------------------------------------------------------------- availability
 class TestRegistry:
     def test_every_engine_reports_availability_without_touching_the_network(self):
-        from systemone_local.models import agentjev, decider, kev, openthai
+        from systemone_local.models import agentjev, decider, decider2, kev, openthai
 
         # On a machine without clones/weights these are simply False; either
         # way they must answer fast and offline (find_spec + cache scan).
-        for available in (kev.available, decider.available, openthai.available, agentjev.available):
+        for available in (
+            kev.available,
+            decider.available,
+            decider2.available,
+            openthai.available,
+            agentjev.available,
+        ):
             assert isinstance(available(), bool)
 
     def test_registry_covers_every_served_model(self):
@@ -238,6 +244,7 @@ class TestRegistry:
         assert [m["model_id"] for m in MODELS] == [
             "kev-0.8b",
             "decider-0.8b",
+            "decider-2b",
             "openthai-systemone",
             "agentjev-v1",
         ]

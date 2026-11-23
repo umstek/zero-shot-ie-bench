@@ -30,11 +30,14 @@ Served here (tag -> catalog model):
   ``jevk5``                 alibiserikbay JevK5 v0.3, the full 4B Qwen3.5
                             fine-tune (Q8_0 GGUF on llama.cpp).
   ``winnow:e4b``            EldanRing Winnow, fine-tuned from Gemma 4 E4B IT.
-  ``decima`` / ``decima:small``
+  ``decima`` / ``decima:agent`` / ``decima:small``
                             A. M. Madani's Decima: multilingual
-                            late-interaction scorers (needs the 0.11+
-                            daemon). base 2.0 = 321M mmBERT;
-                            small 1.1 = 122M multilingual-e5-small.
+                            late-interaction scorers (need the 0.11+
+                            daemon). base 2.0 = 321M mmBERT; agent 2.2 =
+                            decima-base tuned for coding-agent decisions
+                            (needs the 0.13.0+ daemon — its
+                            late-interaction-v2 layout); small 1.1 = 122M
+                            multilingual-e5-small.
   ``snap``                  logitlab's snap1-2b (MiniCPM5-2B, Q8_0 GGUF;
                             needs the 0.10+ daemon).
   ``arbiter``               Codekins' Arbiter (Zyot Lab): Gemma 3 4B IT +
@@ -69,6 +72,7 @@ TAGS = {
     "alibiserikbay/jevk5-4b": "jevk5",
     "eldanring/winnow-e4b": "winnow:e4b",
     "madani/decima": "decima",
+    "madani/decima-agent": "decima:agent",
     "madani/decima-small": "decima:small",
     "logitlab/snap": "snap",
     "codekins/arbiter": "arbiter",
@@ -90,6 +94,8 @@ ENTRIES: list[dict[str, Any]] = [
     {"model_id": "eldanring/winnow-e4b", "version": "winnow-e4b@unversioned",
      "runtime": {"engine": "llama.cpp", "dtype": None, "quant": "Q8_0", "device": "cpu"}},
     {"model_id": "madani/decima", "version": "decima-base-2.0@unversioned",
+     "runtime": {"engine": None, "dtype": None, "quant": None, "device": "cpu"}},
+    {"model_id": "madani/decima-agent", "version": "decima-agent-2.2@unversioned",
      "runtime": {"engine": None, "dtype": None, "quant": None, "device": "cpu"}},
     {"model_id": "madani/decima-small", "version": "decima-small-1.1@unversioned",
      "runtime": {"engine": None, "dtype": None, "quant": None, "device": "cpu"}},
