@@ -22,8 +22,8 @@ export interface CloudData {
 
 async function loadCloudData(): Promise<CloudData> {
   const [allDeployments, providers] = await Promise.all([
-    fetchJson<HostedDeployment[]>("/data/deployments.json"),
-    fetchJson<ProviderRow[]>("/data/providers.json"),
+    fetchJson<HostedDeployment[]>("./data/deployments.json"),
+    fetchJson<ProviderRow[]>("./data/providers.json"),
   ]);
   const deployments = allDeployments
     .filter((d) => d.kind === "hosted")

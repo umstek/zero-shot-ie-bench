@@ -39,9 +39,6 @@ export class AskError extends Error {
   }
 }
 
-const CORS_HINT =
-  "this provider may not allow direct browser calls (CORS) — it may work through the local app or CLI";
-
 export async function askHosted(args: {
   deployment: HostedDeployment;
   providers: Array<ProviderRow>;
@@ -86,7 +83,7 @@ export async function askHosted(args: {
     // fetch() network failure surfaces as TypeError — in a browser that is
     // almost always a CORS block (or the provider being unreachable)
     if (err instanceof TypeError) {
-      throw new AskError(`${err.message} — ${CORS_HINT}`, { corsSuspected: true });
+      throw new AskError(err.message, { corsSuspected: true });
     }
     throw new AskError(err instanceof Error ? err.message : String(err));
   }
