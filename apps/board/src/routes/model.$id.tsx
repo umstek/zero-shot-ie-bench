@@ -1,5 +1,5 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { EChart } from "../charts/echart";
 import { historyLineOption, languageHeatmapOption } from "../charts/options";
 import { fmtCostPer1k, fmtDate, fmtMs, fmtPct } from "../lib/format";
@@ -34,6 +34,13 @@ export function ModelPage() {
     () => languageHeatmapOption(modelRuns, modelDeployments),
     [modelRuns, modelDeployments],
   );
+
+  // Refine the tab title once the display name resolves (SEO title comes from
+  // the prerenderer, which knows the name at build time).
+  const displayName = modelDeployments[0]?.display ?? modelId;
+  useEffect(() => {
+    document.title = `${displayName} — zsib board`;
+  }, [displayName]);
 
   if (modelDeployments.length === 0) {
     return (

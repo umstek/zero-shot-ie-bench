@@ -117,9 +117,12 @@ params_hash · runner_version · bench_git_sha · started_at`
   endpoints APIs) and **appends dated observations** (price, context, ZDR/retention,
   quantization). It never edits the catalog. Price history and "this endpoint turned
   ZDR-unsafe on date X" then come for free (R11).
-- **`apps/playground`**: a Bun full-stack server (`Bun.serve` + React via HTML
-  imports). It imports the same adapters from `bench`, so a provider is wired once.
-  Keys stay server-side. It also lists live local runners, so one UI can try both.
+- **`apps/cloud` + `apps/local`** (the old `apps/playground`, split): the cloud
+  tryer is a static Vite + React page that runs the same adapters from `bench`
+  in the browser with the user's own keys (keys stay in the tab; no backend);
+  the local tryer is a Bun full-stack server (`Bun.serve` + React via HTML
+  imports, no credentials at all) that lists live local runners and proxies
+  them server-side. One app per deployment kind.
 
 ## Board (R9)
 
@@ -140,6 +143,8 @@ Views, in priority order:
 5. **Provider picker**: same model across providers (price, ZDR, latency,
    stability)
 6. **GPU planner**: which deferred runs a candidate machine would unlock
+
+   Views 4–6 are not built yet; intent tracked in [board-roadmap.md](../board-roadmap.md).
 
 ## Stack decisions
 

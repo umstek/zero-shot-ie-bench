@@ -10,10 +10,29 @@ export const ModelStatus = z.enum(["active", "culled", "retired"]);
 
 const dateish = z.string(); // ISO date or date-time; free enough for hand edits
 
+// Boolean capability matrix ported from the v0 compare tab
+// (v0-final app.py build_compare_tab). Every field is optional so
+// pre-matrix YAMLs stay valid; an absent field means "unknown",
+// not false.
+export const Capabilities = z.looseObject({
+  ner_spans: z.boolean().optional(), // zero-shot NER spans
+  text_classification: z.boolean().optional(),
+  one_pass: z.boolean().optional(), // all labels scored in one pass
+  relations: z.boolean().optional(),
+  span_attributes: z.boolean().optional(), // per-entity sentiment
+  structured_records: z.boolean().optional(),
+  ordinal_rubrics: z.boolean().optional(), // ordinal score rubrics
+  yes_no: z.boolean().optional(), // yes/no judgments
+  text_embeddings: z.boolean().optional(),
+  runs_offline: z.boolean().optional(), // runs offline / data local
+  image_input: z.boolean().optional(),
+});
+
 export const Claims = z.looseObject({
   tracks: z.array(z.string()).min(1),
   modalities: z.array(Modality).min(1),
   languages: z.union([z.string(), z.array(z.string())]).nullable(),
+  capabilities: Capabilities.optional(),
 });
 
 export const ModelVersion = z.looseObject({
@@ -154,6 +173,8 @@ export const Language = z.looseObject({
   script: z.string().nullable(),
   tier: z.enum(["popular", "medium", "rare"]).nullable(),
 });
+export type CapabilitiesOut = z.output<typeof Capabilities>;
+export type ClaimsOut = z.output<typeof Claims>;
 export type ModelOut = z.output<typeof Model>;
 export type ProviderOut = z.output<typeof Provider>;
 export type MachineOut = z.output<typeof Machine>;

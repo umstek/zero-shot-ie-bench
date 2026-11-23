@@ -1,5 +1,5 @@
 // registry: catalog deployment.adapter → adapter module. The bench CLI and
-// apps/playground import from here (docs/plan/03 rule 5).
+// apps/cloud import from here (docs/plan/03 rule 5).
 import { chat as fastinoChat, systemone as fastinoSystemone } from "./fastino.ts";
 import { rerank as openrouterRerank, systemone as openrouterSystemone } from "./openrouter.ts";
 import { generate as typellmGenerate } from "./typellm.ts";

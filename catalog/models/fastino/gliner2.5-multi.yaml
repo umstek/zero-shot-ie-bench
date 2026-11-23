@@ -12,6 +12,18 @@ claims:
   modalities:
   - text
   languages: multilingual
+  capabilities:
+    ner_spans: true
+    text_classification: true
+    one_pass: true
+    relations: true
+    span_attributes: true
+    structured_records: true
+    ordinal_rubrics: true
+    yes_no: false
+    text_embeddings: false
+    runs_offline: true
+    image_input: false
 status: active
 links:
   card: https://github.com/fastino-ai/GLiNER2

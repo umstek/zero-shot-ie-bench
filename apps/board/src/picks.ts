@@ -1,3 +1,4 @@
+import { measuredPerItem } from "./lib/cost";
 import { fmtCostPer1k, fmtDate, fmtMs, fmtPct, platformOf } from "./lib/format";
 import { langLabel, RARE_LANGS } from "./lib/languages";
 import type { Deployment, RunWithTrack } from "./types";
@@ -17,6 +18,9 @@ export interface Pick {
   question: string;
   note: string;
   rows: PickRow[];
+  /** Display names of entries that qualify but are excluded from the ranking
+   *  (free tier / unpriced) — rendered as a muted trailing line. */
+  unranked?: string[];
 }
 
 const TOP_N = 5;
@@ -79,13 +83,15 @@ export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pic
   const latest = latestRunByDeploymentAndSuite(runs);
   const byId = new Map(deployments.map((d): [string, Deployment] => [d.deployment_id, d]));
   const mixedPool = candidates(latest, byId, "decision/mixed-pool");
-  const anyDecision = candidates(latest, byId);
 
-  // Cheapest ≥90%: the advertised threshold is enforced BEFORE ranking;
-  // cost per item (run cost ÷ items), accuracy as tiebreak.
-  const cheapest = mixedPool
-    .filter((c) => (c.run.accuracy ?? 0) >= 0.9)
-    .map((c) => ({ ...c, perItem: c.run.cost_usd / Math.max(c.run.items, 1) }))
+  // Cheapest ≥90%: the advertised threshold is enforced BEFORE ranking; only
+  // runs with measured positive spend rank (cost per item = run cost ÷ items,
+  // v0 bookkeeping figure when present), accuracy as tiebreak. Free-tier and
+  // unpriced qualifiers are listed by name, never ranked.
+  const qualify = mixedPool.filter((c) => (c.run.accuracy ?? 0) >= 0.9);
+  const cheapest = qualify
+    .map((c) => ({ ...c, perItem: measuredPerItem(c.run) }))
+    .filter((c): c is typeof c & { perItem: number } => c.perItem != null)
     .sort((a, b) => a.perItem - b.perItem || (b.run.accuracy ?? 0) - (a.run.accuracy ?? 0))
     .slice(0, TOP_N)
     .map<PickRow>((c) => ({
@@ -96,6 +102,11 @@ export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pic
         c.run.started_at,
       )}`,
     }));
+  const freeTier = [
+    ...new Set(
+      qualify.filter((c) => measuredPerItem(c.run) == null).map((c) => c.deployment.display),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
 
   // Fastest local on CPU: catalog requires.accel === "cpu", ranked by measured p50.
   const fastestLocal = mixedPool
@@ -169,8 +180,9 @@ export function buildPicks(deployments: Deployment[], runs: RunWithTrack[]): Pic
     {
       id: "cheapest",
       question: "Which deployment is the cheapest that still scores ≥90%?",
-      note: "Cost per item = run cost ÷ items. Legacy local runs carry a $0 amortised cost, so free tiers and unpriced local models sort first.",
+      note: "Cost is measured spend only (run cost ÷ items) — free-tier and unpriced systems are excluded from the ranking and listed below.",
       rows: cheapest,
+      unranked: freeTier,
     },
     {
       id: "fastest-local-cpu",

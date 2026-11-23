@@ -17,10 +17,14 @@ export function fmtDate(iso: string): string {
   return new Date(t).toISOString().slice(0, 10);
 }
 
-export function fmtCostPer1k(perItem: number): string {
+/** compact $/1k for table cells; fmtCostPer1k is the verbose card variant. */
+export function fmtUsdCompact(perItem: number): string {
   const per1k = perItem * 1000;
-  const s = per1k < 0.01 ? per1k.toFixed(4) : per1k.toFixed(2);
-  return `$${s} / 1k items`;
+  return `$${per1k < 0.01 ? per1k.toFixed(4) : per1k.toFixed(2)}`;
+}
+
+export function fmtCostPer1k(perItem: number): string {
+  return `${fmtUsdCompact(perItem)} / 1k items`;
 }
 
 /** provider for hosted deployments, runner for local ones. */

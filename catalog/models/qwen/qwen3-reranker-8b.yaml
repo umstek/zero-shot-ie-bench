@@ -10,6 +10,18 @@ claims:
   modalities:
   - text
   languages: en
+  capabilities:
+    ner_spans: false
+    text_classification: true
+    one_pass: false
+    relations: false
+    span_attributes: false
+    structured_records: false
+    ordinal_rubrics: false
+    yes_no: false
+    text_embeddings: false
+    runs_offline: true
+    image_input: false
 status: active
 links:
   card: https://openrouter.ai/qwen/qwen3-reranker-8b

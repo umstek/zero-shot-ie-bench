@@ -11,6 +11,18 @@ claims:
   modalities:
   - text
   languages: null
+  capabilities:
+    ner_spans: true
+    text_classification: true
+    one_pass: true
+    relations: true
+    span_attributes: false
+    structured_records: true
+    ordinal_rubrics: false
+    yes_no: false
+    text_embeddings: true
+    runs_offline: true
+    image_input: false
 status: active
 links:
   card: https://github.com/Knowledgator/GLiFormer
