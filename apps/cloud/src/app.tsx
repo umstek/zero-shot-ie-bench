@@ -87,6 +87,9 @@ function Tryer() {
 
   return (
     <main>
+      <nav className="nav">
+        <a href="/">← Board</a>
+      </nav>
       <h1>
         zsib <span className="muted">cloud tryer</span>
       </h1>

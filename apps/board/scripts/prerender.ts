@@ -40,6 +40,23 @@ const displayOf = new Map(deployments.map((d): [string, string] => [d.model_id, 
 const shell = await Bun.file(join(distDir, "index.html")).text();
 const fallbackDescription =
   shell.match(/<meta\s+name="description"\s+content="([^"]*)"/)?.[1] ?? "";
+const siteOrigin = (process.env.SITE_ORIGIN?.trim() || "https://zsib.umstek.com").replace(
+  /\/+$/,
+  "",
+);
+
+function canonicalUrlFor(path: string): string {
+  const cleanPath = path === "/" ? "/" : `/${path.replace(/^\/+|\/+$/g, "")}`;
+  return `${siteOrigin}${cleanPath}`;
+}
+
+function escapeAttr(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
 
 function metaFor(path: string): { title: string; description: string } {
   if (path.startsWith("/model/")) {
@@ -55,7 +72,11 @@ function metaFor(path: string): { title: string; description: string } {
 // $ in replacement strings is a pattern — always replace through functions.
 function renderPage(path: string, html: string): string {
   const meta = metaFor(path);
-  return shell
+  const canonicalTag = `<link rel="canonical" href="${escapeAttr(canonicalUrlFor(path))}" />`;
+  const withCanonical = /<link\s+rel="canonical"[^>]*>/i.test(shell)
+    ? shell.replace(/<link\s+rel="canonical"[^>]*>/i, () => canonicalTag)
+    : shell.replace(/<\/head>/i, () => `  ${canonicalTag}\n  </head>`);
+  return withCanonical
     .replace(/<title>[^<]*<\/title>/, () => `<title>${meta.title}</title>`)
     .replace(
       /<meta\s+name="description"\s+content="[^"]*"/,

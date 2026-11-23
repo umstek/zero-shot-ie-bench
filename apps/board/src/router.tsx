@@ -68,6 +68,7 @@ function Nav() {
           {item.label}
         </Link>
       ))}
+      <a href="/try/">Try it</a>
     </nav>
   );
 }

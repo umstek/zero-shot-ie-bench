@@ -29,6 +29,7 @@
     "lint": "bunx biome check .",
     "check": "bun run typecheck && bun test && bun run lint",
     "lake": "bun run --cwd packages/lake build",
-    "render": "bun run lake && bun run --cwd bench render"
+    "render": "bun run lake && bun run --cwd bench render",
+    "build:site": "bun run lake && bun run --cwd apps/board build && bun run --cwd apps/cloud build && bun scripts/build-site.ts"
   }
 }
