@@ -28,7 +28,7 @@ dependencies = [
 required-version = ">=0.13"
 
 [tool.uv.sources]
-von-sdk = { git = "https://github.com/wfzyx/von", rev = "a94aa368ff4dcc58cdfd569cf0b4b1ae7d592d54" }
+von-sdk = { git = "https://github.com/wfzyx/von", rev = "fd577a87eea6f0a002d256c5c181135d353a3fd0" }
 runner-protocol = { path = "../_protocol", editable = true }
 # CPU-only torch builds (Windows PyPI is CPU by default; Linux PyPI is not).
 torch = { index = "pytorch-cpu" }
