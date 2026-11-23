@@ -46,7 +46,7 @@ const siteOrigin = (process.env.SITE_ORIGIN?.trim() || "https://zsib.umstek.com"
 );
 
 function canonicalUrlFor(path: string): string {
-  const cleanPath = path === "/" ? "/" : `/${path.replace(/^\/+|\/+$/g, "")}`;
+  const cleanPath = path === "/" ? "/" : `/${path.replace(/^\/+|\/+$/g, "")}/`;
   return `${siteOrigin}${cleanPath}`;
 }
 
