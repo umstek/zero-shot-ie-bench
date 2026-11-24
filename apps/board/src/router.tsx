@@ -14,6 +14,7 @@ import { ComparePage } from "./routes/compare";
 import { ExplorerPage } from "./routes/explore";
 import { ModelPage } from "./routes/model.$id";
 import { NerPage } from "./routes/ner";
+import { OverviewPage } from "./routes/overview";
 import { PicksPage } from "./routes/picks";
 
 // Code-based route tree (no codegen step): the component files live in
@@ -24,6 +25,11 @@ import { PicksPage } from "./routes/picks";
  *  build-time prerenderer so SPA navigation and served HTML always agree. */
 export const ROUTE_META: Record<string, { title: string; description: string }> = {
   "/": {
+    title: "zsib — zero-shot IE & decision benchmark",
+    description:
+      "Open benchmark comparing zero-shot classification, decision, reranking, and NER systems across accuracy, latency, measured cost, and 9 languages.",
+  },
+  "/picks": {
     title: "zsib — decision system picks",
     description:
       "Which decision system is cheapest at ≥90% accuracy, fastest on CPU, best on rare languages — answered from measured runs.",
@@ -46,7 +52,8 @@ export const ROUTE_META: Record<string, { title: string; description: string }> 
 };
 
 const NAV = [
-  { to: "/", label: "Picks", exact: true },
+  { to: "/", label: "Overview", exact: true },
+  { to: "/picks", label: "Picks", exact: false },
   { to: "/explore", label: "Explorer", exact: false },
   { to: "/compare", label: "Charts", exact: false },
   { to: "/ner", label: "NER", exact: false },
@@ -55,9 +62,9 @@ const NAV = [
 function Nav() {
   return (
     <nav className="nav">
-      <span className="brand">
+      <Link to="/" className="brand">
         zsib <span className="muted">board</span>
-      </span>
+      </Link>
       {NAV.map((item) => (
         <Link
           key={item.to}
@@ -141,9 +148,14 @@ export function createAppRouter(history?: RouterHistory) {
   return createRouter({ routeTree, history });
 }
 
-const picksRoute = createRoute({
+const overviewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
+  component: OverviewPage,
+});
+const picksRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/picks",
   component: PicksPage,
 });
 const exploreRoute = createRoute({
@@ -171,6 +183,7 @@ const nerRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
+  overviewRoute,
   picksRoute,
   exploreRoute,
   compareRoute,

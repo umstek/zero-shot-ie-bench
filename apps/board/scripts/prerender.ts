@@ -85,7 +85,14 @@ function renderPage(path: string, html: string): string {
     .replace(/<div id="root"><\/div>/, () => `<div id="root">${html}</div>`);
 }
 
-const routes = ["/", "/explore", "/compare", "/ner", ...modelIds.map((m) => `/model/${m}`)];
+const routes = [
+  "/",
+  "/picks",
+  "/explore",
+  "/compare",
+  "/ner",
+  ...modelIds.map((m) => `/model/${m}`),
+];
 
 let rendered = 0;
 for (const path of routes) {
