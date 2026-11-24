@@ -4,6 +4,12 @@ One entry per release or arrival round. The run history itself lives in
 `runs/` (append-only); every table below is generated from the lake by
 `bun run render` — nothing here is a hand-edited number.
 
+## v1.0.0 (2026-11-24)
+
+- First `v1.0.0` release after the TypeScript + Bun monorepo restructure (`packages/schema`, `packages/lake`, `bench`, `runners/*`, `apps/board`, `apps/cloud`, `apps/local`).
+- Unified static Cloudflare deployment at [zsib.umstek.com](https://zsib.umstek.com) (board with a new Overview introduction landing page at `/` plus `/picks`, `/explore`, `/compare`, `/ner`, `/model/*`, and browser BYOK tryer at `/try/`) with 301 redirect aliases and `noindex` staging at [zsib.staging.umstek.com](https://zsib.staging.umstek.com).
+- Migrated hosting to Cloudflare's `cf` CLI (`cloudflare.config.ts`) and GitHub Actions (`main` → staging, published GitHub Releases → production).
+
 ## 2026-11-12 — board polish round
 
 - **`apps/board` prerenders every route at build time** — 85 pages (picks,

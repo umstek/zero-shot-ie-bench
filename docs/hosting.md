@@ -5,7 +5,7 @@ The benchmark board (`apps/board`) and browser BYOK tryer (`apps/cloud`) are bui
 ## Domains and Routing
 
 - **Production:** `https://zsib.umstek.com` (Worker `zsib`)
-  - `/` (plus `/explore`, `/compare`, `/ner`, `/model/*`) → `apps/board`
+  - `/` (overview, plus `/picks`, `/explore`, `/compare`, `/ner`, `/model/*`) → `apps/board`
   - `/try/` → `apps/cloud`
 - **Staging:** `https://zsib.staging.umstek.com` (Worker `zsib-staging`, same unified layout)
 - **301 Redirect aliases** → `https://zsib.umstek.com` (preserving path and query string):
