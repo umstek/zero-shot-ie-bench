@@ -5,6 +5,8 @@ catalog of decision, classification, NER and reranking systems — hosted
 APIs and local runner islands — benched against versioned, multilingual
 suites, with an append-only run history and generated result tables.
 
+**Live:** [zsib.umstek.com](https://zsib.umstek.com) (benchmark board) · [zsib.umstek.com/try/](https://zsib.umstek.com/try/) (browser BYOK tryer)
+
 - **Catalog** (`catalog/`): one YAML per system; providers, tracks,
   languages, machines. Schema-validated (`bun run validate`).
 - **Suites** (`suites/`): versioned parallel-item pools with content
@@ -24,7 +26,7 @@ Quickstart: `bun install` · `bun run check` (typecheck + tests + lint) ·
 `bun run render` (lake + README tables) · `bun run --cwd bench dev
 doctor`. Deeper docs: [methodology](docs/methodology.md) (scoring,
 deferred runs, cost model) · [adding a model](docs/adding-a-model.md)
-(the 3-step recipe) · [the restructure plan](docs/plan/00-index.md).
+(the 3-step recipe) · [the restructure plan](docs/plan/00-index.md) · [hosting](docs/hosting.md).
 
 The v0 era (2026-09-20 → 2026-10-24, 81 systems / 38 families) is
 preserved verbatim at tag `v0-final`; history since lives in
