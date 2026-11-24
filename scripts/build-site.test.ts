@@ -65,6 +65,7 @@ describe("assembleSite", () => {
     expect(await readFile(join(outDir, "try/data/deployments.json"), "utf8")).toBe("[]");
     expect(await readFile(join(outDir, "data/deployments.json"), "utf8")).toBe("[]");
 
+    expect(result.allowIndexing).toBe(true);
     const headers = await readFile(join(outDir, "_headers"), "utf8");
     expect(headers).toContain("/assets/*\n  Cache-Control: public, max-age=31536000, immutable");
     expect(headers).toContain(
@@ -73,6 +74,7 @@ describe("assembleSite", () => {
     for (const path of ["/", "/index.html", "/try/", "/try/index.html", "/data/*", "/try/data/*"]) {
       expect(headers).toContain(`${path}\n  Cache-Control: public, max-age=0, must-revalidate`);
     }
+    expect(headers).not.toContain("X-Robots-Tag");
 
     const robots = await readFile(join(outDir, "robots.txt"), "utf8");
     expect(robots).toBe("User-agent: *\nAllow: /\nSitemap: https://zsib.umstek.com/sitemap.xml\n");
@@ -122,8 +124,10 @@ describe("assembleSite", () => {
     });
 
     expect(result.siteOrigin).toBe("https://zsib.staging.umstek.com");
-    expect(await readFile(join(outDir, "robots.txt"), "utf8")).toContain(
-      "Sitemap: https://zsib.staging.umstek.com/sitemap.xml",
+    expect(result.allowIndexing).toBe(false);
+    expect(await readFile(join(outDir, "robots.txt"), "utf8")).toBe("User-agent: *\nDisallow: /\n");
+    expect(await readFile(join(outDir, "_headers"), "utf8")).toContain(
+      "/*\n  X-Robots-Tag: noindex, nofollow",
     );
     const sitemap = await readFile(join(outDir, "sitemap.xml"), "utf8");
     expect(sitemap).toContain("<loc>https://zsib.staging.umstek.com/</loc>");

@@ -51,11 +51,13 @@ export interface AssembleSiteOptions {
   cloudDist: string;
   outDir: string;
   siteOrigin?: string;
+  allowIndexing?: boolean;
 }
 
 export interface AssembleSiteResult {
   outDir: string;
   siteOrigin: string;
+  allowIndexing: boolean;
   routes: string[];
 }
 
@@ -88,7 +90,15 @@ async function discoverRoutes(rootDir: string, relDir = ""): Promise<string[]> {
   return relDir.length === 0 ? routes.sort() : routes;
 }
 
-function renderRobotsTxt(siteOrigin: string): string {
+function renderHeaders(allowIndexing: boolean): string {
+  if (allowIndexing) return HEADERS_CONTENT;
+  return `${HEADERS_CONTENT}\n/*\n  X-Robots-Tag: noindex, nofollow\n`;
+}
+
+function renderRobotsTxt(siteOrigin: string, allowIndexing: boolean): string {
+  if (!allowIndexing) {
+    return "User-agent: *\nDisallow: /\n";
+  }
   return `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}/sitemap.xml\n`;
 }
 
@@ -127,6 +137,7 @@ export async function assembleSite(options: AssembleSiteOptions): Promise<Assemb
   const cloudDist = resolve(options.cloudDist);
   const outDir = resolve(options.outDir);
   const siteOrigin = normalizeOrigin(options.siteOrigin);
+  const allowIndexing = options.allowIndexing ?? siteOrigin === DEFAULT_SITE_ORIGIN;
 
   assertDirExists(boardDist, "boardDist");
   assertDirExists(cloudDist, "cloudDist");
@@ -137,14 +148,14 @@ export async function assembleSite(options: AssembleSiteOptions): Promise<Assemb
   await cp(boardDist, outDir, { recursive: true });
   await cp(cloudDist, join(outDir, "try"), { recursive: true });
 
-  await writeFile(join(outDir, "_headers"), HEADERS_CONTENT, "utf8");
-  await writeFile(join(outDir, "robots.txt"), renderRobotsTxt(siteOrigin), "utf8");
+  await writeFile(join(outDir, "_headers"), renderHeaders(allowIndexing), "utf8");
+  await writeFile(join(outDir, "robots.txt"), renderRobotsTxt(siteOrigin, allowIndexing), "utf8");
 
   const routes = await discoverRoutes(outDir);
   await writeFile(join(outDir, "sitemap.xml"), renderSitemapXml(siteOrigin, routes), "utf8");
 
   verifyCriticalFiles(outDir);
-  return { outDir, siteOrigin, routes };
+  return { outDir, siteOrigin, allowIndexing, routes };
 }
 
 if (import.meta.main) {
@@ -156,7 +167,8 @@ if (import.meta.main) {
     siteOrigin: process.env.SITE_ORIGIN,
   });
   const displayDir = relative(repoRoot, result.outDir) || ".";
+  const indexingTag = result.allowIndexing ? "" : " (noindex)";
   console.log(
-    `[site] assembled ${displayDir} (${result.routes.length} routes, origin ${result.siteOrigin})`,
+    `[site] assembled ${displayDir} (${result.routes.length} routes, origin ${result.siteOrigin})${indexingTag}`,
   );
 }

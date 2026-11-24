@@ -1,6 +1,7 @@
 {
   "name": "zero-shot-ie-bench",
   "private": true,
+  "type": "module",
   "workspaces": [
     "bench",
     "apps/*",
@@ -17,6 +18,7 @@
     "@biomejs/biome": "^2.6.8",
     "@types/bun": "catalog:",
     "bun-types": "catalog:",
+    "cf": "^1.0.0-rc.5",
     "typescript": "catalog:",
     "yaml": "catalog:"
   },
