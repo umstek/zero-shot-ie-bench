@@ -3,5 +3,5 @@
   "compilerOptions": {
     "rootDir": "."
   },
-  "include": ["scripts/**/*.ts"]
+  "include": ["scripts/**/*.ts", "cloudflare.config.ts"]
 }

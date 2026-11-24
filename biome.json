@@ -11,6 +11,7 @@
       "bench/**",
       "apps/**",
       "scripts/**",
+      "cloudflare.config.ts",
       "package.json",
       "tsconfig*.json"
     ]
