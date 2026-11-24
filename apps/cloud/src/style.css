@@ -15,6 +15,18 @@ main {
   margin: 0 auto;
   padding: 1.5rem 1rem 4rem;
 }
+.nav {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+.nav a {
+  color: color-mix(in srgb, canvastext 70%, transparent);
+  text-decoration: none;
+}
+.nav a:hover {
+  color: canvastext;
+  text-decoration: underline;
+}
 h1 {
   font-size: 1.4rem;
 }
