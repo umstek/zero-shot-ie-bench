@@ -24,19 +24,15 @@ The benchmark board (`apps/board`) and browser BYOK tryer (`apps/cloud`) are bui
 
 When `SITE_ORIGIN` is anything other than `https://zsib.umstek.com` (such as staging), `scripts/build-site.ts` automatically emits `Disallow: /` in `robots.txt` and `X-Robots-Tag: noindex, nofollow` in `_headers`.
 
-> **Runtime note:** `cf` requires Node.js (`^22.23.0 || ^24.22.0 || ^26.12.0`) to load `cloudflare.config.ts` — always invoke it via `npx cf ...` (not `bunx cf`, since loading `cloudflare.config.ts` is not supported on Bun). Cloudflare Workers Builds defaults to Node.js 24.
+> **Runtime note:** `cf` requires Node.js (`^22.23.0 || ^24.22.0 || ^26.12.0`) to load `cloudflare.config.ts` — always invoke it via `npx cf ...` (not `bunx cf`, since loading `cloudflare.config.ts` is not supported on Bun).
 
-## Cloudflare Workers Builds
+## Deployment (GitHub Actions + cf CLI)
 
-- **Production (`zsib`, branch `main`):**
-  - **Build command:** `bun install && bun run build:site`
-  - **Deploy command:** `npx cf deploy ./dist-site`
-  - **Domain:** `zsib.umstek.com` (declared in `cloudflare.config.ts`)
-- **Staging (`zsib-staging`, connected to your staging branch or manual trigger):**
-  - **Build command:** `bun install && bun run build:site`
-  - **Deploy command:** `npx cf deploy ./dist-site --mode staging`
-  - **Build environment variable:** `SITE_ORIGIN=https://zsib.staging.umstek.com`
-  - **Domain:** `zsib.staging.umstek.com` (declared in `cloudflare.config.ts`)
+- **Staging (`zsib-staging`, `https://zsib.staging.umstek.com`):** deployed automatically on every push to `main` (or manual `workflow_dispatch`) by [`.github/workflows/deploy-staging.yml`](../.github/workflows/deploy-staging.yml) (`SITE_ORIGIN=https://zsib.staging.umstek.com`, `npx cf deploy ./dist-site --mode staging`, auto `Disallow: /` + `X-Robots-Tag: noindex, nofollow`).
+- **Production (`zsib`, `https://zsib.umstek.com`):** deployed automatically when a GitHub Release is published (or manual `workflow_dispatch`) by [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) (`npx cf deploy ./dist-site`).
+- **Required GitHub repository secrets:**
+  - `CLOUDFLARE_API_TOKEN` (Workers Scripts Edit + Zone/DNS/Workers Routes permissions on `umstek.com` for custom domain attachment)
+  - `CLOUDFLARE_ACCOUNT_ID`
 
 ## Cloudflare Redirect Rule
 
