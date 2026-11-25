@@ -32,6 +32,31 @@ The v0 era (2026-09-20 → 2026-10-24, 81 systems / 38 families) is
 preserved verbatim at tag `v0-final`; history since lives in
 [CHANGELOG.md](CHANGELOG.md) and the run records themselves.
 
+## What's covered
+
+All systems are **zero-shot**: the task (labels, label descriptions,
+or an entity schema) is given at inference time, with no task-specific
+training. A model can belong to more than one group.
+
+| Group | What it does | How it's benched | Families |
+|---|---|---|---|
+| **Decision models** (`decision`, `score`) | LMs trained to answer one structured question (pick an option, yes/no, or score on a rubric) and return a probability for every allowed answer instead of free text | Choice questions (mixed pool, multilingual pool, gate); accuracy + Brier/ECE calibration | Decider, D1, Solar Decide, Laya, Lumma, Decision 2.0 / D3, TypeLLM, Clef… |
+| **Zero-shot classifiers** (`classify`) | Small encoders that score text against each candidate label (NLI entailment or GLiClass-style one-pass) | Same choice questions; the top label is the answer | NLI DeBERTa-v3 / ModernBERT, GLiClass, GLiNER2.5, GLiFormer |
+| **Rerankers** (`rerank`) | Search cross-encoders that score how relevant each document is to a query (the second stage in retrieval/RAG) | Used as classifiers: query = question, documents = labels; argmax + softmax | Cohere, Voyage, BGE, mxbai, GTE rerankers |
+| **NER & relation extractors** (`ner`, `relation`) | Named-entity recognition: find and label exact text spans for any entity types named at run time; relations link entity pairs | Graded NER pool; strict + partial span micro-F1 | GLiNER2.5, GLiNER-relex, GLiFormer, GLiREL, ReLiK |
+
+**Modalities.** Every catalog model reads text, and the suites are text-only
+for now. Some models also claim image, audio or video input. These are
+recorded as vendor claims in `catalog/` (counts on the
+[board](https://zsib.umstek.com/#what-we-cover)) and have not been
+benchmarked yet.
+
+Contributors and coding agents: see [AGENTS.md](AGENTS.md) for which files to
+touch when adding or updating a model.
+
+Planned tracks with schemas but no suites yet: `typed-extract`,
+`schema-extract`, `event` (see [`catalog/tracks.yaml`](catalog/tracks.yaml)).
+
 ## Mixed-pool spectrum benchmark (all 78 systems)
 
 Every system answers the same 48 mixed classification questions
