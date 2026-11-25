@@ -15,7 +15,7 @@
     },
     "apps/board": {
       "name": "@zsib/board",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@tanstack/react-router": "^1.170.46",
         "@tanstack/react-table": "^9.3.1",
@@ -32,7 +32,7 @@
     },
     "apps/cloud": {
       "name": "@zsib/cloud",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@zsib/schema": "workspace:*",
         "react": "^19.3.1",
@@ -47,7 +47,7 @@
     },
     "apps/local": {
       "name": "@zsib/local",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@zsib/bench": "workspace:*",
         "@zsib/lake": "workspace:*",
@@ -64,7 +64,7 @@
     },
     "bench": {
       "name": "@zsib/bench",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "bin": {
         "zsib-bench": "./src/cli.ts",
       },
@@ -79,7 +79,7 @@
     },
     "packages/lake": {
       "name": "@zsib/lake",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@zsib/schema": "workspace:*",
         "yaml": "catalog:",
@@ -92,7 +92,7 @@
     },
     "packages/schema": {
       "name": "@zsib/schema",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "yaml": "catalog:",
         "zod": "catalog:",

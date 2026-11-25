@@ -4,6 +4,11 @@ One entry per release or arrival round. The run history itself lives in
 `runs/` (append-only); every table below is generated from the lake by
 `bun run render` — nothing here is a hand-edited number.
 
+## v1.0.1 (2026-11-25)
+
+- Overview page (`apps/board`) and `README.md` now explain the model types covered (decision models, zero-shot classifiers, rerankers, NER & relation extractors), input modalities (text benchmarked; image/audio/video vendor-claimed), and a benchmark glossary ([PR #57](https://github.com/umstek/zero-shot-ie-bench/pull/57)).
+- Added `AGENTS.md` checklist for adding or updating models, versions, and tracks.
+
 ## v1.0.0 (2026-11-24)
 
 - First `v1.0.0` release after the TypeScript + Bun monorepo restructure (`packages/schema`, `packages/lake`, `bench`, `runners/*`, `apps/board`, `apps/cloud`, `apps/local`).
