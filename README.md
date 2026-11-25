@@ -46,8 +46,13 @@ training. A model can belong to more than one group.
 | **NER & relation extractors** (`ner`, `relation`) | Named-entity recognition: find and label exact text spans for any entity types named at run time; relations link entity pairs | Graded NER pool; strict + partial span micro-F1 | GLiNER2.5, GLiNER-relex, GLiFormer, GLiREL, ReLiK |
 
 **Modalities.** Every catalog model reads text, and the suites are text-only
-for now. Image (15), video (4) and audio (2) inputs are recorded as
-vendor claims in `catalog/` and have not been benchmarked yet.
+for now. Some models also claim image, audio or video input. These are
+recorded as vendor claims in `catalog/` (counts on the
+[board](https://zsib.umstek.com/#what-we-cover)) and have not been
+benchmarked yet.
+
+Contributors and coding agents: see [AGENTS.md](AGENTS.md) for which files to
+touch when adding or updating a model.
 
 Planned tracks with schemas but no suites yet: `typed-extract`,
 `schema-extract`, `event` (see [`catalog/tracks.yaml`](catalog/tracks.yaml)).
