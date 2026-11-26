@@ -4,6 +4,10 @@ One entry per release or arrival round. The run history itself lives in
 `runs/` (append-only); every table below is generated from the lake by
 `bun run render` — nothing here is a hand-edited number.
 
+## v1.0.2 (2026-11-26)
+
+- Wired [edge-comments](https://github.com/umstek/edge-comments) as a per-page feedback & discussion section across `apps/board` (Turnstile-protected posting, 1-level replies, pagination, and cookie-based self-delete; [PR #58](https://github.com/umstek/zero-shot-ie-bench/pull/58)).
+
 ## v1.0.1 (2026-11-25)
 
 - Overview page (`apps/board`) and `README.md` now explain the model types covered (decision models, zero-shot classifiers, rerankers, NER & relation extractors), input modalities (text benchmarked; image/audio/video vendor-claimed), and a benchmark glossary ([PR #57](https://github.com/umstek/zero-shot-ie-bench/pull/57)).

@@ -1,6 +1,6 @@
 {
   "name": "@zsib/bench",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "bin": {
     "zsib-bench": "./src/cli.ts"
