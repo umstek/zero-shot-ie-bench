@@ -8,6 +8,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { Suspense, useEffect } from "react";
+import { FeedbackSection } from "./components/feedback";
 import { fmtDate } from "./lib/format";
 import { useBoardData } from "./queries/data";
 import { ComparePage } from "./routes/compare";
@@ -113,6 +114,7 @@ function RootLayout() {
           <Outlet />
         </Suspense>
       </main>
+      <FeedbackSection />
       <footer className="muted">
         Static board over <code>build/*.json</code> (packages/lake). No backend; refresh data with{" "}
         <code>bun run lake</code>.{" "}
